@@ -1,0 +1,30 @@
+{
+  // Path to the svn executable
+  "svn.path": "C:\\Program Files\\TortoiseSVN\\bin\\svn.exe",
+  "svn.enabled": true,
+  "editor.codeLens": false,
+  "appService.defaultWebAppToDeploy": "/subscriptions/9351d3d5-5755-4ff3-aceb-9ea621fec991/resourceGroups/olab4/providers/Microsoft.Web/sites/olab4",
+  "appService.deploySubpath": "Service\\bin\\Release\\netcoreapp3.1\\publish",
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#8d8aa7",
+    "activityBar.activeBorder": "#8f3a30",
+    "activityBar.background": "#8d8aa7",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#8f3a30",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "sash.hoverBorder": "#8d8aa7",
+    "statusBar.background": "#716d91",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#8d8aa7",
+    "statusBarItem.remoteBackground": "#716d91",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#716d91",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#716d9199",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#716d91"
+}

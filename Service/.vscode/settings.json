@@ -1,0 +1,6 @@
+{
+  // Path to the svn executable
+  "svn.path": "C:\\Program Files\\TortoiseSVN\\bin\\svn.exe",
+  "svn.enabled": true,
+  "editor.codeLens": false
+}
