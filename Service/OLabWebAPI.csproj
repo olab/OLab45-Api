@@ -18,9 +18,9 @@
     <PackageReference Include="MimeTypes" Version="2.4.0"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj"/>
-    <ProjectReference Include="..\Data\Data.csproj"/>
-    <ProjectReference Include="..\Import\Import.csproj"/>
+    <ProjectReference Include="..\..\OLab45-Common\Common\Common.csproj"/>
+    <ProjectReference Include="..\..\OLab45-Common\Data\Data.csproj"/>
+    <ProjectReference Include="..\..\OLab45-Common\Import\Import.csproj"/>
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <Content Include="bin\Release\netcoreapp3.1\PlugIns\**\*" Link="PlugIns\%(RecursiveDir)%(FileName)%(Extension)" CopyToPublishDirectory="PreserveNewest"/>
