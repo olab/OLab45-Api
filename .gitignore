@@ -5,7 +5,7 @@
 #Visual Studio Files
 [Oo]bj
 [Bb]in
-[Dd]ebug
+[Dd]ebug/
 [Bb]uild/
 *.user
 *.suo
