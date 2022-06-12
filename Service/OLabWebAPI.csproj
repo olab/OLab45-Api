@@ -22,7 +22,15 @@
     <ProjectReference Include="..\..\OLab45-Common\Data\Data.csproj"/>
     <ProjectReference Include="..\..\OLab45-Common\Import\Import.csproj"/>
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <Content Include="bin\Release\netcoreapp3.1\PlugIns\**\*" Link="PlugIns\%(RecursiveDir)%(FileName)%(Extension)" CopyToPublishDirectory="PreserveNewest"/>
-  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <WikiTagFiles Include="..\..\OLab45-Common\bin\$(Configuration)\$(TargetFramework)\PlugIns\**\*" />
+    </ItemGroup>
+    <Copy 
+      SourceFiles="@(WikiTagFiles)"
+      DestinationFolder="$(OutDir)PlugIns"
+      SkipUnchangedFiles="true"/>
+  </Target>
+
 </Project>
