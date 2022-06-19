@@ -18,14 +18,14 @@
     <PackageReference Include="MimeTypes" Version="2.4.0"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\OLab45-Common\Common\Common.csproj"/>
-    <ProjectReference Include="..\..\OLab45-Common\Data\Data.csproj"/>
-    <ProjectReference Include="..\..\OLab45-Common\Import\Import.csproj"/>
+    <ProjectReference Include="..\..\Common\Common\Common.csproj"/>
+    <ProjectReference Include="..\..\Common\Data\Data.csproj"/>
+    <ProjectReference Include="..\..\Common\Import\Import.csproj"/>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <ItemGroup>
-      <WikiTagFiles Include="..\..\OLab45-Common\bin\$(Configuration)\$(TargetFramework)\PlugIns\**\*" />
+      <WikiTagFiles Include="..\..\Common\bin\$(Configuration)\$(TargetFramework)\PlugIns\**\*" />
     </ItemGroup>
     <Copy 
       SourceFiles="@(WikiTagFiles)"
