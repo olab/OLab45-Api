@@ -17,7 +17,7 @@ namespace OLabWebAPI.Services
     public readonly IHubContext<TurkTalkHub> HubContext;
 
     public IList<Room> Rooms = new List<Room>();
-    public IList<Participant> UnassignedParticipants = new List<Participant>();
+    public IList<Participant> UnassignedAttendees = new List<Participant>();
 
     public Atrium(Conference conference, string name)
     {
@@ -145,7 +145,7 @@ namespace OLabWebAPI.Services
       SendConnectionStatus(Room.GetModerator());
 
       // send unassigned attendees list to moderators
-      SendUnassignedAttendeeList();
+      BroadcastUnassignedAttendeeList();
 
       return moderator;
     }
@@ -177,7 +177,7 @@ namespace OLabWebAPI.Services
         throw new ArgumentNullException(nameof(attendee));
 
       // test if attendee already in unassigned list
-      if (UnassignedParticipants.Any(x => x.ConnectionId == attendee.ConnectionId))
+      if (UnassignedAttendees.Any(x => x.ConnectionId == attendee.ConnectionId))
         Logger.LogInformation($"Attendee '{attendee}' already exists unassigned list for atrium '{Name}'.");
       else
       {
@@ -185,10 +185,10 @@ namespace OLabWebAPI.Services
         if (GetAttendee(attendee.ConnectionId) == null)
         {
           Logger.LogInformation($"Adding unassigned attendee {attendee}) to atrium '{Name}'");
-          UnassignedParticipants.Add(attendee);
+          UnassignedAttendees.Add(attendee);
 
           // notify moderators in all rooms of new unassigned list
-          SendUnassignedAttendeeList();
+          BroadcastUnassignedAttendeeList();
         }
         else
           Logger.LogInformation($"Attendee {attendee}) already assigned in atrium '{Name}' room");
@@ -215,7 +215,7 @@ namespace OLabWebAPI.Services
         if (serverModerator == null)
           throw new Exception($"Cannot find server-side moderator {moderator.ConnectionId}");
 
-        var serverAttendee = UnassignedParticipants.FirstOrDefault( x => x.ConnectionId == attendee.PartnerId );
+        var serverAttendee = UnassignedAttendees.FirstOrDefault(x => x.ConnectionId == attendee.PartnerId);
         if (serverAttendee == null)
           throw new Exception($"Cannot find unassigned attendee {attendee}");
 
@@ -232,7 +232,7 @@ namespace OLabWebAPI.Services
 
         // remove attendee from unassigned since they should
         // be in a room now.
-        UnassignedParticipants.Remove( serverAttendee );
+        UnassignedAttendees.Remove(serverAttendee);
 
         var payload = new CommandAssignedPayload
         {
@@ -251,7 +251,7 @@ namespace OLabWebAPI.Services
         SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
 
         // update moderators of new unassigned list
-        SendUnassignedAttendeeList();
+        BroadcastUnassignedAttendeeList();
 
       }
       catch (Exception ex)
@@ -315,7 +315,7 @@ namespace OLabWebAPI.Services
     /// Send unassigned attendees list all moderators
     /// </summary>
     /// <param name="hub">SignalR Hub</param>
-    private void SendUnassignedAttendeeList()
+    private void BroadcastUnassignedAttendeeList()
     {
       var unassignedAttendees = new List<Participant>();
 
@@ -324,10 +324,13 @@ namespace OLabWebAPI.Services
         // skip room if no moderator assigned to send list to
         Participant moderator = Room.GetModerator();
         if (moderator == null)
+        {
+          Logger.LogDebug($"No moderator for room '{Room.Name}' for unassigned attemdee update");
           continue;
+        }
 
         // transform list for moderator - make attendees a destination, not a source
-        foreach (var attendee in UnassignedParticipants)
+        foreach (var attendee in UnassignedAttendees)
         {
           unassignedAttendees.Add(new Participant
           {
@@ -344,7 +347,7 @@ namespace OLabWebAPI.Services
           Data = unassignedAttendees
         };
 
-        Logger.LogDebug($"Notifying {moderator} of unassigned list update");
+        Logger.LogDebug($"Notifying {moderator} in room {Room.Name} of unassigned list update");
 
         SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
       }
@@ -365,35 +368,37 @@ namespace OLabWebAPI.Services
     }
 
     /// <summary>
-    /// Disconnect attendees from atrium
+    /// Disconnect attendees from atrium/room
     /// </summary>
     /// <param name="connectionId">connection id to disconnect</param>
     /// <returns>true/false</returns>
     public bool DisconnectAttendee(string connectionId)
     {
-      Participant attendees = null;
+      Participant attendee = null;
 
-      // test if attendees exists, but is in unassigned list
-      if (UnassignedParticipants.Any(x => x.ConnectionId == connectionId))
+      // test if unassigned attendee exists
+      if (UnassignedAttendees.Any(x => x.ConnectionId == connectionId))
       {
-        UnassignedParticipants.Remove(UnassignedParticipants.First(x => x.ConnectionId == connectionId));
-        SendUnassignedAttendeeList();
+        UnassignedAttendees.Remove(UnassignedAttendees.First(x => x.ConnectionId == connectionId));
+        Logger.LogDebug($"Removed attendee '{connectionId}' from '{Name}' unassigned list.");
+
+        BroadcastUnassignedAttendeeList();
         return true;
       }
 
-      // test if attendees exists, but is assigned
-      attendees = GetAttendee(connectionId);
-      if (attendees == null)
+      // get (hopefully) assigned attendee
+      attendee = GetAttendee(connectionId);
+      if (attendee == null)
       {
-        Logger.LogError($"Attempted to disconnect attendees @ '{connectionId}', but was unknown");
+        Logger.LogError($"Attempted to disconnect attendees @ '{connectionId}' from '{Name}', but was not assigned");
         return false;
       }
 
-      // get Room for attendees
-      var Room = GetRoomContainingParticipant(attendees);
+      // get attendee room
+      var Room = GetRoomContainingParticipant(attendee);
       if (Room == null)
       {
-        Logger.LogError($"Cannot find Room for {attendees}");
+        Logger.LogError($"Cannot find attendee '{attendee}' room");
         return false;
       }
 
