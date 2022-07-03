@@ -80,12 +80,11 @@ namespace OLabWebAPI.Services
 
         var connectionId = Context.ConnectionId;
 
-        //  echo message back to the sender
-        var echoPayload = MessagePayload.GenerateEcho(payload);
+        // get target room
         var room = Conference.GetRoomByName( payload.Envelope.RoomName );
 
-        var senderParticipant = Conference.GetParticipantById( payload.Envelope.FromId, payload.Envelope.RoomName );
-
+        //  echo message back to the sender
+        var echoPayload = MessagePayload.GenerateEcho(payload);
         room.Atrium.SendMessageTo(echoPayload, "echo", JsonSerializer.Serialize(echoPayload));
 
         // send message to it's final destination

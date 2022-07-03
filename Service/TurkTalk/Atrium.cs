@@ -87,7 +87,7 @@ namespace OLabWebAPI.Services
       if ((Room == null) && createIfNone)
       {
         // create new Room, with index based on atrium name
-        Room = new Room(this, $"{Name}//{Rooms.Count}");
+        Room = new Room(this, $"{Name}|{Rooms.Count}");
         Rooms.Add(Room);
       }
 
@@ -137,7 +137,7 @@ namespace OLabWebAPI.Services
       var Room = GetUnmoderatedRoom(true);
       Room.SetModerator(moderator);
 
-      Logger.LogInformation($"Added moderator {moderator.Name}({moderator.ConnectionId}) to '{Name}' atrium");
+      Logger.LogInformation($"Added moderator {moderator.Name}({moderator.ConnectionId}) to '{Name}/{Room.Name}'");
 
       moderator.RoomName = Room.Name;
 

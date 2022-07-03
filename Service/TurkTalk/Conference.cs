@@ -43,16 +43,19 @@ namespace TurkTalk.Contracts
     /// <returns>Atrium or null</returns>
     public Atrium GetAtriumByName(string name, bool create = false)
     {
+      Atrium atrium = null;
       if (string.IsNullOrEmpty(name))
         throw new System.ArgumentException($"GetAtriumByName: '{nameof(name)}' cannot be null or empty.", nameof(name));
 
       if (_atriums.ContainsKey(name))
-        return _atriums[name];
-      if (create)
-        return CreateAtrium(name);
+        atrium = _atriums[name];
+      else if (create)
+        atrium = CreateAtrium(name);
 
-      Logger.LogError($"GetAtriumByName: atrium '{name}' not found");
-      return null;
+      if (atrium == null)
+        throw new System.Exception($"GetRoomByName '{name}' does not exist");
+
+      return atrium;
     }
 
     /// <summary>
@@ -146,16 +149,19 @@ namespace TurkTalk.Contracts
       if (string.IsNullOrEmpty(roomName))
         throw new System.ArgumentException($"GetRoomByName: '{nameof(roomName)}' cannot be null or empty.", nameof(roomName));
 
-      var parts = roomName.Split("//");
-      if (parts.Count() == 0)
+      var parts = roomName.Split('|');
+      if (parts.Length == 0)
         throw new System.ArgumentException($"GetRoomByName: '{nameof(roomName)}' is invalid.", nameof(roomName));
 
-      var atriumName = parts[0];
+      var atriumName = $"{parts[0]}|{parts[1]}";
       var atrium = GetAtriumByName(atriumName);
-      if (atrium == null)
-        return null;
 
-      return atrium.GetRoomByName(roomName);
+      var room =  atrium.GetRoomByName(roomName);
+      if ( room == null )
+        throw new System.ArgumentException($"GetRoomByName: '{roomName}' cannot be found");
+
+      return room;
+
     }
   }
 
