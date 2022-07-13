@@ -53,7 +53,7 @@ namespace TurkTalk.Contracts
         atrium = CreateAtrium(name);
 
       if (atrium == null)
-        throw new System.Exception($"GetRoomByName '{name}' does not exist");
+        throw new System.Exception($"GetAtriumByName: could not generate atrium '{name}'");
 
       return atrium;
     }

@@ -13,17 +13,35 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Register moderator to atrium
     /// </summary>
-    /// <param name="moderatorName">Moderator's name</param>
+    /// <param name="name">Moderator's name</param>
     /// <param name="atriumName">Atrium name</param>
-    public void RegisterModerator(string moderatorName, string atriumName)
+    /// <param name="sessionId">Optional id from previous assigned session</param>
+    public void RegisterModerator(string name, string atriumName, string sessionId = null)
     {
       try
       {
-        _logger.LogInformation($"RegisterModerator: '{moderatorName}', atrium {atriumName}");
+        if (string.IsNullOrEmpty(name))
+          throw new ArgumentNullException(nameof(name));
 
-        var participant = new Participant(moderatorName, Context.ConnectionId);
+        if (string.IsNullOrEmpty(atriumName))
+          throw new ArgumentNullException(nameof(atriumName));
+
+        _logger.LogInformation($"RegisterModerator: '{name}', atrium '{atriumName}', sessionId '{sessionId}'");
+
         var atrium = Conference.GetAtriumByName(atriumName, true);
-        var attendees = atrium.AddModerator(participant);
+
+        // see if moderator was already known (in a room)
+        var moderator = atrium.GetModerator(sessionId);
+
+        // if moderator is new, generate Participant and add.  otherwise
+        // update the connectionId for attendee.
+        if (moderator == null)
+        {
+          moderator = new Participant(name, Context.ConnectionId);
+          atrium.AddModerator(moderator);
+        }
+        else
+          atrium.UpdateAttendeeConnection(moderator, Context.ConnectionId);
       }
       catch (Exception ex)
       {

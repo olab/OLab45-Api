@@ -53,7 +53,7 @@ namespace TurkTalk.Contracts
         return Moderator;
 
       // test if have moderator assigned AND identifed by the key
-      if ((Moderator != null) && ((Moderator.ConnectionId == key) || (Moderator.Name == key)))
+      if ((Moderator != null) && ((Moderator.ConnectionId == key) || (Moderator.Name == key) || (Moderator.SessionId == key)))
         return Moderator;
 
       return null;

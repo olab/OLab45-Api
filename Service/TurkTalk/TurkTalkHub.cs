@@ -11,7 +11,7 @@ namespace OLabWebAPI.Services
   public partial class TurkTalkHub : Hub
   {
     private readonly ILogger _logger;
-    public Conference Conference { get; private set; }
+    public static Conference Conference { get; private set; }
 
     /// <summary>
     /// TurkTalkHub constructor

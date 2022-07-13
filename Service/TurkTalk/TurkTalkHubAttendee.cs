@@ -14,20 +14,36 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Handle new Attendee registration to room
     /// </summary>
-    /// <param name="attendeeName">Attendee name</param>
-    /// <param name="atriumName">Atrium name</param>
-    public void RegisterAttendee(string attendeeName, string atriumName)
+    /// <param name="name">Attendee name</param>
+    /// <param name="atriumName">Atrium name (from WikiTag)</param>
+    /// <param name="sessionId">Optional id from previous assigned session</param>
+    public void RegisterAttendee(string name, string atriumName, string sessionId = null)
     {
       try
       {
-        _logger.LogInformation($"RegisterAttendee: '{attendeeName}', atrium '{atriumName}'");
+        if (string.IsNullOrEmpty(name))
+          throw new ArgumentNullException(nameof(name));
 
-        var participant = new Participant(attendeeName, Context.ConnectionId);
+        if (string.IsNullOrEmpty(atriumName))
+          throw new ArgumentNullException(nameof(atriumName));
+
+        _logger.LogInformation($"RegisterAttendee: '{name}', atrium '{atriumName}', sessionId '{sessionId}'");
+
         var atrium = Conference.GetAtriumByName(atriumName, true);
-        if ( atrium == null )
-          throw new Exception($"Cannot find atrium '{atrium}'");
 
-        atrium.AddAttendee(participant);
+        // see if attendee was already known (in a room or atrium)
+        var attendee = atrium.GetAttendee(sessionId);
+
+        // if attendee is new, generate Participant and add.  otherwise
+        // update the connectionId for attendee.
+        if (attendee == null)
+        {
+          attendee = new Participant(name, Context.ConnectionId);
+          atrium.AddAttendee(attendee);
+        }
+        else
+          atrium.UpdateAttendeeConnection(attendee, Context.ConnectionId);
+
       }
       catch (Exception ex)
       {

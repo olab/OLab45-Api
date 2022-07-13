@@ -17,7 +17,7 @@ namespace OLabWebAPI.Services
     public readonly IHubContext<TurkTalkHub> HubContext;
 
     public IList<Room> Rooms = new List<Room>();
-    public IList<Participant> UnassignedAttendees = new List<Participant>();
+    public IList<Participant> attendees = new List<Participant>();
 
     public Atrium(Conference conference, string name)
     {
@@ -45,35 +45,48 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Get moderator from any Room of a atrium
     /// </summary>
-    /// <param name="key">Name or ConnectionId to look for</param>
+    /// <param name="key">Name, ConnectionId, SessionId to look for</param>
     /// <returns>Participant</returns>
     public Participant GetModerator(string key)
     {
-      if (string.IsNullOrEmpty(key))
-        throw new ArgumentException($"GetAttendee: '{nameof(key)}' cannot be null or empty.", nameof(key));
+      Participant moderator = null;
 
-      Participant participant = null;
+      if ( string.IsNullOrEmpty( key ))
+        return null;
+
       foreach (var Room in Rooms)
-        participant = Room.GetModerator(key);
+        moderator = Room.GetModerator(key);
 
-      return participant;
+      return moderator;
     }
 
     /// <summary>
     /// Get attendee from (any) atrium Room
     /// </summary>
-    /// <param name="key">Name or ConnectionId to look for</param>
+    /// <param name="key">Name or sessionId to look for</param>
     /// <returns>Participant</returns>
     public Participant GetAttendee(string key)
     {
-      if (string.IsNullOrEmpty(key))
-        throw new ArgumentException($"GetAttendee: '{nameof(key)}' cannot be null or empty.", nameof(key));
+      Participant attendee = null;
 
-      Participant participant = null;
-      foreach (var Room in Rooms)
-        participant = Room.GetAttendee(key);
+      if ( string.IsNullOrEmpty( key ))
+        return null;
 
-      return participant;
+      // look for participant in atrium first
+      attendee = attendees.FirstOrDefault(x => x.SessionId == key);
+
+      // if not found attendee, try the rooms
+      if (attendee == null)
+      {
+        foreach (var Room in Rooms)
+        {
+          attendee = Room.GetAttendee(key);
+          if (attendee != null)
+            break;
+        }
+      }
+
+      return attendee;
     }
 
     /// <summary>
@@ -132,17 +145,18 @@ namespace OLabWebAPI.Services
         return penModerator;
       }
 
-      moderator.InSession = true;
+      moderator.InChat = true;
+      moderator.SessionId = Guid.NewGuid().ToString();
 
       var Room = GetUnmoderatedRoom(true);
       Room.SetModerator(moderator);
 
-      Logger.LogInformation($"Added moderator {moderator.Name}({moderator.ConnectionId}) to '{Name}/{Room.Name}'");
+      Logger.LogInformation($"Adding moderator {moderator} to atrium '{Room.Name}'");
 
       moderator.RoomName = Room.Name;
 
       // respond to moderator with status information
-      SendConnectionStatus(Room.GetModerator());
+      SendConnectionStatus(moderator);
 
       // send unassigned attendees list to moderators
       BroadcastUnassignedAttendeeList();
@@ -162,7 +176,8 @@ namespace OLabWebAPI.Services
 
       var room = Rooms.FirstOrDefault(x => x.Name == roomName);
       if (room == null)
-        Logger.LogError($"Room {roomName} not found");
+        throw new Exception($"Room '{roomName}' not found");
+
       return room;
     }
 
@@ -176,28 +191,74 @@ namespace OLabWebAPI.Services
       if (attendee is null)
         throw new ArgumentNullException(nameof(attendee));
 
-      // test if attendee already in unassigned list
-      if (UnassignedAttendees.Any(x => x.ConnectionId == attendee.ConnectionId))
-        Logger.LogInformation($"Attendee '{attendee}' already exists unassigned list for atrium '{Name}'.");
-      else
-      {
-        // test if unassigned attendee (not in room)
-        if (GetAttendee(attendee.ConnectionId) == null)
-        {
-          Logger.LogInformation($"Adding unassigned attendee {attendee}) to atrium '{Name}'");
-          UnassignedAttendees.Add(attendee);
+      attendee.SessionId = Guid.NewGuid().ToString();
+      attendees.Add(attendee);
 
-          // notify moderators in all rooms of new unassigned list
-          BroadcastUnassignedAttendeeList();
-        }
-        else
-          Logger.LogInformation($"Attendee {attendee}) already assigned in atrium '{Name}' room");
-      }
+      Logger.LogInformation($"Adding attendee {attendee} to atrium '{Name}'");
 
       // respond with connection information
       SendConnectionStatus(attendee);
 
+      // notify moderators in all rooms of new/modified atrium list
+      BroadcastUnassignedAttendeeList();
+
+      DumpAtrium();
+
       return attendee;
+    }
+
+    private void DumpAtrium()
+    {
+      int index = 0;
+      Logger.LogDebug($"Atrium {Name}:");
+      // transform list for moderator - make attendees a destination, not a source
+      foreach (var attendee in attendees)
+        Logger.LogDebug($"  [{index++}]: {attendee}");
+    }
+
+    /// <summary>
+    /// Update an attendees connection id
+    /// </summary>
+    /// <param name="attendee">Attendee to update</param>
+    /// <param name="conenctionId">SignalR connection Id</param>
+    internal void UpdateAttendeeConnection(Participant attendee, string connectionId)
+    {
+      if (attendee is null)
+        throw new ArgumentNullException(nameof(attendee));
+
+      if (string.IsNullOrEmpty(connectionId))
+        throw new ArgumentNullException(nameof(connectionId));
+
+      attendee.ConnectionId = connectionId;
+      SignalChangedAttendee(attendee);
+    }
+
+    /// <summary>
+    /// Signal a changed attendee to room they are in
+    /// </summary>
+    /// <param name="attendee">Attendee to update</param>
+    private void SignalChangedAttendee(Participant attendee)
+    {
+      if (attendee is null)
+        throw new ArgumentNullException(nameof(attendee));
+
+      var room = GetRoomByName(attendee.RoomName);
+
+      var payload = new CommandReassignedPayload
+      {
+        Envelope = new Envelope
+        {
+          ToName = room.Moderator.ConnectionId,
+          ToId = room.Moderator.Name,
+          FromId = attendee.ConnectionId,
+          FromName = attendee.Name,
+          RoomName = room.Name
+        },
+        Data = attendee
+      };
+
+      Logger.LogDebug($"attendees {attendee.Name} reassigned to moderator {room.Moderator.Name}");
+      SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
     }
 
     /// <summary>
@@ -215,24 +276,24 @@ namespace OLabWebAPI.Services
         if (serverModerator == null)
           throw new Exception($"Cannot find server-side moderator {moderator.ConnectionId}");
 
-        var serverAttendee = UnassignedAttendees.FirstOrDefault(x => x.ConnectionId == attendee.PartnerId);
+        var serverAttendee = attendees.FirstOrDefault(x => x.ConnectionId == attendee.PartnerId);
         if (serverAttendee == null)
           throw new Exception($"Cannot find unassigned attendee {attendee}");
 
         Logger.LogInformation($"AssignAttendee: '{attendee}' to '{moderator}'");
 
         // test if attendees was already assigned (by another moderator?)
-        if (serverAttendee.InSession)
+        if (serverAttendee.InChat)
           throw new Exception($"Attendee '{attendee.Name}' already assigned.");
 
         serverAttendee.ConnectionId = moderator.ConnectionId;
         serverAttendee.Name = moderator.Name;
-        serverAttendee.InSession = true;
+        serverAttendee.InChat = true;
         serverAttendee.RoomName = moderator.RoomName;
 
         // remove attendee from unassigned since they should
         // be in a room now.
-        UnassignedAttendees.Remove(serverAttendee);
+        attendees.Remove(serverAttendee);
 
         var payload = new CommandAssignedPayload
         {
@@ -314,11 +375,8 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Send unassigned attendees list all moderators
     /// </summary>
-    /// <param name="hub">SignalR Hub</param>
-    private void BroadcastUnassignedAttendeeList()
+    public void BroadcastUnassignedAttendeeList()
     {
-      var unassignedAttendees = new List<Participant>();
-
       foreach (var Room in Rooms)
       {
         // skip room if no moderator assigned to send list to
@@ -329,16 +387,20 @@ namespace OLabWebAPI.Services
           continue;
         }
 
+        var unassignedAttendees = new List<Participant>();
+
         // transform list for moderator - make attendees a destination, not a source
-        foreach (var attendee in UnassignedAttendees)
+        foreach (var attendee in attendees)
         {
-          unassignedAttendees.Add(new Participant
+          var tempAttendee = new Participant
           {
             ConnectionId = moderator.ConnectionId,
             Name = moderator.Name,
             PartnerId = attendee.ConnectionId,
             PartnerName = attendee.Name
-          });
+          };
+
+          unassignedAttendees.Add(tempAttendee);
         }
 
         var payload = new CommandAttendeesPayload
@@ -377,33 +439,37 @@ namespace OLabWebAPI.Services
       Participant attendee = null;
 
       // test if unassigned attendee exists
-      if (UnassignedAttendees.Any(x => x.ConnectionId == connectionId))
+      if (attendees.Any(x => x.ConnectionId == connectionId))
       {
-        UnassignedAttendees.Remove(UnassignedAttendees.First(x => x.ConnectionId == connectionId));
+        attendees.Remove(attendees.First(x => x.ConnectionId == connectionId));
         Logger.LogDebug($"Removed attendee '{connectionId}' from '{Name}' unassigned list.");
 
         BroadcastUnassignedAttendeeList();
-        return true;
       }
-
-      // get (hopefully) assigned attendee
-      attendee = GetAttendee(connectionId);
-      if (attendee == null)
+      else
       {
-        Logger.LogError($"Attempted to disconnect attendees @ '{connectionId}' from '{Name}', but was not assigned");
-        return false;
-      }
 
-      // get attendee room
-      var Room = GetRoomContainingParticipant(attendee);
-      if (Room == null)
-      {
-        Logger.LogError($"Cannot find attendee '{attendee}' room");
-        return false;
+        // get (hopefully) assigned attendee
+        attendee = GetAttendee(connectionId);
+        if (attendee == null)
+        {
+          Logger.LogError($"Attempted to disconnect attendees @ '{connectionId}' from '{Name}', but was not assigned");
+          return false;
+        }
+
+        // get attendee room
+        var Room = GetRoomContainingParticipant(attendee);
+        if (Room == null)
+        {
+          Logger.LogError($"Cannot find attendee '{attendee}' room");
+          return false;
+        }
+
       }
 
       // TODO: remove attendee from room
       // TODO: tell moderator that attendee has gone
+      DumpAtrium();
 
       return true;
     }
