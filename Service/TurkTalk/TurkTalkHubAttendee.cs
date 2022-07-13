@@ -34,15 +34,22 @@ namespace OLabWebAPI.Services
         // see if attendee was already known (in a room or atrium)
         var attendee = atrium.GetAttendee(sessionId);
 
-        // if attendee is new, generate Participant and add.  otherwise
-        // update the connectionId for attendee.
+        // if attendee is new, generate Participant and add.
+        // otherwise update the connectionId for (known) attendee.
         if (attendee == null)
         {
-          attendee = new Participant(name, Context.ConnectionId);
-          atrium.AddAttendee(attendee);
+          attendee = new Participant(name);
+          attendee.SetConnectionId(Context.ConnectionId);
+
+          // test if participant coming in from previous session
+          if (!string.IsNullOrEmpty(sessionId))
+            attendee.SessionId = sessionId;
+
+          atrium.AddAttendee(Context.ConnectionId, attendee);
+
         }
         else
-          atrium.UpdateAttendeeConnection(attendee, Context.ConnectionId);
+          atrium.UpdateAttendee(Context.ConnectionId, attendee);
 
       }
       catch (Exception ex)

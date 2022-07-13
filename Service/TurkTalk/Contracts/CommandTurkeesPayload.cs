@@ -13,10 +13,11 @@ namespace TurkTalk.Contracts
   {
     public IEnumerable<Participant> Data { get; set; }
 
-    public CommandAttendeesPayload()
+    public CommandAttendeesPayload(Participant moderator, IEnumerable<Participant> data )
     {
+      Envelope = new Envelope(moderator);
       Command = "ATTENDEES";
-      Data = new List<Participant>();
+      Data = data;
     }
   }
 

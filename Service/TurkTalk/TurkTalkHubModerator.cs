@@ -37,11 +37,20 @@ namespace OLabWebAPI.Services
         // update the connectionId for attendee.
         if (moderator == null)
         {
-          moderator = new Participant(name, Context.ConnectionId);
-          atrium.AddModerator(moderator);
+          moderator = new Participant(name);
+
+          moderator.SetConnectionId( Context.ConnectionId );
+
+          // if participant already had sessionId update it
+          if (!string.IsNullOrEmpty(sessionId))
+            moderator.SessionId = sessionId; 
+                
+          atrium.AddModerator(Context.ConnectionId, moderator);
+          atrium.DumpAtrium();
         }
         else
-          atrium.UpdateAttendeeConnection(moderator, Context.ConnectionId);
+          atrium.UpdateModerator(Context.ConnectionId, moderator);
+
       }
       catch (Exception ex)
       {

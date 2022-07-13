@@ -4,6 +4,12 @@ namespace TurkTalk.Contracts
 {
   public class Envelope
   {
+    public string RoomName { get; set; }
+    public string FromId { get; set; }
+    public string FromName { get; set; }
+    public string ToId { get; set; }
+    public string ToName { get; set; }
+
     public Envelope()
     {
 
@@ -12,7 +18,7 @@ namespace TurkTalk.Contracts
     public Envelope(Participant participant)
     {
       ToName = participant.Name;
-      ToId = participant.ConnectionId;
+      ToId = participant.GetConnectionId();      
     }
 
     public Envelope(string name, string id)
@@ -20,12 +26,6 @@ namespace TurkTalk.Contracts
       FromName = name;
       FromId = id;
     }
-
-    public string RoomName { get; set; }
-    public string FromId { get; set; }
-    public string FromName { get; set; }
-    public string ToId { get; set; }
-    public string ToName { get; set; }
 
     private static Envelope CopyFrom(Envelope source)
     {

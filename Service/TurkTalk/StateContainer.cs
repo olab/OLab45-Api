@@ -18,12 +18,12 @@ namespace OLabWebAPI.Services
 
     public static string SuperModeratorConnectionId
     {
-      get { return SuperModerator.ConnectionId; }
-      set { SuperModerator.ConnectionId = value; }
+      get { return SuperModerator.SessionId; }
+      set { SuperModerator.SessionId = value; }
     }
 
     public static bool IsSuperModeratorConnected { 
-      get { return !string.IsNullOrWhiteSpace(SuperModerator.ConnectionId); } 
+      get { return !string.IsNullOrWhiteSpace(SuperModerator.SessionId); } 
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ namespace OLabWebAPI.Services
     /// </summary>
     public static void DisconnectModerator()
     {
-      SuperModerator.ConnectionId = "";
+      SuperModerator.SessionId = "";
       foreach (var item in Attendees.Values)
         item.InChat = false;
     }

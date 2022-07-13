@@ -33,14 +33,14 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Tests if connection id within attendees
     /// </summary>
-    /// <param name="connectionId">Connection id to search for</param>
+    /// <param name="sessionId">Connection id to search for</param>
     /// <returns>true/false</returns>
-    public bool ContainsConnectionId(string connectionId)
+    public bool ContainsSessionId(string sessionId)
     {
-      if (Moderator.ConnectionId == connectionId)
+      if (Moderator.SessionId == sessionId)
         return true;
 
-      if (Attendees.ContainsKey(connectionId))
+      if (Attendees.ContainsKey(sessionId))
         return true;
 
       return false;
@@ -53,7 +53,7 @@ namespace TurkTalk.Contracts
         return Moderator;
 
       // test if have moderator assigned AND identifed by the key
-      if ((Moderator != null) && ((Moderator.ConnectionId == key) || (Moderator.Name == key) || (Moderator.SessionId == key)))
+      if ((Moderator != null) && ((Moderator.SessionId == key) || (Moderator.Name == key) || (Moderator.SessionId == key)))
         return Moderator;
 
       return null;
@@ -62,11 +62,11 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Get attendees from attendees
     /// </summary>
-    /// <param name="key">Name or ConnectionId to look for</param>
+    /// <param name="key">Name or SessionId to look for</param>
     /// <returns>Participant or null</returns>
     public Participant GetAttendee(string key)
     {
-      var attendees = Attendees.Values.FirstOrDefault(x => x.ConnectionId == key || x.Name == key);
+      var attendees = Attendees.Values.FirstOrDefault(x => x.SessionId == key || x.Name == key);
       return attendees;
     }
 
@@ -77,18 +77,18 @@ namespace TurkTalk.Contracts
 
     public bool AddAttendee(Participant attendees, bool removeIfExists)
     {
-      if (GetAttendee(attendees.ConnectionId) != null)
+      if (GetAttendee(attendees.SessionId) != null)
       {
         if (removeIfExists)
         {
-          Attendees.Remove(attendees.ConnectionId);
+          Attendees.Remove(attendees.SessionId);
           // Groups.RemoveFromGroupAsync( attendees.ConnectionId, Name );
         }
         else
           return false;
       }
 
-      Attendees.Add(attendees.ConnectionId, attendees);
+      Attendees.Add(attendees.SessionId, attendees);
       return true;
 
     }

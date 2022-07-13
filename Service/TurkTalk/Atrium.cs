@@ -17,7 +17,7 @@ namespace OLabWebAPI.Services
     public readonly IHubContext<TurkTalkHub> HubContext;
 
     public IList<Room> Rooms = new List<Room>();
-    public IList<Participant> attendees = new List<Participant>();
+    public IList<Participant> Attendees = new List<Participant>();
 
     public Atrium(Conference conference, string name)
     {
@@ -51,7 +51,7 @@ namespace OLabWebAPI.Services
     {
       Participant moderator = null;
 
-      if ( string.IsNullOrEmpty( key ))
+      if (string.IsNullOrEmpty(key))
         return null;
 
       foreach (var Room in Rooms)
@@ -69,11 +69,11 @@ namespace OLabWebAPI.Services
     {
       Participant attendee = null;
 
-      if ( string.IsNullOrEmpty( key ))
+      if (string.IsNullOrEmpty(key))
         return null;
 
       // look for participant in atrium first
-      attendee = attendees.FirstOrDefault(x => x.SessionId == key);
+      attendee = Attendees.FirstOrDefault(x => x.SessionId == key);
 
       // if not found attendee, try the rooms
       if (attendee == null)
@@ -119,8 +119,8 @@ namespace OLabWebAPI.Services
 
       foreach (var Room in Rooms)
       {
-        if ((Room.GetAttendee(participant.ConnectionId) != null) ||
-             (Room.GetModerator(participant.ConnectionId) != null))
+        if ((Room.GetAttendee(participant.SessionId) != null) ||
+             (Room.GetModerator(participant.SessionId) != null))
           return Room;
       }
 
@@ -130,23 +130,20 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Add moderator to atrium
     /// </summary>
-    /// <param name="hub">SignalR Hub</param>
+    /// <param name="senderConnectionId">Connection Id to respond to</param>
     /// <param name="moderator">Moderator to add to atrium</param>
     /// <returns>Newly added moderator</returns>
-    internal Participant AddModerator(Participant moderator)
+    internal Participant AddModerator(string senderConnectionId, Participant moderator)
     {
       if (moderator is null)
         throw new ArgumentNullException(nameof(moderator));
 
-      var penModerator = GetModerator(moderator.ConnectionId);
+      var penModerator = GetModerator(moderator.SessionId);
       if (penModerator != null)
       {
         Logger.LogWarning($"Moderator {penModerator.Name} already connected");
         return penModerator;
       }
-
-      moderator.InChat = true;
-      moderator.SessionId = Guid.NewGuid().ToString();
 
       var Room = GetUnmoderatedRoom(true);
       Room.SetModerator(moderator);
@@ -154,14 +151,34 @@ namespace OLabWebAPI.Services
       Logger.LogInformation($"Adding moderator {moderator} to atrium '{Room.Name}'");
 
       moderator.RoomName = Room.Name;
+      moderator.InChat = true;
 
       // respond to moderator with status information
-      SendConnectionStatus(moderator);
+      SendConnectionStatus(senderConnectionId, moderator);
 
       // send unassigned attendees list to moderators
       BroadcastUnassignedAttendeeList();
 
       return moderator;
+    }
+
+    internal void UpdateModerator(string senderConnectionId, Participant moderator)
+    {
+      var serverModerator = GetModerator(moderator.SessionId);
+      if (serverModerator == null)
+      {
+        Logger.LogError($"Moderator {moderator} not found under atrium '{Name}'");
+        return;
+      }
+
+      serverModerator.SetConnectionId(senderConnectionId);
+
+      Logger.LogInformation($"Updated moderator {moderator} in room '{moderator.RoomName}'");
+
+      DumpAtrium();
+
+      // respond to attendee with connection information
+      SendConnectionStatus(senderConnectionId, moderator);
     }
 
     /// <summary>
@@ -184,53 +201,82 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Add attendees to atrium (awaiting assignment)
     /// </summary>
+    /// <param name="senderConnectionId">Connection Id to respond to</param>
     /// <param name="attendee">Attendee to add to atrium</param>
     /// <returns>Newly added attendees</returns>
-    internal Participant AddAttendee(Participant attendee)
+    internal Participant AddAttendee(string senderConnectionId, Participant attendee)
     {
       if (attendee is null)
         throw new ArgumentNullException(nameof(attendee));
 
-      attendee.SessionId = Guid.NewGuid().ToString();
-      attendees.Add(attendee);
+      Attendees.Add(attendee);
+      DumpAtrium();
 
-      Logger.LogInformation($"Adding attendee {attendee} to atrium '{Name}'");
+      Logger.LogInformation($"Adding attendee {attendee}({attendee.SessionId.Substring(0, 3)}) to atrium '{Name}'");
 
-      // respond with connection information
-      SendConnectionStatus(attendee);
+      // respond to attendee with connection information
+      SendConnectionStatus(senderConnectionId, attendee);
 
       // notify moderators in all rooms of new/modified atrium list
       BroadcastUnassignedAttendeeList();
 
-      DumpAtrium();
-
       return attendee;
     }
 
-    private void DumpAtrium()
+    /// <summary>
+    /// Updates attendee
+    /// </summary>
+    /// <param name="senderConnectionId">Connection Id to respond to</param>
+    /// <param name="attendee">Attendee to add to atrium</param>
+    internal void UpdateAttendee(string senderConnectionId, Participant attendee)
+    {
+      var serverAttendee = GetAttendee(attendee.SessionId);
+      if (serverAttendee == null)
+      {
+        Logger.LogError($"Attendee {attendee} not found under atrium '{Name}'");
+        return;
+      }
+
+      serverAttendee.SetConnectionId(senderConnectionId);
+
+      Logger.LogInformation($"Updated attendee {attendee} to atrium '{Name}'");
+
+      DumpAtrium();
+
+      // respond to attendee with connection information
+      SendConnectionStatus(senderConnectionId, attendee);
+      // notify moderators in all rooms of new/modified atrium list
+      BroadcastUnassignedAttendeeList();
+
+    }
+
+    public void DumpAtrium()
     {
       int index = 0;
       Logger.LogDebug($"Atrium {Name}:");
-      // transform list for moderator - make attendees a destination, not a source
-      foreach (var attendee in attendees)
+
+      foreach (var room in Rooms)
+        Logger.LogDebug($"  [{room.Name}]: {room.Moderator}");
+
+      foreach (var attendee in Attendees)
         Logger.LogDebug($"  [{index++}]: {attendee}");
     }
 
     /// <summary>
-    /// Update an attendees connection id
+    /// Update an participant connection id
     /// </summary>
-    /// <param name="attendee">Attendee to update</param>
+    /// <param name="participant">Attendee to update</param>
     /// <param name="conenctionId">SignalR connection Id</param>
-    internal void UpdateAttendeeConnection(Participant attendee, string connectionId)
+    internal void UpdateParticipantSession(string connectionId, Participant participant)
     {
-      if (attendee is null)
-        throw new ArgumentNullException(nameof(attendee));
+      if (participant is null)
+        throw new ArgumentNullException(nameof(participant));
 
       if (string.IsNullOrEmpty(connectionId))
         throw new ArgumentNullException(nameof(connectionId));
 
-      attendee.ConnectionId = connectionId;
-      SignalChangedAttendee(attendee);
+      participant.SessionId = connectionId;
+      SignalChangedAttendee(participant);
     }
 
     /// <summary>
@@ -248,9 +294,9 @@ namespace OLabWebAPI.Services
       {
         Envelope = new Envelope
         {
-          ToName = room.Moderator.ConnectionId,
+          ToName = room.Moderator.SessionId,
           ToId = room.Moderator.Name,
-          FromId = attendee.ConnectionId,
+          FromId = attendee.SessionId,
           FromName = attendee.Name,
           RoomName = room.Name
         },
@@ -272,11 +318,11 @@ namespace OLabWebAPI.Services
 
       try
       {
-        var serverModerator = GetModerator(moderator.ConnectionId);
+        var serverModerator = GetModerator(moderator.SessionId);
         if (serverModerator == null)
-          throw new Exception($"Cannot find server-side moderator {moderator.ConnectionId}");
+          throw new Exception($"Cannot find server-side moderator {moderator.SessionId}");
 
-        var serverAttendee = attendees.FirstOrDefault(x => x.ConnectionId == attendee.PartnerId);
+        var serverAttendee = Attendees.FirstOrDefault(x => x.SessionId == attendee.PartnerSessionId);
         if (serverAttendee == null)
           throw new Exception($"Cannot find unassigned attendee {attendee}");
 
@@ -286,27 +332,16 @@ namespace OLabWebAPI.Services
         if (serverAttendee.InChat)
           throw new Exception($"Attendee '{attendee.Name}' already assigned.");
 
-        serverAttendee.ConnectionId = moderator.ConnectionId;
+        serverAttendee.SessionId = moderator.SessionId;
         serverAttendee.Name = moderator.Name;
         serverAttendee.InChat = true;
         serverAttendee.RoomName = moderator.RoomName;
 
         // remove attendee from unassigned since they should
         // be in a room now.
-        attendees.Remove(serverAttendee);
+        Attendees.Remove(serverAttendee);
 
-        var payload = new CommandAssignedPayload
-        {
-          Envelope = new Envelope
-          {
-            FromId = moderator.ConnectionId,
-            FromName = moderator.Name,
-            ToName = attendee.PartnerName,
-            ToId = attendee.PartnerId,
-            RoomName = moderator.RoomName
-          },
-          Data = serverAttendee
-        };
+        var payload = new CommandAssignedPayload( moderator, attendee, serverAttendee );
 
         Logger.LogDebug($"attendees {serverAttendee.Name} assigned to moderator {moderator.Name}");
         SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
@@ -325,19 +360,15 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Send connection status to participant
     /// </summary>
-    /// <param name="hub">SignalR Hub</param>
+    /// <param name="senderConnectionId">Connection Id to respond to</param>
     /// <param name="participant">Recipient</param>
-    private void SendConnectionStatus(Participant participant)
+    private void SendConnectionStatus(string senderConnectionId, Participant participant)
     {
       if (participant is null)
         throw new ArgumentNullException(nameof(participant));
 
       // respond to attendees with status information
-      var payload = new CommandStatusPayload
-      {
-        Envelope = new Envelope(participant),
-        Data = participant
-      };
+      var payload = new CommandConnectionStatusPayload(senderConnectionId, participant);
 
       SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
     }
@@ -362,7 +393,7 @@ namespace OLabWebAPI.Services
 
       try
       {
-        Logger.LogDebug($"Send message to {payload.GetToId()}: {methodName}({arg1}, {arg2})");
+        Logger.LogDebug($"SendMessageTo {payload.GetToId().Substring(0, 3)}: {methodName}({arg1}, {arg2})");
         HubContext.Clients.Client(payload.GetToId()).SendAsync(methodName, arg1, arg2);
       }
       catch (Exception ex)
@@ -374,43 +405,38 @@ namespace OLabWebAPI.Services
 
     /// <summary>
     /// Send unassigned attendees list all moderators
+    /// <param name="senderConnectionId">Connection Id to respond to</param>
     /// </summary>
     public void BroadcastUnassignedAttendeeList()
     {
-      foreach (var Room in Rooms)
+      if (Attendees.Count() == 0)
+      {
+        Logger.LogDebug($"No unassigned attendees to broadcast updates on");
+        return;
+      }
+
+      foreach (var room in Rooms)
       {
         // skip room if no moderator assigned to send list to
-        Participant moderator = Room.GetModerator();
+        Participant moderator = room.GetModerator();
         if (moderator == null)
         {
-          Logger.LogDebug($"No moderator for room '{Room.Name}' for unassigned attemdee update");
+          Logger.LogDebug($"No moderator for room '{room.Name}' skipping unassigned broadcast");
           continue;
         }
 
         var unassignedAttendees = new List<Participant>();
 
         // transform list for moderator - make attendees a destination, not a source
-        foreach (var attendee in attendees)
+        foreach (var attendee in Attendees)
         {
-          var tempAttendee = new Participant
-          {
-            ConnectionId = moderator.ConnectionId,
-            Name = moderator.Name,
-            PartnerId = attendee.ConnectionId,
-            PartnerName = attendee.Name
-          };
-
-          unassignedAttendees.Add(tempAttendee);
+          var unassignedAttendee = new UnassignedParticipant(room, moderator, attendee);
+          unassignedAttendees.Add(unassignedAttendee);
         }
 
-        var payload = new CommandAttendeesPayload
-        {
-          Envelope = new Envelope(moderator),
-          Data = unassignedAttendees
-        };
+        var payload = new CommandAttendeesPayload(moderator, unassignedAttendees);
 
-        Logger.LogDebug($"Notifying {moderator} in room {Room.Name} of unassigned list update");
-
+        Logger.LogDebug($"Sending {room.Name}/{moderator} unassigned broadcast");
         SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
       }
 
@@ -432,17 +458,17 @@ namespace OLabWebAPI.Services
     /// <summary>
     /// Disconnect attendees from atrium/room
     /// </summary>
-    /// <param name="connectionId">connection id to disconnect</param>
+    /// <param name="sessionId">connection id to disconnect</param>
     /// <returns>true/false</returns>
-    public bool DisconnectAttendee(string connectionId)
+    public bool DisconnectAttendee(string sessionId)
     {
       Participant attendee = null;
 
       // test if unassigned attendee exists
-      if (attendees.Any(x => x.ConnectionId == connectionId))
+      if (Attendees.Any(x => x.SessionId == sessionId))
       {
-        attendees.Remove(attendees.First(x => x.ConnectionId == connectionId));
-        Logger.LogDebug($"Removed attendee '{connectionId}' from '{Name}' unassigned list.");
+        Attendees.Remove(Attendees.First(x => x.SessionId == sessionId));
+        Logger.LogDebug($"Removed attendee '{sessionId}' from '{Name}' unassigned list.");
 
         BroadcastUnassignedAttendeeList();
       }
@@ -450,10 +476,10 @@ namespace OLabWebAPI.Services
       {
 
         // get (hopefully) assigned attendee
-        attendee = GetAttendee(connectionId);
+        attendee = GetAttendee(sessionId);
         if (attendee == null)
         {
-          Logger.LogError($"Attempted to disconnect attendees @ '{connectionId}' from '{Name}', but was not assigned");
+          Logger.LogError($"Attempted to disconnect attendees @ '{sessionId}' from '{Name}', but was not assigned");
           return false;
         }
 
