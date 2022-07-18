@@ -1,0 +1,12 @@
+[Unit]  
+Description=OLab 4.5 API  
+[Service]  
+WorkingDirectory=/opt/olab45/OLab-api/Service/bin/Release/netcoreapp3.1
+ExecStart=/opt/olab45/OLab-api/Service/bin/Release/netcoreapp3.1/OLabWebAPI --urls http://dev.olab.ca:5000
+Restart=always  
+RestartSec=10  
+SyslogIdentifier=olab45-api
+User=corey.wirun  
+Environment="ASPNETCORE_ENVIRONMENT=Production" "DOTNET_ROOT=/snap/dotnet-sdk/current"  
+[Install]  
+WantedBy=multi-user.target 
