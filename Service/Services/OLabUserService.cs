@@ -153,7 +153,7 @@ namespace OLabWebAPI.Services
         Subject = new ClaimsIdentity(new Claim[]
         {
           new Claim(ClaimTypes.Name, user.Username),
-          new Claim(ClaimTypes.Role, $"{user.Group}:{user.Role}")
+          new Claim(ClaimTypes.Role, $"{user.Role}")
         }),
         Expires = DateTime.UtcNow.AddDays(7),
         Issuer = myIssuer,
@@ -166,7 +166,7 @@ namespace OLabWebAPI.Services
       var response = new AuthenticateResponse();
       response.AuthInfo.Token = tokenHandler.WriteToken(token);
       response.AuthInfo.Refresh = null;
-      response.Role = $"{user.Group}:{user.Role}";
+      response.Role = $"{user.Role}";
       response.UserName = user.Username;
       response.AuthInfo.Created = DateTime.UtcNow;
       response.AuthInfo.Expires =
