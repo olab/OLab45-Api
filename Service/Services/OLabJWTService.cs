@@ -57,7 +57,7 @@ namespace OLabWebAPI.Services
           // attach user to context on successful jwt validation
           var user = userService.GetByUserName(userName);
           httpContext.Items["User"] = user.Username;
-          httpContext.Items["Role"] = $"{user.Group}:{user.Role}";
+          httpContext.Items["Role"] = $"{user.Role}";
         }
       }
       catch
