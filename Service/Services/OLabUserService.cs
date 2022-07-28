@@ -10,6 +10,7 @@ using OLabWebAPI.Utils;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace OLabWebAPI.Services
 {
@@ -18,16 +19,20 @@ namespace OLabWebAPI.Services
     public static int defaultTokenExpiryMinutes = 120;
     private readonly AppSettings _appSettings;
     private readonly OLabDBContext _context;
+    private readonly ILogger _logger;
     private readonly IList<Users> _users;
     private readonly TokenValidationParameters _tokenParameters;
 
-    public OLabUserService(IOptions<AppSettings> appSettings, OLabDBContext context)
+    public OLabUserService(ILogger logger, IOptions<AppSettings> appSettings, OLabDBContext context)
     {
       defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
       _appSettings = appSettings.Value;
       _context = context;
+      _logger = logger;
 
       _users = _context.Users.OrderBy(x => x.Id).ToList();
+
+      _logger.LogDebug($"aud: {_appSettings.Audience}, secret: {_appSettings.Secret[..4]}");
 
       _tokenParameters = SetupConfiguration(_appSettings);
     }
@@ -40,17 +45,17 @@ namespace OLabWebAPI.Services
 
     private static TokenValidationParameters SetupConfiguration(AppSettings appSettings)
     {
-      var jwtIssuer = "moodle";
+      // var jwtIssuer = "moodle";
       var jwtAudience = appSettings.Audience;
       var signingSecret = appSettings.Secret;
-
+      
       var securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(signingSecret[..16]));
 
       var tokenParameters = new TokenValidationParameters
       {
-        ValidateIssuer = true,
-        ValidIssuer = jwtIssuer,
+        // ValidateIssuer = false,
+        // ValidIssuer = jwtIssuer,
 
         ValidateAudience = true,
         ValidAudience = jwtAudience,

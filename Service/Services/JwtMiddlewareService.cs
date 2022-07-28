@@ -49,7 +49,7 @@ namespace OLabWebAPI.Services
 
       _tokenParameters = new TokenValidationParameters
       {
-        ValidateIssuer = true,
+        ValidateIssuer = false,
         ValidIssuer = _jwtIssuer,
 
         ValidateAudience = true,
