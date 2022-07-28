@@ -199,9 +199,12 @@ namespace OLabWebAPI.Services
     private AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
     {
       var handler = new JwtSecurityTokenHandler();
+      var tokenParameters = GetValidationParameters();
+
+      _logger.LogDebug($"aud: '{tokenParameters.ValidAudience}'");
 
       handler.ValidateToken(model.ExternalToken,
-                            GetValidationParameters(),
+                            tokenParameters,
                             out SecurityToken validatedToken);
       var jwtToken = (JwtSecurityToken)validatedToken;
 
