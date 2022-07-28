@@ -45,7 +45,7 @@ namespace OLabWebAPI.Services
 
     private static TokenValidationParameters SetupConfiguration(AppSettings appSettings)
     {
-      // var jwtIssuer = "moodle";
+      var jwtIssuer = "moodle";
       var jwtAudience = appSettings.Audience;
       var signingSecret = appSettings.Secret;
       
@@ -55,10 +55,10 @@ namespace OLabWebAPI.Services
       var tokenParameters = new TokenValidationParameters
       {
         ValidateIssuer = false,
-        // ValidIssuer = jwtIssuer,
+        ValidIssuers = new List<string> { jwtIssuer, appSettings.Issuer },
 
         ValidateAudience = true,
-        ValidAudience = jwtAudience,
+        ValidAudiences = new List<string> { jwtAudience },
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
         ClockSkew = TimeSpan.Zero,
