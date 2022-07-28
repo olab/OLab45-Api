@@ -32,7 +32,7 @@ namespace OLabWebAPI.Services
 
       _users = _context.Users.OrderBy(x => x.Id).ToList();
 
-      _logger.LogDebug($"aud: {_appSettings.Audience}, secret: {_appSettings.Secret[..4]}");
+      _logger.LogDebug($"aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
 
       _tokenParameters = SetupConfiguration(_appSettings);
     }
@@ -57,8 +57,8 @@ namespace OLabWebAPI.Services
         // ValidateIssuer = false,
         // ValidIssuer = jwtIssuer,
 
-        ValidateAudience = true,
-        ValidAudience = jwtAudience,
+        // ValidateAudience = true,
+        // ValidAudience = jwtAudience,
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
         ClockSkew = TimeSpan.Zero,
