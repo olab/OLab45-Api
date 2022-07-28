@@ -21,7 +21,7 @@ namespace OLabWebAPI.Services
     private readonly OLabDBContext _context;
     private readonly ILogger _logger;
     private readonly IList<Users> _users;
-    private readonly TokenValidationParameters _tokenParameters;
+    private static TokenValidationParameters _tokenParameters;
 
     public OLabUserService(ILogger logger, IOptions<AppSettings> appSettings, OLabDBContext context)
     {
@@ -38,7 +38,7 @@ namespace OLabWebAPI.Services
     }
 
 
-    public TokenValidationParameters GetValidationParameters()
+    public static TokenValidationParameters GetValidationParameters()
     {
       return _tokenParameters;
     }
