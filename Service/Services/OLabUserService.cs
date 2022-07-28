@@ -64,7 +64,7 @@ namespace OLabWebAPI.Services
         ClockSkew = TimeSpan.Zero,
 
         // validate against existing security key
-        IssuerSigningKey = securityKey
+        // IssuerSigningKey = securityKey
       };
 
       return tokenParameters;
