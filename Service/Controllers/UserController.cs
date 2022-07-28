@@ -89,7 +89,7 @@ namespace OLabWebAPI.Controllers
     }
 
     /// <summary>
-    /// 
+    /// Interactive login
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
@@ -107,6 +107,24 @@ namespace OLabWebAPI.Controllers
     }
 
     /// <summary>
+    /// Interactive login
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpPost]
+    public IActionResult LoginExternal(ExternalLoginRequest model)
+    {
+      logger.LogDebug($"LoginExternal(user = '{model.ExternalToken}')");
+
+      var response = _userService.AuthenticateExternal(model);
+      if (response == null)
+        return BadRequest(new { statusCode = 401, message = "Invalid external token" });
+
+      return Ok(response);
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
@@ -119,7 +137,7 @@ namespace OLabWebAPI.Controllers
       // test if user has access to add users.
       var userContext = new UserContext(logger, context, HttpContext);
       if (!userContext.HasAccess("X", "UserAdmin", 0))
-        return OLabUnauthorizedResult.Result();  
+        return OLabUnauthorizedResult.Result();
 
       var httpRequest = HttpContext.Request;
       var postedFile = httpRequest.Form["File"];
@@ -141,8 +159,8 @@ namespace OLabWebAPI.Controllers
       // test if user has access to add users.
       var userContext = new UserContext(logger, context, HttpContext);
       if (!userContext.HasAccess("X", "UserAdmin", 0))
-        return OLabUnauthorizedResult.Result();  
-      
+        return OLabUnauthorizedResult.Result();
+
       var user = _userService.GetByUserName(model.Username);
       if (user != null)
         throw new Exception($"User {model.Username} already exists");

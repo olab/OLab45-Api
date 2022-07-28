@@ -21,6 +21,7 @@ namespace OLabWebAPI.Services
     protected readonly RequestDelegate _next;
     protected static string _jwtIssuer;
     protected static string _jwtAudience;
+    protected static string _signingSecret;
     public static TokenValidationParameters _tokenParameters;
 
     protected abstract void AttachUserToContext(HttpContext httpContext,
@@ -41,6 +42,10 @@ namespace OLabWebAPI.Services
     {
       _jwtIssuer = config["AppSettings:Issuer"];
       _jwtAudience = config["AppSettings:Audience"];
+      _signingSecret = config["AppSettings:Secret"];
+
+      var securityKey =
+        new SymmetricSecurityKey(Encoding.Default.GetBytes(_signingSecret[..16]));
 
       _tokenParameters = new TokenValidationParameters
       {
@@ -51,8 +56,11 @@ namespace OLabWebAPI.Services
         ValidAudience = _jwtAudience,
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+
       };
+
+      _tokenParameters.IssuerSigningKey = securityKey;
 
     }
 

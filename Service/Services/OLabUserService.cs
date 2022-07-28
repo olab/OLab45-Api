@@ -33,9 +33,19 @@ namespace OLabWebAPI.Services
     /// Adds user to database
     /// </summary>
     /// <param name="newUser"></param>
-    public void AddUser( Users newUser )
+    public void AddUser(Users newUser)
     {
 
+    }
+
+    /// <summary>
+    /// Authenticate external-issued token
+    /// </summary>
+    /// <param name="model">Login model</param>
+    /// <returns>Authenticate response, or null</returns>
+    public AuthenticateResponse AuthenticateExternal(ExternalLoginRequest model)
+    {
+      return GenerateExternalJwtToken(model);
     }
 
     /// <summary>
@@ -45,7 +55,6 @@ namespace OLabWebAPI.Services
     /// <returns>Authenticate response, or null</returns>
     public AuthenticateResponse Authenticate(LoginRequest model)
     {
-      // var user = _users.SingleOrDefault(x => x.Username == model.Username && x.Password == model.Password);
       var user = _users.SingleOrDefault(x => x.Username == model.Username);
 
       // return null if user not found
@@ -72,7 +81,7 @@ namespace OLabWebAPI.Services
       var clearText = model.NewPassword;
 
       // add password salt, if it's defined
-      if ( !string.IsNullOrEmpty( user.Salt ) )
+      if (!string.IsNullOrEmpty(user.Salt))
         clearText += user.Salt;
 
       SHA1 hash = SHA1.Create();
@@ -132,21 +141,27 @@ namespace OLabWebAPI.Services
 
       return false;
     }
+    
+    /// <summary>
+    /// Generate JWT token from external one
+    /// </summary>
+    /// <param name="model">token payload</param>
+    /// <returns>AuthenticateResponse</returns>
+    private AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
+    {
+      throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Generate JWT token
     /// </summary>
     /// <param name="user">User record from database</param>
     /// <returns>AuthenticateResponse</returns>
+    /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
     private AuthenticateResponse GenerateJwtToken(Users user)
     {
-      // authentication successful so generate jwt token
-      var tokenHandler = new JwtSecurityTokenHandler();
-
-      var mySecurityKey =
+      var securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
-      var myIssuer = _appSettings.Issuer;
-      var myAudience = _appSettings.Audience;
 
       var tokenDescriptor = new SecurityTokenDescriptor
       {
@@ -156,15 +171,17 @@ namespace OLabWebAPI.Services
           new Claim(ClaimTypes.Role, $"{user.Role}")
         }),
         Expires = DateTime.UtcNow.AddDays(7),
-        Issuer = myIssuer,
-        Audience = myAudience,
-        SigningCredentials = new SigningCredentials(mySecurityKey, SecurityAlgorithms.HmacSha256Signature)
+        Issuer = _appSettings.Issuer,
+        Audience = _appSettings.Audience,
+        SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
       };
 
+      var tokenHandler = new JwtSecurityTokenHandler();
       var token = tokenHandler.CreateToken(tokenDescriptor);
+      var securityToken = tokenHandler.WriteToken(token);
 
       var response = new AuthenticateResponse();
-      response.AuthInfo.Token = tokenHandler.WriteToken(token);
+      response.AuthInfo.Token = securityToken;
       response.AuthInfo.Refresh = null;
       response.Role = $"{user.Role}";
       response.UserName = user.Username;

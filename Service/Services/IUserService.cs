@@ -7,6 +7,7 @@ namespace OLabWebAPI.Services
     public interface IUserService
     {
         AuthenticateResponse Authenticate(LoginRequest model);
+        AuthenticateResponse AuthenticateExternal(ExternalLoginRequest model);
         void ChangePassword(Users user, ChangePasswordRequest model);
         
         void AddUser( Users newUser );
