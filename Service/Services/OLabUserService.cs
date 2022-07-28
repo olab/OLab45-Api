@@ -48,7 +48,7 @@ namespace OLabWebAPI.Services
       var jwtIssuer = "moodle";
       var jwtAudience = appSettings.Audience;
       var signingSecret = appSettings.Secret;
-      
+
       var securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(signingSecret[..16]));
 
@@ -58,13 +58,13 @@ namespace OLabWebAPI.Services
         ValidIssuers = new List<string> { jwtIssuer, appSettings.Issuer },
 
         ValidateAudience = true,
-        ValidAudiences = new List<string> { jwtAudience },
+        ValidAudience = jwtAudience,
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
         ClockSkew = TimeSpan.Zero,
 
         // validate against existing security key
-        // IssuerSigningKey = securityKey
+        IssuerSigningKey = securityKey
       };
 
       return tokenParameters;
