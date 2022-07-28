@@ -58,7 +58,7 @@ namespace OLabWebAPI.Services
         // ValidIssuer = jwtIssuer,
 
         ValidateAudience = true,
-        ValidAudience = $"'{appSettings.Audience}'",
+        ValidAudience = appSettings.Audience,
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
         ClockSkew = TimeSpan.Zero,
