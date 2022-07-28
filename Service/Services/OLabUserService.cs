@@ -201,11 +201,11 @@ namespace OLabWebAPI.Services
       var handler = new JwtSecurityTokenHandler();
       var tokenParameters = GetValidationParameters();
 
-      _logger.LogDebug($"aud: '{tokenParameters.ValidAudience}'");
-
       var readToken = handler.ReadJwtToken(model.ExternalToken);
+      
+      _logger.LogDebug( $"Incoming token claims:");      
       foreach( var claim in readToken.Claims )
-        _logger.LogDebug( $"{claim}");
+        _logger.LogDebug( $" {claim}");
 
       handler.ValidateToken(model.ExternalToken,
                             tokenParameters,
