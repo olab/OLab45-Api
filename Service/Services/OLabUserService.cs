@@ -9,7 +9,7 @@ using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
-
+using Microsoft.Extensions.Configuration;
 
 namespace OLabWebAPI.Services
 {
@@ -19,6 +19,7 @@ namespace OLabWebAPI.Services
     private readonly AppSettings _appSettings;
     private readonly OLabDBContext _context;
     private readonly IList<Users> _users;
+    private readonly TokenValidationParameters _tokenParameters;
 
     public OLabUserService(IOptions<AppSettings> appSettings, OLabDBContext context)
     {
@@ -27,6 +28,42 @@ namespace OLabWebAPI.Services
       _context = context;
 
       _users = _context.Users.OrderBy(x => x.Id).ToList();
+
+      _tokenParameters = SetupConfiguration(_appSettings);
+    }
+
+
+    public TokenValidationParameters GetValidationParameters()
+    {
+      return _tokenParameters;
+    }
+
+    private static TokenValidationParameters SetupConfiguration(AppSettings appSettings)
+    {
+      var jwtIssuer = "moodle";
+      var jwtAudience = appSettings.Audience;
+      var signingSecret = appSettings.Secret;
+
+      var securityKey =
+        new SymmetricSecurityKey(Encoding.Default.GetBytes(signingSecret[..16]));
+
+      var tokenParameters = new TokenValidationParameters
+      {
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+
+        // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
+        ClockSkew = TimeSpan.Zero,
+
+        // validate against existing security key
+        IssuerSigningKey = securityKey
+      };
+
+      return tokenParameters;
+
     }
 
     /// <summary>
@@ -141,7 +178,14 @@ namespace OLabWebAPI.Services
 
       return false;
     }
-    
+
+    private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+    public static DateTime FromUnixTime(long unixTime)
+    {
+      return epoch.AddSeconds(unixTime);
+    }
+
     /// <summary>
     /// Generate JWT token from external one
     /// </summary>
@@ -149,7 +193,29 @@ namespace OLabWebAPI.Services
     /// <returns>AuthenticateResponse</returns>
     private AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
     {
-      throw new NotImplementedException();
+      var handler = new JwtSecurityTokenHandler();
+
+      handler.ValidateToken(model.ExternalToken,
+                            GetValidationParameters(),
+                            out SecurityToken validatedToken);
+      var jwtToken = (JwtSecurityToken)validatedToken;
+
+      var response = new AuthenticateResponse();
+
+      DateTime createdAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
+      response.CreatedAt = createdAt;
+
+      response.AuthInfo.Token = model.ExternalToken;
+      response.AuthInfo.Refresh = null;
+      response.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
+      response.UserName = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
+
+      DateTime issuedAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
+      response.AuthInfo.Created = issuedAt;
+      DateTime expiresAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "exp").Value));
+      response.AuthInfo.Expires = expiresAt;
+
+      return response;
     }
 
     /// <summary>
