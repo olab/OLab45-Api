@@ -58,7 +58,7 @@ namespace OLabWebAPI.Services
         // ValidIssuer = jwtIssuer,
 
         ValidateAudience = true,
-        ValidAudience = appSettings.Audience,
+        ValidAudience = $"'{appSettings.Audience}'",
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
         ClockSkew = TimeSpan.Zero,
@@ -202,6 +202,10 @@ namespace OLabWebAPI.Services
       var tokenParameters = GetValidationParameters();
 
       _logger.LogDebug($"aud: '{tokenParameters.ValidAudience}'");
+
+      var readToken = handler.ReadJwtToken(model.ExternalToken);
+      foreach( var claim in readToken.Claims )
+        _logger.LogDebug( $"{claim}");
 
       handler.ValidateToken(model.ExternalToken,
                             tokenParameters,
