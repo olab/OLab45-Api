@@ -60,6 +60,12 @@ namespace TurkTalk.Contracts
         room.DisconnectSession(connectionId);
     }
 
+    internal void MessageReceived(string connectionId, MessagePayload payload)
+    {
+      var room = GetRoom(payload.Envelope.RoomName);
+      room.MessageReceived(connectionId, payload);
+    }
+
     /// <summary>
     /// Add moderator to conference
     /// </summary>
@@ -165,7 +171,7 @@ namespace TurkTalk.Contracts
 
       // get server-side attendee since it has the connection Id
       attendee = room.GetAttendee(attendee);
-      
+
       // assign attendee to moderator's room
       room.AssignAttendee(connectionId, moderator, attendee);
     }

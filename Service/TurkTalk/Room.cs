@@ -72,6 +72,30 @@ namespace TurkTalk.Contracts
     }
 
     /// <summary>
+    /// Message received
+    /// </summary>
+    /// <param name="connectionId"></param>
+    /// <param name="payload"></param>
+    internal void MessageReceived(string connectionId, MessagePayload payload)
+    {
+      var recipient = GetModerator(payload.Envelope.ToConnectionId);
+      if ( recipient == null )
+      {
+        logger.LogError($"Moderator missing for message");
+        return;
+      }
+
+      //  echo message back to the sender
+      var echoPayload = MessagePayload.GenerateEcho(payload);
+      echoPayload.Envelope.ToConnectionId = connectionId;
+      Conference.SendMessageTo(echoPayload, "echo", JsonSerializer.Serialize(echoPayload));
+
+      // send message to it's final destination
+      payload.Envelope.ToConnectionId = recipient.ConnectionId;
+      Conference.SendMessageTo(payload, "message", JsonSerializer.Serialize(payload));
+    }
+
+    /// <summary>
     /// Get moderator for room
     /// </summary>
     /// <param name="key"></param>
@@ -234,10 +258,8 @@ namespace TurkTalk.Contracts
       {
         logger.LogInformation($"AssignAttendee: '{attendee}' to '{moderator}'");
 
-        // attendee.ConnectionId = moderator.ConnectionId;
-        // attendee.Name = moderator.Name;
         attendee.IsAssigned = true;
-        attendee.RoomName = moderator.RoomName;
+        attendee.RoomName = Name;
 
         // if have atrium, remove attendee since they should
         // be in a room now.
@@ -248,13 +270,10 @@ namespace TurkTalk.Contracts
         {
           Envelope = new Envelope
           {
-            FromId = moderator.Id,
-            FromName = moderator.Name,
-            ToName = attendee.Name,
             RoomName = moderator.RoomName,
             ToConnectionId = attendee.ConnectionId
           },
-          Data = attendee
+          Data = moderator
         };
 
         Conference.SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));

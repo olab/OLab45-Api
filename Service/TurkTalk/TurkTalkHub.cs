@@ -71,20 +71,7 @@ namespace OLabWebAPI.Services
       try
       {
         _logger.LogDebug($"Message received '{payload.Data}', room {payload.Envelope.RoomName} from {payload.Envelope.FromId} -> {payload.Envelope.ToConnectionId}");
-
-        var connectionId = Context.ConnectionId;
-
-        //  echo message back to the sender
-        var echoPayload = MessagePayload.GenerateEcho(payload);
-        var room = _conference.GetRoom(payload.Envelope.RoomName);
-
-        var senderParticipant = _conference.GetParticipantById(payload.Envelope.FromId, payload.Envelope.RoomName);
-
-        _conference.SendMessageTo(echoPayload, "echo", JsonSerializer.Serialize(echoPayload));
-
-        // send message to it's final destination
-        _conference.SendMessageTo(payload, "message", JsonSerializer.Serialize(payload));
-
+        _conference.MessageReceived(Context.ConnectionId, payload);
       }
       catch (Exception ex)
       {
