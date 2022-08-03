@@ -4,6 +4,8 @@ using System.Linq;
 using OLabWebAPI.Services;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
+using System;
+using System.Text.Json;
 
 namespace TurkTalk.Contracts
 {
@@ -11,81 +13,200 @@ namespace TurkTalk.Contracts
   {
     public string Name { get; set; }
 
-    public readonly ILogger Logger;
-    public readonly IHubContext<TurkTalkHub> HubContext;
-    private readonly Atrium _conciergeRoom;
-    private readonly ConcurrentDictionary<string, Atrium> _atriums = new ConcurrentDictionary<string, Atrium>();
+    public readonly ILogger logger;
+    public readonly IHubContext<TurkTalkHub> hubContext;
+    // private readonly Atrium _concierge;
+    private readonly ConcurrentDictionary<string, Room> _rooms = new ConcurrentDictionary<string, Room>();
 
     public Conference(ILogger logger, IHubContext<TurkTalkHub> hubContext)
     {
-      Logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
-      HubContext = hubContext ?? throw new System.ArgumentNullException(nameof(hubContext));
+      this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+      this.hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
 
-      _conciergeRoom = new Atrium(this, "Concierge");
-      Logger.LogDebug($"Conference ctor");
+      // _concierge = new Atrium(this, "Concierge|default");
+      this.logger.LogDebug($"Conference ctor");
     }
 
     /// <summary>
-    /// Get list of rooms in atrium
+    /// Get list of rooms
     /// </summary>
-    /// <returns>List of atrium names</returns>
-    public IList<string> GetAtriums()
+    /// <returns>List of Rooms</returns>
+    public IList<Room> GetRooms()
     {
-      var names = _atriums.Values.OrderBy(x => x.Name).Select(x => x.Name).ToList();
-      return names;
+      return _rooms.Values.ToList();
     }
 
     /// <summary>
-    /// Get an atrium
+    /// Add attendee to conference
     /// </summary>
-    /// <param name="name">Name of atrium</param>
+    /// <param name="participant">Attendee to add</param>
+    /// <param name="roomName">Room name to join (in form '<node name>|<room name>')</param>
+    internal void AddAttendee(Participant participant, string roomName)
+    {
+      // get room, create it if it doesn't exist
+      var room = GetRoom(roomName, true);
+      room.AddAttendee(participant);
+    }
+
+    /// <summary>
+    /// disconnects a session from the conference
+    /// </summary>
+    /// <param name="connectionId">Connection id to remove</param>
+    internal void DisconnectSession(string connectionId)
+    {
+      logger.LogDebug($"OnDisconnectedAsync: removing '{connectionId}'");
+      foreach (var room in GetRooms())
+        room.DisconnectSession(connectionId);
+    }
+
+    /// <summary>
+    /// Add moderator to conference
+    /// </summary>
+    /// <param name="participant">Moderator to add</param>
+    /// <param name="roomName">Room name to join (in form '<node name>|<room name>')</param>
+    /// <param name="isBot">Moderator is a bot</param>
+    internal void AddModerator(Participant participant, string roomName, bool isBot)
+    {
+      // get atrium, create it if it doesn't exist
+      var room = GetRoom(roomName, true);
+
+      room.AddModerator(participant, isBot);
+    }
+
+    /// <summary>
+    /// Send connection status to participant
+    /// </summary>
+    /// <param name="hub">SignalR Hub</param>
+    /// <param name="participant">Recipient</param>
+    public void SendConnectionStatus(Participant participant)
+    {
+      if (participant is null)
+        throw new ArgumentNullException(nameof(participant));
+
+      // respond to attendees with status information
+      var payload = new CommandStatusPayload
+      {
+        Envelope = new Envelope(participant),
+        Data = participant
+      };
+
+      SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
+    }
+
+    /// <summary>
+    /// Send payload to participant
+    /// </summary>
+    /// <param name="payload">Payload to transmit</param>
+    /// <param name="methodName">SignalR method name to invoke</param>
+    /// <param name="arg1">Argument 1</param>
+    /// <param name="arg2">Argument 2</param>
+    public void SendMessageTo(Payload payload, string methodName, string arg1, string arg2 = "")
+    {
+      if (payload is null)
+        throw new ArgumentNullException(nameof(payload));
+
+      if (string.IsNullOrEmpty(methodName))
+        throw new ArgumentException($"'{nameof(methodName)}' cannot be null or empty.", nameof(methodName));
+
+      if (string.IsNullOrEmpty(arg1))
+        throw new ArgumentException($"'{nameof(arg1)}' cannot be null or empty.", nameof(arg1));
+
+      try
+      {
+        logger.LogDebug($"Send message to {payload.GetToId()}: {methodName}({arg1}, {arg2})");
+        hubContext.Clients.Client(payload.GetToId()).SendAsync(methodName, arg1, arg2);
+      }
+      catch (Exception ex)
+      {
+        logger.LogError($"SendMessageTo exception: {ex.Message}");
+      }
+
+    }
+
+    /// <summary>
+    /// Get moderator from any Room
+    /// </summary>
+    /// <param name="key">Name or ConnectionId to look for</param>
+    /// <returns>Participant</returns>
+    public Participant GetModerator(string key)
+    {
+      if (string.IsNullOrEmpty(key))
+        throw new ArgumentException($"GetAttendee: '{nameof(key)}' cannot be null or empty.", nameof(key));
+
+      Participant moderator = null;
+      foreach (var room in GetRooms())
+      {
+        moderator = room.GetModerator(key);
+        if (moderator != null)
+          break;
+      }
+
+      if (moderator == null)
+        logger.LogError($"GetModerator: moderator on '{key}' does not exist");
+
+      return moderator;
+    }
+
+    /// <summary>
+    /// Add unassigned attendee to room
+    /// </summary>
+    /// <param name="connectionId">SignalR connection id of requestor</param>
+    /// <param name="attendee">Attendee to add</param>
+    /// <param name="roomName">Room name to join (in form '<node name>|<room name>')</param>
+    public void AssignAttendee(string connectionId, Participant attendee, string roomName)
+    {
+      // get roomatrium, create it if it doesn't exist
+      var room = GetRoom(roomName, true);
+
+      // get requesting moderator based on connectionId
+      var moderator = room.GetModerator(connectionId);
+
+      // assign attendee to moderator's room
+      room.AssignAttendee(moderator, attendee);
+    }
+
+    /// <summary>
+    /// Get a room by name with optional create
+    /// </summary>
+    /// <param name="name">Name of Room</param>
     /// <param name="create">(Optional) create if doens't exist</param>
     /// <returns>Atrium or null</returns>
-    public Atrium GetAtriumByName(string name, bool create = false)
+    public Room GetRoom(string name, bool create = false)
     {
       if (string.IsNullOrEmpty(name))
         throw new System.ArgumentException($"GetAtriumByName: '{nameof(name)}' cannot be null or empty.", nameof(name));
 
-      if (_atriums.ContainsKey(name))
-        return _atriums[name];
+      if (_rooms.ContainsKey(name))
+        return _rooms[name];
+
       if (create)
-        return CreateAtrium(name);
+      {
+        var room = new Room(this, name);
+        _rooms.TryAdd(name, room);
+        return _rooms[name];
+      }
 
-      Logger.LogError($"GetAtriumByName: atrium '{name}' not found");
-      return null;
+      throw new Exception($"Cannot find room '{name}'");
+    }
+
+    // TODO: complete this
+    public Room OpenRoom(string name)
+    {
+      var room = GetRoom(name);
+      // room.Open();
+      return room;
+    }
+
+    // TODO: complete this
+    public Room CloseRoom(string name)
+    {
+      var room = GetRoom(name);
+      // room.Close();
+      return room;
     }
 
     /// <summary>
-    /// Create new atrium
-    /// </summary>
-    /// <param name="name">Atrium name</param>
-    /// <returns>Atrium</returns>
-    public Atrium CreateAtrium(string name)
-    {
-      if (string.IsNullOrEmpty(name))
-        throw new System.ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
-
-      var atrium = new Atrium(this, name);
-      _atriums.TryAdd(name, atrium);
-      return atrium;
-    }
-
-    public Atrium OpenAtrium(string name)
-    {
-      var atrium = GetAtriumByName(name);
-      atrium.Open();
-      return atrium;
-    }
-
-    public Atrium CloseAtrium(string name)
-    {
-      var atrium = GetAtriumByName(name);
-      atrium.Close();
-      return atrium;
-    }
-
-    /// <summary>
-    /// Get participant from atrium/room
+    /// Get participant from room
     /// </summary>
     /// <param name="connectionId">Connection Id to look for</param>
     /// <param name="roomName">(optional) room name to look in</param>
@@ -99,14 +220,12 @@ namespace TurkTalk.Contracts
 
       try
       {
-        var parts = roomName.Split("//");
-
-        // test if no atrium/room provided - search thru all atriums
-        if (parts.Count() == 0)
+        // if no room provided - search thru all rooms
+        if (roomName.Length == 0)
         {
-          foreach (var item in _atriums.Values)
+          foreach (var room in GetRooms())
           {
-            participant = item.GetAttendee(connectionId);
+            participant = room.GetAttendee(connectionId);
             if (participant != null)
               return participant;
           }
@@ -114,21 +233,23 @@ namespace TurkTalk.Contracts
           return null;
         }
 
-        // look for connectionId in specific atrium
-        var atriumName = parts[0];
-        var atrium = GetAtriumByName(atriumName);
-        if (atrium == null)
+        else
         {
-          Logger.LogError($"GetParticipantById: atrium '{atriumName}' not found");
-          return null;
-        }
+          // look for connectionId in specific room
+          var room = GetRoom(roomName);
+          if (room == null)
+          {
+            logger.LogError($"GetParticipantById: room '{roomName}' not found");
+            return null;
+          }
 
-        participant = atrium.GetAttendee(connectionId);
+          participant = room.GetAttendee(connectionId);
+        }
 
       }
       catch (System.Exception ex)
       {
-        Logger.LogError(ex, "GetParticipantById exception");
+        logger.LogError(ex, "GetParticipantById exception");
         participant = null;
       }
 
@@ -136,27 +257,6 @@ namespace TurkTalk.Contracts
 
     }
 
-    /// <summary>
-    /// Gets a room by name
-    /// </summary>
-    /// <param name="roomName">Room name (<atrium_name>:<instance_number>)</param>
-    /// <returns>Room</returns>
-    public Room GetRoomByName(string roomName)
-    {
-      if (string.IsNullOrEmpty(roomName))
-        throw new System.ArgumentException($"GetRoomByName: '{nameof(roomName)}' cannot be null or empty.", nameof(roomName));
-
-      var parts = roomName.Split("//");
-      if (parts.Count() == 0)
-        throw new System.ArgumentException($"GetRoomByName: '{nameof(roomName)}' is invalid.", nameof(roomName));
-
-      var atriumName = parts[0];
-      var atrium = GetAtriumByName(atriumName);
-      if (atrium == null)
-        return null;
-
-      return atrium.GetRoomByName(roomName);
-    }
   }
 
 }

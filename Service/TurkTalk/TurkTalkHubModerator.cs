@@ -14,16 +14,16 @@ namespace OLabWebAPI.Services
     /// Register moderator to atrium
     /// </summary>
     /// <param name="moderatorName">Moderator's name</param>
-    /// <param name="atriumName">Atrium name</param>
-    public void RegisterModerator(string moderatorName, string atriumName)
+    /// <param name="roomName">Atrium name</param>
+    /// <param name="isbot">Moderator is a bot</param>
+    public void RegisterModerator(string moderatorName, string roomName, bool isBot)
     {
       try
       {
-        _logger.LogInformation($"RegisterModerator: '{moderatorName}', atrium {atriumName}");
+        _logger.LogInformation($"RegisterModerator: '{moderatorName}', atrium {roomName}");
 
         var participant = new Participant(moderatorName, Context.ConnectionId);
-        var atrium = Conference.GetAtriumByName(atriumName, true);
-        var attendees = atrium.AddModerator(participant);
+        _conference.AddModerator( participant, roomName, isBot );
       }
       catch (Exception ex)
       {
@@ -43,15 +43,7 @@ namespace OLabWebAPI.Services
       {
         _logger.LogInformation($"AssignAttendee: '{attendee}'");
 
-        var atrium = Conference.GetAtriumByName(atriumName);
-
-        // get requesting moderator based on connectionId
-        var moderator = atrium.GetModerator( Context.ConnectionId );
-        if ( moderator == null )
-          throw new Exception($"AssignAttendee: moderator '{Context.ConnectionId}' in atrium '{atrium}' does not exist");
-
-        // assign attendee to moderator's room
-        atrium.AssignAttendee( moderator, attendee );        
+        _conference.AssignAttendee(Context.ConnectionId, attendee, atriumName);
       }
       catch (Exception ex)
       {

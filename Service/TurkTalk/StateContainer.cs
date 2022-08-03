@@ -35,7 +35,7 @@ namespace OLabWebAPI.Services
     {
       bool found = Attendees.TryGetValue(connectionId, out Participant item);
       if (found)
-        item.InSession = false;
+        item.IsAssigned = false;
       return found;
     }
 
@@ -57,7 +57,7 @@ namespace OLabWebAPI.Services
     {
       SuperModerator.ConnectionId = "";
       foreach (var item in Attendees.Values)
-        item.InSession = false;
+        item.IsAssigned = false;
     }
   }
 
