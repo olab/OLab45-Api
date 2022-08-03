@@ -92,6 +92,22 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Get attendee in room
     /// </summary>
+    /// <param name="participant">Participant to look for</param>
+    /// <returns>Participant or null</returns>
+    public Participant GetAttendee(Participant participant)
+    {
+      var attendee = Attendees.Values.FirstOrDefault(x => x.IsIdentifiedBy(participant));
+
+      // if no assigned attendee, maybe it's unassigned (in atrium)
+      if ( ( _atrium != null ) && ( attendee == null ) )
+        attendee = _atrium.GetUnassignedAttendees().FirstOrDefault( x => x.IsIdentifiedBy( participant ));
+
+      return attendee;
+    }
+
+    /// <summary>
+    /// Get attendee in room
+    /// </summary>
     /// <param name="key">Name or ConnectionId to look for</param>
     /// <returns>Participant or null</returns>
     public Participant GetAttendee(string key)
@@ -115,30 +131,31 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Add moderator to room
     /// </summary>
+    /// <param name="connectionId">Requesting connection id</param>
     /// <param name="moderator">Moderator to add to room</param>
     /// <param name="isBot">Moderator is a bot</param>
     /// <returns>Newly added moderator</returns>
-    internal Participant AddModerator(Participant moderator, bool isBot = false)
+    internal Participant AddModerator(string connectionId, Participant moderator, bool isBot = false)
     {
       if (moderator is null)
         throw new ArgumentNullException(nameof(moderator));
 
-      // test if moderator already in room
-      var existingModerator = GetModerator(moderator.ConnectionId);
-      if (existingModerator != null)
-      {
-        logger.LogWarning($"Moderator {existingModerator.Name} already exists");
-        return existingModerator;
-      }
+      // if same moderator already in room, update
+      // it with incoming modierator in case connection id changed
+      if (GetModerator(moderator.Id) != null)
+        logger.LogWarning($"Moderator {this.moderator.Name} already exists");
 
-      moderator.IsAssigned = true;
+      // update connection id, in case it's changed
+      moderator.ConnectionId = connectionId;
 
       this.moderator = moderator;
       this.moderator.RoomName = Name;
+      this.moderator.IsAssigned = true;
+
       isBotModerator = isBot;
 
       // respond to moderator with status information
-      Conference.SendConnectionStatus(moderator);
+      Conference.SendConnectionStatus(connectionId, moderator);
 
       if (isBotModerator)
       {
@@ -150,13 +167,13 @@ namespace TurkTalk.Contracts
           _atrium = null;
 
           foreach (var attendee in unassignedAttendees)
-            AssignAttendee(this.moderator, attendee);
+            AssignAttendee(connectionId, this.moderator, attendee);
         }
       }
       else
       {
         // send unassigned attendees list to moderators
-        BroadcastUnassignedAttendeeList();
+        BroadcastUnassignedAttendeeList(connectionId);
       }
 
       logger.LogInformation($"Added moderator '{moderator}' to room '{Name}'");
@@ -167,16 +184,17 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Add attendee to room
     /// </summary>
+    /// <param name="connectionId">Requesting connection id</param>
     /// <param name="attendee">Attendee to add</param>
     /// <param name="removeIfExists">Flag to remove if already exists</param>
     /// <returns>attendee</returns>
-    public Participant AddAttendee(Participant attendee, bool removeIfExists = true)
+    public Participant AddAttendee(string connectionId, Participant attendee, bool removeIfExists = true)
     {
-      if (GetAttendee(attendee.ConnectionId) != null)
-      {
-        if (removeIfExists)
-          Attendees.Remove(attendee.ConnectionId);
-      }
+      if ((GetAttendee(attendee) != null) && removeIfExists)
+        Attendees.Remove(attendee.Id);
+
+      // update connection id, in case it's changed
+      attendee.ConnectionId = connectionId;
 
       // if have atrium, add attendee since moderator first 
       // needs to manually accept to room
@@ -186,12 +204,10 @@ namespace TurkTalk.Contracts
         BroadcastUnassignedAttendeeList();
       }
       else
-      {
-        Attendees.Add(attendee.ConnectionId, attendee);
-      }
+        Attendees.Add(attendee.Id, attendee);
 
-      // respond to participant with status information
-      Conference.SendConnectionStatus(attendee);
+      // respond to requestor with status information
+      Conference.SendConnectionStatus(connectionId, attendee);
 
       return attendee;
 
@@ -200,9 +216,10 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Assign attendees to Room from atrium
     /// </summary>
-    /// <param name="moderator">Moderator makign request</param>
+    /// <param name="connectionId">Connection id of requestor</param>
+    /// <param name="moderator">Moderator making request</param>
     /// <param name="attendee">Participant to assign</param>
-    public void AssignAttendee(Participant moderator, Participant attendee)
+    public void AssignAttendee(string connectionId, Participant moderator, Participant attendee)
     {
       if (moderator is null)
         throw new ArgumentNullException(nameof(moderator));
@@ -215,31 +232,27 @@ namespace TurkTalk.Contracts
 
       try
       {
-        // test if valid moderator
-        if (GetModerator(moderator.ConnectionId) == null)
-          throw new Exception($"Cannot find moderator '{moderator.ConnectionId}' in room '{Name}'");
-
         logger.LogInformation($"AssignAttendee: '{attendee}' to '{moderator}'");
 
-        attendee.ConnectionId = moderator.ConnectionId;
-        attendee.Name = moderator.Name;
+        // attendee.ConnectionId = moderator.ConnectionId;
+        // attendee.Name = moderator.Name;
         attendee.IsAssigned = true;
         attendee.RoomName = moderator.RoomName;
 
         // if have atrium, remove attendee since they should
         // be in a room now.
         if (_atrium != null)
-          _atrium.RemoveAttendee(attendee.ConnectionId);
+          _atrium.RemoveAttendee(attendee.SessionId);
 
         var payload = new CommandAssignedPayload
         {
           Envelope = new Envelope
           {
-            FromId = moderator.ConnectionId,
+            FromId = moderator.Id,
             FromName = moderator.Name,
-            ToName = attendee.PartnerName,
-            ToId = attendee.PartnerId,
-            RoomName = moderator.RoomName
+            ToName = attendee.Name,
+            RoomName = moderator.RoomName,
+            ToConnectionId = attendee.ConnectionId
           },
           Data = attendee
         };
@@ -247,7 +260,7 @@ namespace TurkTalk.Contracts
         Conference.SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
 
         // update moderators of new unassigned list
-        BroadcastUnassignedAttendeeList();
+        BroadcastUnassignedAttendeeList(connectionId);
 
       }
       catch (Exception ex)
@@ -260,8 +273,8 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Send unassigned attendees list to moderator
     /// </summary>
-    /// <param name="hub">SignalR Hub</param>
-    public void BroadcastUnassignedAttendeeList()
+    /// <param name="connectionId">connection id that receives the message</param>
+    public void BroadcastUnassignedAttendeeList(string connectionId = null)
     {
       var unassignedAttendees = new List<Participant>();
 
@@ -279,21 +292,29 @@ namespace TurkTalk.Contracts
         return;
       }
 
+      // if no recipient connection Id, get last known 
+      // connectionId for moderator
+      if (string.IsNullOrEmpty(connectionId))
+        connectionId = moderator.ConnectionId;
+        
+      if (_atrium.GetUnassignedAttendees().Count == 0)
+        logger.LogDebug($"Room '{Name}' has no addendees for unassigned attendee update");
+
       // transform list for moderator - make attendees a destination, not a source
       foreach (var attendee in _atrium.GetUnassignedAttendees())
       {
         unassignedAttendees.Add(new Participant
         {
-          ConnectionId = moderator.ConnectionId,
           Name = moderator.Name,
-          PartnerId = attendee.ConnectionId,
-          PartnerName = attendee.Name
+          PartnerId = attendee.SessionId,
+          PartnerName = attendee.Name,
+          SessionId = attendee.SessionId
         });
       }
 
       var payload = new CommandAttendeesPayload
       {
-        Envelope = new Envelope(moderator),
+        Envelope = new Envelope(connectionId, moderator),
         Data = unassignedAttendees
       };
 
@@ -323,8 +344,6 @@ namespace TurkTalk.Contracts
     /// <returns>true/false</returns>
     public bool DisconnectAttendee(string connectionId)
     {
-      Participant attendee = null;
-
       // test if unassigned attendee exists
       if (_atrium != null)
       {
@@ -337,7 +356,7 @@ namespace TurkTalk.Contracts
       }
 
       // get (hopefully) assigned attendee
-      attendee = GetAttendee(connectionId);
+      Participant attendee = GetAttendee(connectionId);
       if (attendee == null)
       {
         logger.LogError($"Attempted to disconnect attendees @ '{connectionId}' from '{Name}', but was not assigned");
@@ -345,7 +364,7 @@ namespace TurkTalk.Contracts
       }
 
       logger.LogDebug($"Removing attendee '{attendee.ConnectionId}' from '{Name}'.");
-      Attendees.Remove( attendee.ConnectionId );
+      Attendees.Remove(attendee.ConnectionId);
 
       // TODO: tell moderator that attendee has gone
 
@@ -370,24 +389,24 @@ namespace TurkTalk.Contracts
       // if this room is for a bot, then we are done
       // since the conference will be responsible 
       // for deleting the room
-      if ( isBotModerator )
+      if (isBotModerator)
         return true;
 
       // if not existing atrium, then create one
       // so we can add any existing attendees to it
-      if ( _atrium == null )
-        _atrium = new Atrium( this );
+      if (_atrium == null)
+        _atrium = new Atrium(this);
 
       // move all attendees to atrium
-      foreach( var attendee in Attendees.Values )
+      foreach (var attendee in Attendees.Values)
       {
-        _atrium.AddAttendee( attendee );
+        _atrium.AddAttendee(attendee);
         // respond to participant with new status information
-        Conference.SendConnectionStatus(attendee);          
-      }        
+        Conference.SendConnectionStatus(attendee.ConnectionId, attendee);
+      }
 
       return true;
-    }    
+    }
 
   }
 

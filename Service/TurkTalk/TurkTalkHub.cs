@@ -70,7 +70,7 @@ namespace OLabWebAPI.Services
     {
       try
       {
-        _logger.LogDebug($"Message received '{payload.Data}', room {payload.Envelope.RoomName} from {payload.Envelope.FromId} -> {payload.Envelope.ToId}");
+        _logger.LogDebug($"Message received '{payload.Data}', room {payload.Envelope.RoomName} from {payload.Envelope.FromId} -> {payload.Envelope.ToConnectionId}");
 
         var connectionId = Context.ConnectionId;
 

@@ -9,7 +9,7 @@ namespace OLabWebAPI.Services
     public static Dictionary<string, Participant> Attendees = new Dictionary<string, Participant>();
     public static Dictionary<string, Participant> Moderators = new Dictionary<string, Participant>();
 
-    public static Participant SuperModerator = new Participant("Moderator", "");
+    public static Participant SuperModerator = new Participant("Moderator");
 
     public static string SuperModeratorName
     {

@@ -39,13 +39,14 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Add attendee to conference
     /// </summary>
+    /// <param name="connectionId">Attendee connectionId</param>
     /// <param name="participant">Attendee to add</param>
     /// <param name="roomName">Room name to join (in form '<node name>|<room name>')</param>
-    internal void AddAttendee(Participant participant, string roomName)
+    internal void AddAttendee(string connectionId, Participant participant, string roomName)
     {
       // get room, create it if it doesn't exist
       var room = GetRoom(roomName, true);
-      room.AddAttendee(participant);
+      room.AddAttendee(connectionId, participant);
     }
 
     /// <summary>
@@ -62,23 +63,23 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Add moderator to conference
     /// </summary>
-    /// <param name="participant">Moderator to add</param>
+    /// <param name="connectionId">Attendee connectionId</param>
+    /// <param name="moderator">Moderator to add</param>
     /// <param name="roomName">Room name to join (in form '<node name>|<room name>')</param>
     /// <param name="isBot">Moderator is a bot</param>
-    internal void AddModerator(Participant participant, string roomName, bool isBot)
+    internal void AddModerator(string connectionId, Participant moderator, string roomName, bool isBot)
     {
       // get atrium, create it if it doesn't exist
       var room = GetRoom(roomName, true);
-
-      room.AddModerator(participant, isBot);
+      room.AddModerator(connectionId, moderator, isBot);
     }
 
     /// <summary>
     /// Send connection status to participant
     /// </summary>
-    /// <param name="hub">SignalR Hub</param>
+    /// <param name="connectionId">Receivers connection id</param>
     /// <param name="participant">Recipient</param>
-    public void SendConnectionStatus(Participant participant)
+    public void SendConnectionStatus(string connectionId, Participant participant)
     {
       if (participant is null)
         throw new ArgumentNullException(nameof(participant));
@@ -86,7 +87,7 @@ namespace TurkTalk.Contracts
       // respond to attendees with status information
       var payload = new CommandStatusPayload
       {
-        Envelope = new Envelope(participant),
+        Envelope = new Envelope(connectionId, participant),
         Data = participant
       };
 
@@ -150,19 +151,23 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Add unassigned attendee to room
     /// </summary>
-    /// <param name="connectionId">SignalR connection id of requestor</param>
+    /// <param name="connectionId">Connection id of requestor</param>
+    /// <param name="requestingSessionId">Session id of requestor</param>
     /// <param name="attendee">Attendee to add</param>
     /// <param name="roomName">Room name to join (in form '<node name>|<room name>')</param>
-    public void AssignAttendee(string connectionId, Participant attendee, string roomName)
+    public void AssignAttendee(string connectionId, string requestingSessionId, Participant attendee, string roomName)
     {
       // get roomatrium, create it if it doesn't exist
       var room = GetRoom(roomName, true);
 
-      // get requesting moderator based on connectionId
-      var moderator = room.GetModerator(connectionId);
+      // get requesting moderator based on sessionId
+      var moderator = room.GetModerator(requestingSessionId);
 
+      // get server-side attendee since it has the connection Id
+      attendee = room.GetAttendee(attendee);
+      
       // assign attendee to moderator's room
-      room.AssignAttendee(moderator, attendee);
+      room.AssignAttendee(connectionId, moderator, attendee);
     }
 
     /// <summary>

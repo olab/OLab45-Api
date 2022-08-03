@@ -13,16 +13,23 @@ namespace OLabWebAPI.Services
     /// Handle new Attendee registration to room
     /// </summary>
     /// <param name="attendeeName">Attendee name</param>
-    /// <param name="atriumName">Atrium name</param>
+    /// <param name="roomName">Atrium name</param>
     /// <param name="sessionId">Atrium name</param>
-    public void RegisterAttendee(string attendeeName, string atriumName, string sessionId )
+    public void RegisterAttendee(string attendeeName, string roomName, string sessionId )
     {
       try
       {
-        _logger.LogInformation($"RegisterAttendee: '{attendeeName}', atrium '{atriumName}'");
+        _logger.LogInformation($"RegisterAttendee: '{attendeeName}', room '{roomName}'");
 
-        var participant = new Participant(attendeeName, Context.ConnectionId);
-        _conference.AddAttendee( participant, atriumName );
+        var participant = new Participant
+        {
+          Name = attendeeName
+        };
+
+        if ( !string.IsNullOrEmpty( sessionId ))
+          participant.SessionId = sessionId;
+          
+        _conference.AddAttendee( Context.ConnectionId, participant, roomName );
       }
       catch (Exception ex)
       {

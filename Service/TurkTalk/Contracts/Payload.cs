@@ -7,7 +7,7 @@ namespace TurkTalk.Contracts
   {
     public Envelope Envelope { get; set; }
 
-    public string GetToId() { return Envelope.ToId; }
+    public string GetToId() { return Envelope.ToConnectionId; }
     public string GetFromId() { return Envelope.FromId; }
   }
 }

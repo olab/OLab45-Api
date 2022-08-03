@@ -45,16 +45,19 @@ namespace OLabWebAPI.Services
     internal bool RemoveAttendee(string connectionId)
     {
       var attendee = _unassignedAttendees.FirstOrDefault(x => x.IsIdentifiedBy(connectionId));
-      if ( attendee != null )
+      if (attendee != null)
+      {
+        logger.LogDebug($"removing '{attendee}' from unassigned list");
         _unassignedAttendees.Remove(attendee);
+      }
 
-      return ( attendee != null );
+      return attendee != null;
     }
 
     internal void AddAttendee(Participant attendee)
     {
       attendee.IsAssigned = false;
-      _unassignedAttendees.Add( attendee );
+      _unassignedAttendees.Add(attendee);
     }
   }
 
