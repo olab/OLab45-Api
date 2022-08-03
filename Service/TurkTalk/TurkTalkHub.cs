@@ -11,7 +11,7 @@ namespace OLabWebAPI.Services
   public partial class TurkTalkHub : Hub
   {
     private readonly ILogger _logger;
-    public Conference Conference { get; private set; }
+    private readonly Conference _conference;
 
     /// <summary>
     /// TurkTalkHub constructor
@@ -20,7 +20,7 @@ namespace OLabWebAPI.Services
     public TurkTalkHub(ILogger<TurkTalkHub> logger, Conference conference)
     {
       _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-      Conference = conference ?? throw new ArgumentNullException(nameof(conference));
+      _conference = conference ?? throw new ArgumentNullException(nameof(conference));
 
       _logger.LogDebug($"TurkTalkHub ctor");
     }
@@ -52,13 +52,7 @@ namespace OLabWebAPI.Services
     {
       try
       {
-        _logger.LogDebug($"OnDisconnectedAsync: removing '{Context.ConnectionId}'");
-
-        foreach (var atriumName in Conference.GetAtriums())
-        {
-          var atrium = Conference.GetAtriumByName( atriumName );
-          atrium.DisconnectSession( Context.ConnectionId );
-        }
+        _conference.DisconnectSession(Context.ConnectionId);
       }
       catch (Exception ex)
       {
@@ -82,14 +76,14 @@ namespace OLabWebAPI.Services
 
         //  echo message back to the sender
         var echoPayload = MessagePayload.GenerateEcho(payload);
-        var room = Conference.GetRoomByName( payload.Envelope.RoomName );
+        var room = _conference.GetRoom(payload.Envelope.RoomName);
 
-        var senderParticipant = Conference.GetParticipantById( payload.Envelope.FromId, payload.Envelope.RoomName );
+        var senderParticipant = _conference.GetParticipantById(payload.Envelope.FromId, payload.Envelope.RoomName);
 
-        room.Atrium.SendMessageTo(echoPayload, "echo", JsonSerializer.Serialize(echoPayload));
+        _conference.SendMessageTo(echoPayload, "echo", JsonSerializer.Serialize(echoPayload));
 
         // send message to it's final destination
-        room.Atrium.SendMessageTo(payload, "message", JsonSerializer.Serialize(payload));
+        _conference.SendMessageTo(payload, "message", JsonSerializer.Serialize(payload));
 
       }
       catch (Exception ex)

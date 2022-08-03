@@ -7,7 +7,7 @@ namespace TurkTalk.Contracts
   {
     public string ConnectionId { get; set; }
     public string Name { get; set; }
-    public bool InSession { get; set; }
+    public bool IsAssigned { get; set; }
     public string PartnerId { get; set; }
     public string PartnerName { get; set; }
     public DateTime LastReceived { get; set; } 
@@ -29,7 +29,7 @@ namespace TurkTalk.Contracts
     public bool IsConnected { get { return !string.IsNullOrEmpty(ConnectionId); } }
     public override string ToString()
     {
-      return $"'{Name} {ConnectionId} {InSession} {LastReceived}'";
+      return $"'{Name} {ConnectionId} {IsAssigned} {LastReceived}'";
     }
 
     /// <summary>
@@ -37,7 +37,17 @@ namespace TurkTalk.Contracts
     /// </summary>
     public void Disconnect()
     {
-      InSession = false;
+      IsAssigned = false;
+    }
+
+    /// <summary>
+    /// Test if participant is identified by 'key'
+    /// </summary>
+    /// <param name="key">Connection id or name</param>
+    /// <returns>true/false</returns>
+    internal bool IsIdentifiedBy(string key)
+    {
+      return ( ( key == ConnectionId ) || ( key == Name ) );
     }
   }
 }

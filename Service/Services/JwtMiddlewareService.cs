@@ -49,7 +49,7 @@ namespace OLabWebAPI.Services
 
       _tokenParameters = new TokenValidationParameters
       {
-        ValidateIssuer = true,
+        ValidateIssuer = false,
         ValidIssuer = _jwtIssuer,
 
         ValidateAudience = true,
@@ -57,10 +57,10 @@ namespace OLabWebAPI.Services
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
         ClockSkew = TimeSpan.Zero,
-
+        
+        // validate against existing security key
+        IssuerSigningKey = securityKey
       };
-
-      _tokenParameters.IssuerSigningKey = securityKey;
 
     }
 
