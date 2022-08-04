@@ -74,25 +74,40 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Message received
     /// </summary>
-    /// <param name="connectionId"></param>
-    /// <param name="payload"></param>
-    internal void MessageReceived(string connectionId, MessagePayload payload)
+    /// <param name="fromConnectionId">connection id that sent message</param>
+    /// <param name="payload">Message payload</param>
+    internal void MessageReceived(string fromConnectionId, MessagePayload payload)
     {
-      var recipient = GetModerator(payload.Envelope.ToConnectionId);
-      if ( recipient == null )
+      var recipient = GetParticipant(payload.Envelope.ToConnectionId);
+      if (recipient == null)
       {
-        logger.LogError($"Moderator missing for message");
+        logger.LogError($"Recipient '{payload.Envelope.ToConnectionId[..3]}' cannot be found message");
         return;
       }
 
       //  echo message back to the sender
       var echoPayload = MessagePayload.GenerateEcho(payload);
-      echoPayload.Envelope.ToConnectionId = connectionId;
-      Conference.SendMessageTo(echoPayload, "echo", JsonSerializer.Serialize(echoPayload));
+      echoPayload.Envelope.ToConnectionId = fromConnectionId;
+      Conference.SendMessageTo(fromConnectionId, "echo", JsonSerializer.Serialize(echoPayload));
 
       // send message to it's final destination
       payload.Envelope.ToConnectionId = recipient.ConnectionId;
-      Conference.SendMessageTo(payload, "message", JsonSerializer.Serialize(payload));
+      payload.Envelope.FromId = fromConnectionId;
+      Conference.SendMessageTo(payload.Envelope.ToConnectionId, "message", JsonSerializer.Serialize(payload));
+    }
+
+    /// <summary>
+    /// Get participant in room
+    /// </summary>
+    /// <param name="key">Id of participant</param>
+    /// <returns>Participant</returns>
+    public Participant GetParticipant(string key = "")
+    {
+      var participant = GetModerator(key);
+      if (participant == null)
+        participant = GetAttendee(key);
+
+      return participant;
     }
 
     /// <summary>
@@ -123,8 +138,8 @@ namespace TurkTalk.Contracts
       var attendee = Attendees.Values.FirstOrDefault(x => x.IsIdentifiedBy(participant));
 
       // if no assigned attendee, maybe it's unassigned (in atrium)
-      if ( ( _atrium != null ) && ( attendee == null ) )
-        attendee = _atrium.GetUnassignedAttendees().FirstOrDefault( x => x.IsIdentifiedBy( participant ));
+      if ((_atrium != null) && (attendee == null))
+        attendee = _atrium.GetUnassignedAttendees().FirstOrDefault(x => x.IsIdentifiedBy(participant));
 
       return attendee;
     }
@@ -240,10 +255,10 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Assign attendees to Room from atrium
     /// </summary>
-    /// <param name="connectionId">Connection id of requestor</param>
+    /// <param name="fromConnectionId">Connection id of requestor</param>
     /// <param name="moderator">Moderator making request</param>
     /// <param name="attendee">Participant to assign</param>
-    public void AssignAttendee(string connectionId, Participant moderator, Participant attendee)
+    public void AssignAttendee(string fromConnectionId, Participant moderator, Participant attendee)
     {
       if (moderator is null)
         throw new ArgumentNullException(nameof(moderator));
@@ -276,10 +291,13 @@ namespace TurkTalk.Contracts
           Data = moderator
         };
 
-        Conference.SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
+        // add attendee to room
+        Attendees.Add(attendee.Id, attendee);
+
+        Conference.SendMessageTo(attendee.ConnectionId, "command", JsonSerializer.Serialize(payload));
 
         // update moderators of new unassigned list
-        BroadcastUnassignedAttendeeList(connectionId);
+        BroadcastUnassignedAttendeeList(fromConnectionId);
 
       }
       catch (Exception ex)
@@ -292,11 +310,9 @@ namespace TurkTalk.Contracts
     /// <summary>
     /// Send unassigned attendees list to moderator
     /// </summary>
-    /// <param name="connectionId">connection id that receives the message</param>
-    public void BroadcastUnassignedAttendeeList(string connectionId = null)
+    /// <param name="toConnectionId">connection id that receives the message</param>
+    public void BroadcastUnassignedAttendeeList(string toConnectionId = null)
     {
-      var unassignedAttendees = new List<Participant>();
-
       // skip room if no moderator assigned to send list to
       Participant moderator = GetModerator();
       if (moderator == null)
@@ -313,33 +329,35 @@ namespace TurkTalk.Contracts
 
       // if no recipient connection Id, get last known 
       // connectionId for moderator
-      if (string.IsNullOrEmpty(connectionId))
-        connectionId = moderator.ConnectionId;
-        
-      if (_atrium.GetUnassignedAttendees().Count == 0)
-        logger.LogDebug($"Room '{Name}' has no addendees for unassigned attendee update");
+      if (string.IsNullOrEmpty(toConnectionId))
+      {
+        logger.LogDebug($"Using default moderator connection id");
+        toConnectionId = moderator.ConnectionId;
+      }
 
       // transform list for moderator - make attendees a destination, not a source
-      foreach (var attendee in _atrium.GetUnassignedAttendees())
-      {
-        unassignedAttendees.Add(new Participant
-        {
-          Name = moderator.Name,
-          PartnerId = attendee.SessionId,
-          PartnerName = attendee.Name,
-          SessionId = attendee.SessionId
-        });
-      }
+      // foreach (var attendee in _atrium.GetUnassignedAttendees())
+      // {
+      //   unassignedAttendees.Add(new Participant
+      //   {
+      //     Name = attendee.Name,
+      //     SessionId = attendee.SessionId               
+      //   });
+      // }
+
+      var unassignedAttendees = _atrium.GetUnassignedAttendees();
+      if (_atrium.GetUnassignedAttendees().Count == 0)
+        logger.LogDebug($"Room '{Name}' has {unassignedAttendees.Count} unassigned attendees");
 
       var payload = new CommandAttendeesPayload
       {
-        Envelope = new Envelope(connectionId, moderator),
+        Envelope = new Envelope(toConnectionId, moderator),
         Data = unassignedAttendees
       };
 
       logger.LogDebug($"Notifying '{moderator}' in room '{Name}' of unassigned list update");
 
-      Conference.SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
+      Conference.SendMessageTo(toConnectionId, "command", JsonSerializer.Serialize(payload));
 
     }
 

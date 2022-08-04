@@ -97,20 +97,20 @@ namespace TurkTalk.Contracts
         Data = participant
       };
 
-      SendMessageTo(payload, "command", JsonSerializer.Serialize(payload));
+      SendMessageTo(connectionId, "command", JsonSerializer.Serialize(payload));
     }
 
     /// <summary>
     /// Send payload to participant
     /// </summary>
-    /// <param name="payload">Payload to transmit</param>
+    /// <param name="toConnectionId">connection id to transmit to</param>
     /// <param name="methodName">SignalR method name to invoke</param>
     /// <param name="arg1">Argument 1</param>
     /// <param name="arg2">Argument 2</param>
-    public void SendMessageTo(Payload payload, string methodName, string arg1, string arg2 = "")
+    public void SendMessageTo(string toConnectionId, string methodName, string arg1, string arg2 = "")
     {
-      if (payload is null)
-        throw new ArgumentNullException(nameof(payload));
+      if (string.IsNullOrEmpty( toConnectionId ))
+        throw new ArgumentNullException(nameof(toConnectionId));
 
       if (string.IsNullOrEmpty(methodName))
         throw new ArgumentException($"'{nameof(methodName)}' cannot be null or empty.", nameof(methodName));
@@ -120,8 +120,8 @@ namespace TurkTalk.Contracts
 
       try
       {
-        logger.LogDebug($"Send message to {payload.GetToId()}: {methodName}({arg1}, {arg2})");
-        hubContext.Clients.Client(payload.GetToId()).SendAsync(methodName, arg1, arg2);
+        logger.LogDebug($"Send message to {toConnectionId[..3]}: {methodName} ({arg1}, {arg2})");
+        hubContext.Clients.Client(toConnectionId).SendAsync(methodName, arg1, arg2);
       }
       catch (Exception ex)
       {

@@ -19,14 +19,15 @@ namespace OLabWebAPI.Services
     {
       try
       {
-        _logger.LogInformation($"RegisterAttendee: '{attendeeName}', room '{roomName}'");
+        _logger.LogInformation($"RegisterAttendee: '{attendeeName}', room {roomName} sessionId '{sessionId}'");
 
         var participant = new Participant
         {
           Name = attendeeName
         };
 
-        if ( !string.IsNullOrEmpty( sessionId ))
+        // override the generated sessionId if one is passed in
+        if ( !string.IsNullOrEmpty( sessionId ) )
           participant.SessionId = sessionId;
           
         _conference.AddAttendee( Context.ConnectionId, participant, roomName );
@@ -37,6 +38,5 @@ namespace OLabWebAPI.Services
       }
 
     }
-
   }
 }

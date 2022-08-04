@@ -21,17 +21,18 @@ namespace OLabWebAPI.Services
     {
       try
       {
-        _logger.LogInformation($"RegisterModerator: '{moderatorName}', room {roomName}");
+        _logger.LogInformation($"RegisterModerator: '{moderatorName}', room {roomName} sessionId '{sessionId}' bot {isBot}");
 
-        var moderator = new Participant
+        var participant = new Participant
         {
           Name = moderatorName
         };
 
-        if ( !string.IsNullOrEmpty( sessionId ))
-          moderator.SessionId = sessionId;
+        // override the generated sessionId if one is passed in
+        if ( !string.IsNullOrEmpty( sessionId ) )
+          participant.SessionId = sessionId;
         
-        _conference.AddModerator( Context.ConnectionId, moderator, roomName, isBot );
+        _conference.AddModerator( Context.ConnectionId, participant, roomName, isBot );
       }
       catch (Exception ex)
       {
