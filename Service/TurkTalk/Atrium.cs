@@ -20,7 +20,7 @@ namespace OLabWebAPI.Services
     {
       _room = room ?? throw new ArgumentNullException(nameof(room));
       logger = room.logger ?? throw new ArgumentNullException(nameof(room.logger));
-      logger.LogInformation($"Created atrium");
+      logger.LogInformation($"Created atrium for room '{room.Name}'");
     }
 
     internal void Open()
@@ -47,8 +47,8 @@ namespace OLabWebAPI.Services
       var attendee = _unassignedAttendees.FirstOrDefault(x => x.IsIdentifiedBy(connectionId));
       if (attendee != null)
       {
-        logger.LogDebug($"removing '{attendee}' from unassigned list");
         _unassignedAttendees.Remove(attendee);
+        logger.LogDebug($"removed '{attendee}' from '{_room.Name}' unassigned list");
       }
 
       return attendee != null;
@@ -58,6 +58,7 @@ namespace OLabWebAPI.Services
     {
       attendee.IsAssigned = false;
       _unassignedAttendees.Add(attendee);
+      logger.LogDebug($"added attendee '{attendee}' to '{_room.Name}' unassigned list");
     }
   }
 

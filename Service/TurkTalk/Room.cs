@@ -230,7 +230,10 @@ namespace TurkTalk.Contracts
     public Participant AddAttendee(string connectionId, Participant attendee, bool removeIfExists = true)
     {
       if ((GetAttendee(attendee) != null) && removeIfExists)
+      {
         Attendees.Remove(attendee.Id);
+        logger.LogDebug($"AddAttendee: removed attendee '{attendee}' from room '{Name}'");
+      }
 
       // update connection id, in case it's changed
       attendee.ConnectionId = connectionId;
@@ -243,7 +246,10 @@ namespace TurkTalk.Contracts
         BroadcastUnassignedAttendeeList();
       }
       else
+      {
         Attendees.Add(attendee.Id, attendee);
+        logger.LogDebug($"AssignAttendee: added attendee '{attendee}' to room '{Name}'");
+      }
 
       // respond to requestor with status information
       Conference.SendConnectionStatus(connectionId, attendee);
@@ -293,6 +299,7 @@ namespace TurkTalk.Contracts
 
         // add attendee to room
         Attendees.Add(attendee.Id, attendee);
+        logger.LogDebug($"AssignAttendee: added attendee '{attendee}' to room '{Name}'");
 
         Conference.SendMessageTo(attendee.ConnectionId, "command", JsonSerializer.Serialize(payload));
 
