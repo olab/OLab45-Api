@@ -97,10 +97,15 @@ namespace OLabWebAPI
       // custom jwt auth middleware
       app.UseMiddleware<OLabJWTService>();
 
+      // get signalR endpoint
+      var signalREndpoint = Configuration["AppSettings:SignalREndpoint"];
+      if ( string.IsNullOrEmpty( signalREndpoint ))
+        signalREndpoint = "/turktalk";
+
       app.UseEndpoints(x =>
       {
         x.MapControllers();
-        x.MapHub<TurkTalkHub>("/turktalk");
+        x.MapHub<TurkTalkHub>(signalREndpoint);
       });
 
     }
