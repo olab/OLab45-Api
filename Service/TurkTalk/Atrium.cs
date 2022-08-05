@@ -55,7 +55,7 @@ namespace OLabWebAPI.Services
     {
       attendee.IsAssigned = false;
       _unassignedAttendees.Add(attendee);
-      logger.LogDebug($"added attendee '{attendee}' to '{_room.Name}' unassigned list");
+      logger.LogDebug($"added attendee '{attendee}' to '{_room.Name}' atrium");
     }
   }
 
