@@ -285,7 +285,7 @@ namespace TurkTalk.Contracts
         // if have atrium, remove attendee since they should
         // be in a room now.
         if (_atrium != null)
-          _atrium.RemoveAttendee(attendee.SessionId);
+          _atrium.RemoveAttendee(attendee.Id);
 
         var payload = new CommandAssignedPayload
         {
@@ -376,7 +376,10 @@ namespace TurkTalk.Contracts
     public bool DisconnectSession(string connectionId)
     {
       if (DisconnectAttendee(connectionId) || DisconnectModerator(connectionId))
+      {
+        logger.LogDebug($"Removed connection '{connectionId}' from '{Name}'.");
         return true;
+      }
 
       return false;
     }
@@ -402,15 +405,28 @@ namespace TurkTalk.Contracts
       // get (hopefully) assigned attendee
       Participant attendee = GetAttendee(connectionId);
       if (attendee == null)
-      {
-        logger.LogError($"Attempted to disconnect attendees @ '{connectionId}' from '{Name}', but was not assigned");
         return false;
-      }
 
-      logger.LogDebug($"Removing attendee '{attendee.ConnectionId}' from '{Name}'.");
       Attendees.Remove(attendee.ConnectionId);
+      logger.LogDebug($"Removed attendee '{attendee.ConnectionId}' from '{Name}'.");
 
-      // TODO: tell moderator that attendee has gone
+      attendee.IsAssigned = false;
+
+      if (moderator != null)
+      {
+        var payload = new CommandUnassignedPayload
+        {
+          Envelope = new Envelope
+          {
+            RoomName = moderator.RoomName,
+            ToConnectionId = moderator.ConnectionId
+          },
+          Data = attendee
+        };
+
+        Conference.SendMessageTo(moderator.ConnectionId, "command", JsonSerializer.Serialize(payload));
+        logger.LogDebug($"Notified moderator of '{attendee.ConnectionId}' disconnect from '{Name}'.");
+      }
 
       return true;
     }
@@ -423,11 +439,9 @@ namespace TurkTalk.Contracts
     {
       var moderator = GetModerator(connectionId);
       if (moderator == null)
-      {
-        logger.LogError($"Attempted to disconnect moderator @ '{connectionId}', but was unknown");
         return false;
-      }
 
+      logger.LogDebug($"Removing moderator '{moderator}' from '{Name}'.");
       this.moderator = null;
 
       // if this room is for a bot, then we are done
@@ -445,9 +459,14 @@ namespace TurkTalk.Contracts
       foreach (var attendee in Attendees.Values)
       {
         _atrium.AddAttendee(attendee);
+
         // respond to participant with new status information
         Conference.SendConnectionStatus(attendee.ConnectionId, attendee);
       }
+
+      // remove all attendee (since they are in 
+      // the atrium now)
+      Attendees.Clear();
 
       return true;
     }
