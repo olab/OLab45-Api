@@ -16,6 +16,7 @@ using System.Linq;
 using OLabWebAPI.Controllers.Player;
 using System.IO;
 using OLabWebAPI.Model.ReaderWriter;
+using System.Collections.Generic;
 
 namespace OLabWebAPI.Controllers.Designer
 {
@@ -39,6 +40,62 @@ namespace OLabWebAPI.Controllers.Designer
       return phys;
     }
 
+    /// <summary>
+    /// Plays specific map node
+    /// </summary>
+    /// <param name="mapId">map id</param>
+    /// <param name="nodeId">node id</param>
+    /// <returns>IActionResult</returns>
+    [HttpGet("{mapId}/node/{nodeId}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> GetMapNodeAsync(uint mapId, uint nodeId)
+    {
+      logger.LogDebug($"GetMapNodeAsync(uint mapId={mapId}, nodeId={nodeId})");
+
+      // test if user has access to map.
+      var userContext = new UserContext(logger, context, HttpContext);
+      if (!userContext.HasAccess("R", Utils.Constants.ScopeLevelMap, mapId))
+        return OLabUnauthorizedObjectResult<KeyValuePair<uint, uint>>.Result(new KeyValuePair<uint, uint>(mapId, nodeId));
+
+      var map = await MapsReaderWriter.Instance(logger.GetLogger(), context).GetSingleAsync(mapId);
+      if (map == null)
+        return OLabNotFoundResult<uint>.Result(Utils.Constants.ScopeLevelMap, mapId);
+
+      MapsNodesFullRelationsDto dto;
+      // get node with no wikitag translation
+      dto = await GetNodeAsync(map, nodeId, false);
+
+      if (!dto.Id.HasValue)
+        return OLabNotFoundResult<uint>.Result(Utils.Constants.ScopeLevelNode, nodeId);
+
+      return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
+    }
+
+    /// <summary>
+    /// Get non-rendered nodes for a map
+    /// </summary>
+    /// <param name="mapId">Map id</param>
+    /// <returns>IActionResult</returns>
+    [HttpGet("{mapId}/nodes")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> GetMapNodesAsync(uint mapId)
+    {
+      logger.LogDebug($"GetMapNodesAsync(uint mapId={mapId})");
+
+      // test if user has access to map.
+      var userContext = new UserContext(logger, context, HttpContext);
+      if (!userContext.HasAccess("R", Utils.Constants.ScopeLevelMap, mapId))
+        return OLabUnauthorizedObjectResult<uint>.Result(mapId);
+
+      var map = await MapsReaderWriter.Instance(logger.GetLogger(), context).GetSingleAsync(mapId);
+      if (map == null)
+        return OLabNotFoundResult<uint>.Result(mapId);
+
+      // get node with no wikitag translation
+      var dtoList = await GetNodesAsync(map, false);
+      return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
+    }
+    
     /// <summary>
     /// Create a new node link
     /// </summary>
@@ -141,30 +198,6 @@ namespace OLabWebAPI.Controllers.Designer
         throw ex;
       }
 
-    }
-
-    /// <summary>
-    /// Get non-rendered nodes for a map
-    /// </summary>
-    /// <param name="mapId">Map id</param>
-    /// <returns>IActionResult</returns>
-    [HttpGet("{mapId}/nodes")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetMapNodesAsync(uint mapId)
-    {
-      logger.LogDebug($"GetMapNodesAsync(uint mapId={mapId})");
-
-      // test if user has access to map.
-      var userContext = new UserContext(logger, context, HttpContext);
-      if (!userContext.HasAccess("R", Utils.Constants.ScopeLevelMap, mapId))
-        return OLabUnauthorizedObjectResult<uint>.Result(mapId);
-
-      var map = await MapsReaderWriter.Instance(logger.GetLogger(), context).GetSingleAsync(mapId);
-      if (map == null)
-        return OLabNotFoundResult<uint>.Result(mapId);
-
-      var dtoList = await GetNodesAsync(map);
-      return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
     }
 
     /// <summary>

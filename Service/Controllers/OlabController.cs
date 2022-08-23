@@ -120,15 +120,16 @@ namespace OLabWebAPI.Controllers
     /// <summary>
     /// Get nodes for map
     /// </summary>
-    /// <param name="map">PArent map to query for</param>
+    /// <param name="map">Parent map to query for</param>
+    /// <param name="enableWikiTanslation">PErform WikiTag translation</param>
     /// <returns>List of mapnode dto's</returns>
     [NonAction]
-    protected async Task<IList<MapNodesFullDto>> GetNodesAsync(Maps map)
+    protected async Task<IList<MapNodesFullDto>> GetNodesAsync(Maps map, bool enableWikiTanslation = true)
     {
       var physList = await context.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
       logger.LogDebug(string.Format("found {0} mapNodes", physList.Count));
 
-      var dtoList = new ObjectMapper.MapNodesFullMapper(logger).PhysicalToDto(physList);
+      var dtoList = new ObjectMapper.MapNodesFullMapper(logger, enableWikiTanslation).PhysicalToDto(physList);
       return dtoList;
     }
 
@@ -137,9 +138,10 @@ namespace OLabWebAPI.Controllers
     /// </summary>
     /// <param name="map">Map object</param>
     /// <param name="nodeId">Node id</param>
+    /// <param name="enableWikiTanslation">PErform WikiTag translation</param>
     /// <returns>MapsNodesFullRelationsDto</returns>
     [NonAction]
-    protected async Task<MapsNodesFullRelationsDto> GetNodeAsync(Maps map, uint nodeId)
+    protected async Task<MapsNodesFullRelationsDto> GetNodeAsync(Maps map, uint nodeId, bool enableWikiTanslation = true )
     {
       var phys = await context.MapNodes
         .FirstOrDefaultAsync(x => x.MapId == map.Id && x.Id == nodeId);
@@ -150,7 +152,7 @@ namespace OLabWebAPI.Controllers
       // explicitly load the related objects.
       context.Entry(phys).Collection(b => b.MapNodeLinksNodeId1Navigation).Load();
 
-      var builder = new ObjectMapper.MapsNodesFullRelationsMapper(logger);
+      var builder = new ObjectMapper.MapsNodesFullRelationsMapper(logger, enableWikiTanslation);
       var dto = builder.PhysicalToDto(phys);
 
       var linkedIds = phys.MapNodeLinksNodeId1Navigation.Select(x => x.NodeId2).Distinct().ToList();
