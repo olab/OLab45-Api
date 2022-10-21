@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
@@ -12,8 +11,8 @@ using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.ObjectMapper;
 using OLabWebAPI.Utils;
+using OLabWebAPI.Endpoints;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -41,9 +40,11 @@ namespace OLabWebAPI.Controllers.Player
   public partial class FilesController : OlabController
   {
     private readonly AppSettings _appSettings;
+    private readonly FilesEndpoint _endpoint;
 
-    public FilesController(ILogger<FilesController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, context)
+    public FilesController(ILogger<CountersController> logger, IOptions<AppSettings> appSettings, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
+      _endpoint = new FilesEndpoint(this.logger, appSettings, context, auth);
       _appSettings = appSettings.Value;
     }
 
@@ -55,89 +56,6 @@ namespace OLabWebAPI.Controllers.Player
     private string GetStaticFilesDirectory()
     {
       return _appSettings.WebsitePublicFilesDirectory;
-    }
-
-    private bool Exists(uint id)
-    {
-      return context.SystemFiles.Any(e => e.Id == id);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="take"></param>
-    /// <param name="skip"></param>
-    /// <returns></returns>
-    [HttpGet]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
-    {
-      try
-      {
-        logger.LogDebug($"FilesController.GetAsync([FromQuery] int? take={take}, [FromQuery] int? skip={skip})");
-
-        var token = Request.Headers["Authorization"];
-        var Files = new List<SystemFiles>();
-        var total = 0;
-        var remaining = 0;
-
-        if (!skip.HasValue)
-          skip = 0;
-
-        Files = await context.SystemFiles.OrderBy(x => x.Name).ToListAsync();
-        total = Files.Count;
-
-        if (take.HasValue && skip.HasValue)
-        {
-          Files = Files.Skip(skip.Value).Take(take.Value).ToList();
-          remaining = total - take.Value - skip.Value;
-        }
-
-        logger.LogDebug(string.Format("found {0} Files", Files.Count));
-
-        var dtoList = new ObjectMapper.Files(logger).PhysicalToDto(Files);
-        return OLabObjectPagedListResult<FilesDto>.Result(dtoList, remaining);
-      }
-      catch (Exception ex)
-      {
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [HttpGet("{id}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetAsync(uint id)
-    {
-      try
-      {
-        logger.LogDebug($"FilesController.GetAsync(uint id={id})");
-
-        if (!Exists(id))
-          return OLabNotFoundResult<uint>.Result(id);
-
-        var phys = await context.SystemFiles.FirstAsync(x => x.Id == id);
-        var dto = new ObjectMapper.FilesFull(logger).PhysicalToDto(phys);
-
-        // test if user has access to object
-        var accessResult = HasAccess(dto);
-        if (accessResult is UnauthorizedResult)
-          return accessResult;
-
-        AttachParentObject(dto);
-
-        return OLabObjectResult<FilesFullDto>.Result(dto);
-      }
-      catch (Exception ex)
-      {
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-
     }
 
     private static string CapitalizeFirstLetter(string str)
@@ -212,6 +130,49 @@ namespace OLabWebAPI.Controllers.Player
       throw new Exception("file not received");
     }
 
+
+    private void CopyToStaticDirectory(string tempFileName, string staticFileName)
+    {
+      if (!Directory.Exists(Path.GetDirectoryName(staticFileName)))
+      {
+        logger.LogDebug($"creating directory {Path.GetDirectoryName(staticFileName)}");
+        Directory.CreateDirectory(Path.GetDirectoryName(staticFileName));
+      }
+
+      logger.LogDebug($"Copying file from {tempFileName} to {staticFileName}");
+      System.IO.File.Copy(tempFileName, staticFileName, true);
+    }
+
+    private bool Exists(uint id)
+    {
+      return context.SystemFiles.Any(e => e.Id == id);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="take"></param>
+    /// <param name="skip"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
+    {
+      return await _endpoint.GetAsync(take, skip);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> GetAsync(uint id)
+    {
+      return await _endpoint.GetAsync(id);
+    }
+
     /// <summary>
     /// Saves a file edit
     /// </summary>
@@ -221,33 +182,10 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PutAsync(uint id, [FromBody] FilesFullDto dto)
     {
-      try
-      {
-        logger.LogDebug($"PutAsync(uint id={id})");
-
-        dto.ImageableId = dto.ParentObj.Id;
-
-        // test if user has access to object
-        var accessResult = HasAccess(dto);
-        if (accessResult is UnauthorizedResult)
-          return accessResult;
-
-        var builder = new FilesFull(logger);
-        var phys = builder.DtoToPhysical(dto);
-
-        phys.UpdatedAt = DateTime.Now;
-
-        context.Entry(phys).State = EntityState.Modified;
-        await context.SaveChangesAsync();
-
-        return NoContent();
-
-      }
-      catch (Exception ex)
-      {
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-
+      var result = await _endpoint.PutAsync(id, dto);
+      if ( result != null )
+        return result;
+      return NoContent();
     }
 
     /// <summary>
@@ -259,7 +197,6 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostAsync()
     {
-
       try
       {
         logger.LogDebug($"FilesController.PostAsync()");
@@ -309,45 +246,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> DeleteAsync(uint id)
     {
-
-      try
-      {
-        logger.LogDebug($"FilesController.DeleteAsync(uint id={id})");
-
-        if (!Exists(id))
-          return OLabNotFoundResult<uint>.Result(id);
-
-        var phys = await GetFileAsync(id);
-        var dto = new FilesFull(logger).PhysicalToDto(phys);
-
-        // test if user has access to object
-        var accessResult = HasAccess(dto);
-        if (accessResult is UnauthorizedResult)
-          return accessResult;
-
-        context.SystemFiles.Remove(phys);
-        await context.SaveChangesAsync();
-
-        return NoContent();
-
-      }
-      catch (Exception ex)
-      {
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-
-    }
-
-    private void CopyToStaticDirectory(string tempFileName, string staticFileName)
-    {
-      if (!Directory.Exists(Path.GetDirectoryName(staticFileName)))
-      {
-        logger.LogDebug($"creating directory {Path.GetDirectoryName(staticFileName)}");
-        Directory.CreateDirectory(Path.GetDirectoryName(staticFileName));
-      }
-
-      logger.LogDebug($"Copying file from {tempFileName} to {staticFileName}");
-      System.IO.File.Copy(tempFileName, staticFileName, true);
+      return await _endpoint.DeleteAsync(id);
     }
   }
 

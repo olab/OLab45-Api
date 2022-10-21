@@ -1,21 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OLabWebAPI.Model;
 using OLabWebAPI.Dto;
-using OLabWebAPI;
+using OLabWebAPI.Endpoints;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
-
-using OLabWebAPI.Services;
-using OLabWebAPI.ObjectMapper;
-using OLabWebAPI.Common;
-using OLabWebAPI.Utils;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -64,7 +55,10 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PutAsync(uint id, [FromBody] ConstantsDto dto)
     {
-      return await _endpoint.PutAsync(id, dto);
+      var result = await _endpoint.PutAsync(id, dto);
+      if ( result != null )
+        return result;
+      return NoContent();
     }
 
     /// <summary>
