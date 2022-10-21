@@ -23,20 +23,11 @@ namespace OLabWebAPI.Controllers.Player
   [ApiController]
   public partial class ConstantsController : OlabController
   {
-    public ConstantsController(ILogger<ConstantsController> logger, OLabDBContext context) : base(logger, context)
-    {
-      // var token = OLabUserService.CreateJwt("sub", "jti", "issuer", "audience");
-      // OLabUserService.ValidateToken(token, "issuer", "audience");
-    }
+    private readonly ConstantsEndpoint _endpoint;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    private bool Exists(uint id)
+    public ConstantsController(ILogger<ConstantsController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
-      return context.SystemConstants.Any(e => e.Id == id);
+      _endpoint = new ConstantsEndpoint(this.logger, context, auth);
     }
 
     /// <summary>
@@ -49,29 +40,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
     {
-      logger.LogDebug($"ConstantsController.GetAsync([FromQuery] int? take={take}, [FromQuery] int? skip={skip})");
-
-      var token = Request.Headers["Authorization"];
-      var Constants = new List<SystemConstants>();
-      var total = 0;
-      var remaining = 0;
-
-      if (!skip.HasValue)
-        skip = 0;
-
-      Constants = await context.SystemConstants.OrderBy(x => x.Name).ToListAsync();
-      total = Constants.Count;
-
-      if (take.HasValue && skip.HasValue)
-      {
-        Constants = Constants.Skip(skip.Value).Take(take.Value).ToList();
-        remaining = total - take.Value - skip.Value;
-      }
-
-      logger.LogDebug(string.Format("found {0} Constants", Constants.Count));
-
-      var dtoList = new ObjectMapper.Constants(logger).PhysicalToDto(Constants);
-      return OLabObjectPagedListResult<ConstantsDto>.Result(dtoList, remaining);
+      return await _endpoint.GetAsync(take, skip);
     }
 
     /// <summary>
@@ -83,22 +52,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync(uint id)
     {
-      logger.LogDebug($"ConstantsController.GetAsync(uint id={id})");
-
-      if (!Exists(id))
-        return OLabNotFoundResult<uint>.Result(id);
-
-      var phys = await context.SystemConstants.FirstAsync(x => x.Id == id);
-      var dto = new ObjectMapper.Constants(logger).PhysicalToDto(phys);
-
-      // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
-      if (accessResult is UnauthorizedResult)
-        return accessResult;
-
-      AttachParentObject(dto);
-
-      return OLabObjectResult<ConstantsDto>.Result(dto);
+      return await _endpoint.GetAsync( id );
     }
 
     /// <summary>
@@ -110,38 +64,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PutAsync(uint id, [FromBody] ConstantsDto dto)
     {
-      logger.LogDebug($"PutAsync(uint id={id})");
-
-      dto.ImageableId = dto.ParentObj.Id;
-
-      // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
-      if (accessResult is UnauthorizedResult)
-        return accessResult;
-
-      try
-      {
-        var builder = new ConstantsFull(logger);
-        var phys = builder.DtoToPhysical(dto);
-
-        phys.UpdatedAt = DateTime.Now;
-
-        context.Entry(phys).State = EntityState.Modified;
-        await context.SaveChangesAsync();
-      }
-      catch (DbUpdateConcurrencyException)
-      {
-        var existingObject = await GetConstantAsync(id);
-        if (existingObject == null)
-          return OLabNotFoundResult<uint>.Result(id);
-        else
-        {
-          throw;
-        }
-      }
-
-      return NoContent();
-
+      return await _endpoint.PutAsync(id, dto);
     }
 
     /// <summary>
@@ -153,33 +76,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostAsync([FromBody] ConstantsDto dto)
     {
-      logger.LogDebug($"ConstantsController.PostAsync({dto.Name})");
-
-      dto.ImageableId = dto.ParentObj.Id;
-
-      // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
-      if (accessResult is UnauthorizedResult)
-        return accessResult;
-
-      try
-      {
-        var builder = new ConstantsFull(logger);
-        var phys = builder.DtoToPhysical(dto);
-
-        phys.CreatedAt = DateTime.Now;
-
-        context.SystemConstants.Add(phys);
-        await context.SaveChangesAsync();
-
-        dto = builder.PhysicalToDto(phys);
-        return OLabObjectResult<ConstantsDto>.Result(dto);
-
-      }
-      catch (Exception ex)
-      {
-        return OLabServerErrorResult.Result(ex.Message);
-      }
+      return await _endpoint.PostAsync(dto);
     }
 
     /// <summary>
@@ -191,37 +88,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> DeleteAsync(uint id)
     {
-      logger.LogDebug($"ConstantsController.DeleteAsync(uint id={id})");
-
-      if (!Exists(id))
-        return OLabNotFoundResult<uint>.Result(id);
-
-      try
-      {
-        var phys = await GetConstantAsync(id);
-        var dto = new ConstantsFull(logger).PhysicalToDto(phys);
-
-        // test if user has access to object
-        var accessResult = HasAccessToScopedObject(dto);
-        if (accessResult is UnauthorizedResult)
-          return accessResult;
-
-        context.SystemConstants.Remove(phys);
-        await context.SaveChangesAsync();
-
-      }
-      catch (DbUpdateConcurrencyException)
-      {
-        var existingObject = await GetConstantAsync(id);
-        if (existingObject == null)
-          return OLabNotFoundResult<uint>.Result(id);
-        else
-        {
-          throw;
-        }
-      }
-
-      return NoContent();
+      return await _endpoint.DeleteAsync(id);
     }
 
   }

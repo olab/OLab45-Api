@@ -101,7 +101,7 @@ namespace OLabWebAPI.Controllers.Player
         var dto = builder.PhysicalToDto(phys);
 
         // test if user has access to object
-        var accessResult = HasAccessToScopedObject(dto);
+        var accessResult = HasAccess(dto);
         if (accessResult is UnauthorizedResult)
           return accessResult;
 
@@ -130,7 +130,7 @@ namespace OLabWebAPI.Controllers.Player
       dto.ImageableId = dto.ParentObj.Id;
 
       // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
+      var accessResult = HasAccess(dto);
       if (accessResult is UnauthorizedResult)
         return accessResult;
 
@@ -167,7 +167,7 @@ namespace OLabWebAPI.Controllers.Player
       dto.Prompt = !string.IsNullOrEmpty(dto.Prompt) ? dto.Prompt : "";
 
       // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
+      var accessResult = HasAccess(dto);
       if (accessResult is UnauthorizedResult)
         return accessResult;
 

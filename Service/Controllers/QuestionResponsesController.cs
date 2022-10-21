@@ -57,7 +57,7 @@ namespace OLabWebAPI.Controllers.Player
         var dtoQuestionTemp = builder.PhysicalToDto(physQuestionTemp);
 
         // test if user has access to object
-        var accessResult = HasAccessToScopedObject(dtoQuestionTemp);
+        var accessResult = HasAccess(dtoQuestionTemp);
         if (accessResult is UnauthorizedResult)
           return accessResult;
 
@@ -96,7 +96,7 @@ namespace OLabWebAPI.Controllers.Player
         var dtoQuestionTemp = questionBuilder.PhysicalToDto(physQuestionTemp);
 
         // test if user has access to object
-        var accessResult = HasAccessToScopedObject(dtoQuestionTemp);
+        var accessResult = HasAccess(dtoQuestionTemp);
         if (accessResult is UnauthorizedResult)
           return accessResult;
 
@@ -138,7 +138,7 @@ namespace OLabWebAPI.Controllers.Player
         var dtoQuestion = questionBuilder.PhysicalToDto(physQuestion);
 
         // test if user has access to objectdtoQuestion
-        var accessResult = HasAccessToScopedObject(dtoQuestion);
+        var accessResult = HasAccess(dtoQuestion);
         if (accessResult is UnauthorizedResult)
           return accessResult;
 

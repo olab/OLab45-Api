@@ -88,7 +88,7 @@ namespace OLabWebAPI.Controllers.Player
       var dto = new CountersFull(logger).PhysicalToDto(phys);
 
       // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
+      var accessResult = HasAccess(dto);
       if (accessResult is UnauthorizedResult)
         return accessResult;
 
@@ -117,7 +117,7 @@ namespace OLabWebAPI.Controllers.Player
         var dto = new CountersFull(logger).PhysicalToDto(phys);
 
         // test if user has access to object
-        var accessResult = HasAccessToScopedObject(dto);
+        var accessResult = HasAccess(dto);
         if (accessResult is UnauthorizedResult)
           return accessResult;
 
@@ -153,7 +153,7 @@ namespace OLabWebAPI.Controllers.Player
       dto.ImageableId = dto.ParentObj.Id;
 
       // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
+      var accessResult = HasAccess(dto);
       if (accessResult is UnauthorizedResult)
         return accessResult;
 
@@ -197,7 +197,7 @@ namespace OLabWebAPI.Controllers.Player
       dto.Value = dto.StartValue;
 
       // test if user has access to object
-      var accessResult = HasAccessToScopedObject(dto);
+      var accessResult = HasAccess(dto);
       if (accessResult is UnauthorizedResult)
         return accessResult;
 

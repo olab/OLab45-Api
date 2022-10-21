@@ -9,6 +9,9 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
+using OLabWebAPI.Interface;
+using Microsoft.AspNetCore.Http;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers
 {
@@ -19,6 +22,16 @@ namespace OLabWebAPI.Controllers
     protected string token;
     protected string BaseUrl => $"{Request.Scheme}://{Request.Host.Value}";
     protected string RequestPath => $"{Request.Path.ToString().Trim('/')}";
+    protected HttpRequest request;
+    protected IOlabAuthentication auth;
+
+    public OlabController(ILogger logger, OLabDBContext context, HttpRequest request)
+    {
+      this.context = context;
+      this.logger = new OLabLogger(logger);
+      this.request = request;
+      auth = new OLabWebApiAuthorization(this.logger, this.context, HttpContext);
+    }
 
     public OlabController(ILogger logger, OLabDBContext context)
     {
@@ -94,27 +107,9 @@ namespace OLabWebAPI.Controllers
     /// <param name="dto"></param>
     /// <returns></returns>
     [NonAction]
-    protected IActionResult HasAccessToScopedObject(ScopedObjectDto dto)
+    protected IActionResult HasAccess(ScopedObjectDto dto)
     {
-      // test if user has access to write to parent.
-      var userContext = new UserContext(logger, context, HttpContext);
-      if (dto.ImageableType == Constants.ScopeLevelMap)
-      {
-        if (!userContext.HasAccess("W", Constants.ScopeLevelMap, dto.ImageableId))
-          return OLabUnauthorizedResult.Result();
-      }
-      if (dto.ImageableType == Constants.ScopeLevelServer)
-      {
-        if (!userContext.HasAccess("W", Constants.ScopeLevelServer, dto.ImageableId))
-          return OLabUnauthorizedResult.Result();
-      }
-      if (dto.ImageableType == Constants.ScopeLevelNode)
-      {
-        if (!userContext.HasAccess("W", Constants.ScopeLevelNode, dto.ImageableId))
-          return OLabUnauthorizedResult.Result();
-      }
-
-      return new NoContentResult();
+      return auth.HasAccess(dto);
     }
 
     /// <summary>
