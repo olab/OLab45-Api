@@ -1,23 +1,29 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using OLabWebAPI.Common;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Model;
+using OLabWebAPI.Endpoints.Player;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OLabWebAPI.Model;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging;
-using OLabWebAPI.Utils;
-using OLabWebAPI.Common;
-using OLabWebAPI.Model.ReaderWriter;
 
 namespace OLabWebAPI.Controllers.Player
 {
   [Route("olab/api/v3/servers")]
   public partial class ServerController : OlabController
   {
+    private readonly ServerEndpoint _endpoint;
+
+    public ServerController(ILogger<ServerController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
+    {
+      _endpoint = new ServerEndpoint(this.logger, context, auth);
+    }
+
     public ServerController(ILogger<NodesController> logger, OLabDBContext context) : base(logger, context)
     {
     }
@@ -32,30 +38,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
     {
-      var items = new List<Servers>();
-      var total = 0;
-      var remaining = 0;
-
-      if (!skip.HasValue)
-        skip = 0;
-
-      if (take.HasValue && skip.HasValue)
-      {
-        items = await context.Servers.Skip(skip.Value).Take(take.Value).OrderBy(x => x.Name).ToListAsync();
-        remaining = total - take.Value - skip.Value;
-      }
-      else
-      {
-        items = await context.Servers.OrderBy(x => x.Name).ToListAsync();
-      }
-
-      total = items.Count;
-
-      logger.LogDebug(string.Format("found {0} servers", items.Count));
-
-      // filter out any maps user does not have access to.
-      var userContext = new UserContext(logger, context, HttpContext);
-      return OLabObjectPagedListResult<Servers>.Result(items, remaining);
+      return await _endpoint.GetAsync(take, skip);
     }
 
     /// <summary>
@@ -67,10 +50,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsRawAsync(uint serverId)
     {
-      logger.LogDebug($"ServerController.GetScopedObjectsRawAsync(uint serverId={serverId})");
-      var dto = await GetScopedObjectsAsync(serverId, false);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);      
-
+      return await _endpoint.GetScopedObjectsRawAsync(serverId);
     }
 
     /// <summary>
@@ -82,9 +62,7 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsTranslatedAsync(uint serverId)
     {
-      logger.LogDebug($"ServerController.GetScopedObjectsTranslatedAsync(uint serverId={serverId})");
-      var dto = await GetScopedObjectsAsync(serverId, true);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);      
+      return await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
     }
 
     /// <summary>
@@ -97,13 +75,7 @@ namespace OLabWebAPI.Controllers.Player
       uint serverId,
       bool enableWikiTranslation)
     {
-      logger.LogDebug($"ServerController.GetScopedObjectsAsync(uint serverId={serverId})");
-
-      var phys = await GetScopedObjectsAllAsync(serverId, Utils.Constants.ScopeLevelServer);
-      var builder = new ObjectMapper.ScopedObjects(logger, enableWikiTranslation);
-      var dto = builder.PhysicalToDto(phys);
-
-      return dto;
+      return await _endpoint.GetScopedObjectsAsync(serverId, enableWikiTranslation);
     }
   }
 }
