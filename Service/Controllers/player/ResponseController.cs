@@ -15,6 +15,7 @@ using System.Security.Claims;
 using System.Collections.Generic;
 using System.Linq;
 using OLabWebAPI.Common;
+using OLabWebAPI.Endpoints.Player;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -22,8 +23,11 @@ namespace OLabWebAPI.Controllers.Player
   [ApiController]
   public partial class ResponseController : OlabController
   {
-    public ResponseController(ILogger<NodesController> logger, OLabDBContext context) : base(logger, context)
+    private readonly ResponseEndpoint _endpoint;
+
+    public ResponseController(ILogger<ResponseController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
+      _endpoint = new ResponseEndpoint(this.logger, context, auth);
     }
 
     /// <summary>
@@ -36,57 +40,22 @@ namespace OLabWebAPI.Controllers.Player
     public async Task<IActionResult> PostQuestionResponseAsync(
       [FromBody] QuestionResponsePostDataDto body)
     {
-      logger.LogDebug($"PostQuestionResponseAsync(questionId={body.QuestionId}, response={body.PreviousValue}->{body.Value}");
 
       try
       {
-        var userContext = new UserContext(logger, context, HttpContext);
-
         var question = await GetQuestionAsync(body.QuestionId);
         if (question == null)
           throw new Exception($"Question {body.QuestionId} not found");
 
-        // test if counter associated with the question
-        if (question.CounterId.HasValue && (question.CounterId.Value > 0))
-        {
-          var dbCounter = await GetCounterAsync((uint)question.CounterId.Value);
-          if (dbCounter == null)
-            throw new Exception($"Counter {question.CounterId.Value} not found in database");
+        var result = await _endpoint.PostQuestionResponseAsync(body);
 
-          var counterDto = GetTargetCounter(question, dbCounter, body);
-
-          if (question.SystemQuestionResponses.Count > 0)
-          {
-            if (question.EntryTypeId == 4)
-              // handle questions that have a single response
-              ProcessSingleResponseQuestion(question, counterDto, body);
-            else if (question.EntryTypeId == 3)
-              // handle questions that have multiple responses
-              ProcessMultipleResponseQuestion(question, counterDto, body);
-            else
-              throw new NotImplementedException($"question {question.Id} not implemented");
-          }
-          else
-            // handle questions that have no underlying responses (e.g. slider)
-            ProcessValueQuestion(question, counterDto, body);
-
-          // if a server-level counter value has changed, write it to db
-          if (dbCounter.ImageableType == Utils.Constants.ScopeLevelServer)
-          {
-            dbCounter.ValueFromNumber(counterDto.ValueAsNumber());
-            context.SystemCounters.Update(dbCounter);
-            await context.SaveChangesAsync();
-          }
-
-          userContext.Session.OnQuestionResponse(
-            userContext.SessionId,
-            body.MapId,
-            body.NodeId,
-            question.Id,
-            body.Value);
-        }
-        else
-          logger.LogWarning($"question {question.Id} response: question has no counter");
+        var userContext = new UserContext(logger, context, HttpContext);
+        userContext.Session.OnQuestionResponse(
+          userContext.SessionId,
+          body.MapId,
+          body.NodeId,
+          question.Id,
+          body.Value);
 
       }
       catch (Exception ex)
