@@ -106,11 +106,11 @@ namespace OLabWebAPI.Controllers
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    [NonAction]
-    protected IActionResult HasAccess(ScopedObjectDto dto)
-    {
-      return auth.HasAccess(dto);
-    }
+    // [NonAction]
+    // protected IActionResult HasAccess(ScopedObjectDto dto)
+    // {
+    //   return auth.HasAccess(dto);
+    // }
 
     /// <summary>
     /// Get nodes for map

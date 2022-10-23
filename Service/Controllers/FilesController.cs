@@ -202,11 +202,6 @@ namespace OLabWebAPI.Controllers.Player
         logger.LogDebug($"FilesController.PostAsync()");
         var dto = new FilesFullDto(Request.Form);
 
-        // test if user has access to object
-        var accessResult = HasAccess(dto);
-        if (accessResult is UnauthorizedResult)
-          return accessResult;
-
         var builder = new FilesFull(logger);
         var phys = builder.DtoToPhysical(dto);
 
@@ -220,14 +215,11 @@ namespace OLabWebAPI.Controllers.Player
         MimeTypes.TryGetMimeType(phys.Path, out var mimeType);
         phys.Mime = mimeType;
 
-        context.SystemFiles.Add(phys);
-        await context.SaveChangesAsync();
-
+        dto = await _endpoint.PostAsync(phys);
+        
         // successful save to database, copy the file to the
         // final location
         CopyToStaticDirectory(tempFileName, staticFileName);
-
-        dto = builder.PhysicalToDto(phys);
         return OLabObjectResult<FilesFullDto>.Result(dto);
 
       }

@@ -1,22 +1,20 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Utils;
 using System.Text;
 using OLabWebAPI.Model;
 using OLabWebAPI.Common;
 using Microsoft.EntityFrameworkCore;
+using OLabWebAPI.Endpoints.Designer;
 using System.Linq;
 using OLabWebAPI.Controllers.Player;
-using System.IO;
 using OLabWebAPI.Model.ReaderWriter;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace OLabWebAPI.Controllers.Designer
 {
@@ -24,9 +22,12 @@ namespace OLabWebAPI.Controllers.Designer
   [ApiController]
   public partial class MapsController : OlabController
   {
-    public MapsController(ILogger<MapsController> logger, OLabDBContext context) : base(logger, context)
+    private readonly MapsEndpoint _endpoint;
+
+    public MapsController(ILogger<ConstantsController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
-    }
+      _endpoint = new MapsEndpoint(this.logger, context, auth);
+    }    
 
     /// <summary>
     /// 
@@ -34,10 +35,9 @@ namespace OLabWebAPI.Controllers.Designer
     /// <param name="context"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    private static Model.Maps GetSimple(OLabDBContext context, uint id)
+    private Model.Maps GetSimple(OLabDBContext context, uint id)
     {
-      var phys = context.Maps.Include(x => x.SystemCounterActions).FirstOrDefault(x => x.Id == id);
-      return phys;
+      return _endpoint.GetSimple(context, id);
     }
 
     /// <summary>
