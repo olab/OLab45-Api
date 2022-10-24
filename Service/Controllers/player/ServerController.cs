@@ -24,10 +24,6 @@ namespace OLabWebAPI.Controllers.Player
       _endpoint = new ServerEndpoint(this.logger, context, auth);
     }
 
-    public ServerController(ILogger<NodesController> logger, OLabDBContext context) : base(logger, context)
-    {
-    }
-
     /// <summary>
     /// Get a list of servers
     /// </summary>

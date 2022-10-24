@@ -27,48 +27,37 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetMapNodeAsync(uint mapId, uint nodeId)
     {
-      logger.LogDebug($"GetMapNodeAsync(uint mapId={mapId}, nodeId={nodeId})");
 
-      // test if user has access to map.
-      var userContext = new UserContext(logger, context, HttpContext);
-      if (!userContext.HasAccess("R", Utils.Constants.ScopeLevelMap, mapId))
-        return OLabUnauthorizedObjectResult<KeyValuePair<uint, uint>>.Result(new KeyValuePair<uint, uint>(mapId, nodeId));
-
-      var map = await MapsReaderWriter.Instance(logger.GetLogger(), context).GetSingleAsync(mapId);
-      if (map == null)
-        return OLabNotFoundResult<uint>.Result(Utils.Constants.ScopeLevelMap, mapId);
-
-      MapsNodesFullRelationsDto dto;
-      if (nodeId > 0)
-        dto = await GetNodeAsync(map, nodeId);
-      else
-        dto = await GetRootNodeAsync(map);
+      var dto = await _endpoint.GetMapNodeAsync(mapId, nodeId);
 
       if (!dto.Id.HasValue)
         return OLabNotFoundResult<uint>.Result(Utils.Constants.ScopeLevelNode, nodeId);
+
+      var userContext = new UserContext(logger, context, HttpContext);
 
       // test if end node, meaning we can close the session.  otherwise
       // record the OnPlay event
       if (dto.End.HasValue && dto.End.Value)
       {
-        userContext.Session.OnPlayNode(userContext.SessionId, map.Id, dto.Id.Value);
-        userContext.Session.OnEndSession(userContext.SessionId, map.Id, dto.Id.Value);
+        userContext.Session.OnPlayNode(userContext.SessionId, mapId, dto.Id.Value);
+        userContext.Session.OnEndSession(userContext.SessionId, mapId, dto.Id.Value);
       }
       else
       {
         if (nodeId == 0)
         {
-          userContext.Session.OnStartSession(userContext.UserName, map.Id, userContext.IPAddress);
+          userContext.Session.OnStartSession(userContext.UserName, mapId, userContext.IPAddress);
           dto.SessionId = userContext.Session.GetSessionId();
           userContext.SessionId = dto.SessionId;
         }
 
-        userContext.Session.OnPlayNode(userContext.SessionId, map.Id, dto.Id.Value);
+        userContext.Session.OnPlayNode(userContext.SessionId, mapId, dto.Id.Value);
       }
 
-      UpdateNodeCounter();
+      _endpoint.UpdateNodeCounter();
 
       return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
+
     }
 
     /// <summary>
@@ -84,42 +73,8 @@ namespace OLabWebAPI.Controllers.Player
       uint nodeId
     )
     {
-      logger.LogDebug($"DeleteNodeAsync(uint mapId={mapId}, nodeId={nodeId})");
-
-      // test if user has access to map.
-      var userContext = new UserContext(logger, context, HttpContext);
-      if (!userContext.HasAccess("W", Utils.Constants.ScopeLevelMap, mapId))
-        return OLabUnauthorizedObjectResult<uint>.Result(mapId);
-
-      using var transaction = context.Database.BeginTransaction();
-
-      try
-      {
-        var links = context.MapNodeLinks.Where( x => ( x.NodeId1 == nodeId ) || ( x.NodeId2 == nodeId )).ToArray();
-        logger.LogDebug($"deleting {links.Count()} links");
-        context.MapNodeLinks.RemoveRange( links );
-
-        var node = await context.MapNodes.FirstOrDefaultAsync( x => x.Id == nodeId );
-        context.MapNodes.Remove(node);
-        logger.LogDebug($"deleting node id: {node.Id}");
-       
-        await context.SaveChangesAsync();
-
-        await transaction.CommitAsync();
-
-        var responseDto = new MapNodesPostResponseDto
-        {
-          Id = nodeId
-        };
-
-        return OLabObjectResult<MapNodesPostResponseDto>.Result(responseDto);
-
-      }
-      catch (Exception ex)
-      {
-        await transaction.RollbackAsync();
-        throw ex;
-      }
+      var dto = await _endpoint.DeleteNodeAsync(mapId, nodeId);
+      return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);      
     }
 
     /// <summary>
@@ -137,39 +92,8 @@ namespace OLabWebAPI.Controllers.Player
       [FromBody] MapNodesFullDto dto
     )
     {
-      logger.LogDebug($"PutNodeAsync(uint mapId={mapId}, nodeId={nodeId})");
-
-      // test if user has access to map.
-      var userContext = new UserContext(logger, context, HttpContext);
-      if (!userContext.HasAccess("W", Utils.Constants.ScopeLevelMap, mapId))
-        return OLabUnauthorizedObjectResult<uint>.Result(mapId);
-
-      using var transaction = context.Database.BeginTransaction();
-
-      try
-      {
-        var builder = new ObjectMapper.MapNodesFullMapper(logger);
-        var phys = builder.DtoToPhysical(dto);
-
-        context.MapNodes.Update(phys);
-        await context.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        var responseDto = new MapNodesPostResponseDto
-        {
-          Id = nodeId
-        };
-
-        return OLabObjectResult<MapNodesPostResponseDto>.Result(responseDto);
-
-      }
-      catch (Exception ex)
-      {
-        await transaction.RollbackAsync();
-        throw ex;
-      }
-
-
+      var newDto = await _endpoint.PutNodeAsync(mapId, nodeId, dto);
+      return OLabObjectResult<MapNodesPostResponseDto>.Result(newDto);   
     }
 
     /// <summary>
@@ -190,22 +114,6 @@ namespace OLabWebAPI.Controllers.Player
       }
 
       return await GetNodeAsync(map, phys.Id);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    private void UpdateNodeCounter()
-    {
-      var counter = context.SystemCounters.Where(x => x.Name == "nodeCounter").FirstOrDefault();
-
-      var value = counter.ValueAsNumber();
-
-      value++;
-      counter.ValueFromNumber(value);
-
-      context.SystemCounters.Update(counter);
-      context.SaveChanges();
     }
 
   }

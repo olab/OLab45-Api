@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using OLabWebAPI.Common;
+using OLabWebAPI.Common.Exceptions;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -32,15 +33,16 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetDynamicScopedObjectsRawAsync(uint mapId, uint nodeId, [FromQuery] uint sinceTime = 0)
     {
-      logger.LogDebug($"DynamicScopedObjectsController.GetDynamicScopedObjectsRawAsync({mapId}, {nodeId}, {sinceTime})");
+      try
+      {
+        var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(mapId, nodeId, sinceTime);
+        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
+      }
+      catch (OLabUnauthorizedException ex)
+      {
+        return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+      }
 
-      // test if user has access to map.
-      var userContext = new UserContext(logger, context, HttpContext);
-      if (!userContext.HasAccess("R", Utils.Constants.ScopeLevelMap, mapId))
-        return OLabUnauthorizedObjectResult<KeyValuePair<uint, uint>>.Result(new KeyValuePair<uint, uint>(mapId, nodeId));
-
-      var node = await GetMapRootNode(mapId, nodeId);
-      return await GetDynamicScopedObjectsAsync(1, node, sinceTime, false);
     }
 
     /// <summary>
@@ -54,15 +56,15 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetDynamicScopedObjectsTranslatedAsync(uint mapId, uint nodeId, [FromQuery] uint sinceTime = 0)
     {
-      logger.LogDebug($"DynamicScopedObjectsController.GetDynamicScopedObjectsTranslatedAsync({mapId}, {nodeId}, {sinceTime})");
-
-      // test if user has access to map.
-      var userContext = new UserContext(logger, context, HttpContext);
-      if (!userContext.HasAccess("R", Utils.Constants.ScopeLevelMap, mapId))
-        return OLabUnauthorizedObjectResult<KeyValuePair<uint, uint>>.Result(new KeyValuePair<uint, uint>(mapId, nodeId));
-
-      var node = await GetMapRootNode(mapId, nodeId);
-      return await GetDynamicScopedObjectsAsync(1, node, sinceTime, true);
+      try
+      {
+        var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(mapId, nodeId, sinceTime);
+        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
+      }
+      catch (OLabUnauthorizedException ex)
+      {
+        return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -79,48 +81,16 @@ namespace OLabWebAPI.Controllers.Player
       uint sinceTime,
       bool enableWikiTranslation)
     {
-      var physServer = new Model.ScopedObjects();
-      var physNode = new Model.ScopedObjects();
-      var physMap = new Model.ScopedObjects();
-
-      physServer.Counters = await GetScopedCountersAsync(Utils.Constants.ScopeLevelServer, serverId);
-      physNode.Counters = await GetScopedCountersAsync(Utils.Constants.ScopeLevelNode, node.Id);
-      physMap.Counters = await GetScopedCountersAsync(Utils.Constants.ScopeLevelMap, node.MapId);
-
-
-      await ProcessNodeCounters(node, physMap.Counters);
-
-      var builder = new ObjectMapper.DynamicScopedObjects(logger, enableWikiTranslation);
-
-      var dto = builder.PhysicalToDto(physServer, physMap, physNode);
-      return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
-    }
-
-    /// <summary>
-    /// Apply MapNodeCounter expressions to counters
-    /// </summary>
-    /// <param name="node">Current node</param>
-    /// <param name="counters">Raw system (map-level) counters</param>
-    /// <returns>void</returns>
-    private async Task ProcessNodeCounters(Model.MapNodes node, IList<SystemCounters> counters)
-    {
-      var counterActions = await context.SystemCounterActions.Where(x =>
-        (x.ImageableId == node.Id) &&
-        (x.ImageableType == Utils.Constants.ScopeLevelNode) &&
-        (x.OperationType == "open")).ToListAsync();
-
-      logger.LogDebug($"Found {counterActions.Count} counterActions records for node {node.Id} ");
-
-      foreach (var counterAction in counterActions)
+      try
       {
-        var rawCounter = counters.FirstOrDefault(x => x.Id == counterAction.CounterId);
-        if (rawCounter == null)
-          logger.LogError($"Enable to lookup counter {counterAction.CounterId} in action {counterAction.Id}");
-        else if (counterAction.ApplyFunctionToCounter(rawCounter))
-          logger.LogDebug($"Updated counter id {rawCounter.Id} with function '{counterAction.Expression}'. now = {rawCounter.ValueAsString()}");
+        var dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation);;
+        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
-
-      return;
+      catch (OLabUnauthorizedException ex)
+      {
+        return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+      }
     }
+
   }
 }
