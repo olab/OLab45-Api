@@ -1,18 +1,13 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
 using OLabWebAPI.Model;
 using System;
-
-using System.Net.Http;
-using System.Net;
 using System.IO;
 using System.Reflection;
 using System.IdentityModel.Tokens.Jwt;

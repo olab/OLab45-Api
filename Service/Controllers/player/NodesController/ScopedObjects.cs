@@ -12,6 +12,7 @@ using OLabWebAPI.Utils;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using OLabWebAPI.Common;
+using OLabWebAPI.Common.Exceptions;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -21,24 +22,51 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsRawAsync(uint nodeId)
     {
-      var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);      
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
+        return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     [HttpGet("{nodeId}/scopedobjects")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsAsync(uint nodeId)
     {
-      var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);      
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
+        return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     public async Task<IActionResult> GetScopedObjectsAsync(
       uint id,
       bool enableWikiTranslation)
     {
-      var dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
+        return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
   }
 }

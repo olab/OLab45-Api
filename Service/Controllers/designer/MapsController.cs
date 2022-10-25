@@ -2,18 +2,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
+using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Controllers.Player;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Model;
-using OLabWebAPI.Model.ReaderWriter;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Controllers.Designer
@@ -30,17 +26,6 @@ namespace OLabWebAPI.Controllers.Designer
     }
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    private Model.Maps GetSimple(OLabDBContext context, uint id)
-    {
-      return _endpoint.GetSimple(context, id);
-    }
-
-    /// <summary>
     /// Plays specific map node
     /// </summary>
     /// <param name="mapId">map id</param>
@@ -50,7 +35,17 @@ namespace OLabWebAPI.Controllers.Designer
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetMapNodeAsync(uint mapId, uint nodeId)
     {
-      return await _endpoint.GetMapNodeAsync(mapId, nodeId);
+      try
+      {
+        var dto = await _endpoint.GetMapNodeAsync(mapId, nodeId);
+        return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -62,7 +57,17 @@ namespace OLabWebAPI.Controllers.Designer
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetMapNodesAsync(uint mapId)
     {
-      return await _endpoint.GetMapNodesAsync(mapId);
+      try
+      {
+        var dtoList = await _endpoint.GetMapNodesAsync(mapId);
+        return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
+      }
+      catch (Exception ex)
+      {
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -73,7 +78,17 @@ namespace OLabWebAPI.Controllers.Designer
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostMapNodeLinkAsync(uint mapId, uint nodeId, [FromBody] PostNewLinkRequest body)
     {
-      return await _endpoint.PostMapNodeLinkAsync(mapId, nodeId, body);
+      try
+      {
+        var dto = await _endpoint.PostMapNodeLinkAsync(mapId, nodeId, body);
+        return OLabObjectResult<PostNewLinkResponse>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -84,7 +99,17 @@ namespace OLabWebAPI.Controllers.Designer
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostMapNodesAsync(PostNewNodeRequest body)
     {
-      return await _endpoint.PostMapNodesAsync(body);
+      try
+      {
+        var dto = await _endpoint.PostMapNodesAsync(body);
+        return OLabObjectResult<PostNewNodeResponse>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -99,12 +124,12 @@ namespace OLabWebAPI.Controllers.Designer
       try
       {
         var dto = await _endpoint.GetScopedObjectsRawAsync(id);
-        if (dto == null)
-          return OLabNotFoundResult<uint>.Result(id);
-        return OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto);
+        return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
       {
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
     }
@@ -121,14 +146,15 @@ namespace OLabWebAPI.Controllers.Designer
       try
       {
         var dto = await _endpoint.GetScopedObjectsAsync(id);
-        if (dto == null)
-          return OLabNotFoundResult<uint>.Result(id);
-        return OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto);
+        return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
       {
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
+
     }
 
     /// <summary>
@@ -141,12 +167,19 @@ namespace OLabWebAPI.Controllers.Designer
       uint id,
       bool enableWikiTranslation)
     {
-      var dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
-      if (dto == null)
-        return OLabNotFoundResult<uint>.Result(id);
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
+        DecorateDto(dto);
+        return OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
 
-      DecorateDto(dto);
-      return OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto);
     }
 
     /// <summary>

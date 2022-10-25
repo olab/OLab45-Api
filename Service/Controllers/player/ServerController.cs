@@ -11,6 +11,8 @@ using OLabWebAPI.Endpoints.Player;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
+using OLabWebAPI.Common.Exceptions;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -34,7 +36,18 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
     {
-      return await _endpoint.GetAsync(take, skip);
+      try
+      {
+        var pagedResponse = await _endpoint.GetAsync(take, skip);
+        return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
     }
 
     /// <summary>
@@ -46,7 +59,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsRawAsync(uint serverId)
     {
-      return await _endpoint.GetScopedObjectsRawAsync(serverId);
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
+        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -58,20 +81,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsTranslatedAsync(uint serverId)
     {
-      return await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="serverId"></param>
-    /// <param name="enableWikiTranslation"></param>
-    /// <returns></returns>
-    private async Task<ScopedObjectsDto> GetScopedObjectsAsync(
-      uint serverId,
-      bool enableWikiTranslation)
-    {
-      return await _endpoint.GetScopedObjectsAsync(serverId, enableWikiTranslation);
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
+        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
   }
 }

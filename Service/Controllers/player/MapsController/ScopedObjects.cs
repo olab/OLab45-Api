@@ -12,6 +12,7 @@ using OLabWebAPI.Utils;
 using System.Text;
 using OLabWebAPI.Model;
 using OLabWebAPI.Common;
+using OLabWebAPI.Common.Exceptions;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -26,7 +27,18 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsRawAsync(uint id)
     {
-      return await _endpoint.GetScopedObjectsRawAsync(id);
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsRawAsync(id);
+        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
     }
 
     /// <summary>
@@ -38,20 +50,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetScopedObjectsAsync(uint id)
     {
-      return await _endpoint.GetScopedObjectsAsync(id);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="enableWikiTranslation"></param>
-    /// <returns></returns>
-    private async Task<IActionResult> GetScopedObjectsAsync(
-      uint id,
-      bool enableWikiTranslation)
-    {
-      return await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
+      try
+      {
+        var dto = await _endpoint.GetScopedObjectsAsync(id);
+        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }      
     }
 
   }

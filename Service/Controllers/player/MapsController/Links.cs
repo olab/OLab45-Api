@@ -12,6 +12,7 @@ using OLabWebAPI.Utils;
 using OLabWebAPI.Common;
 using OLabWebAPI.Model.ReaderWriter;
 using System;
+using OLabWebAPI.Common.Exceptions;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -28,10 +29,20 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PutMapNodeLinksAsync(uint mapId, uint nodeId, uint linkId, [FromBody] MapNodeLinksFullDto linkdto)
     {
-      await _endpoint.PutMapNodeLinksAsync(mapId, nodeId, linkId, linkdto);
-      return NoContent();
+      try
+      {
+        await _endpoint.PutMapNodeLinksAsync(mapId, nodeId, linkId, linkdto);
+        return NoContent();
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
     }
 
   }
-  
+
 }

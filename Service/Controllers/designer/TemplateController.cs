@@ -2,18 +2,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
-using OLabWebAPI.Controllers.Player;
+using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
+using OLabWebAPI.Dto.Designer;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Model;
-using OLabWebAPI.Model.ReaderWriter;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Controllers.Designer
@@ -39,7 +35,18 @@ namespace OLabWebAPI.Controllers.Designer
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
     {
-      return await _endpoint.GetAsync(take, skip);
+      try
+      {
+        var pagedResponse = await _endpoint.GetAsync(take, skip);
+        return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
     }
 
     /// <summary>
@@ -50,7 +57,17 @@ namespace OLabWebAPI.Controllers.Designer
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public ActionResult Links()
     {
-      return _endpoint.Links();
+      try
+      {
+        var dto = _endpoint.Links();
+        return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -61,7 +78,17 @@ namespace OLabWebAPI.Controllers.Designer
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public ActionResult Nodes()
     {
-      return _endpoint.Nodes();
+      try
+      {
+        var dto = _endpoint.Nodes();
+        return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
   }
 }

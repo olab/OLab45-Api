@@ -1,21 +1,11 @@
-using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging;
 using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
+using System;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -38,9 +28,11 @@ namespace OLabWebAPI.Controllers.Player
         var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
-      catch (OLabUnauthorizedException ex)
+      catch (Exception ex)
       {
-        return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
       }
 
     }
@@ -61,9 +53,11 @@ namespace OLabWebAPI.Controllers.Player
         var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
-      catch (OLabUnauthorizedException ex)
+      catch (Exception ex)
       {
-        return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
       }
     }
 
@@ -86,9 +80,11 @@ namespace OLabWebAPI.Controllers.Player
         var dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation);;
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
-      catch (OLabUnauthorizedException ex)
+      catch (Exception ex)
       {
-        return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        if ( ex is OLabUnauthorizedException )
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
       }
     }
 
