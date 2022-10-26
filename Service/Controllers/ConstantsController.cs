@@ -7,6 +7,9 @@ using OLabWebAPI.Endpoints;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
+using System;
+using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Common;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -31,7 +34,18 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
     {
-      return await _endpoint.GetAsync(take, skip);
+      try
+      {
+        var pagedResult = await _endpoint.GetAsync(take, skip);
+        return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
     }
 
     /// <summary>
@@ -43,7 +57,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync(uint id)
     {
-      return await _endpoint.GetAsync( id );
+      try
+      {
+        var dto = await _endpoint.GetAsync(id);
+        return OLabObjectResult<ConstantsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -55,9 +79,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PutAsync(uint id, [FromBody] ConstantsDto dto)
     {
-      var result = await _endpoint.PutAsync(id, dto);
-      if ( result != null )
-        return result;
+      try
+      {
+        await _endpoint.PutAsync(id, dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
       return NoContent();
     }
 
@@ -70,7 +102,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostAsync([FromBody] ConstantsDto dto)
     {
-      return await _endpoint.PostAsync(dto);
+      try
+      {
+        dto = await _endpoint.PostAsync(dto);
+        return OLabObjectResult<ConstantsDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -82,7 +124,19 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> DeleteAsync(uint id)
     {
-      return await _endpoint.DeleteAsync(id);
+      try
+      {
+        await _endpoint.DeleteAsync(id);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
+      return NoContent();
+
     }
 
   }

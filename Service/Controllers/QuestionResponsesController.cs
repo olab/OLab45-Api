@@ -17,6 +17,7 @@ using OLabWebAPI.Services;
 using OLabWebAPI.ObjectMapper;
 using OLabWebAPI.Common;
 using OLabWebAPI.Utils;
+using OLabWebAPI.Common.Exceptions;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -32,16 +33,6 @@ namespace OLabWebAPI.Controllers.Player
     }
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    private bool Exists(uint id)
-    {
-      return context.SystemQuestionResponses.Any(e => e.Id == id);
-    }
-
-    /// <summary>
     /// Saves a object edit
     /// </summary>
     /// <param name="id">question id</param>
@@ -50,9 +41,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PutAsync(uint id, [FromBody] QuestionResponsesDto dto)
     {
-      var result = await _endpoint.PutAsync(id, dto);
-      if ( result != null )
-        return result;
+      try
+      {
+        await _endpoint.PutAsync(id, dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
       return NoContent();
     }
 
@@ -65,7 +64,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostAsync([FromBody] QuestionResponsesDto dto)
     {
-      return await _endpoint.PostAsync(dto);
+      try
+      {
+        dto = await _endpoint.PostAsync(dto);
+        return OLabObjectResult<QuestionResponsesDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>

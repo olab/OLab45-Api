@@ -7,6 +7,9 @@ using OLabWebAPI.Endpoints;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
+using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Common;
+using System;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -31,7 +34,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
     {
-      return await _endpoint.GetAsync(take, skip);
+      try
+      {
+        var pagedResult = await _endpoint.GetAsync(take, skip);
+        return OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -43,22 +56,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetAsync(uint id)
     {
-      return await _endpoint.GetAsync(id);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [HttpDelete("{id}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> DeleteAsync(uint id)
-    {
-      var result = await _endpoint.DeleteAsync(id);
-      if ( result != null )
-        return result;
-      return NoContent();
+      try
+      {
+        var dto = await _endpoint.GetAsync(id);
+        return OLabObjectResult<CountersDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
@@ -70,9 +78,17 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PutAsync(uint id, [FromBody] CountersFullDto dto)
     {
-      var result = await _endpoint.PutAsync(id, dto);
-      if ( result != null )
-        return result;
+      try
+      {
+        await _endpoint.PutAsync(id, dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
       return NoContent();
     }
 
@@ -85,8 +101,42 @@ namespace OLabWebAPI.Controllers.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostAsync([FromBody] CountersFullDto dto)
     {
-      return await _endpoint.PostAsync(dto);
+      try
+      {
+        dto = await _endpoint.PostAsync(dto);
+        return OLabObjectResult<CountersFullDto>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> DeleteAsync(uint id)
+    {
+      try
+      {
+        await _endpoint.DeleteAsync(id);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
+      return NoContent();
+    }
+
   }
 
 }
