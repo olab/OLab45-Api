@@ -23,14 +23,12 @@ namespace OLabWebAPI.Controllers
     protected string BaseUrl => $"{Request.Scheme}://{Request.Host.Value}";
     protected string RequestPath => $"{Request.Path.ToString().Trim('/')}";
     protected HttpRequest request;
-    protected IOlabAuthentication auth;
 
     public OlabController(ILogger logger, OLabDBContext context, HttpRequest request)
     {
       this.context = context;
       this.logger = new OLabLogger(logger);
       this.request = request;
-      auth = new OLabWebApiAuthorization(this.logger, this.context, HttpContext);
     }
 
     public OlabController(ILogger logger, OLabDBContext context)
@@ -44,7 +42,6 @@ namespace OLabWebAPI.Controllers
     {
       var phys = await context.Maps.FirstOrDefaultAsync(x => x.Id == id);
       context.Entry(phys).Collection(b => b.MapNodes).Load();
-
       return phys;
     }
 
@@ -100,17 +97,6 @@ namespace OLabWebAPI.Controllers
 
       return item;
     }
-
-    /// <summary>
-    /// Central route to test if user has access to object
-    /// </summary>
-    /// <param name="dto"></param>
-    /// <returns></returns>
-    // [NonAction]
-    // protected IActionResult HasAccess(ScopedObjectDto dto)
-    // {
-    //   return auth.HasAccess(dto);
-    // }
 
     /// <summary>
     /// Get nodes for map

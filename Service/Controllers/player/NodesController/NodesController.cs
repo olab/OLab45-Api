@@ -24,7 +24,7 @@ namespace OLabWebAPI.Controllers.Player
 
     public NodesController(ILogger<NodesController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
-      _endpoint = new NodesEndpoint(this.logger, context, auth);
+      _endpoint = new NodesEndpoint(this.logger, context);
     }
 
     /// <summary>

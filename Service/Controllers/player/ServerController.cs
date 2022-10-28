@@ -23,7 +23,7 @@ namespace OLabWebAPI.Controllers.Player
 
     public ServerController(ILogger<ServerController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
-      _endpoint = new ServerEndpoint(this.logger, context, auth);
+      _endpoint = new ServerEndpoint(this.logger, context);
     }
 
     /// <summary>

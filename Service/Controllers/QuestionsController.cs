@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common.Exceptions;
 using System;
 using OLabWebAPI.Common;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -20,7 +21,7 @@ namespace OLabWebAPI.Controllers.Player
 
     public QuestionsController(ILogger<QuestionsController> logger, OLabDBContext context) : base(logger, context)
     {
-      _endpoint = new QuestionsEndpoint(this.logger, context, auth);
+      _endpoint = new QuestionsEndpoint(this.logger, context);
     }
 
     /// <summary>
@@ -57,7 +58,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.GetAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<QuestionsFullDto>.Result(dto);
       }
       catch (Exception ex)
@@ -79,7 +81,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        await _endpoint.PutAsync(id, dto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
       {
@@ -102,7 +105,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        dto = await _endpoint.PostAsync(dto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        dto = await _endpoint.PostAsync(auth, dto);
         return OLabObjectResult<QuestionsFullDto>.Result(dto);
       }
       catch (Exception ex)

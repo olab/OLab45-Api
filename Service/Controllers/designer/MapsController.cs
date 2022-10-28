@@ -9,6 +9,7 @@ using OLabWebAPI.Controllers.Player;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Model;
+using OLabWebAPI.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace OLabWebAPI.Controllers.Designer
 
     public MapsController(ILogger<ConstantsController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
-      _endpoint = new MapsEndpoint(this.logger, context, auth);
+      _endpoint = new MapsEndpoint(this.logger, context);
     }
 
     /// <summary>
@@ -37,7 +38,8 @@ namespace OLabWebAPI.Controllers.Designer
     {
       try
       {
-        var dto = await _endpoint.GetMapNodeAsync(mapId, nodeId);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }
       catch (Exception ex)
@@ -59,7 +61,8 @@ namespace OLabWebAPI.Controllers.Designer
     {
       try
       {
-        var dtoList = await _endpoint.GetMapNodesAsync(mapId);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
         return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
       }
       catch (Exception ex)
@@ -80,7 +83,8 @@ namespace OLabWebAPI.Controllers.Designer
     {
       try
       {
-        var dto = await _endpoint.PostMapNodeLinkAsync(mapId, nodeId, body);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
         return OLabObjectResult<PostNewLinkResponse>.Result(dto);
       }
       catch (Exception ex)
@@ -101,7 +105,8 @@ namespace OLabWebAPI.Controllers.Designer
     {
       try
       {
-        var dto = await _endpoint.PostMapNodesAsync(body);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.PostMapNodesAsync(auth, body);
         return OLabObjectResult<PostNewNodeResponse>.Result(dto);
       }
       catch (Exception ex)
@@ -123,7 +128,8 @@ namespace OLabWebAPI.Controllers.Designer
     {
       try
       {
-        var dto = await _endpoint.GetScopedObjectsRawAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
@@ -145,7 +151,8 @@ namespace OLabWebAPI.Controllers.Designer
     {
       try
       {
-        var dto = await _endpoint.GetScopedObjectsAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)

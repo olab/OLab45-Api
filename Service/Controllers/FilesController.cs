@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -45,7 +46,7 @@ namespace OLabWebAPI.Controllers.Player
 
     public FilesController(ILogger<CountersController> logger, IOptions<AppSettings> appSettings, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
-      _endpoint = new FilesEndpoint(this.logger, appSettings, context, auth);
+      _endpoint = new FilesEndpoint(this.logger, appSettings, context);
       _appSettings = appSettings.Value;
     }
 
@@ -183,7 +184,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.GetAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<FilesFullDto>.Result(dto);
       }
       catch (Exception ex)
@@ -206,7 +208,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        await _endpoint.PutAsync(id, dto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
       {
@@ -245,7 +248,8 @@ namespace OLabWebAPI.Controllers.Player
         MimeTypes.TryGetMimeType(phys.Path, out var mimeType);
         phys.Mime = mimeType;
 
-        dto = await _endpoint.PostAsync(phys);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        dto = await _endpoint.PostAsync(auth, phys);
         
         // successful save to database, copy the file to the
         // final location
@@ -270,7 +274,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        await _endpoint.DeleteAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)
       {

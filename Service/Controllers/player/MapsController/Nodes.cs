@@ -13,6 +13,7 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Model.ReaderWriter;
 using System;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -31,7 +32,8 @@ namespace OLabWebAPI.Controllers.Player
 
       try
       {
-        var dto = await _endpoint.GetMapNodeAsync(mapId, nodeId);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
 
         var userContext = new UserContext(logger, context, HttpContext);
 
@@ -82,7 +84,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.DeleteNodeAsync(mapId, nodeId);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
       }
       catch (Exception ex)
@@ -111,7 +114,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var newDto = await _endpoint.PutNodeAsync(mapId, nodeId, dto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(newDto);
       }
       catch (Exception ex)

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Common;
 using System;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -21,7 +22,7 @@ namespace OLabWebAPI.Controllers.Player
 
     public CountersController(ILogger<CountersController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
     {
-      _endpoint = new CountersEndpoint(this.logger, context, auth);
+      _endpoint = new CountersEndpoint(this.logger, context);
     }
 
     /// <summary>
@@ -58,7 +59,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.GetAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<CountersDto>.Result(dto);
       }
       catch (Exception ex)
@@ -80,7 +82,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        await _endpoint.PutAsync(id, dto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
       {
@@ -103,7 +106,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        dto = await _endpoint.PostAsync(dto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        dto = await _endpoint.PostAsync(auth, dto);
         return OLabObjectResult<CountersFullDto>.Result(dto);
       }
       catch (Exception ex)
@@ -125,7 +129,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        await _endpoint.DeleteAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)
       {

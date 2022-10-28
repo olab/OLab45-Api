@@ -13,6 +13,7 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Model.ReaderWriter;
 using System;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -31,7 +32,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        await _endpoint.PutMapNodeLinksAsync(mapId, nodeId, linkId, linkdto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, linkdto);
         return NoContent();
       }
       catch (Exception ex)

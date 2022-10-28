@@ -6,6 +6,7 @@ using OLabWebAPI.Dto;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using System;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -25,7 +26,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(mapId, nodeId, sinceTime);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
@@ -50,7 +52,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(mapId, nodeId, sinceTime);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)

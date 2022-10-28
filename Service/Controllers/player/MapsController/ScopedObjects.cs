@@ -13,6 +13,7 @@ using System.Text;
 using OLabWebAPI.Model;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Controllers.Player
 {
@@ -29,7 +30,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.GetScopedObjectsRawAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
@@ -52,7 +54,8 @@ namespace OLabWebAPI.Controllers.Player
     {
       try
       {
-        var dto = await _endpoint.GetScopedObjectsAsync(id);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
