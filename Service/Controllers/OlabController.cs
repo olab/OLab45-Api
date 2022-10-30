@@ -24,12 +24,12 @@ namespace OLabWebAPI.Controllers
     protected string RequestPath => $"{Request.Path.ToString().Trim('/')}";
     protected HttpRequest request;
 
-    public OlabController(ILogger logger, OLabDBContext context, HttpRequest request)
-    {
-      this.context = context;
-      this.logger = new OLabLogger(logger);
-      this.request = request;
-    }
+    // public OlabController(ILogger logger, OLabDBContext context, HttpRequest request)
+    // {
+    //   this.context = context;
+    //   this.logger = new OLabLogger(logger);
+    //   this.request = request;
+    // }
 
     public OlabController(ILogger logger, OLabDBContext context)
     {

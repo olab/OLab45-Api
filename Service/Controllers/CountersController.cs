@@ -20,7 +20,7 @@ namespace OLabWebAPI.Controllers.Player
   {
     private readonly CountersEndpoint _endpoint;
 
-    public CountersController(ILogger<CountersController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
+    public CountersController(ILogger<CountersController> logger, OLabDBContext context) : base(logger, context)
     {
       _endpoint = new CountersEndpoint(this.logger, context);
     }

@@ -21,7 +21,7 @@ namespace OLabWebAPI.Controllers.Player
   {
     private readonly ServerEndpoint _endpoint;
 
-    public ServerController(ILogger<ServerController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
+    public ServerController(ILogger<ServerController> logger, OLabDBContext context) : base(logger, context)
     {
       _endpoint = new ServerEndpoint(this.logger, context);
     }

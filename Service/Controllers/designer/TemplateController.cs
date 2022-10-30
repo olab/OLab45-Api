@@ -20,7 +20,7 @@ namespace OLabWebAPI.Controllers.Designer
   {
     private readonly TemplateEndpoint _endpoint;
 
-    public TemplatesController(ILogger<TemplatesController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
+    public TemplatesController(ILogger<TemplatesController> logger, OLabDBContext context) : base(logger, context)
     {
       _endpoint = new TemplateEndpoint(this.logger, context);
     }
