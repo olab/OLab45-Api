@@ -21,7 +21,7 @@ namespace OLabWebAPI.Controllers.Designer
   {
     private readonly MapsEndpoint _endpoint;
 
-    public MapsController(ILogger<ConstantsController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
+    public MapsController(ILogger<ConstantsController> logger, OLabDBContext context) : base(logger, context)
     {
       _endpoint = new MapsEndpoint(this.logger, context);
     }

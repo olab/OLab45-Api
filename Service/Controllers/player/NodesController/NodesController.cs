@@ -22,7 +22,7 @@ namespace OLabWebAPI.Controllers.Player
   {
     private readonly NodesEndpoint _endpoint;
 
-    public NodesController(ILogger<NodesController> logger, OLabDBContext context, HttpRequest request) : base(logger, context, request)
+    public NodesController(ILogger<NodesController> logger, OLabDBContext context) : base(logger, context)
     {
       _endpoint = new NodesEndpoint(this.logger, context);
     }

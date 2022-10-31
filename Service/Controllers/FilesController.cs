@@ -44,7 +44,7 @@ namespace OLabWebAPI.Controllers.Player
     private readonly AppSettings _appSettings;
     private readonly FilesEndpoint _endpoint;
 
-    public FilesController(ILogger<CountersController> logger, IOptions<AppSettings> appSettings, OLabDBContext context, HttpRequest request) : base(logger, context, request)
+    public FilesController(ILogger<CountersController> logger, IOptions<AppSettings> appSettings, OLabDBContext context, HttpRequest request) : base(logger, context)
     {
       _endpoint = new FilesEndpoint(this.logger, appSettings, context);
       _appSettings = appSettings.Value;
