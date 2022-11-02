@@ -26,5 +26,11 @@
     "titleBar.inactiveBackground": "#716d9199",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "peacock.color": "#716d91"
+  "peacock.color": "#716d91",
+  "azureFunctions.projectSubpath": "FunctionApp\\src\\Api",
+  "azureFunctions.deploySubpath": "FunctionApp\\src\\Api/bin/Release/netcoreapp3.1/publish",
+  "azureFunctions.projectLanguage": "C#",
+  "azureFunctions.projectRuntime": "~3",
+  "debug.internalConsoleOptions": "neverOpen",
+  "azureFunctions.preDeployTask": "publish (functions)"
 }
