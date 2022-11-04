@@ -27,10 +27,10 @@
     "titleBar.inactiveForeground": "#e7e7e799"
   },
   "peacock.color": "#716d91",
-  "azureFunctions.projectSubpath": "FunctionApp\\src\\Api",
-  "azureFunctions.deploySubpath": "FunctionApp\\src\\Api/bin/Release/netcoreapp3.1/publish",
+  "azureFunctions.projectSubpath": "FunctionApp",
+  "azureFunctions.deploySubpath": "FunctionApp/bin/Release/netcoreapp3.1/publish",
   "azureFunctions.projectLanguage": "C#",
-  "azureFunctions.projectRuntime": "~3",
+  "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
   "azureFunctions.preDeployTask": "publish (functions)"
 }
