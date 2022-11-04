@@ -4,7 +4,7 @@
   "svn.enabled": true,
   "editor.codeLens": false,
   "appService.defaultWebAppToDeploy": "/subscriptions/9351d3d5-5755-4ff3-aceb-9ea621fec991/resourceGroups/olab4/providers/Microsoft.Web/sites/olab4",
-  "appService.deploySubpath": "Service\\bin\\Release\\netcoreapp3.1\\publish",
+  "appService.deploySubpath": "Service\\bin\\Release\\net6.0\\publish",
   "editor.tabSize": 2,
   "editor.detectIndentation": false,
   "workbench.colorCustomizations": {
@@ -28,7 +28,7 @@
   },
   "peacock.color": "#716d91",
   "azureFunctions.projectSubpath": "FunctionApp",
-  "azureFunctions.deploySubpath": "FunctionApp/bin/Release/netcoreapp3.1/publish",
+  "azureFunctions.deploySubpath": "FunctionApp/bin/Release/net6.0/publish",
   "azureFunctions.projectLanguage": "C#",
   "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",

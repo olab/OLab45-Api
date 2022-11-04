@@ -16,15 +16,15 @@ namespace OLab.FunctionApp.Api
   public class Login
   {
     private readonly ILogger _logger;
-    protected readonly OLabDBContext _context;
+    // protected readonly OLabDBContext _context;
     private readonly IUserService _userService;
 
-    public Login(IUserService userService, ILogger<Login> logger, OLabDBContext context)
-    {
-      _logger = logger;
-      _context = context;
-      _userService = userService;
-    }
+    // public Login(IUserService userService, ILogger<Login> logger /*, OLabDBContext context */ )
+    // {
+    //   _logger = logger;
+    //   // _context = context;
+    //   _userService = userService;
+    // }
 
     [FunctionName("Login")]
     public IActionResult Run(
@@ -32,7 +32,7 @@ namespace OLab.FunctionApp.Api
         ILogger logger,
         CancellationToken cancellationToken)
     {
-      _logger.LogInformation("C# HTTP trigger function processed a request.");
+      logger.LogInformation("C# HTTP trigger function processed a request.");
 
       return new OkObjectResult(null);
     }

@@ -1,8 +1,8 @@
 [Unit]  
 Description=OLab 4.5 API  
 [Service]  
-WorkingDirectory=/opt/olab45/OLab-api/Service/bin/Release/netcoreapp3.1
-ExecStart=/opt/olab45/OLab-api/Service/bin/Release/netcoreapp3.1/OLabWebAPI --urls http://dev.olab.ca:5000
+WorkingDirectory=/opt/olab45/OLab-api/Service/bin/Release/net6.0
+ExecStart=/opt/olab45/OLab-api/Service/bin/Release/net6.0/OLabWebAPI --urls http://dev.olab.ca:5000
 Restart=always  
 RestartSec=10  
 SyslogIdentifier=olab45-api

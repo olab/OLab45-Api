@@ -13,7 +13,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       "requireExactSource": false,
-      "program": "${workspaceFolder}/Service/bin/Debug/netcoreapp3.1/OLabWebAPI.dll",
+      "program": "${workspaceFolder}/Service/bin/Debug/net6.0/OLabWebAPI.dll",
       "args": [],
       "cwd": "${workspaceFolder}/Service",
       "stopAtEntry": false,
