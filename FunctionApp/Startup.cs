@@ -48,7 +48,12 @@ namespace OLab.FunctionApp.Api
 
       builder
           .Services.AddOptions<AppSettings>()
-          .Configure<IConfiguration>((options, c) => { c.GetSection("AppSettings").Bind(options); });
+          .Configure<IConfiguration>((settings, configuration) =>
+          {
+            settings.Secret = configuration.GetValue<string>("Secret");
+            settings.Issuer = configuration.GetValue<string>("Issuer");
+            settings.Audience = configuration.GetValue<string>("Audience");
+          });
 
       var connectionString = builder.GetContext().Configuration["DefaultDatabase"];
 

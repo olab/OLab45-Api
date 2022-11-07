@@ -43,9 +43,15 @@ namespace OLab.FunctionApp.Api
       Guard.Argument(logger).NotNull(nameof(logger));
 
       logger.LogInformation("C# HTTP trigger function processed a request.");
-      var body = await request.ParseBodyFromRequestAsync<LoginRequest>();
+      var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
 
-      return new NoContentResult();
+      logger.LogDebug($"Login(user = '{model.Username}')");
+
+      var response = _userService.Authenticate(model);
+      if (response == null)
+        return new StatusCodeResult(401);
+
+      return new JsonResult(response);
     }
   }
 }
