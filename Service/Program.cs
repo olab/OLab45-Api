@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace OLabWebAPI
 {
@@ -25,7 +26,7 @@ namespace OLabWebAPI
               logging.ClearProviders();
               logging.AddConsole(configure =>
                 {
-                  configure.Format = Microsoft.Extensions.Logging.Console.ConsoleLoggerFormat.Systemd;
+                  configure.FormatterName = ConsoleFormatterNames.Systemd;
                 });
               logging.AddConfiguration(config);
               logging.AddFilter("Microsoft", LogLevel.Error);

@@ -45,7 +45,7 @@ namespace OLabWebAPI.Controllers
     private RefreshToken CreateRefreshToken()
     {
       var randomNumber = new byte[32];
-      using (var generator = new RNGCryptoServiceProvider())
+      using (var generator = RandomNumberGenerator.Create())
       {
         generator.GetBytes(randomNumber);
         return new RefreshToken

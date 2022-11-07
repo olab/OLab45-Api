@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Dawn;
 
 namespace OLab.FunctionApp.Api
 {
@@ -23,8 +24,15 @@ namespace OLab.FunctionApp.Api
     private readonly IList<Users> _users;
     private static TokenValidationParameters _tokenParameters;
 
-    public OLabUserService(ILogger logger, IOptions<AppSettings> appSettings, OLabDBContext context)
+    public OLabUserService(
+      ILogger<OLabUserService> logger,
+      IOptions<AppSettings> appSettings,
+      OLabDBContext context)
     {
+      Guard.Argument(logger).NotNull(nameof(logger));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
+      Guard.Argument(context).NotNull(nameof(context));
+
       defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
       _appSettings = appSettings.Value;
       _context = context;
@@ -203,9 +211,9 @@ namespace OLab.FunctionApp.Api
 
       var readToken = handler.ReadJwtToken(model.ExternalToken);
 
-      _logger.LogDebug( $"Incoming token claims:");      
-      foreach( var claim in readToken.Claims )
-        _logger.LogDebug( $" {claim}");
+      _logger.LogDebug($"Incoming token claims:");
+      foreach (var claim in readToken.Claims)
+        _logger.LogDebug($" {claim}");
 
       handler.ValidateToken(model.ExternalToken,
                             tokenParameters,

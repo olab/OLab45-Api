@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Azure.Identity;
 using FluentValidation;
-using OLab.FunctionApp.Api;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
@@ -12,69 +11,13 @@ using OLabWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 using OLabWebAPI.Model;
 
-[assembly: FunctionsStartup(typeof(Startup))]
+[assembly: FunctionsStartup(typeof(OLab.FunctionApp.Api.Startup))]
 
 namespace OLab.FunctionApp.Api
 {
   [ExcludeFromCodeCoverage]
   public class Startup : FunctionsStartup
   {
-    // This method gets called by the runtime. Use this method to add services to the container.
-    // public void ConfigureServices(IServiceCollection services)
-    // {
-    // services.AddSignalR();
-
-    // services.AddCors(options =>
-    // {
-    //   options.AddPolicy("CorsPolicy",
-    //      builder => builder
-    //       // .AllowAnyOrigin()
-    //       .WithOrigins("http://localhost:4000", "http://localhost:3000", "https://dev.olab.ca", "https://demo.olab.ca")
-    //       .AllowAnyMethod()
-    //       .AllowAnyHeader()
-    //       .AllowCredentials()
-    //     );
-    // });
-
-    // services.AddControllers().AddNewtonsoftJson();
-    // services.AddLogging();
-
-    // Additional code to register the ILogger as a ILogger<T> where T is the Startup class
-    // services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
-
-    // configure strongly typed settings object
-    // services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
-
-    // var serverVersion = ServerVersion.AutoDetect("Server=\"olab45db.mysql.database.azure.com\";UserID=\"olab4admin\";Password=\"lZM398KbCaPQhyOPtwF4!\";Database=\"olab45\";}");
-    // services.AddDbContext<OLabDBContext>(
-    //     dbContextOptions => dbContextOptions
-    //         .UseMySql("Server=\"olab45db.mysql.database.azure.com\";UserID=\"olab4admin\";Password=\"lZM398KbCaPQhyOPtwF4!\";Database=\"olab45\";}", serverVersion)
-    //         // The following three options help with debugging, but should
-    //         // be changed or removed for production.
-    //         // .LogTo(Console.WriteLine, LogLevel.Information)
-    //         // .EnableSensitiveDataLogging()
-    //         .EnableDetailedErrors()
-    //   );
-
-    // Everything from this point on is optional but helps with debugging.
-    // .UseLoggerFactory(
-    //     LoggerFactory.Create(
-    //         logging => logging
-    //             .AddConsole()
-    //             .AddFilter(level => level >= LogLevel.Information)))
-    // .EnableSensitiveDataLogging()
-    // .EnableDetailedErrors()
-    // );
-
-    // MoodleJWTService.Setup(Configuration, services);
-    // OLabJWTService.Setup(Configuration, services);
-
-    // define instances of application services
-    // services.AddScoped<IUserService, OLabUserService>();
-    // services.AddScoped<IOLabSession, OLabSession>();
-    // services.AddSingleton<Conference>();
-    // }
-
     public override void Configure(IFunctionsHostBuilder builder)
     {
       // builder
@@ -102,6 +45,25 @@ namespace OLab.FunctionApp.Api
       // });
 
       builder.Services.AddLogging();
+
+      builder
+          .Services.AddOptions<AppSettings>()
+          .Configure<IConfiguration>((options, c) => { c.GetSection("AppSettings").Bind(options); });
+
+      var connectionString = builder.GetContext().Configuration["DefaultDatabase"];
+
+      var serverVersion = ServerVersion.AutoDetect(connectionString);
+      builder.Services.AddDbContext<OLabDBContext>(
+          options => options
+              .UseMySql(connectionString, serverVersion)
+              // The following three options help with debugging, but should
+              // be changed or removed for production.
+              // .LogTo(Console.WriteLine, LogLevel.Information)
+              // .EnableSensitiveDataLogging()
+              .EnableDetailedErrors()
+        );
+
+      builder.Services.AddScoped<IUserService, OLabUserService>();
 
       // Azure service connection managers
       // builder.Services.AddSingleton<IDeviceTemplateRepository, DeviceTemplateRepository>();

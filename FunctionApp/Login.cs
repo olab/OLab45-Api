@@ -16,25 +16,36 @@ namespace OLab.FunctionApp.Api
   public class Login
   {
     private readonly ILogger _logger;
-    // protected readonly OLabDBContext _context;
+    protected readonly OLabDBContext _context;
     private readonly IUserService _userService;
 
-    // public Login(IUserService userService, ILogger<Login> logger /*, OLabDBContext context */ )
-    // {
-    //   _logger = logger;
-    //   // _context = context;
-    //   _userService = userService;
-    // }
+    public Login(
+      IUserService userService,
+      ILogger<Login> logger,
+      OLabDBContext context)
+    {
+      Guard.Argument(userService).NotNull(nameof(userService));
+      Guard.Argument(logger).NotNull(nameof(logger));
+      Guard.Argument(context).NotNull(nameof(context));
+
+      _logger = logger;
+      _context = context;
+      _userService = userService;
+    }
 
     [FunctionName("Login")]
-    public IActionResult Run(
+    public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "login")] HttpRequest request,
         ILogger logger,
         CancellationToken cancellationToken)
     {
-      logger.LogInformation("C# HTTP trigger function processed a request.");
+      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument(logger).NotNull(nameof(logger));
 
-      return new OkObjectResult(null);
+      logger.LogInformation("C# HTTP trigger function processed a request.");
+      var body = await request.ParseBodyFromRequestAsync<LoginRequest>();
+
+      return new NoContentResult();
     }
   }
 }
