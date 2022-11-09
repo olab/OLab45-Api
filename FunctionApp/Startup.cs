@@ -54,6 +54,8 @@ namespace OLab.FunctionApp.Api
             settings.Secret = configuration.GetValue<string>("Secret");
             settings.Issuer = configuration.GetValue<string>("Issuer");
             settings.Audience = configuration.GetValue<string>("Audience");
+            settings.StaticFilesConnectionString = configuration.GetValue<string>("StaticFilesConnectionString");
+            settings.StaticFilesContainerName = configuration.GetValue<string>("StaticFilesContainerName");            
           });
 
       var connectionString = builder.GetContext().Configuration["DefaultDatabase"];

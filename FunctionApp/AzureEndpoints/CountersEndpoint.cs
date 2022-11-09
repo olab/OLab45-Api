@@ -21,32 +21,28 @@ using Newtonsoft.Json;
 
 namespace OLab.FunctionApp.Endpoints
 {
-  public class ConstantsAzureEndpoint : OLabAzureEndpoint
+  public class CountersAzureEndpoint : OLabAzureEndpoint
   {
-    private readonly ConstantsEndpoint _endpoint;
+    private readonly CountersEndpoint _endpoint;
 
-    public ConstantsAzureEndpoint(
+    public CountersAzureEndpoint(
       IUserService userService,
-      ILogger<ConstantsAzureEndpoint> logger,
+      ILogger<CountersAzureEndpoint> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
-      Guard.Argument(userService).NotNull(nameof(userService));
-      Guard.Argument(logger).NotNull(nameof(logger));
-      Guard.Argument(context).NotNull(nameof(context));
-
-      _endpoint = new ConstantsEndpoint(this.logger, context);
+      _endpoint = new CountersEndpoint(this.logger, context);
     }
 
     /// <summary>
-    /// Gets all constants
+    /// Gets all counters
     /// </summary>
     /// <param name="request"></param>
     /// <param name="logger"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [FunctionName("GetConstant")]
+    [FunctionName("GetCounter")]
     public async Task<IActionResult> GetAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants")] HttpRequest request,
+        [HttpTrigger(AuthorizationLevel.User, "get", Route = "counters")] HttpRequest request,
         CancellationToken cancellationToken)
     {
       Guard.Argument(request).NotNull(nameof(request));
@@ -63,7 +59,7 @@ namespace OLab.FunctionApp.Endpoints
         userService.ValidateToken(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
-        return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        return OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
       catch (Exception ex)
       {
@@ -77,11 +73,11 @@ namespace OLab.FunctionApp.Endpoints
     /// <summary>
     /// Gets single constant
     /// </summary>
-    /// <param name="id">Constant id</param>
+    /// <param name="id">Counter id</param>
     /// <returns></returns>
-    [FunctionName("GetConstantById")]
+    [FunctionName("GetCounterById")]
     public async Task<IActionResult> GetByIdAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "counters/{id}")] HttpRequest request,
       uint id
     )
     {
@@ -92,7 +88,7 @@ namespace OLab.FunctionApp.Endpoints
 
         var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = await _endpoint.GetAsync(auth, id);
-        return OLabObjectResult<ConstantsDto>.Result(dto);
+        return OLabObjectResult<CountersDto>.Result(dto);
       }
       catch (Exception ex)
       {
@@ -109,9 +105,9 @@ namespace OLab.FunctionApp.Endpoints
     /// </summary>
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PutConstant")]
+    [FunctionName("PutCounter")]
     public async Task<IActionResult> PutAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "constants/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.User, "put", Route = "counters/{id}")] HttpRequest request,
       uint id)
     {
       try
@@ -120,7 +116,7 @@ namespace OLab.FunctionApp.Endpoints
         userService.ValidateToken(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
-        ConstantsDto dto = JsonConvert.DeserializeObject<ConstantsDto>(content);
+        CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
 
         var auth = new OLabWebApiAuthorization(logger, context, request);
         await _endpoint.PutAsync(auth, id, dto);
@@ -142,9 +138,9 @@ namespace OLab.FunctionApp.Endpoints
     /// </summary>
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PostConstant")]
+    [FunctionName("PostCounter")]
     public async Task<IActionResult> PostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "constants")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.User, "post", Route = "counters")] HttpRequest request
     )
     {
       try
@@ -153,11 +149,12 @@ namespace OLab.FunctionApp.Endpoints
         userService.ValidateToken(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
-        ConstantsDto dto = JsonConvert.DeserializeObject<ConstantsDto>(content);
+        CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
 
         var auth = new OLabWebApiAuthorization(logger, context, request);
         dto = await _endpoint.PostAsync(auth, dto);
-        return OLabObjectResult<ConstantsDto>.Result(dto);
+
+        return OLabObjectResult<CountersFullDto>.Result(dto);
       }
       catch (Exception ex)
       {
@@ -172,9 +169,9 @@ namespace OLab.FunctionApp.Endpoints
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("DeleteConstant")]
+    [FunctionName("DeleteCounter")]
     public async Task<IActionResult> DeleteAsync(
-      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "constants/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "counters/{id}")] HttpRequest request,
       uint id)
     {
       try
