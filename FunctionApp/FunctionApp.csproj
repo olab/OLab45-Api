@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.2" />
+    <PackageReference Include="JWT" Version="9.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common\Common.csproj" />
@@ -41,4 +42,12 @@
 <PropertyGroup>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
 </PropertyGroup>  
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <WikiTagFiles Include="..\..\Common\bin\$(Configuration)\$(TargetFramework)\PlugIns\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WikiTagFiles)" DestinationFolder="$(OutDir)PlugIns" SkipUnchangedFiles="true" />
+  </Target>
+  
 </Project>

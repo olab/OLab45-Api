@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using OLabWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 using OLabWebAPI.Model;
+using OLab.FunctionApp.Api.Services;
 
 [assembly: FunctionsStartup(typeof(OLab.FunctionApp.Api.Startup))]
 

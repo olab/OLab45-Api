@@ -9,28 +9,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using OLab.FunctionApp.Api;
 using OLabWebAPI.Model;
 
-namespace OLab.FunctionApp.Api
+namespace OLab.FunctionApp.Endpoints
 {
-  public class Login
+  public class UserAzureEndpoint : OLabAzureEndpoint
   {
-    private readonly ILogger _logger;
-    protected readonly OLabDBContext _context;
-    private readonly IUserService _userService;
-
-    public Login(
+    public UserAzureEndpoint(
+      ILogger<UserAzureEndpoint> logger,
       IUserService userService,
-      ILogger<Login> logger,
-      OLabDBContext context)
+      OLabDBContext context) : base( logger, userService, context )
     {
-      Guard.Argument(userService).NotNull(nameof(userService));
-      Guard.Argument(logger).NotNull(nameof(logger));
-      Guard.Argument(context).NotNull(nameof(context));
-
-      _logger = logger;
-      _context = context;
-      _userService = userService;
     }
 
     [FunctionName("Login")]
@@ -47,7 +37,7 @@ namespace OLab.FunctionApp.Api
 
       logger.LogDebug($"Login(user = '{model.Username}')");
 
-      var response = _userService.Authenticate(model);
+      var response = userService.Authenticate(model);
       if (response == null)
         return new StatusCodeResult(401);
 

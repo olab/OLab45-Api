@@ -8,23 +8,26 @@ using OLabWebAPI.Interface;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 
-namespace OLabWebAPI.Services
+namespace OLab.FunctionApp.Api.Services
 {
   class OLabWebApiAuthorization : IOLabAuthentication
   {
     private readonly OLabLogger logger;
     private readonly OLabDBContext context;
-    private readonly HttpContext httpContext;
     private readonly HttpRequest request;
     private UserContext userContext;
 
-    public OLabWebApiAuthorization(OLabLogger logger, OLabDBContext context, HttpContext httpContext)
+    public OLabWebApiAuthorization(
+      OLabLogger logger, 
+      OLabDBContext context, 
+      HttpRequest request
+    )
     {
       this.logger = logger;
       this.context = context;
-      this.httpContext = httpContext;
-      userContext = new UserContext(logger, context, httpContext);
+      this.request = request;
 
+      userContext = new UserContext(logger, context, request);
     }
 
     public IActionResult HasAccess(string acl, ScopedObjectDto dto)

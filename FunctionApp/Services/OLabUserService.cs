@@ -12,17 +12,32 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Dawn;
+using Microsoft.AspNetCore.Http;
+using OLabWebAPI.Common.Exceptions;
+using JWT.Algorithms;
+using JWT;
+using JWT.Serializers;
 
-namespace OLab.FunctionApp.Api
+namespace OLab.FunctionApp.Api.Services
 {
   public class OLabUserService : IUserService
   {
     public static int defaultTokenExpiryMinutes = 120;
     private readonly AppSettings _appSettings;
     private readonly OLabDBContext _context;
-    private readonly ILogger _logger;
+    private readonly OLabLogger _logger;
     private readonly IList<Users> _users;
     private static TokenValidationParameters _tokenParameters;
+    private IEnumerable<Claim> _claims;
+
+    public bool IsValid { get; private set; }
+    public bool UserName { get; private set; }
+    public bool Role { get; private set; }
+
+    private readonly IJwtAlgorithm _algorithm;
+    private readonly IJsonSerializer _serializer;
+    private readonly IBase64UrlEncoder _base64Encoder;
+    private readonly IJwtEncoder _jwtEncoder;
 
     public OLabUserService(
       ILogger<OLabUserService> logger,
@@ -36,23 +51,42 @@ namespace OLab.FunctionApp.Api
       defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
       _appSettings = appSettings.Value;
       _context = context;
-      _logger = logger;
+      _logger = new OLabLogger(logger);
 
       _users = _context.Users.OrderBy(x => x.Id).ToList();
 
       _logger.LogDebug($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
 
-      _tokenParameters = SetupConfiguration(_appSettings);
+      _tokenParameters = SetupValidationParameters(_appSettings);
+
+      // JWT specific initialization.
+      _algorithm = new HMACSHA256Algorithm();
+      _serializer = new JsonNetSerializer();
+      _base64Encoder = new JwtBase64UrlEncoder();
+      _jwtEncoder = new JwtEncoder(_algorithm, _serializer, _base64Encoder);
     }
 
 
-    public static TokenValidationParameters GetValidationParameters()
+    /// <summary>
+    /// Extract claims from token
+    /// </summary>
+    /// <param name="token">Bearer token</param>
+    private static IEnumerable<Claim> ExtractTokenClaims(string token)
     {
-      return _tokenParameters;
+      var tokenHandler = new JwtSecurityTokenHandler();
+      var securityToken = (JwtSecurityToken)tokenHandler.ReadToken(token);
+      return securityToken.Claims;
     }
 
-    private static TokenValidationParameters SetupConfiguration(AppSettings appSettings)
+    /// <summary>
+    /// Build token validation object
+    /// </summary>
+    /// <param name="appSettings">Application settings</param>
+    /// <returns>TokenValidationParameters object</returns>
+    private static TokenValidationParameters SetupValidationParameters(AppSettings appSettings)
     {
+      Guard.Argument(appSettings, nameof(appSettings)).NotNull();
+
       var jwtIssuer = "moodle";
       var jwtAudience = appSettings.Audience;
       var signingSecret = appSettings.Secret;
@@ -80,31 +114,14 @@ namespace OLab.FunctionApp.Api
     }
 
     /// <summary>
-    /// Adds user to database
-    /// </summary>
-    /// <param name="newUser"></param>
-    public void AddUser(Users newUser)
-    {
-
-    }
-
-    /// <summary>
-    /// Authenticate external-issued token
-    /// </summary>
-    /// <param name="model">Login model</param>
-    /// <returns>Authenticate response, or null</returns>
-    public AuthenticateResponse AuthenticateExternal(ExternalLoginRequest model)
-    {
-      return GenerateExternalJwtToken(model);
-    }
-
-    /// <summary>
     /// Authenticate user
     /// </summary>
     /// <param name="model">Login model</param>
     /// <returns>Authenticate response, or null</returns>
     public AuthenticateResponse Authenticate(LoginRequest model)
     {
+      Guard.Argument(model, nameof(model)).NotNull();
+
       var user = _users.SingleOrDefault(x => x.Username == model.Username);
 
       // return null if user not found
@@ -113,7 +130,7 @@ namespace OLab.FunctionApp.Api
         if (ValidatePassword(model.Password, user))
         {
           // authentication successful so generate jwt token
-          return GenerateJwtToken(user);
+          return IssueJWT(user);
         }
       }
 
@@ -128,6 +145,9 @@ namespace OLab.FunctionApp.Api
     /// <returns></returns>
     public void ChangePassword(Users user, ChangePasswordRequest model)
     {
+      Guard.Argument(user, nameof(user)).NotNull();
+      Guard.Argument(model, nameof(model)).NotNull();
+
       var clearText = model.NewPassword;
 
       // add password salt, if it's defined
@@ -176,8 +196,11 @@ namespace OLab.FunctionApp.Api
     /// <param name="clearText">Password</param>
     /// <param name="user">Corresponding user record</param>
     /// <returns>true/false</returns>
-    public bool ValidatePassword(string clearText, Users user)
+    public static bool ValidatePassword(string clearText, Users user)
     {
+      Guard.Argument(user, nameof(user)).NotNull();
+      Guard.Argument(clearText, nameof(clearText)).NotEmpty();
+
       if (!string.IsNullOrEmpty(user.Salt))
       {
         clearText += user.Salt;
@@ -192,79 +215,43 @@ namespace OLab.FunctionApp.Api
       return false;
     }
 
-    private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-    public static DateTime FromUnixTime(long unixTime)
+    /// <summary>
+    /// Generate an epoch token expiry time
+    /// </summary>
+    /// <param name="numberOfDays">Number of days to add to current date</param>
+    /// <returns>Epoch time</returns>
+    private static int GenerateTokenExpiry(int numberOfDays)
     {
-      return epoch.AddSeconds(unixTime);
+      Guard.Argument(numberOfDays, nameof(numberOfDays)).NotZero();
+
+      TimeSpan t = DateTime.UtcNow.AddDays(7) - new DateTime(1970, 1, 1);
+      var expiryInSeconds = (int)t.TotalSeconds;
+      return expiryInSeconds;
     }
 
     /// <summary>
-    /// Generate JWT token from external one
+    /// ISsue the JWT token
     /// </summary>
-    /// <param name="model">token payload</param>
+    /// <param name="user">User to issue for</param>
     /// <returns>AuthenticateResponse</returns>
-    private AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
+    public AuthenticateResponse IssueJWT(Users user)
     {
-      var handler = new JwtSecurityTokenHandler();
-      var tokenParameters = GetValidationParameters();
+      Guard.Argument(user, nameof(user)).NotNull();
 
-      var readToken = handler.ReadJwtToken(model.ExternalToken);
+      TimeSpan t = DateTime.UtcNow.AddDays(7) - new DateTime(1970, 1, 1);
+      var expiryInSeconds = GenerateTokenExpiry(7);
 
-      _logger.LogDebug($"Incoming token claims:");
-      foreach (var claim in readToken.Claims)
-        _logger.LogDebug($" {claim}");
-
-      handler.ValidateToken(model.ExternalToken,
-                            tokenParameters,
-                            out SecurityToken validatedToken);
-      var jwtToken = (JwtSecurityToken)validatedToken;
-
-      var response = new AuthenticateResponse();
-
-      DateTime createdAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
-      response.CreatedAt = createdAt;
-
-      response.AuthInfo.Token = model.ExternalToken;
-      response.AuthInfo.Refresh = null;
-      response.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
-      response.UserName = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
-
-      DateTime issuedAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
-      response.AuthInfo.Created = issuedAt;
-      DateTime expiresAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "exp").Value));
-      response.AuthInfo.Expires = expiresAt;
-
-      return response;
-    }
-
-    /// <summary>
-    /// Generate JWT token
-    /// </summary>
-    /// <param name="user">User record from database</param>
-    /// <returns>AuthenticateResponse</returns>
-    /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
-    private AuthenticateResponse GenerateJwtToken(Users user)
-    {
-      var securityKey =
-        new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
-
-      var tokenDescriptor = new SecurityTokenDescriptor
+      Dictionary<string, object> claims = new()
       {
-        Subject = new ClaimsIdentity(new Claim[]
-        {
-          new Claim(ClaimTypes.Name, user.Username),
-          new Claim(ClaimTypes.Role, $"{user.Role}")
-        }),
-        Expires = DateTime.UtcNow.AddDays(7),
-        Issuer = _appSettings.Issuer,
-        Audience = _appSettings.Audience,
-        SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
+        // JSON representation of the user Reference with ID and display name
+        { "name", user.Username },
+        { "role", user.Role },
+        { "exp", expiryInSeconds },
+        { "iss", _appSettings.Issuer },
+        { "aud", _appSettings.Audience }
       };
 
-      var tokenHandler = new JwtSecurityTokenHandler();
-      var token = tokenHandler.CreateToken(tokenDescriptor);
-      var securityToken = tokenHandler.WriteToken(token);
+      string securityToken = _jwtEncoder.Encode(claims, _appSettings.Secret[..16]);
 
       var response = new AuthenticateResponse();
       response.AuthInfo.Token = securityToken;
@@ -278,12 +265,46 @@ namespace OLab.FunctionApp.Api
       return response;
     }
 
-    public string GenerateRefreshToken()
+    /// <summary>
+    /// Validate token
+    /// </summary>
+    /// <param name="request">HTTP request</param>
+    public void ValidateToken(HttpRequest request)
     {
-      var randomNumber = new byte[32];
-      using var rng = RandomNumberGenerator.Create();
-      rng.GetBytes(randomNumber);
-      return Convert.ToBase64String(randomNumber);
+      Guard.Argument(request, nameof(request)).NotNull();
+
+      var bearerToken = AccessTokenUtils.ExtractBearerToken( request );
+
+      // Extract/save token claims
+      _claims = ExtractTokenClaims(bearerToken);
+
+      try
+      {
+        var handler = new JwtSecurityTokenHandler();
+
+        // Try to validate the token. Throws if the 
+        // token cannot be validated.
+        handler.ValidateToken(
+            bearerToken,
+            _tokenParameters,
+            out _); // Discard the output SecurityToken. We don't need it.      
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError($"ValidateToken error {ex.Message}");
+        throw new OLabUnauthorizedException();
+      }
+
+    }
+
+    public AuthenticateResponse AuthenticateExternal(ExternalLoginRequest model)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void AddUser(Users newUser)
+    {
+      throw new NotImplementedException();
     }
   }
 }
