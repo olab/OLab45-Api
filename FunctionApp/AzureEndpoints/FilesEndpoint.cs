@@ -176,6 +176,8 @@ namespace OLab.FunctionApp.Endpoints
       [HttpTrigger(AuthorizationLevel.User, "post", Route = "files")] HttpRequest request
     )
     {
+      SystemFiles phys = null;
+
       try
       {
         // validate user access token.  throws if not successful
@@ -185,7 +187,7 @@ namespace OLab.FunctionApp.Endpoints
         var dto = new FilesFullDto(request.Form);
 
         var builder = new FilesFull(logger);
-        var phys = builder.DtoToPhysical(dto);
+        phys = builder.DtoToPhysical(dto);
 
         phys.CreatedAt = DateTime.Now;
 
@@ -202,7 +204,7 @@ namespace OLab.FunctionApp.Endpoints
         // TODO: successful save to database, copy the file to the
         // final location
         Stream myBlob = new MemoryStream();
-        var file = request.Form.Files["File"];
+        var file = request.Form.Files["selectedFile"];
         myBlob = file.OpenReadStream();
         var blobClient = new BlobContainerClient(_appSettings.StaticFilesConnectionString, _appSettings.StaticFilesContainerName);
         var blob = blobClient.GetBlobClient(staticFileName);
@@ -213,6 +215,14 @@ namespace OLab.FunctionApp.Endpoints
       }
       catch (Exception ex)
       {
+        if ( ex is Azure.RequestFailedException )
+        {
+          var azureException = ex as Azure.RequestFailedException;
+          if ( azureException.Status == 409 )
+            return OLabServerErrorResult.Result($"File '{phys.Path}' already exists", HttpStatusCode.Conflict);
+          return OLabServerErrorResult.Result($"Error creating static file '{phys.Path}'.  {ex.Message}", ( HttpStatusCode )azureException.Status);
+        }
+
         return OLabServerErrorResult.Result(ex.Message);
       }
     }

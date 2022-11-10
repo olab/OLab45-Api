@@ -49,11 +49,12 @@ namespace OLab.FunctionApp.Endpoints
         [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants")] HttpRequest request,
         CancellationToken cancellationToken)
     {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(logger).NotNull(nameof(logger));
 
       try
       {
+      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument(logger).NotNull(nameof(logger));
+
         var queryTake = Convert.ToInt32(request.Query["take"]);
         var querySkip = Convert.ToInt32(request.Query["skip"]);
         int? take = queryTake > 0 ? queryTake : null;
@@ -87,6 +88,8 @@ namespace OLab.FunctionApp.Endpoints
     {
       try
       {
+        Guard.Argument(id, nameof(id)).NotZero();
+
         // validate user access token.  throws if not successful
         userService.ValidateToken(request);
 
@@ -116,6 +119,8 @@ namespace OLab.FunctionApp.Endpoints
     {
       try
       {
+        Guard.Argument(id, nameof(id)).NotZero();
+
         // validate user access token.  throws if not successful
         userService.ValidateToken(request);
 
@@ -179,6 +184,8 @@ namespace OLab.FunctionApp.Endpoints
     {
       try
       {
+        Guard.Argument(id, nameof(id)).NotZero();
+
         var auth = new OLabWebApiAuthorization(logger, context, request);
         await _endpoint.DeleteAsync(auth, id);
       }
