@@ -20,7 +20,7 @@ using System.IO;
 using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Designer;
 
-namespace OLab.FunctionApp.Endpoints.Designer
+namespace OLab.Endpoints.Azure.Designer
 {
   public class MapsAzureEndpoint : OLabAzureEndpoint
   {

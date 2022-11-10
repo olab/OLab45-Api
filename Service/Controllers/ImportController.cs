@@ -14,7 +14,7 @@ using OLabWebAPI.Common;
 using System;
 using System.IO.Compression;
 
-namespace OLabWebAPI.Controllers
+namespace OLabWebAPI.Endpoints.WebApi
 {
   [Route("olab/api/v3/[controller]/[action]")]
   [ApiController]

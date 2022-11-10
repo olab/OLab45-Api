@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   public partial class NodesController : OlabController
   {

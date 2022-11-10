@@ -17,7 +17,7 @@ using OLabWebAPI.Utils;
 using System.Security.Claims;
 using Microsoft.Extensions.Configuration;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
 
   [Route("olab/api/v3/filescontent")]

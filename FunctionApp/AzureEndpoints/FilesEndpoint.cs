@@ -24,7 +24,7 @@ using OLabWebAPI.ObjectMapper;
 using Microsoft.AspNetCore.StaticFiles;
 using Azure.Storage.Blobs;
 
-namespace OLab.FunctionApp.Endpoints
+namespace OLab.Endpoints.Azure
 {
   public class FilesAzureEndpoint : OLabAzureEndpoint
   {
@@ -215,9 +215,9 @@ namespace OLab.FunctionApp.Endpoints
       }
       catch (Exception ex)
       {
-        if ( ex is Azure.RequestFailedException )
+        if ( ex is global::Azure.RequestFailedException )
         {
-          var azureException = ex as Azure.RequestFailedException;
+          var azureException = ex as global::Azure.RequestFailedException;
           if ( azureException.Status == 409 )
             return OLabServerErrorResult.Result($"File '{phys.Path}' already exists", HttpStatusCode.Conflict);
           return OLabServerErrorResult.Result($"Error creating static file '{phys.Path}'.  {ex.Message}", ( HttpStatusCode )azureException.Status);

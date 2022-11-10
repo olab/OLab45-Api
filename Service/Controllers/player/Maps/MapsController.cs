@@ -18,7 +18,7 @@ using System;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Services;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   [Route("olab/api/v3/maps")]
   [ApiController]

@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace OLab.FunctionApp.Endpoints
+namespace OLab.Endpoints.Azure
 {
   public class CountersAzureEndpoint : OLabAzureEndpoint
   {

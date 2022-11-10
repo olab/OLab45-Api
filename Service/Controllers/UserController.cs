@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using OLabWebAPI.Common;
 
-namespace OLabWebAPI.Controllers
+namespace OLabWebAPI.Endpoints.WebApi
 {
   /// <summary>
   /// 

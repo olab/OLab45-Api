@@ -8,7 +8,7 @@ using OLabWebAPI.Common.Exceptions;
 using System;
 using OLabWebAPI.Services;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   public partial class MapsController : OlabController
   {

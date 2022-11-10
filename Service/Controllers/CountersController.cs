@@ -12,7 +12,7 @@ using OLabWebAPI.Common;
 using System;
 using OLabWebAPI.Services;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   [Route("olab/api/v3/counters")]
   [ApiController]

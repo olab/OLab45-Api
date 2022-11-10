@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Services;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
   public class DisableFormValueModelBindingAttribute : Attribute, IResourceFilter

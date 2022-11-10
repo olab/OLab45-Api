@@ -4,7 +4,7 @@ using OLab.FunctionApp.Api;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 
-namespace OLab.FunctionApp.Endpoints
+namespace OLab.Endpoints.Azure
 {
   public class OLabAzureEndpoint
   {

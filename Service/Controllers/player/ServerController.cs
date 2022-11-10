@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using System;
 using OLabWebAPI.Common.Exceptions;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   [Route("olab/api/v3/servers")]
   public partial class ServerController : OlabController

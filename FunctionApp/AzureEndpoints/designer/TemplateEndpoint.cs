@@ -21,7 +21,7 @@ using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Dto.Designer;
 
-namespace OLab.FunctionApp.Endpoints.Designer
+namespace OLab.Endpoints.Azure.Designer
 {
   public class TemplateAzureEndpoint : OLabAzureEndpoint
   {

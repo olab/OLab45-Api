@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
-namespace OLabWebAPI.Controllers
+namespace OLabWebAPI.Endpoints.WebApi
 {
   [Route("olab/api/v3/courses")]
   [ApiController]

@@ -13,7 +13,7 @@ using OLabWebAPI.Interface;
 using Microsoft.AspNetCore.Http;
 using OLabWebAPI.Services;
 
-namespace OLabWebAPI.Controllers
+namespace OLabWebAPI.Endpoints.WebApi
 {
   public class OlabController : ControllerBase
   {

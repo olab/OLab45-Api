@@ -12,7 +12,7 @@ using OLabWebAPI.Model;
 using System;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Controllers.Designer
+namespace OLabWebAPI.Endpoints.WebApi.Designer
 {
   [Route("olab/api/v3/templates")]
   [ApiController]

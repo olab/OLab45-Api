@@ -1,3 +1,4 @@
+using Azure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -5,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Controllers.Player;
+using OLabWebAPI.Endpoints.WebApi.Player;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Model;
@@ -13,7 +14,7 @@ using OLabWebAPI.Services;
 using System;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Controllers.Designer
+namespace OLabWebAPI.Endpoints.WebApi.Designer
 {
   [Route("olab/api/v3/designer/maps")]
   [ApiController]

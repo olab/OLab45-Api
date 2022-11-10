@@ -19,7 +19,7 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Utils;
 using OLabWebAPI.Common.Exceptions;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   [Route("olab/api/v3/questionresponses")]
   [ApiController]

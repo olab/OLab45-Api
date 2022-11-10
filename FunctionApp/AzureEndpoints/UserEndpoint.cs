@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using OLab.FunctionApp.Api;
 using OLabWebAPI.Model;
 
-namespace OLab.FunctionApp.Endpoints
+namespace OLab.Endpoints.Azure
 {
   public class UserAzureEndpoint : OLabAzureEndpoint
   {

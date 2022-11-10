@@ -14,7 +14,7 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Common.Exceptions;
 
-namespace OLabWebAPI.Controllers.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player
 {
   [Route("olab/api/v3/nodes")]
   [ApiController]
