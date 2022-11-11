@@ -32,15 +32,23 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="nodeId"></param>
     /// <param name="sinceTime"></param>
     /// <returns></returns>
-    [FunctionName("")]
+    [FunctionName("GetDynamicScopedObjectsRaw")]
     public async Task<IActionResult> GetDynamicScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw")] HttpRequest request,
       uint mapId,
-      uint nodeId
+      uint nodeId,
+      [FromQuery] uint sinceTime = 0      
       )
     {
       try
       {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(mapId, nameof(mapId)).NotZero();
+        Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+
+        // validate user access token.  throws if not successful
+        userService.ValidateToken(request);
+
         var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
@@ -61,13 +69,23 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="nodeId"></param>
     /// <param name="sinceTime"></param>
     /// <returns></returns>
-    [HttpGet("{mapId}/nodes/{nodeId}/dynamicobjects")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetDynamicScopedObjectsTranslatedAsync(uint mapId, uint nodeId, [FromQuery] uint sinceTime = 0)
+    [FunctionName("GetDynamicScopedObjectsTranslated")]
+    public async Task<IActionResult> GetDynamicScopedObjectsTranslatedAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects")] HttpRequest request,
+      uint mapId,
+      uint nodeId, 
+      [FromQuery] uint sinceTime = 0)
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(mapId, nameof(mapId)).NotZero();
+        Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+
+        // validate user access token.  throws if not successful
+        userService.ValidateToken(request);
+
+        var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
@@ -89,7 +107,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns></returns>
     public async Task<IActionResult> GetDynamicScopedObjectsAsync(
       uint serverId,
-      Model.MapNodes node,
+      MapNodes node,
       uint sinceTime,
       bool enableWikiTranslation)
     {
