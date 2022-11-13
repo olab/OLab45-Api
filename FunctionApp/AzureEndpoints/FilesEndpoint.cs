@@ -113,8 +113,8 @@ namespace OLab.Endpoints.Azure
         int? take = queryTake > 0 ? queryTake : null;
         int? skip = querySkip > 0 ? querySkip : null;
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining);
@@ -143,8 +143,8 @@ namespace OLab.Endpoints.Azure
 
       try
       {
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = await _endpoint.GetAsync(auth, id);
@@ -180,8 +180,8 @@ namespace OLab.Endpoints.Azure
 
       try
       {
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         logger.LogDebug($"FilesController.PostAsync()");
         var dto = new FilesFullDto(request.Form);
@@ -197,8 +197,6 @@ namespace OLab.Endpoints.Azure
         phys.Path = Path.GetFileName(staticFileName);
         // infer the mimetype from the file name
         phys.Mime = GetMimeTypeForFileExtension(phys.Name);
-
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         dto = await _endpoint.PostAsync(auth, phys);
 
         // TODO: successful save to database, copy the file to the
@@ -239,10 +237,9 @@ namespace OLab.Endpoints.Azure
     {
       try
       {
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
-
-        var auth = new OLabWebApiAuthorization(logger, context, request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
+        
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)

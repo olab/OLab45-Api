@@ -39,7 +39,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     /// <returns>IActionResult</returns>
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
+    public async Task<IActionResult> GetMapsPlayerAsync([FromQuery] int? take, [FromQuery] int? skip)
     {
       try
       {
@@ -63,7 +63,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     /// <returns></returns>
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetAsync(uint id)
+    public async Task<IActionResult> GetMapPlayerAsync(uint id)
     {
       try
       {
@@ -87,7 +87,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     /// <returns>IActionResult</returns>
     [HttpPost("{mapId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> PostExtendMapAsync([FromRoute] uint mapId, [FromBody] ExtendMapRequest body)
+    public async Task<IActionResult> PostAppendTemplateToMapPlayerAsync([FromRoute] uint mapId, [FromBody] ExtendMapRequest body)
     {
       try
       {

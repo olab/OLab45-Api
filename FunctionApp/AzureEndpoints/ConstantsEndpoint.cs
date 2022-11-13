@@ -44,24 +44,24 @@ namespace OLab.Endpoints.Azure
     /// <param name="logger"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [FunctionName("GetConstant")]
-    public async Task<IActionResult> GetAsync(
+    [FunctionName("GetConstants")]
+    public async Task<IActionResult> GetConstantsAsync(
         [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants")] HttpRequest request,
         CancellationToken cancellationToken)
     {
 
       try
       {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(logger).NotNull(nameof(logger));
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(logger).NotNull(nameof(logger));
 
         var queryTake = Convert.ToInt32(request.Query["take"]);
         var querySkip = Convert.ToInt32(request.Query["skip"]);
         int? take = queryTake > 0 ? queryTake : null;
         int? skip = querySkip > 0 ? querySkip : null;
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
@@ -81,7 +81,7 @@ namespace OLab.Endpoints.Azure
     /// <param name="id">Constant id</param>
     /// <returns></returns>
     [FunctionName("GetConstantById")]
-    public async Task<IActionResult> GetByIdAsync(
+    public async Task<IActionResult> GetConstantByIdAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants/{id}")] HttpRequest request,
       uint id
     )
@@ -90,10 +90,9 @@ namespace OLab.Endpoints.Azure
       {
         Guard.Argument(id, nameof(id)).NotZero();
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<ConstantsDto>.Result(dto);
       }
@@ -113,7 +112,7 @@ namespace OLab.Endpoints.Azure
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
     [FunctionName("PutConstant")]
-    public async Task<IActionResult> PutAsync(
+    public async Task<IActionResult> PutConstantAsync(
       [HttpTrigger(AuthorizationLevel.User, "put", Route = "constants/{id}")] HttpRequest request,
       uint id)
     {
@@ -121,19 +120,17 @@ namespace OLab.Endpoints.Azure
       {
         Guard.Argument(id, nameof(id)).NotZero();
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
         ConstantsDto dto = JsonConvert.DeserializeObject<ConstantsDto>(content);
-
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
       {
         if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);        
+          return OLabNotFoundResult<string>.Result(ex.Message);
         if (ex is OLabUnauthorizedException)
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
@@ -148,19 +145,18 @@ namespace OLab.Endpoints.Azure
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
     [FunctionName("PostConstant")]
-    public async Task<IActionResult> PostAsync(
+    public async Task<IActionResult> PostConstantAsync(
       [HttpTrigger(AuthorizationLevel.User, "post", Route = "constants")] HttpRequest request
     )
     {
       try
       {
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
         ConstantsDto dto = JsonConvert.DeserializeObject<ConstantsDto>(content);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         dto = await _endpoint.PostAsync(auth, dto);
         return OLabObjectResult<ConstantsDto>.Result(dto);
       }
@@ -186,7 +182,9 @@ namespace OLab.Endpoints.Azure
       {
         Guard.Argument(id, nameof(id)).NotZero();
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
+        
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)
@@ -200,6 +198,6 @@ namespace OLab.Endpoints.Azure
 
       return new NoContentResult();
 
-    }    
+    }
   }
 }

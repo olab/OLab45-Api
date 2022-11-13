@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Player;
+using OLabWebAPI.Utils;
 
 namespace OLab.Endpoints.Azure.Player
 {
@@ -36,8 +37,7 @@ namespace OLab.Endpoints.Azure.Player
     public async Task<IActionResult> GetDynamicScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw")] HttpRequest request,
       uint mapId,
-      uint nodeId,
-      [FromQuery] uint sinceTime = 0      
+      uint nodeId
       )
     {
       try
@@ -46,10 +46,13 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(mapId, nameof(mapId)).NotZero();
         Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        uint sinceTime = 0;
+        if ( request.Query.ContainsKey("sinceTime") )
+          sinceTime = (uint)Convert.ToInt32(request.Query["sinceTime"]);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
+
         var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
@@ -73,8 +76,8 @@ namespace OLab.Endpoints.Azure.Player
     public async Task<IActionResult> GetDynamicScopedObjectsTranslatedAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects")] HttpRequest request,
       uint mapId,
-      uint nodeId, 
-      [FromQuery] uint sinceTime = 0)
+      uint nodeId
+    )
     {
       try
       {
@@ -82,38 +85,14 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(mapId, nameof(mapId)).NotZero();
         Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        uint sinceTime = 0;
+        if ( request.Query.ContainsKey("sinceTime") )
+          sinceTime = (uint)Convert.ToInt32(request.Query["sinceTime"]);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
+
         var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
-        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-    }
-
-    /// <summary>
-    /// Retrieve dynamic scoped objects for current node
-    /// </summary>
-    /// <param name="serverId">Server id</param>
-    /// <param name="node">Current node</param>
-    /// <param name="sinceTime">Look for changes since</param>
-    /// <param name="enableWikiTranslation"></param>
-    /// <returns></returns>
-    public async Task<IActionResult> GetDynamicScopedObjectsAsync(
-      uint serverId,
-      MapNodes node,
-      uint sinceTime,
-      bool enableWikiTranslation)
-    {
-      try
-      {
-        var dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation); ;
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)

@@ -10,7 +10,7 @@ using OLabWebAPI.Utils;
 
 namespace OLab.FunctionApp.Api.Services
 {
-  class OLabWebApiAuthorization : IOLabAuthentication
+  public class OLabWebApiAuthorization : IOLabAuthentication
   {
     private readonly OLabLogger logger;
     private readonly OLabDBContext context;

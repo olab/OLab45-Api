@@ -266,7 +266,7 @@ namespace OLab.FunctionApp.Api.Services
     }
 
     /// <summary>
-    /// Validate token
+    /// validate token/setup up common properties
     /// </summary>
     /// <param name="request">HTTP request</param>
     public void ValidateToken(HttpRequest request)

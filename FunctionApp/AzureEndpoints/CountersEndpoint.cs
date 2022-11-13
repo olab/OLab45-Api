@@ -55,8 +55,8 @@ namespace OLab.Endpoints.Azure
         int? take = queryTake > 0 ? queryTake : null;
         int? skip = querySkip > 0 ? querySkip : null;
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining);
@@ -83,10 +83,9 @@ namespace OLab.Endpoints.Azure
     {
       try
       {
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<CountersDto>.Result(dto);
       }
@@ -112,13 +111,11 @@ namespace OLab.Endpoints.Azure
     {
       try
       {
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
         CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
-
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
@@ -145,13 +142,11 @@ namespace OLab.Endpoints.Azure
     {
       try
       {
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
         CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
-
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         dto = await _endpoint.PostAsync(auth, dto);
 
         return OLabObjectResult<CountersFullDto>.Result(dto);
@@ -176,7 +171,9 @@ namespace OLab.Endpoints.Azure
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, context, request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
+        
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)

@@ -34,7 +34,6 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       {
         var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
         await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, linkdto);
-        return NoContent();
       }
       catch (Exception ex)
       {
@@ -42,6 +41,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
+
+      return new NoContentResult();
 
     }
 

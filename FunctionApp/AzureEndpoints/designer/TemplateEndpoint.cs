@@ -61,10 +61,9 @@ namespace OLab.Endpoints.Azure.Designer
         int? take = queryTake > 0 ? queryTake : null;
         int? skip = querySkip > 0 ? querySkip : null;
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         var pagedResponse = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
       }
@@ -91,10 +90,9 @@ namespace OLab.Endpoints.Azure.Designer
       {
         Guard.Argument(request).NotNull(nameof(request));
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = _endpoint.Links();
         return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
       }
@@ -122,10 +120,9 @@ namespace OLab.Endpoints.Azure.Designer
       {
         Guard.Argument(request).NotNull(nameof(request));
 
-        // validate user access token.  throws if not successful
-        userService.ValidateToken(request);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = _endpoint.Nodes();
         return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
       }
