@@ -110,8 +110,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="nodeId">node id</param>
     /// <param name="dto">node data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PutMapNode")]
-    public async Task<IActionResult> PutMapNodeAsync(
+    [FunctionName("PutMapNodePlayer")]
+    public async Task<IActionResult> PutMapNodePlayerAsync(
       [HttpTrigger(AuthorizationLevel.User, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId
