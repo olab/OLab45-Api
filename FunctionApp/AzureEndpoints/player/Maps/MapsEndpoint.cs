@@ -44,8 +44,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="take">Max number of records to return</param>
     /// <param name="skip">SKip over a number of records</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("GetMapsPlayer")]
-    public async Task<IActionResult> GetMapsPlayerAsync(
+    [FunctionName("MapsGetPlayer")]
+    public async Task<IActionResult> MapsGetPlayerAsync(
         [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps")] HttpRequest request
     )
     {
@@ -76,8 +76,8 @@ namespace OLab.Endpoints.Azure.Player
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("GetMapPlayer")]
-    public async Task<IActionResult> GetMapPlayerAsync(
+    [FunctionName("MapGetPlayer")]
+    public async Task<IActionResult> MapGetPlayerAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{id}")] HttpRequest request,
       uint id
     )
@@ -104,8 +104,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="mapId">Map to add template to</param>
     /// <param name="CreateMapRequest.templateId">Template to add to map</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PostAppendTemplateToMapPlayer")]
-    public async Task<IActionResult> PostAppendTemplateToMapPlayerAsync(
+    [FunctionName("MapAppendTemplatePostPlayer")]
+    public async Task<IActionResult> MapAppendTemplatePostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps/{mapId}")] HttpRequest request,
       uint mapId
     )
@@ -135,8 +135,8 @@ namespace OLab.Endpoints.Azure.Player
     /// </summary>
     /// <param name="body">Create map request body</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PostCreateMap")]
-    public async Task<IActionResult> PostCreateMapAsync(
+    [FunctionName("MapCreatePostPlayer")]
+    public async Task<IActionResult> MapCreatePostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps")] HttpRequest request
     )
     {

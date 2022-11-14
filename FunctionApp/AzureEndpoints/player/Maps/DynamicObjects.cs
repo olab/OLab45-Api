@@ -33,8 +33,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="nodeId"></param>
     /// <param name="sinceTime"></param>
     /// <returns></returns>
-    [FunctionName("GetDynamicScopedObjectsRaw")]
-    public async Task<IActionResult> GetDynamicScopedObjectsRawAsync(
+    [FunctionName("MapNodeDynamicScopedObjectsRaw")]
+    public async Task<IActionResult> MapNodeDynamicScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw")] HttpRequest request,
       uint mapId,
       uint nodeId
@@ -72,8 +72,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="nodeId"></param>
     /// <param name="sinceTime"></param>
     /// <returns></returns>
-    [FunctionName("GetDynamicScopedObjectsTranslated")]
-    public async Task<IActionResult> GetDynamicScopedObjectsTranslatedAsync(
+    [FunctionName("MapNodeDynamicScopedObjects")]
+    public async Task<IActionResult> MapNodeDynamicScopedObjectsAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects")] HttpRequest request,
       uint mapId,
       uint nodeId

@@ -30,8 +30,8 @@ namespace OLab.Endpoints.Azure.Player
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("GetScopedObjectsRaw")]
-    public async Task<IActionResult> GetScopedObjectsRawAsync(
+    [FunctionName("MapScopedObjectsRawGet")]
+    public async Task<IActionResult> MapScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{id}/scopedobjects/raw")] HttpRequest request,
       uint id)
     {
@@ -59,8 +59,8 @@ namespace OLab.Endpoints.Azure.Player
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("GetScopedObjects")]
-    public async Task<IActionResult> GetScopedObjectsAsync(
+    [FunctionName("MapScopedObjectsPut")]
+    public async Task<IActionResult> MapScopedObjectsPutAsync(
       [HttpTrigger(AuthorizationLevel.User, "put", Route = "maps/{id}/scopedobjects")] HttpRequest request,
       uint id)
     {

@@ -45,12 +45,12 @@ namespace OLab.Endpoints.Azure.Designer
     /// <param name="logger"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [FunctionName("GetMapNodeDesigner")]
-    public async Task<IActionResult> GetNodeAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/node/{nodeId}")] HttpRequest request,
-        uint mapId,
-        uint nodeId,
-        CancellationToken cancellationToken)
+    [FunctionName("MapNodeGetDesigner")]
+    public async Task<IActionResult> MapNodeGetDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/node/{nodeId}")] HttpRequest request,
+      uint mapId,
+      uint nodeId,
+      CancellationToken cancellationToken)
     {
       try
       {
@@ -83,9 +83,9 @@ namespace OLab.Endpoints.Azure.Designer
     /// </summary>
     /// <param name="id">Constant id</param>
     /// <returns></returns>
-    [FunctionName("GeMapNodesDesigner")]
-    public async Task<IActionResult> GetByMapIdAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/nodes")] HttpRequest request,
+    [FunctionName("MapNodesGetDesigner")]
+    public async Task<IActionResult> MapNodesGetDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/nodes")] HttpRequest request,
       uint mapId
     )
     {
@@ -115,9 +115,9 @@ namespace OLab.Endpoints.Azure.Designer
     /// </summary>
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PostMapNodeLinkDesigner")]
-    public async Task<IActionResult> PostNodeLinkAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps/{mapId}/nodes/{nodeId}/links")] HttpRequest request,
+    [FunctionName("MapNodeLinkPostDesigner")]
+    public async Task<IActionResult> MapNodeLinkPostDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "post", Route = "designer/maps/{mapId}/nodes/{nodeId}/links")] HttpRequest request,
       uint mapId,
       uint nodeId
       )
@@ -153,9 +153,9 @@ namespace OLab.Endpoints.Azure.Designer
     /// </summary>
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PostMapNodeDesigner")]
-    public async Task<IActionResult> PostMapNodeAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps/{mapId}/nodes")] HttpRequest request,
+    [FunctionName("MapNodePostDesigner")]
+    public async Task<IActionResult> MapNodePostDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "post", Route = "designer/maps/{mapId}/nodes")] HttpRequest request,
       uint mapId
     )
     {
@@ -187,9 +187,9 @@ namespace OLab.Endpoints.Azure.Designer
     /// </summary>
     /// <param name="mapId">Map Id</param>
     /// <returns></returns>
-    [FunctionName("GetRawScopedObjects")]
-    public async Task<IActionResult> GetScopedObjectsRawAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/scopedobjects/raw")] HttpRequest request,
+    [FunctionName("MapScopedObjectsRawDesigner")]
+    public async Task<IActionResult> MapScopedObjectsRawDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/scopedobjects/raw")] HttpRequest request,
       uint mapId
     )
     {
@@ -217,9 +217,9 @@ namespace OLab.Endpoints.Azure.Designer
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("GetScopedObjectsDesigner")]
-    public async Task<IActionResult> GetScopedObjectsAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/scopedobjects")] HttpRequest request,
+    [FunctionName("MapScopedObjectsDesigner")]
+    public async Task<IActionResult> MapScopedObjectsDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/scopedobjects")] HttpRequest request,
       uint mapId
     )
     {
@@ -230,7 +230,7 @@ namespace OLab.Endpoints.Azure.Designer
 
         // validate token/setup up common properties
         AuthorizeRequest(request);
-        
+
         var dto = await _endpoint.GetScopedObjectsAsync(auth, mapId);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }

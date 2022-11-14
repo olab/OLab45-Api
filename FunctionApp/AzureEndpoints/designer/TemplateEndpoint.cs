@@ -9,15 +9,10 @@ using OLab.FunctionApp.Api;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
-using OLabWebAPI.Endpoints;
-using OLab.FunctionApp.Api.Services;
 using OLabWebAPI.Model;
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Dto.Designer;
 
@@ -46,8 +41,8 @@ namespace OLab.Endpoints.Azure.Designer
     /// <param name="logger"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [FunctionName("GetTemplateDesigner")]
-    public async Task<IActionResult> GetTemplateAsync(
+    [FunctionName("TemplateGetDesigner")]
+    public async Task<IActionResult> TemplateGetDesignerAsync(
         [HttpTrigger(AuthorizationLevel.User, "get", Route = "templates")] HttpRequest request,
         CancellationToken cancellationToken)
     {
@@ -81,8 +76,8 @@ namespace OLab.Endpoints.Azure.Designer
     /// </summary>
     /// <param name="id">Constant id</param>
     /// <returns></returns>
-    [FunctionName("GetTemplateLinksDesigner")]
-    public IActionResult GetLinksAsync(
+    [FunctionName("TemplateLinksGetDesigner")]
+    public IActionResult TemplateLinksGetDesignerAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "templates/links")] HttpRequest request
     )
     {
@@ -111,8 +106,8 @@ namespace OLab.Endpoints.Azure.Designer
     /// </summary>
     /// <param name="id">Constant id</param>
     /// <returns></returns>
-    [FunctionName("GetTemplateNodesDesigner")]
-    public IActionResult GetTemplateNodesAsync(
+    [FunctionName("TemplateMapNodeDesigner")]
+    public IActionResult TemplateMapNodeDesignerAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "templates/nodes")] HttpRequest request
     )
     {

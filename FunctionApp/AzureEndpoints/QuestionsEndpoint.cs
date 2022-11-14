@@ -10,89 +10,85 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints;
-using OLab.FunctionApp.Api.Services;
 using OLabWebAPI.Model;
 using System;
-using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 
 namespace OLab.Endpoints.Azure
 {
-  public class CountersAzureEndpoint : OLabAzureEndpoint
+  public class QuestionsAzureEndpoint : OLabAzureEndpoint
   {
-    private readonly CountersEndpoint _endpoint;
+    private readonly QuestionsEndpoint _endpoint;
 
-    public CountersAzureEndpoint(
+    public QuestionsAzureEndpoint(
       IUserService userService,
       ILogger<CountersAzureEndpoint> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
-      _endpoint = new CountersEndpoint(this.logger, context);
+      Guard.Argument(userService).NotNull(nameof(userService));
+      Guard.Argument(logger).NotNull(nameof(logger));
+      Guard.Argument(context).NotNull(nameof(context));
+
+      _endpoint = new QuestionsEndpoint(this.logger, context);
     }
 
     /// <summary>
-    /// Gets all counters
+    /// 
     /// </summary>
-    /// <param name="request"></param>
-    /// <param name="logger"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="take"></param>
+    /// <param name="skip"></param>
     /// <returns></returns>
-    [FunctionName("CountersGet")]
-    public async Task<IActionResult> CountersGetAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "counters")] HttpRequest request,
-        CancellationToken cancellationToken)
+    [FunctionName("QuestionsGet")]
+    public async Task<IActionResult> QuestionsGetAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "questions")] HttpRequest request
+    )
     {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(logger).NotNull(nameof(logger));
-
       try
       {
+        Guard.Argument(request).NotNull(nameof(request));
+
         var queryTake = Convert.ToInt32(request.Query["take"]);
         var querySkip = Convert.ToInt32(request.Query["skip"]);
         int? take = queryTake > 0 ? queryTake : null;
         int? skip = querySkip > 0 ? querySkip : null;
 
-        // validate token/setup up common properties
-        AuthorizeRequest(request);
-
         var pagedResult = await _endpoint.GetAsync(take, skip);
-        return OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        return OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
         return OLabServerErrorResult.Result(ex.Message);
       }
     }
 
     /// <summary>
-    /// Gets single constant
+    /// 
     /// </summary>
-    /// <param name="id">Counter id</param>
+    /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("CounterGet")]
-    public async Task<IActionResult> CounterGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "counters/{id}")] HttpRequest request,
-      uint id
-    )
+    [FunctionName("QuestionGet")]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "questions/{id}")] HttpRequest request,
+      uint id)
     {
       try
       {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(id, nameof(id)).NotZero();
+
         // validate token/setup up common properties
         AuthorizeRequest(request);
 
         var dto = await _endpoint.GetAsync(auth, id);
-        return OLabObjectResult<CountersDto>.Result(dto);
+        return OLabObjectResult<QuestionsFullDto>.Result(dto);
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
         if (ex is OLabUnauthorizedException)
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
@@ -104,24 +100,27 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("CounterPut")]
-    public async Task<IActionResult> CounterPutAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "counters/{id}")] HttpRequest request,
+    [FunctionName("QuestionPut")]
+    public async Task<IActionResult> QuestionPutAsync(
+      [HttpTrigger(AuthorizationLevel.User, "put", Route = "questions/{id}")] HttpRequest request,
       uint id)
     {
       try
       {
+        Guard.Argument(id, nameof(id)).NotZero();
+        Guard.Argument(request).NotNull(nameof(request));
+
         // validate token/setup up common properties
         AuthorizeRequest(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
-        CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
+        QuestionsFullDto dto = JsonConvert.DeserializeObject<QuestionsFullDto>(content);
         await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
       {
         if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);        
+          return OLabNotFoundResult<string>.Result(ex.Message);
         if (ex is OLabUnauthorizedException)
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
@@ -135,9 +134,9 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("CounterPost")]
-    public async Task<IActionResult> CounterPostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "counters")] HttpRequest request
+    [FunctionName("QuestionPost")]
+    public async Task<IActionResult> QuestionPostAsync(
+      [HttpTrigger(AuthorizationLevel.User, "post", Route = "questions")] HttpRequest request
     )
     {
       try
@@ -146,10 +145,10 @@ namespace OLab.Endpoints.Azure
         AuthorizeRequest(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
-        CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
+        QuestionsFullDto dto = JsonConvert.DeserializeObject<QuestionsFullDto>(content);
+
         dto = await _endpoint.PostAsync(auth, dto);
-
-        return OLabObjectResult<CountersFullDto>.Result(dto);
+        return OLabObjectResult<QuestionsFullDto>.Result(dto);
       }
       catch (Exception ex)
       {
@@ -157,36 +156,7 @@ namespace OLab.Endpoints.Azure
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
-    }
-
-    /// <summary>
-    /// Delete a constant
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [FunctionName("CounterDelete")]
-    public async Task<IActionResult> CounterDeleteAsync(
-      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "counters/{id}")] HttpRequest request,
-      uint id)
-    {
-      try
-      {
-        // validate token/setup up common properties
-        AuthorizeRequest(request);
-        
-        await _endpoint.DeleteAsync(auth, id);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-
-      return new NoContentResult();
-
     }    
+
   }
 }

@@ -23,8 +23,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="mapId">map id</param>
     /// <param name="nodeId">node id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("GetMapNode")]
-    public async Task<IActionResult> GetMapNodeAsync(
+    [FunctionName("MapNodeGet")]
+    public async Task<IActionResult> MapNodeGetAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/node/{nodeId}")] HttpRequest request,
       uint mapId, 
       uint nodeId)
@@ -77,8 +77,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="mapId">map id that owns node</param>
     /// <param name="nodeId">node id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("DeleteMapNode")]
-    public async Task<IActionResult> DeleteMapNodeAsync(
+    [FunctionName("MapNodeDelete")]
+    public async Task<IActionResult> MapNodeDeleteAsync(
       [HttpTrigger(AuthorizationLevel.User, "delete", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId
@@ -110,8 +110,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="nodeId">node id</param>
     /// <param name="dto">node data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PutMapNodePlayer")]
-    public async Task<IActionResult> PutMapNodePlayerAsync(
+    [FunctionName("MapNodePut")]
+    public async Task<IActionResult> MapNodePutAsync(
       [HttpTrigger(AuthorizationLevel.User, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId

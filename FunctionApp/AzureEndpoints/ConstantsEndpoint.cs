@@ -44,8 +44,8 @@ namespace OLab.Endpoints.Azure
     /// <param name="logger"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [FunctionName("GetConstants")]
-    public async Task<IActionResult> GetConstantsAsync(
+    [FunctionName("ConstantsGet")]
+    public async Task<IActionResult> ConstantsGetAsync(
         [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants")] HttpRequest request,
         CancellationToken cancellationToken)
     {
@@ -80,8 +80,8 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="id">Constant id</param>
     /// <returns></returns>
-    [FunctionName("GetConstantById")]
-    public async Task<IActionResult> GetConstantByIdAsync(
+    [FunctionName("ConstantGet")]
+    public async Task<IActionResult> ConstantGetAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants/{id}")] HttpRequest request,
       uint id
     )
@@ -111,8 +111,8 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PutConstant")]
-    public async Task<IActionResult> PutConstantAsync(
+    [FunctionName("ConstantPut")]
+    public async Task<IActionResult> ConstantPutAsync(
       [HttpTrigger(AuthorizationLevel.User, "put", Route = "constants/{id}")] HttpRequest request,
       uint id)
     {
@@ -144,8 +144,8 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PostConstant")]
-    public async Task<IActionResult> PostConstantAsync(
+    [FunctionName("ConstantPost")]
+    public async Task<IActionResult> ConstantPostAsync(
       [HttpTrigger(AuthorizationLevel.User, "post", Route = "constants")] HttpRequest request
     )
     {
@@ -173,8 +173,8 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("DeleteConstant")]
-    public async Task<IActionResult> DeleteAsync(
+    [FunctionName("ConstantDelete")]
+    public async Task<IActionResult> ConstantDeleteAsync(
       [HttpTrigger(AuthorizationLevel.User, "delete", Route = "constants/{id}")] HttpRequest request,
       uint id)
     {

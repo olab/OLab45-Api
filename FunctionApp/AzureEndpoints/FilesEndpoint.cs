@@ -99,8 +99,8 @@ namespace OLab.Endpoints.Azure
     /// <param name="logger"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [FunctionName("GetFile")]
-    public async Task<IActionResult> GetAsync(
+    [FunctionName("FilesGet")]
+    public async Task<IActionResult> FilesGetAsync(
         [HttpTrigger(AuthorizationLevel.User, "get", Route = "files")] HttpRequest request,
         CancellationToken cancellationToken)
     {
@@ -133,8 +133,8 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="id">Counter id</param>
     /// <returns></returns>
-    [FunctionName("GetFileById")]
-    public async Task<IActionResult> GetByIdAsync(
+    [FunctionName("FileGet")]
+    public async Task<IActionResult> FileGetAsync(
       [HttpTrigger(AuthorizationLevel.User, "get", Route = "files/{id}")] HttpRequest request,
       uint id
     )
@@ -171,8 +171,8 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="dto">File data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("PostFile")]
-    public async Task<IActionResult> PostAsync(
+    [FunctionName("FilePost")]
+    public async Task<IActionResult> FilePostAsync(
       [HttpTrigger(AuthorizationLevel.User, "post", Route = "files")] HttpRequest request
     )
     {
@@ -230,7 +230,7 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("DeleteFile")]
+    [FunctionName("FileDelete")]
     public async Task<IActionResult> DeleteAsync(
       [HttpTrigger(AuthorizationLevel.User, "delete", Route = "files/{id}")] HttpRequest request,
       uint id)
