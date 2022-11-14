@@ -22,13 +22,13 @@ using OLabWebAPI.Endpoints.Player;
 
 namespace OLab.Endpoints.Azure.Player
 {
-  public partial class NodesAzureEndpoint : OLabFunction
+  public partial class NodesFunction : OLabFunction
   {
     private readonly NodesEndpoint _endpoint;
 
-    public NodesAzureEndpoint(
+    public NodesFunction(
       IUserService userService,
-      ILogger<ConstantsAzureEndpoint> logger,
+      ILogger<ConstantsFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));

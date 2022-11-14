@@ -18,13 +18,13 @@ using Newtonsoft.Json;
 
 namespace OLab.Endpoints.Azure
 {
-  public class QuestionRepsonsesAzureEndpoint : OLabFunction
+  public class QuestionRepsonsesFunction : OLabFunction
   {
     private readonly QuestionResponsesEndpoint _endpoint;
 
-    public QuestionRepsonsesAzureEndpoint(
+    public QuestionRepsonsesFunction(
       IUserService userService,
-      ILogger<CountersAzureEndpoint> logger,
+      ILogger<CountersFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));

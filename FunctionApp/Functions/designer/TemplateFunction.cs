@@ -18,13 +18,13 @@ using OLabWebAPI.Dto.Designer;
 
 namespace OLab.Endpoints.Azure.Designer
 {
-  public class TemplateAzureEndpoint : OLabFunction
+  public class TemplateFunction : OLabFunction
   {
     private readonly TemplateEndpoint _endpoint;
 
-    public TemplateAzureEndpoint(
+    public TemplateFunction(
       IUserService userService,
-      ILogger<ConstantsAzureEndpoint> logger,
+      ILogger<ConstantsFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));

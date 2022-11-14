@@ -26,15 +26,15 @@ using Azure.Storage.Blobs;
 
 namespace OLab.Endpoints.Azure
 {
-  public class FilesAzureEndpoint : OLabFunction
+  public class FilesFunction : OLabFunction
   {
     private readonly FilesEndpoint _endpoint;
     private readonly AppSettings _appSettings;
 
-    public FilesAzureEndpoint(
+    public FilesFunction(
       IUserService userService,
       IOptions<AppSettings> appSettings,
-      ILogger<CountersAzureEndpoint> logger,
+      ILogger<CountersFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));

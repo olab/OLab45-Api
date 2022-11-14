@@ -14,17 +14,17 @@ using OLabWebAPI.Model;
 
 namespace OLab.Endpoints.Azure
 {
-  public class UserAzureEndpoint : OLabFunction
+  public class UserFunction : OLabFunction
   {
-    public UserAzureEndpoint(
-      ILogger<UserAzureEndpoint> logger,
+    public UserFunction(
+      ILogger<UserFunction> logger,
       IUserService userService,
       OLabDBContext context) : base( logger, userService, context )
     {
     }
 
     [FunctionName("Login")]
-    public async Task<IActionResult> Run(
+    public async Task<IActionResult> LoginAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "login")] HttpRequest request,
         ILogger logger,
         CancellationToken cancellationToken)

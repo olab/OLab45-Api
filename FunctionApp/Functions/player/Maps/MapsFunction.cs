@@ -10,52 +10,57 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints;
+using OLab.FunctionApp.Api.Services;
 using OLabWebAPI.Model;
 using System;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using OLabWebAPI.Endpoints.Player;
 
-namespace OLab.Endpoints.Azure
+namespace OLab.Endpoints.Azure.Player
 {
-  public class QuestionsAzureEndpoint : OLabFunction
+  public partial class MapsFunction : OLabFunction
   {
-    private readonly QuestionsEndpoint _endpoint;
+    private readonly MapsEndpoint _endpoint;
 
-    public QuestionsAzureEndpoint(
+    public MapsFunction(
       IUserService userService,
-      ILogger<CountersAzureEndpoint> logger,
+      ILogger<ConstantsFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(context).NotNull(nameof(context));
 
-      _endpoint = new QuestionsEndpoint(this.logger, context);
+      _endpoint = new MapsEndpoint(this.logger, context);
     }
 
     /// <summary>
-    /// 
+    /// Get a list of maps
     /// </summary>
-    /// <param name="take"></param>
-    /// <param name="skip"></param>
-    /// <returns></returns>
-    [FunctionName("QuestionsGet")]
-    public async Task<IActionResult> QuestionsGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "questions")] HttpRequest request
+    /// <param name="take">Max number of records to return</param>
+    /// <param name="skip">SKip over a number of records</param>
+    /// <returns>IActionResult</returns>
+    [FunctionName("MapsGetPlayer")]
+    public async Task<IActionResult> MapsGetPlayerAsync(
+        [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps")] HttpRequest request
     )
     {
       try
       {
-        Guard.Argument(request).NotNull(nameof(request));
-
         var queryTake = Convert.ToInt32(request.Query["take"]);
         var querySkip = Convert.ToInt32(request.Query["skip"]);
         int? take = queryTake > 0 ? queryTake : null;
         int? skip = querySkip > 0 ? querySkip : null;
 
-        var pagedResult = await _endpoint.GetAsync(take, skip);
-        return OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
+
+        var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
+        return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
       }
       catch (Exception ex)
       {
@@ -63,6 +68,7 @@ namespace OLab.Endpoints.Azure
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
+
     }
 
     /// <summary>
@@ -70,22 +76,19 @@ namespace OLab.Endpoints.Azure
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("QuestionGet")]
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "questions/{id}")] HttpRequest request,
-      uint id)
+    [FunctionName("MapGetPlayer")]
+    public async Task<IActionResult> MapGetPlayerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{id}")] HttpRequest request,
+      uint id
+    )
     {
       try
       {
-        Guard.Argument(request).NotNull(nameof(request));
-        Guard.Argument(id, nameof(id)).NotZero();
-
         // validate token/setup up common properties
         AuthorizeRequest(request);
 
         var dto = await _endpoint.GetAsync(auth, id);
-        return OLabObjectResult<QuestionsFullDto>.Result(dto);
+        return OLabObjectResult<MapsFullDto>.Result(dto);
       }
       catch (Exception ex)
       {
@@ -96,47 +99,15 @@ namespace OLab.Endpoints.Azure
     }
 
     /// <summary>
-    /// Saves a object edit
+    /// Append template to an existing map
     /// </summary>
-    /// <param name="id">question id</param>
+    /// <param name="mapId">Map to add template to</param>
+    /// <param name="CreateMapRequest.templateId">Template to add to map</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("QuestionPut")]
-    public async Task<IActionResult> QuestionPutAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "questions/{id}")] HttpRequest request,
-      uint id)
-    {
-      try
-      {
-        Guard.Argument(id, nameof(id)).NotZero();
-        Guard.Argument(request).NotNull(nameof(request));
-
-        // validate token/setup up common properties
-        AuthorizeRequest(request);
-
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        QuestionsFullDto dto = JsonConvert.DeserializeObject<QuestionsFullDto>(content);
-        await _endpoint.PutAsync(auth, id, dto);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-
-      return new NoContentResult();
-    }
-
-    /// <summary>
-    /// Create new object
-    /// </summary>
-    /// <param name="dto">object data</param>
-    /// <returns>IActionResult</returns>
-    [FunctionName("QuestionPost")]
-    public async Task<IActionResult> QuestionPostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "questions")] HttpRequest request
+    [FunctionName("MapAppendTemplatePostPlayer")]
+    public async Task<IActionResult> MapAppendTemplatePostPlayerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps/{mapId}")] HttpRequest request,
+      uint mapId
     )
     {
       try
@@ -145,10 +116,40 @@ namespace OLab.Endpoints.Azure
         AuthorizeRequest(request);
 
         var content = await new StreamReader(request.Body).ReadToEndAsync();
-        QuestionsFullDto dto = JsonConvert.DeserializeObject<QuestionsFullDto>(content);
+        ExtendMapRequest body = JsonConvert.DeserializeObject<ExtendMapRequest>(content);
 
-        dto = await _endpoint.PostAsync(auth, dto);
-        return OLabObjectResult<QuestionsFullDto>.Result(dto);
+        var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
+        return OLabObjectResult<ExtendMapResponse>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
+    }    
+
+    /// <summary>
+    /// Create new map (using optional template)
+    /// </summary>
+    /// <param name="body">Create map request body</param>
+    /// <returns>IActionResult</returns>
+    [FunctionName("MapCreatePostPlayer")]
+    public async Task<IActionResult> MapCreatePostPlayerAsync(
+      [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps")] HttpRequest request
+    )
+    {
+      try
+      {
+        // validate token/setup up common properties
+        AuthorizeRequest(request);
+
+        var content = await new StreamReader(request.Body).ReadToEndAsync();
+        CreateMapRequest body = JsonConvert.DeserializeObject<CreateMapRequest>(content);
+
+        var dto = await _endpoint.PostCreateMapAsync(auth, body);
+        return OLabObjectResult<MapsFullRelationsDto>.Result(dto);
       }
       catch (Exception ex)
       {

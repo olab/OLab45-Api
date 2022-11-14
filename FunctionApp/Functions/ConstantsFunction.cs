@@ -21,13 +21,13 @@ using Newtonsoft.Json;
 
 namespace OLab.Endpoints.Azure
 {
-  public class ConstantsAzureEndpoint : OLabFunction
+  public class ConstantsFunction : OLabFunction
   {
     private readonly ConstantsEndpoint _endpoint;
 
-    public ConstantsAzureEndpoint(
+    public ConstantsFunction(
       IUserService userService,
-      ILogger<ConstantsAzureEndpoint> logger,
+      ILogger<ConstantsFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));

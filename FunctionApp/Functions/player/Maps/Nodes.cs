@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace OLab.Endpoints.Azure.Player
 {
-  public partial class MapsAzureEndpoint : OLabFunction
+  public partial class MapsFunction : OLabFunction
   {
     /// <summary>
     /// Plays specific map node

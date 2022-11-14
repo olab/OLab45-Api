@@ -22,13 +22,13 @@ using OLabWebAPI.Endpoints.Designer;
 
 namespace OLab.Endpoints.Azure.Designer
 {
-  public class MapsAzureEndpoint : OLabFunction
+  public class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
 
-    public MapsAzureEndpoint(
+    public MapsFunction(
       IUserService userService,
-      ILogger<ConstantsAzureEndpoint> logger,
+      ILogger<ConstantsFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));

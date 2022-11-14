@@ -21,13 +21,13 @@ using Newtonsoft.Json;
 
 namespace OLab.Endpoints.Azure
 {
-  public class CountersAzureEndpoint : OLabFunction
+  public class CountersFunction : OLabFunction
   {
     private readonly CountersEndpoint _endpoint;
 
-    public CountersAzureEndpoint(
+    public CountersFunction(
       IUserService userService,
-      ILogger<CountersAzureEndpoint> logger,
+      ILogger<CountersFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       _endpoint = new CountersEndpoint(this.logger, context);
