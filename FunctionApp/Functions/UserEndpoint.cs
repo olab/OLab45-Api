@@ -14,7 +14,7 @@ using OLabWebAPI.Model;
 
 namespace OLab.Endpoints.Azure
 {
-  public class UserAzureEndpoint : OLabAzureEndpoint
+  public class UserAzureEndpoint : OLabFunction
   {
     public UserAzureEndpoint(
       ILogger<UserAzureEndpoint> logger,

@@ -26,7 +26,7 @@ using Azure.Storage.Blobs;
 
 namespace OLab.Endpoints.Azure
 {
-  public class FilesAzureEndpoint : OLabAzureEndpoint
+  public class FilesAzureEndpoint : OLabFunction
   {
     private readonly FilesEndpoint _endpoint;
     private readonly AppSettings _appSettings;

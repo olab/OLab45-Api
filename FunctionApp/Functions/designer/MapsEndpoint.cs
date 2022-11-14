@@ -22,7 +22,7 @@ using OLabWebAPI.Endpoints.Designer;
 
 namespace OLab.Endpoints.Azure.Designer
 {
-  public class MapsAzureEndpoint : OLabAzureEndpoint
+  public class MapsAzureEndpoint : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
 

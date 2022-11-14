@@ -22,7 +22,7 @@ using OLabWebAPI.Endpoints.Player;
 
 namespace OLab.Endpoints.Azure.Player
 {
-  public partial class MapsAzureEndpoint : OLabAzureEndpoint
+  public partial class MapsAzureEndpoint : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
 

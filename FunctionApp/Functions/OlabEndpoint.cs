@@ -8,7 +8,7 @@ using OLabWebAPI.Utils;
 
 namespace OLab.Endpoints.Azure
 {
-  public class OLabAzureEndpoint
+  public class OLabFunction
   {
     protected readonly OLabDBContext context;
     protected OLabLogger logger;
@@ -17,7 +17,7 @@ namespace OLab.Endpoints.Azure
     protected OLabWebApiAuthorization auth;
     protected UserContext userContext;
     
-    public OLabAzureEndpoint(ILogger logger, IUserService userService, OLabDBContext context)
+    public OLabFunction(ILogger logger, IUserService userService, OLabDBContext context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));

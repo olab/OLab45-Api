@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace OLab.Endpoints.Azure
 {
-  public class QuestionRepsonsesAzureEndpoint : OLabAzureEndpoint
+  public class QuestionRepsonsesAzureEndpoint : OLabFunction
   {
     private readonly QuestionResponsesEndpoint _endpoint;
 

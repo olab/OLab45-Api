@@ -18,7 +18,7 @@ using OLabWebAPI.Dto.Designer;
 
 namespace OLab.Endpoints.Azure.Designer
 {
-  public class TemplateAzureEndpoint : OLabAzureEndpoint
+  public class TemplateAzureEndpoint : OLabFunction
   {
     private readonly TemplateEndpoint _endpoint;
 

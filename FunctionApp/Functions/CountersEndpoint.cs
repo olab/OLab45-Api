@@ -21,7 +21,7 @@ using Newtonsoft.Json;
 
 namespace OLab.Endpoints.Azure
 {
-  public class CountersAzureEndpoint : OLabAzureEndpoint
+  public class CountersAzureEndpoint : OLabFunction
   {
     private readonly CountersEndpoint _endpoint;
 
