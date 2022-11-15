@@ -6,7 +6,13 @@
                 "isEnabled": true,
                 "excludedTypes": "Request"
             }
-        }
+        },
+        "logLevel": {
+          "default": "Information",
+          "Function": "Trace",
+          "OLabDBContext": "Error",
+          "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+        }        
     },
     "extensions": {"http": {"routePrefix": "olab/api/v3"}}
 }

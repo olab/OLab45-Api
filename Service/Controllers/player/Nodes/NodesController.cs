@@ -13,6 +13,7 @@ using System;
 using OLabWebAPI.Common;
 using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -62,7 +63,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        await _endpoint.PutNodeAsync(id, dto);
+        var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        await _endpoint.PutNodeAsync(auth, id, dto);
       }
       catch (Exception ex)
       {
@@ -84,14 +86,13 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     [HttpPost("{nodeId}/links")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostLinkAsync(
-      uint mapId,
       uint nodeId,
       [FromBody] MapNodeLinksPostDataDto data
     )
     {
       try
       {
-        var dto = await _endpoint.PostLinkAsync(mapId, nodeId, data);
+        var dto = await _endpoint.PostLinkAsync(nodeId, data);
         return OLabObjectResult<MapNodeLinksPostResponseDto>.Result(dto);
       }
       catch (Exception ex)

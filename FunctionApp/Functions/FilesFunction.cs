@@ -117,6 +117,8 @@ namespace OLab.Endpoints.Azure
         AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
+        logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
+
         return OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
       catch (Exception ex)

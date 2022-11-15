@@ -55,7 +55,7 @@ namespace OLab.FunctionApp.Api.Services
 
       _users = _context.Users.OrderBy(x => x.Id).ToList();
 
-      _logger.LogDebug($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
+      _logger.LogInformation($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
 
       _tokenParameters = SetupValidationParameters(_appSettings);
 
@@ -122,6 +122,7 @@ namespace OLab.FunctionApp.Api.Services
     {
       Guard.Argument(model, nameof(model)).NotNull();
 
+      _logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
       var user = _users.SingleOrDefault(x => x.Username == model.Username);
 
       // return null if user not found
@@ -196,10 +197,12 @@ namespace OLab.FunctionApp.Api.Services
     /// <param name="clearText">Password</param>
     /// <param name="user">Corresponding user record</param>
     /// <returns>true/false</returns>
-    public static bool ValidatePassword(string clearText, Users user)
+    public bool ValidatePassword(string clearText, Users user)
     {
       Guard.Argument(user, nameof(user)).NotNull();
       Guard.Argument(clearText, nameof(clearText)).NotEmpty();
+
+      bool result = false;
 
       if (!string.IsNullOrEmpty(user.Salt))
       {
@@ -209,10 +212,11 @@ namespace OLab.FunctionApp.Api.Services
         byte[] hashBytes = hash.ComputeHash(plainTextBytes);
         string localChecksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
 
-        return localChecksum == user.Password;
+        result = localChecksum == user.Password;
       }
 
-      return false;
+      _logger.LogInformation($"Password validated = {result}");
+      return result;
     }
 
     /// <summary>
@@ -271,15 +275,14 @@ namespace OLab.FunctionApp.Api.Services
     /// <param name="request">HTTP request</param>
     public void ValidateToken(HttpRequest request)
     {
-      Guard.Argument(request, nameof(request)).NotNull();
-
-      var bearerToken = AccessTokenUtils.ExtractBearerToken( request );
-
-      // Extract/save token claims
-      _claims = ExtractTokenClaims(bearerToken);
-
       try
       {
+        Guard.Argument(request, nameof(request)).NotNull();
+
+        var bearerToken = AccessTokenUtils.ExtractBearerToken(request);
+
+        // Extract/save token claims
+        _claims = ExtractTokenClaims(bearerToken);
         var handler = new JwtSecurityTokenHandler();
 
         // Try to validate the token. Throws if the 

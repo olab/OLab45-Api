@@ -70,7 +70,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns></returns>
     [FunctionName("MapNodePutPlayer")]
     public async Task<IActionResult> MapNodePutPlayerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "nodes/{nodeId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.User, "put", Route = "nodes/{id}")] HttpRequest request,
       uint id)
     {
       try
@@ -103,7 +103,6 @@ namespace OLab.Endpoints.Azure.Player
     [FunctionName("MapNodeLinkPostPlayer")]
     public async Task<IActionResult> MapNodeLinkPostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.User, "post", Route = "nodes/{nodeId}/links")] HttpRequest request,
-      uint mapId,
       uint nodeId
     )
     {
@@ -115,7 +114,7 @@ namespace OLab.Endpoints.Azure.Player
         var content = await new StreamReader(request.Body).ReadToEndAsync();
         MapNodeLinksPostDataDto body = JsonConvert.DeserializeObject<MapNodeLinksPostDataDto>(content);
 
-        var dto = await _endpoint.PostLinkAsync(mapId, nodeId, body);
+        var dto = await _endpoint.PostLinkAsync(nodeId, body);
         return OLabObjectResult<MapNodeLinksPostResponseDto>.Result(dto);
       }
       catch (Exception ex)
@@ -135,7 +134,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns></returns>
     [FunctionName("MapNodePostPlayer")]
     public async Task<IActionResult> MapNodePostPlayerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "nodes/{nodeId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.User, "post", Route = "nodes/{mapId}")] HttpRequest request,
       uint mapId
     )
     {

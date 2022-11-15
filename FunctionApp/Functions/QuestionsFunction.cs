@@ -55,6 +55,8 @@ namespace OLab.Endpoints.Azure
         int? skip = querySkip > 0 ? querySkip : null;
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
+        logger.LogInformation(string.Format("Found {0} questions", pagedResult.Data.Count));
+
         return OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
       catch (Exception ex)

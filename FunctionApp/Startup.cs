@@ -47,6 +47,8 @@ namespace OLab.FunctionApp.Api
 
       builder.Services.AddLogging();
 
+      builder.Services.AddScoped<IUserService, OLabUserService>();
+      
       builder
           .Services.AddOptions<AppSettings>()
           .Configure<IConfiguration>((settings, configuration) =>
@@ -70,8 +72,6 @@ namespace OLab.FunctionApp.Api
               // .EnableSensitiveDataLogging()
               .EnableDetailedErrors()
         );
-
-      builder.Services.AddScoped<IUserService, OLabUserService>();
 
       // Azure service connection managers
       // builder.Services.AddSingleton<IDeviceTemplateRepository, DeviceTemplateRepository>();

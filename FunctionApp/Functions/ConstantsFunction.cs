@@ -64,6 +64,8 @@ namespace OLab.Endpoints.Azure
         AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
+        logger.LogInformation(string.Format("Found {0} constants", pagedResult.Data.Count));
+
         return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
       catch (Exception ex)

@@ -56,12 +56,6 @@ namespace OLab.Endpoints.Azure.Designer
       {
         Guard.Argument(mapId, nameof(mapId)).NotZero();
         Guard.Argument(request).NotNull(nameof(request));
-
-        var queryTake = Convert.ToInt32(request.Query["take"]);
-        var querySkip = Convert.ToInt32(request.Query["skip"]);
-        int? take = queryTake > 0 ? queryTake : null;
-        int? skip = querySkip > 0 ? querySkip : null;
-
         // validate token/setup up common properties
         AuthorizeRequest(request);
 

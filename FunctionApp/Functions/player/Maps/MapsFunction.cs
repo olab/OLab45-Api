@@ -59,8 +59,10 @@ namespace OLab.Endpoints.Azure.Player
         // validate token/setup up common properties
         AuthorizeRequest(request);
 
-        var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
-        return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
+        var pagedResult = await _endpoint.GetAsync(auth, take, skip);
+        logger.LogInformation(string.Format("Found {0} maps", pagedResult.Data.Count));
+
+        return OLabObjectPagedListResult<MapsDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
       catch (Exception ex)
       {

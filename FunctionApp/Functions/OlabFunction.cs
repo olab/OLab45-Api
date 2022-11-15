@@ -30,11 +30,12 @@ namespace OLab.Endpoints.Azure
 
     protected void AuthorizeRequest(HttpRequest request)
     {
+      logger.LogInformation($"Authorizing request");
       // validate user access token.  throws if not successful
       userService.ValidateToken(request);
       auth = new OLabWebApiAuthorization(logger, context, request);
       userContext = new UserContext(logger, context, request);
-
+      logger.LogInformation($"Request authorized");
     }
   }
 }
