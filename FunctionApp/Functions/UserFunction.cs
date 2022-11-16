@@ -25,7 +25,7 @@ namespace OLab.Endpoints.Azure
 
     [FunctionName("Login")]
     public async Task<IActionResult> LoginAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "login")] HttpRequest request,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequest request,
         ILogger logger,
         CancellationToken cancellationToken)
     {
