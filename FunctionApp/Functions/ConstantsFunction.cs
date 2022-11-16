@@ -46,7 +46,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("ConstantsGet")]
     public async Task<IActionResult> ConstantsGetAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants")] HttpRequest request,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants")] HttpRequest request,
         CancellationToken cancellationToken)
     {
 
@@ -84,7 +84,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("ConstantGet")]
     public async Task<IActionResult> ConstantGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "constants/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants/{id}")] HttpRequest request,
       uint id
     )
     {
@@ -115,7 +115,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("ConstantPut")]
     public async Task<IActionResult> ConstantPutAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "constants/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "constants/{id}")] HttpRequest request,
       uint id)
     {
       try
@@ -148,7 +148,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("ConstantPost")]
     public async Task<IActionResult> ConstantPostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "constants")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "constants")] HttpRequest request
     )
     {
       try
@@ -177,7 +177,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("ConstantDelete")]
     public async Task<IActionResult> ConstantDeleteAsync(
-      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "constants/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "constants/{id}")] HttpRequest request,
       uint id)
     {
       try

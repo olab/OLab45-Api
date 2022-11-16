@@ -21,7 +21,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns></returns>
     [FunctionName("MapNodeScopedObjectsRawGet")]
     public async Task<IActionResult> MapScopedObjectsRawGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "nodes/{nodeId}/scopedobjects/raw")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects/raw")] HttpRequest request,
       uint nodeId)
     {
       try
@@ -50,7 +50,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns></returns>
     [FunctionName("MapNodeScopedObjectsGet")]
     public async Task<IActionResult> MapScopedObjectsGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "nodes/{nodeId}/scopedobjects")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects")] HttpRequest request,
       uint nodeId)
     {
       try

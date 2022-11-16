@@ -25,7 +25,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns>IActionResult</returns>
     [FunctionName("MapNodeGet")]
     public async Task<IActionResult> MapNodeGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{mapId}/node/{nodeId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/node/{nodeId}")] HttpRequest request,
       uint mapId, 
       uint nodeId)
     {
@@ -79,7 +79,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns>IActionResult</returns>
     [FunctionName("MapNodeDelete")]
     public async Task<IActionResult> MapNodeDeleteAsync(
-      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId
     )
@@ -112,7 +112,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns>IActionResult</returns>
     [FunctionName("MapNodePut")]
     public async Task<IActionResult> MapNodePutAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId
     )

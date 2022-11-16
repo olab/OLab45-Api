@@ -34,7 +34,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns>IActionResult</returns>
     [HttpPut("{mapId}/nodes/{nodeId}/links/{linkId}")]
     public async Task<IActionResult> PutMapNodeLinksAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "maps/{mapId}/nodes/{nodeId}/links/{linkId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}/links/{linkId}")] HttpRequest request,
       uint mapId,
       uint nodeId,
       uint linkId

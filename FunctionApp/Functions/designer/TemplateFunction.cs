@@ -43,7 +43,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns></returns>
     [FunctionName("TemplateGetDesigner")]
     public async Task<IActionResult> TemplateGetDesignerAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "templates")] HttpRequest request,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates")] HttpRequest request,
         CancellationToken cancellationToken)
     {
 
@@ -80,7 +80,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns></returns>
     [FunctionName("TemplateLinksGetDesigner")]
     public IActionResult TemplateLinksGetDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "templates/links")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates/links")] HttpRequest request
     )
     {
       try
@@ -110,7 +110,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns></returns>
     [FunctionName("TemplateMapNodeDesigner")]
     public IActionResult TemplateMapNodeDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "templates/nodes")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates/nodes")] HttpRequest request
     )
     {
       try

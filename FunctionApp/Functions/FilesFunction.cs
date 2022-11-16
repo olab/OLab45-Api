@@ -101,7 +101,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("FilesGet")]
     public async Task<IActionResult> FilesGetAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "files")] HttpRequest request,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "files")] HttpRequest request,
         CancellationToken cancellationToken)
     {
       Guard.Argument(request).NotNull(nameof(request));
@@ -137,7 +137,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("FileGet")]
     public async Task<IActionResult> FileGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "files/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "files/{id}")] HttpRequest request,
       uint id
     )
     {
@@ -175,7 +175,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("FilePost")]
     public async Task<IActionResult> FilePostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "files")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "files")] HttpRequest request
     )
     {
       SystemFiles phys = null;
@@ -234,7 +234,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("FileDelete")]
     public async Task<IActionResult> DeleteAsync(
-      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "files/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "files/{id}")] HttpRequest request,
       uint id)
     {
       try

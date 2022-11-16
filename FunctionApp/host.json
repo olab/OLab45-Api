@@ -11,7 +11,7 @@
           "default": "Information",
           "Function": "Trace",
           "OLabDBContext": "Error",
-          "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+          "Microsoft.EntityFrameworkCore": "Warning"
         }        
     },
     "extensions": {"http": {"routePrefix": "olab/api/v3"}}

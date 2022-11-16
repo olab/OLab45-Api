@@ -41,7 +41,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("QuestionResponsePut")]
     public async Task<IActionResult> QuestionResponseGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "questionresponses/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questionresponses/{id}")] HttpRequest request,
       uint id
     )
     {
@@ -74,7 +74,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("QuestionResponsePost")]
     public async Task<IActionResult> QuestionResponsePostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "questionresponses")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "questionresponses")] HttpRequest request
     )
     {
       try
@@ -105,7 +105,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("QuestionResponseDelete")]
     public async Task<IActionResult> QuestionResponseDeleteAsync(
-      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "questionresponses/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "questionresponses/{id}")] HttpRequest request,
       uint id
     )
     {

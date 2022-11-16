@@ -42,7 +42,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("CountersGet")]
     public async Task<IActionResult> CountersGetAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "counters")] HttpRequest request,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "counters")] HttpRequest request,
         CancellationToken cancellationToken)
     {
       Guard.Argument(request).NotNull(nameof(request));
@@ -79,7 +79,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("CounterGet")]
     public async Task<IActionResult> CounterGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "counters/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "counters/{id}")] HttpRequest request,
       uint id
     )
     {
@@ -108,7 +108,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("CounterPut")]
     public async Task<IActionResult> CounterPutAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "counters/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "counters/{id}")] HttpRequest request,
       uint id)
     {
       try
@@ -139,7 +139,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("CounterPost")]
     public async Task<IActionResult> CounterPostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "counters")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "counters")] HttpRequest request
     )
     {
       try
@@ -168,7 +168,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("CounterDelete")]
     public async Task<IActionResult> CounterDeleteAsync(
-      [HttpTrigger(AuthorizationLevel.User, "delete", Route = "counters/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "counters/{id}")] HttpRequest request,
       uint id)
     {
       try

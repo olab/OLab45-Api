@@ -46,7 +46,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns>IActionResult</returns>
     [FunctionName("MapsGetPlayer")]
     public async Task<IActionResult> MapsGetPlayerAsync(
-        [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps")] HttpRequest request
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps")] HttpRequest request
     )
     {
       try
@@ -80,7 +80,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns></returns>
     [FunctionName("MapGetPlayer")]
     public async Task<IActionResult> MapGetPlayerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "maps/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}")] HttpRequest request,
       uint id
     )
     {
@@ -108,7 +108,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns>IActionResult</returns>
     [FunctionName("MapAppendTemplatePostPlayer")]
     public async Task<IActionResult> MapAppendTemplatePostPlayerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps/{mapId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}")] HttpRequest request,
       uint mapId
     )
     {
@@ -139,7 +139,7 @@ namespace OLab.Endpoints.Azure.Player
     /// <returns>IActionResult</returns>
     [FunctionName("MapCreatePostPlayer")]
     public async Task<IActionResult> MapCreatePostPlayerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "maps")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps")] HttpRequest request
     )
     {
       try

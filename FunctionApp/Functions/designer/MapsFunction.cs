@@ -47,7 +47,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns></returns>
     [FunctionName("MapNodeGetDesigner")]
     public async Task<IActionResult> MapNodeGetDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/node/{nodeId}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/node/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId,
       CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns></returns>
     [FunctionName("MapNodesGetDesigner")]
     public async Task<IActionResult> MapNodesGetDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/nodes")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/nodes")] HttpRequest request,
       uint mapId
     )
     {
@@ -111,7 +111,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns>IActionResult</returns>
     [FunctionName("MapNodeLinkPostDesigner")]
     public async Task<IActionResult> MapNodeLinkPostDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "designer/maps/{mapId}/nodes/{nodeId}/links")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes/{nodeId}/links")] HttpRequest request,
       uint mapId,
       uint nodeId
       )
@@ -149,7 +149,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns>IActionResult</returns>
     [FunctionName("MapNodePostDesigner")]
     public async Task<IActionResult> MapNodePostDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "designer/maps/{mapId}/nodes")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes")] HttpRequest request,
       uint mapId
     )
     {
@@ -183,7 +183,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns></returns>
     [FunctionName("MapScopedObjectsRawDesigner")]
     public async Task<IActionResult> MapScopedObjectsRawDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/scopedobjects/raw")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects/raw")] HttpRequest request,
       uint mapId
     )
     {
@@ -213,7 +213,7 @@ namespace OLab.Endpoints.Azure.Designer
     /// <returns></returns>
     [FunctionName("MapScopedObjectsDesigner")]
     public async Task<IActionResult> MapScopedObjectsDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "designer/maps/{mapId}/scopedobjects")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects")] HttpRequest request,
       uint mapId
     )
     {

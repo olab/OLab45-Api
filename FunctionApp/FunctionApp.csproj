@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\Common\Data\Data.csproj" />
     <ProjectReference Include="..\..\Common\Import\Import.csproj" />
     <ProjectReference Include="..\..\Common\Endpoints\Endpoints.csproj" />
+    <ProjectReference Include="..\..\Common\WikiTags\WikiTags.csproj" />    
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -45,11 +46,11 @@
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
 </PropertyGroup>  
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <ItemGroup>
-      <WikiTagFiles Include="..\..\Common\bin\$(Configuration)\$(TargetFramework)\PlugIns\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(WikiTagFiles)" DestinationFolder="$(OutDir)PlugIns" SkipUnchangedFiles="true" />
-  </Target>
+<!-- <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <ItemGroup>
+    <WikiTagFiles Include="..\..\Common\bin\$(Configuration)\$(TargetFramework)\PlugIns\**\*" />
+  </ItemGroup>
+  <Copy SourceFiles="@(WikiTagFiles)" DestinationFolder="$(OutDir)PlugIns" SkipUnchangedFiles="true" />
+</Target> -->
   
 </Project>

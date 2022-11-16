@@ -42,7 +42,7 @@ namespace OLab.Endpoints.Azure
     /// <returns></returns>
     [FunctionName("QuestionsGet")]
     public async Task<IActionResult> QuestionsGetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "questions")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "questions")] HttpRequest request
     )
     {
       try
@@ -75,7 +75,7 @@ namespace OLab.Endpoints.Azure
     [FunctionName("QuestionGet")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAsync(
-      [HttpTrigger(AuthorizationLevel.User, "get", Route = "questions/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "questions/{id}")] HttpRequest request,
       uint id)
     {
       try
@@ -104,7 +104,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("QuestionPut")]
     public async Task<IActionResult> QuestionPutAsync(
-      [HttpTrigger(AuthorizationLevel.User, "put", Route = "questions/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questions/{id}")] HttpRequest request,
       uint id)
     {
       try
@@ -138,7 +138,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("QuestionPost")]
     public async Task<IActionResult> QuestionPostAsync(
-      [HttpTrigger(AuthorizationLevel.User, "post", Route = "questions")] HttpRequest request
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "questions")] HttpRequest request
     )
     {
       try
