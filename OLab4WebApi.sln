@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLabWebAPI", "Service\OLabWebAPI.csproj", "{7F1D2DD4-DB22-4A2C-AC5B-71706702777C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLabWebAPI", "WebApiService\OLabWebAPI.csproj", "{7F1D2DD4-DB22-4A2C-AC5B-71706702777C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "..\Common\Common\Common.csproj", "{C6DE7058-57E0-4CF2-A7CC-A4E3A5AC6F8D}"
 EndProject
