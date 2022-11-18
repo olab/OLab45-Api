@@ -83,7 +83,6 @@ namespace OLab.Endpoints.Azure.Player
       {
         Guard.Argument(request).NotNull(nameof(request));
         Guard.Argument(mapId, nameof(mapId)).NotZero();
-        Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
         uint sinceTime = 0;
         if ( request.Query.ContainsKey("sinceTime") )

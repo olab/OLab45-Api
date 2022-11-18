@@ -59,9 +59,9 @@ namespace OLab.Endpoints.Azure.Player
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [FunctionName("MapScopedObjectsPut")]
+    [FunctionName("MapScopedObjectsGet")]
     public async Task<IActionResult> MapScopedObjectsPutAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{id}/scopedobjects")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects")] HttpRequest request,
       uint id)
     {
       try

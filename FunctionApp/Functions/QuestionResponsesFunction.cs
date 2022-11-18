@@ -41,7 +41,7 @@ namespace OLab.Endpoints.Azure
     /// <returns>IActionResult</returns>
     [FunctionName("QuestionResponsePut")]
     public async Task<IActionResult> QuestionResponseGetAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questionresponses/{id}")] HttpRequest request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "response/{id}")] HttpRequest request,
       uint id
     )
     {
