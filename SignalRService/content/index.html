@@ -36,51 +36,25 @@
     <div class="row" v-if="ready">
       <div class="signalr-demo col-sm">
         <hr />
-
-        <input type="radio" id="orgSubscription" name="subscriptionType" value="org">
-        <label for="org">Organization</label><br>
-        <input type="radio" id="deviceSubscription" name="subscriptionType" value="device">
-        <label for="device">Device</label><br>
-
         <input type="text" v-model="subscriptionName" id="subscriptionName" class="form-control"
           placeholder="subscription name" />
-        <a href="#" v-on:click.prevent="subscribe(subscriptionName)">
-          <span class="badge badge-primary">Subscribe</span>
+        <a href="#" v-on:click.prevent="registermoderator(subscriptionName)">
+          <span class="badge badge-primary">Register Moderator</span>
         </a>
-        <a href="#" v-on:click.prevent="unsubscribe(subscriptionName)">
-          <span class="badge badge-primary">UnSubscribe</span>
+        <a href="#" v-on:click.prevent="registerlearner(subscriptionName)">
+          <span class="badge badge-primary">Register Learner</span>
         </a>
       </div>
-    </div>
+    </div>    
 
     <div class="row" v-if="!ready">
       <div class="col-sm">
         <div>Loading...</div>
       </div>
     </div>
+
     <div v-if="ready">
       <h3>Data:</h3>
-      <div id="subscriptionName">
-        Subscription id: {{ subscriptionName }}
-      </div>
-      <table style="border: 1px; width: 100%;">
-        <tr>
-          <td colspan="2">
-            <div id="deviceId"></div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div id="telemetry">Telemetry</div>
-          </td>
-          <td>
-            <div id="deviceTwin">Device Twin</div>
-          </td>
-          <td>
-            <div id="deviceStatus">Device Status</div>
-          </td>          
-        </tr>
-      </table>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
@@ -115,9 +89,9 @@
         return b;
       })(window.location.search.substr(1).split('&'));
 
-      if ( !qs["accessToken"] )
+      if (!qs["accessToken"])
         alert("Missing 'accessToken' querystring parameter");
-        
+
       data.accessToken = qs["accessToken"];
 
       const app = new Vue({
@@ -125,51 +99,22 @@
         data: data,
         methods: {
 
-          unsubscribe: function () {
-            console.log(`unsubscribe ${this.subscriptionName}`);
+          registermoderator: function () {
             try {
-
-              let orgType = document.getElementById('orgSubscription').checked;
-              let deviceType = document.getElementById('deviceSubscription').checked;
-              if (orgType) {
-                connection.invoke("unsubscribeorganization", this.accessToken, this.subscriptionName);
-              }
-              if (deviceType) {
-                connection.invoke("unsubscribedevice", this.accessToken, this.subscriptionName);
-              }
-
-              this.subscriptionName = null;
-              document.getElementById("deviceId").innerHTML = `Unsubscribed from ${this.subscriptionName}`;
-              document.getElementById("telemetry").innerHTML = "";
-              document.getElementById("deviceTwin").innerHTML = "";
-              document.getElementById("deviceStatus").innerHTML = "";
+              console.log(`registermoderator ${this.subscriptionName}`);
             } catch (err) {
               console.error(err);
             }
           },
 
-          subscribe: function () {
+
+          registerlearner: function () {
             try {
-
-              let orgType = document.getElementById('orgSubscription').checked;
-              let deviceType = document.getElementById('deviceSubscription').checked;
-              if (orgType) {
-                console.log(`subscribeorganization ${this.subscriptionName}`);
-                connection.invoke("subscribeorganization", this.accessToken, this.subscriptionName);
-              }
-              if (deviceType) {
-                console.log(`subscribedevice ${this.subscriptionName}`);
-                connection.invoke("subscribedevice", this.accessToken, this.subscriptionName);
-              }
-
-              document.getElementById("deviceId").innerHTML = `Subscribed to ${this.subscriptionName}`;
-              document.getElementById("telemetry").innerHTML = "";
-              document.getElementById("deviceTwin").innerHTML = "";
-              document.getElementById("deviceStatus").innerHTML = "";
+              console.log(`registerlearner ${this.subscriptionName}`);
             } catch (err) {
               console.error(err);
             }
-          }
+          },
 
         }
       });
@@ -197,35 +142,15 @@
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
-      connection.on('telemetryEvent', (deviceId, message) => {
-        console.log(`Telemetry message from ${deviceId}`);
-        try {
-          var payload = JSON.parse(message);
-          document.getElementById("telemetry").innerHTML = JSON.stringify(payload, null, 2);
-        } catch (error) {
-          console.log(`Bad telemetry payload: ${message}`);
-        }
-      });
-
-      connection.on('deviceTwinEvent', (deviceId, message) => {
-        console.log(`DeviceTwin message from ${deviceId}`);
-        try {
-          var payload = JSON.parse(message);
-          document.getElementById("deviceTwin").innerHTML = JSON.stringify(payload, null, 2);
-        } catch (error) {
-          console.log(`Bad deviceTwin payload: ${message}`);
-        }
-      });
-
-      connection.on('deviceStatusEvent', (deviceId, opType, opTimestamp) => {
-        console.log(`DeviceStatus message from ${deviceId}`);
-        try {
-          var payload = opType;
-          document.getElementById("deviceStatus").innerHTML = `${deviceId}:${opType} ${opTimestamp}`;
-        } catch (error) {
-          console.log(`Bad deviceStatus payload: ${message}`);
-        }
-      });      
+      // connection.on('telemetryEvent', (deviceId, message) => {
+      //   console.log(`Telemetry message from ${deviceId}`);
+      //   try {
+      //     var payload = JSON.parse(message);
+      //     document.getElementById("telemetry").innerHTML = JSON.stringify(payload, null, 2);
+      //   } catch (error) {
+      //     console.log(`Bad telemetry payload: ${message}`);
+      //   }
+      // });
 
       connection.onreconnected(connectionId => {
         console.assert(connection.state === signalR.HubConnectionState.Connected);
@@ -273,42 +198,6 @@
         encodedSource = encodedSource.replace(/\//g, '_');
 
         return encodedSource;
-      }
-
-      // function generateAccessToken(userName) {
-      //   return app["accessToken"];
-      // }
-
-      // this function should be in auth server, do not expose your secret
-      function generateAccessTokenOld(userName) {
-        var header = {
-          "alg": "HS256",
-          "typ": "JWT"
-        };
-
-        var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));
-        var encodedHeader = base64url(stringifiedHeader);
-
-        // customize your JWT token payload here 
-        var data = {
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": userName,
-          "exp": 1699819025,
-          'admin': false
-        };
-
-        var stringifiedData = CryptoJS.enc.Utf8.parse(JSON.stringify(data));
-        var encodedData = base64url(stringifiedData);
-
-        var token = encodedHeader + "." + encodedData;
-
-        var secret = "myfunctionauthtest"; // do not expose your secret here
-
-        var signature = CryptoJS.HmacSHA256(token, secret);
-        signature = base64url(signature);
-
-        var signedToken = token + "." + signature;
-
-        return signedToken;
       }
     </script>
 </body>
