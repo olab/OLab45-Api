@@ -10,7 +10,9 @@ using OLabWebAPI.Services;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Model;
 using OLabWebAPI.Data.Session;
-using TurkTalk.Contracts;
+using OLabWebAPI.Services.TurkTalk.Venue;
+using OLabWebAPI.Services.TurkTalk;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace OLabWebAPI
 {
@@ -88,18 +90,17 @@ namespace OLabWebAPI
       }
 
       // app.UseHttpsRedirection();
+      // global cors policy
+      app.UseCors("CorsPolicy");      
       app.UseRouting();
       app.UseAuthorization();
-
-      // global cors policy
-      app.UseCors("CorsPolicy");
 
       // custom jwt auth middleware
       app.UseMiddleware<OLabJWTService>();
 
       // get signalR endpoint
       var signalREndpoint = Configuration["AppSettings:SignalREndpoint"];
-      if ( string.IsNullOrEmpty( signalREndpoint ))
+      if (string.IsNullOrEmpty(signalREndpoint))
         signalREndpoint = "/turktalk";
 
       app.UseEndpoints(x =>

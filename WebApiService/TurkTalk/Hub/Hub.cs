@@ -3,11 +3,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using TurkTalk.Contracts;
+using OLabWebAPI.Services.TurkTalk.Venue;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-namespace OLabWebAPI.Services
+namespace OLabWebAPI.Services.TurkTalk
 {
   // [Route("olab/api/v3/turktalk")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public partial class TurkTalkHub : Hub
   {
     private readonly ILogger _logger;
@@ -24,7 +27,7 @@ namespace OLabWebAPI.Services
 
       _logger.LogDebug($"TurkTalkHub ctor");
     }
-
+    
     /// <summary>
     /// A connection was established with hubusing Microsoft.AspNetCore.SignalR;
     /// </summary>
@@ -33,7 +36,7 @@ namespace OLabWebAPI.Services
     {
       try
       {
-        _logger.LogDebug($"OnConnectedAsync: incoming connection '{Context.ConnectionId}'");
+        _logger.LogDebug($"OnConnectedAsync: '{Context.ConnectionId}'");
       }
       catch (Exception ex)
       {
@@ -52,7 +55,7 @@ namespace OLabWebAPI.Services
     {
       try
       {
-        _conference.DisconnectSession(Context.ConnectionId);
+        _logger.LogDebug($"OnDisconnectedAsync: '{Context.ConnectionId}'");
       }
       catch (Exception ex)
       {
@@ -60,23 +63,6 @@ namespace OLabWebAPI.Services
       }
 
       return base.OnDisconnectedAsync(exception);
-    }
-
-    /// <summary>
-    /// Handler for received messages
-    /// </summary>
-    /// <param name="payload">Message method payload</param>
-    public void Message(MessagePayload payload)
-    {
-      try
-      {
-        _logger.LogDebug($"Message received '{payload.Data}', room {payload.Envelope.RoomName} from {payload.Envelope.FromId} -> {payload.Envelope.ToConnectionId}");
-        _conference.MessageReceived(Context.ConnectionId, payload);
-      }
-      catch (Exception ex)
-      {
-        _logger.LogError($"Message exception: {ex.Message}");
-      }
     }
 
     /// <summary>
@@ -94,42 +80,6 @@ namespace OLabWebAPI.Services
       {
         _logger.LogError($"BroadcastMessage exception: {ex.Message}");
       }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="message"></param>
-    public void Echo(string name, string message)
-    {
-      try
-      {
-        _logger.LogDebug($"Echo: '{name}' '{message}'");
-      }
-      catch (Exception ex)
-      {
-        _logger.LogError($"Echo exception: {ex.Message}");
-      }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="method"></param>
-    /// <param name="arg1"></param>
-    /// <param name="arg2"></param>
-    protected void SendMessageAll(string method, string arg1, string arg2 = "")
-    {
-      try
-      {
-
-      }
-      catch (Exception ex)
-      {
-        _logger.LogError($"SendMessageAll exception: {ex.Message}");
-      }
-      _logger.LogDebug($"broadcast: {method}({arg1}, {arg2})");
     }
 
   }

@@ -51,13 +51,14 @@ namespace OLabWebAPI.Services
       {
         ValidateIssuer = false,
         ValidIssuer = _jwtIssuer,
-
+        ValidateIssuerSigningKey = true,
+        
         ValidateAudience = true,
         ValidAudience = _jwtAudience,
 
         // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
         ClockSkew = TimeSpan.Zero,
-        
+
         // validate against existing security key
         IssuerSigningKey = securityKey
       };
@@ -71,11 +72,30 @@ namespace OLabWebAPI.Services
         x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
       })
-      .AddJwtBearer(x =>
+      .AddJwtBearer(options =>
       {
-        x.RequireHttpsMetadata = true;
-        x.SaveToken = true;
-        x.TokenValidationParameters = parameters;
+        options.RequireHttpsMetadata = true;
+        options.SaveToken = true;
+        options.TokenValidationParameters = parameters;
+        options.Events = new JwtBearerEvents
+        {
+          OnMessageReceived = context =>
+          {
+            var accessToken = context.Request.Query["access_token"];
+            if ( string.IsNullOrEmpty( accessToken ) ) 
+              accessToken = context.Request.Headers["Authorization"];
+
+            // If the request is for our hub...
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) &&
+              (path.StartsWithSegments("/turktalk")))
+            {
+              // Read the token out of the query string
+              context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+          }
+        };
       });
     }
 

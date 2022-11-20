@@ -28,9 +28,6 @@ namespace OLabWebAPI.Services
         new SymmetricSecurityKey(Encoding.Default.GetBytes(config["AppSettings:Secret"][..16]));
       SetupConfiguration( config );
 
-      _tokenParameters.ValidateIssuerSigningKey = true;
-      _tokenParameters.IssuerSigningKey = _securityKey;
-
       SetupServices( services, GetValidationParameters() );
     }
 
