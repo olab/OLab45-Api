@@ -7,11 +7,11 @@
     public string GroupName { get; private set; }
     public string NickName { get; private set; }
 
-    public AtriumLearner(string groupName, string nickName, string connectionId = null)
+    public AtriumLearner(LearnerGroupName learner)
     {
-      GroupName = groupName;
-      NickName = nickName;
-      _connectionId = connectionId;
+      GroupName = learner.Group;
+      NickName = learner.NickName;
+      _connectionId = learner.ConnectionId;
     }
 
     public override string ToString()

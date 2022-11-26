@@ -22,16 +22,16 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Get list of participant
+    /// Get list of learner
     /// </summary>
-    /// <returns>List of participant group strings</returns>
+    /// <returns>List of learner group strings</returns>
     public IList<AtriumLearner> GetContents()
     {
       return AtriumLearners.Values.ToList();
     }
 
     /// <summary>
-    /// Test if participant already exists in atrium
+    /// Test if learner already exists in atrium
     /// </summary>
     /// <param name="name">Participant name</param>
     /// <returns>true, if exists</returns>
@@ -51,7 +51,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Remove participant from atrium
+    /// Remove learner from atrium
     /// </summary>
     /// <param name="participantName">Participant name</param>
     internal void Remove(string participantName)
@@ -62,42 +62,42 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Add/update participant to atrium
+    /// Add/update learner to atrium
     /// </summary>
     /// <param name="participant">Participant to add</param>
-    /// <returns>true if participant replaced (versus just added)</returns>
+    /// <returns>true if learner replaced (versus just added)</returns>
     public bool Upsert(LearnerGroupName participant)
     {
       bool replaced = false;
 
       // remove if already exists
-      if (Contains(participant.Name))
+      if (Contains(participant.UserId))
       {
-        AtriumLearners.Remove(participant.Name);
+        AtriumLearners.Remove(participant.UserId);
         replaced = true;
       }
       
-      Add(participant.Name, participant);
+      Add(participant);
       Dump();
 
       return replaced;
     }
 
     /// <summary>
-    /// Add participant to atrium
+    /// Add learner to atrium
     /// </summary>
-    /// <param name="participant">participant to add</param>
-    internal void Add(string nickName, LearnerGroupName participant)
+    /// <param name="learner">learner to add</param>
+    internal void Add(LearnerGroupName learner)
     {
-      _logger.LogDebug($"Adding learner '{nickName}({participant.Name})' to '{_topic.Name}' atrium");
-      AtriumLearners.Add(participant.Name, new AtriumLearner( participant.GroupName, nickName ) );
+      _logger.LogDebug($"Adding learner '{learner.NickName}({learner.UserId})' to '{_topic.Name}' atrium");
+      AtriumLearners.Add(learner.UserId, new AtriumLearner( learner ) );
     }
 
     private void Dump()
     {
       _logger.LogDebug($"Atrium contents");
       foreach (var item in AtriumLearners.Values)
-        _logger.LogDebug($"  {item.GroupName}");
+        _logger.LogDebug($"  {item.ToString()}");
     }
   }
 }

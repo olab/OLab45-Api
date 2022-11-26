@@ -25,6 +25,7 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
+        // extract fields from bearer token
         var identity = (ClaimsIdentity)Context.User.Identity;
         var nickName = identity.FindFirst("name").Value;
         var userId = identity.FindFirst(ClaimTypes.Name).Value;
@@ -33,11 +34,11 @@ namespace OLabWebAPI.Services.TurkTalk
         Guard.Argument(topicName).NotEmpty(topicName);
 
         var learner = new LearnerGroupName(topicName, userId, nickName, Context.ConnectionId );
-        _logger.LogInformation($"RegisterAttendee: '{learner.GroupName}' id: {Context.ConnectionId}");
+        _logger.LogInformation($"RegisterAttendee: '{learner.ToString()}");
 
         // get or create a topic
         var topic = _conference.GetCreateTopic(learner.TopicName);        
-        await topic.AddLearnerToAtriumAsync(learner, Context.ConnectionId);
+        await topic.AddLearnerToAtriumAsync(learner);
       }
       catch (Exception ex)
       {

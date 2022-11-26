@@ -29,7 +29,13 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       logger.LogDebug($"New Conference");
     }
 
-    public async Task AddConnectionToGroupAsync( string connectionId, string groupName )
+    public async Task AddConnectionToGroupAsync(GroupName group)
+    {
+      Logger.LogDebug($"Added connection '{group.ConnectionId}' to group '{group.Group}'");
+      await HubContext.Groups.AddToGroupAsync(group.ConnectionId, group.Group);
+    }
+
+    public async Task AddConnectionToGroupAsync( string groupName, string connectionId)
     {
       Logger.LogDebug($"Added connection '{connectionId}' to group '{groupName}'");
       await HubContext.Groups.AddToGroupAsync( connectionId, groupName );

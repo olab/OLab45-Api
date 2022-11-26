@@ -49,7 +49,7 @@ namespace OLabWebAPI.Services
 
         httpContext.Items["Role"] = role;
         httpContext.Items["User"] = userName;
-        httpContext.Items["Name"] = nickname;
+        httpContext.Items["UserId"] = nickname;
 
         if (string.IsNullOrEmpty(role))
         {

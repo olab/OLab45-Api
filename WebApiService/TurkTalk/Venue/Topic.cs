@@ -129,7 +129,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="learner">Leaner info</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearnerToAtriumAsync(LearnerGroupName learner, string connectionId)
+    internal async Task AddLearnerToAtriumAsync(LearnerGroupName learner)
     {
       // add/replace learner in atrium
       var learnerReplaced = Atrium.Upsert(learner);
@@ -137,12 +137,12 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // if replaced a atrium contents, remove it from group
       if (learnerReplaced)
       {
-        Logger.LogDebug($"Replacing existing '{Name}' atrium learner '{learner.GroupName}'");
-        await Conference.RemoveConnectionToGroupAsync(connectionId, learner.GroupName);
+        Logger.LogDebug($"Replacing existing '{Name}' atrium learner '{learner.Group}'");
+        await Conference.RemoveConnectionToGroupAsync(learner.ConnectionId, learner.Group);
       }
 
       // add learner to its own group so it can receive room assigments
-      await Conference.AddConnectionToGroupAsync(connectionId, learner.GroupName);
+      await Conference.AddConnectionToGroupAsync(learner);
 
       // notify all moderators of atrium change
       Conference.SendMessage(
@@ -150,7 +150,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
       // notify learner of atrium assignment
       Conference.SendMessage(
-        new AtriumAssignmentCommand(learner.GroupName, Atrium.Get(learner.Name)));
+        new AtriumAssignmentCommand(learner.Group, Atrium.Get(learner.UserId)));
 
     }
   }

@@ -49,12 +49,12 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <param name="connectionId">Connection id</param>
     internal async Task AddLearner(LearnerGroupName learnerInfo, string connectionId)
     {
-      learnerInfo.AssignToRoom( _index );
-      var learnerGroupName = learnerInfo.GroupName;
+      learnerInfo.AssignToRoom(_index);
+      var learnerGroupName = learnerInfo.Group;
 
-      await _topic.Conference.AddConnectionToGroupAsync(connectionId, learnerGroupName);
+      await _topic.Conference.AddConnectionToGroupAsync(learnerGroupName, connectionId);
       _learnerGroupNames.Add(learnerInfo);
-      
+
       // if ( IsModerated )
       //   _topic.Conference.SendMessage(learnerGroupName, new ModeratorJoinedPayload(_moderatorName));
 
@@ -65,32 +65,34 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="moderatorName">Moderator user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddModeratorAsync(string moderatorName, string connectionId)
+    internal async Task AddModeratorAsync(ModeratorGroupName moderator)
     {
-      Guard.Argument(moderatorName).NotEmpty(nameof(moderatorName));
-      Guard.Argument(connectionId).NotEmpty(nameof(connectionId));
+      Guard.Argument(moderator.ConnectionId).NotEmpty(nameof(moderator.ConnectionId));
 
       if (IsModerated)
         throw new OLabGeneralException($"Room {Name} already moderated.");
 
-      _moderatorName = moderatorName;
+      _moderatorName = moderator.NickName;
+
+      // add moderator to its own group so it can receive room assigments
+      await _topic.Conference.AddConnectionToGroupAsync(moderator);
 
       // add new moderator to moderators group (for atrium updates)
-      await _topic.Conference.AddConnectionToGroupAsync(connectionId, _topic.ModeratorsGroupName);
+      await _topic.Conference.AddConnectionToGroupAsync(
+        _topic.ModeratorsGroupName,
+        moderator.ConnectionId);
 
-      Guard.Argument(moderatorName).NotEmpty(moderatorName);
-
-      // manually lock the collection before servicing the learner list
-      _learnerGroupNames.Lock();
-
-      // foreach (var learnerGroupName in _learnerGroupNames.Items)
-      //   _topic.Conference.SendMessage(learnerGroupName.GroupName, new ModeratorJoinedPayload(moderatorName));
-
-      // notify all moderators of atrium change
+      // notify moderator of room assignment
       _topic.Conference.SendMessage(
-        new AtriumUpdateCommand( _topic.ModeratorsGroupName, _topic.Atrium.GetContents() ));
+        new RoomAssignmentCommand(
+          moderator.Group,
+          moderator));
 
-      _learnerGroupNames.Unlock();
+      // notify new moderator of atrium contents
+      _topic.Conference.SendMessage(
+        new AtriumUpdateCommand(
+          moderator.Group,
+          _topic.Atrium.GetContents()));
 
     }
   }
