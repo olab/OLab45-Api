@@ -2,7 +2,7 @@ using System;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-  public abstract class GroupName
+  public abstract class Participant
   {
     private string _topicName;
     private string _userId;
@@ -26,7 +26,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       }
     }
 
-    public GroupName(string prefix, string topicName, string userName, string nickName, string connectionId)
+    public Participant(string prefix, string topicName, string userName, string nickName, string connectionId)
     {
       _prefix = prefix;
       _connectionId = connectionId;

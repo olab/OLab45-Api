@@ -35,7 +35,7 @@ namespace OLabWebAPI.Services.TurkTalk
         Guard.Argument(userId).NotEmpty(userId);
         Guard.Argument(topicName).NotEmpty(topicName);
 
-        var moderator = new ModeratorGroupName(topicName, userId, nickName, Context.ConnectionId);
+        var moderator = new Moderator(topicName, userId, nickName, Context.ConnectionId);
         var room = _conference.GetCreateUnmoderatedTopicRoom(topicName);
 
         // add room index to moderator info

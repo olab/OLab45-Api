@@ -12,7 +12,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   {
     public string Data { get; set; }
 
-    public RoomAssignmentCommand(string recipientGroupName, GroupName group) : base(recipientGroupName, "roomassignment")
+    public RoomAssignmentCommand(string recipientGroupName, Participant group) : base(recipientGroupName, "roomassignment")
     {
       Data = group.TopicName;
     }

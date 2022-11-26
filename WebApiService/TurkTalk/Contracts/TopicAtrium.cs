@@ -66,7 +66,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     /// </summary>
     /// <param name="participant">Participant to add</param>
     /// <returns>true if learner replaced (versus just added)</returns>
-    public bool Upsert(LearnerGroupName participant)
+    public bool Upsert(Learner participant)
     {
       bool replaced = false;
 
@@ -87,7 +87,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     /// Add learner to atrium
     /// </summary>
     /// <param name="learner">learner to add</param>
-    internal void Add(LearnerGroupName learner)
+    internal void Add(Learner learner)
     {
       _logger.LogDebug($"Adding learner '{learner.NickName}({learner.UserId})' to '{_topic.Name}' atrium");
       AtriumLearners.Add(learner.UserId, new AtriumLearner( learner ) );

@@ -7,7 +7,7 @@
     public string GroupName { get; private set; }
     public string NickName { get; private set; }
 
-    public AtriumLearner(LearnerGroupName learner)
+    public AtriumLearner(Learner learner)
     {
       GroupName = learner.Group;
       NickName = learner.NickName;

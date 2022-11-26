@@ -33,7 +33,7 @@ namespace OLabWebAPI.Services.TurkTalk
         Guard.Argument(userId).NotEmpty(userId);
         Guard.Argument(topicName).NotEmpty(topicName);
 
-        var learner = new LearnerGroupName(topicName, userId, nickName, Context.ConnectionId );
+        var learner = new Learner(topicName, userId, nickName, Context.ConnectionId );
         _logger.LogInformation($"RegisterAttendee: '{learner.ToString()}");
 
         // get or create a topic

@@ -129,7 +129,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="learner">Leaner info</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearnerToAtriumAsync(LearnerGroupName learner)
+    internal async Task AddLearnerToAtriumAsync(Learner learner)
     {
       // add/replace learner in atrium
       var learnerReplaced = Atrium.Upsert(learner);

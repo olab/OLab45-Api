@@ -19,7 +19,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
   {
     private readonly Topic _topic;
     private int _index;
-    private ConcurrentList<LearnerGroupName> _learnerGroupNames;
+    private ConcurrentList<Learner> _learnerGroupNames;
     private string _moderatorName;
 
     public int Index
@@ -37,7 +37,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       Guard.Argument(topic).NotNull(nameof(topic));
       _topic = topic;
       _index = index;
-      _learnerGroupNames = new ConcurrentList<LearnerGroupName>(Logger);
+      _learnerGroupNames = new ConcurrentList<Learner>(Logger);
 
       Logger.LogDebug($"New topic '{Name}' instance");
     }
@@ -47,7 +47,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="learnerName">Learner user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearner(LearnerGroupName learnerInfo, string connectionId)
+    internal async Task AddLearner(Learner learnerInfo, string connectionId)
     {
       learnerInfo.AssignToRoom(_index);
       var learnerGroupName = learnerInfo.Group;
@@ -65,7 +65,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="moderatorName">Moderator user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddModeratorAsync(ModeratorGroupName moderator)
+    internal async Task AddModeratorAsync(Moderator moderator)
     {
       Guard.Argument(moderator.ConnectionId).NotEmpty(nameof(moderator.ConnectionId));
 
