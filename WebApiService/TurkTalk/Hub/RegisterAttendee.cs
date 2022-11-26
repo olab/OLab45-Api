@@ -25,6 +25,7 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
+        // extract fields from bearer token
         var identity = (ClaimsIdentity)Context.User.Identity;
         var nickName = identity.FindFirst("name").Value;
         var userId = identity.FindFirst(ClaimTypes.Name).Value;

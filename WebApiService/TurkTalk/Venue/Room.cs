@@ -65,20 +65,21 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="moderatorName">Moderator user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddModeratorAsync(string moderatorName, string connectionId)
+    internal async Task AddModeratorAsync(ModeratorGroupName moderatorInfo, string connectionId)
     {
-      Guard.Argument(moderatorName).NotEmpty(nameof(moderatorName));
       Guard.Argument(connectionId).NotEmpty(nameof(connectionId));
 
       if (IsModerated)
         throw new OLabGeneralException($"Room {Name} already moderated.");
 
-      _moderatorName = moderatorName;
+      var moderatorGroupName = moderatorInfo.ToString();
+
+      _moderatorName = moderatorInfo.Name;
 
       // add new moderator to moderators group (for atrium updates)
       await _topic.Conference.AddConnectionToGroupAsync(connectionId, _topic.ModeratorsGroupName);
 
-      Guard.Argument(moderatorName).NotEmpty(moderatorName);
+      Guard.Argument(_moderatorName).NotEmpty(_moderatorName);
 
       // manually lock the collection before servicing the learner list
       _learnerGroupNames.Lock();

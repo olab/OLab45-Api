@@ -1,10 +1,12 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using OLabWebAPI.Services.TurkTalk.Contracts;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
@@ -21,19 +23,23 @@ namespace OLabWebAPI.Services.TurkTalk
     /// <param name="topicName">Topic id</param>
     /// <param name="isbot">Moderator is a bot</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task RegisterModerator(string topicName, string sessionId, bool isBot)
+    public async Task RegisterModerator(string topicName, bool isBot)
     {
       try
       {
-        string moderatorName = Context.User.Identity.Name;
+        // extract fields from bearer token
+        var identity = (ClaimsIdentity)Context.User.Identity;
+        var nickName = identity.FindFirst("name").Value;
+        var userId = identity.FindFirst(ClaimTypes.Name).Value;
 
-        Guard.Argument(moderatorName).NotEmpty(moderatorName);
+        Guard.Argument(userId).NotEmpty(userId);
         Guard.Argument(topicName).NotEmpty(topicName);
 
-        _logger.LogInformation($"RegisterModerator: '{moderatorName}', session {topicName}' sessionId {sessionId}, isBot {isBot}");
+        var moderator = new ModeratorGroupName(topicName, userId, nickName);
+        _logger.LogInformation($"RegisterModerator: '{moderator.ToString()}'");
 
         var room = _conference.GetCreateUnmoderatedTopicRoom(topicName);
-        await room.AddModeratorAsync(moderatorName, Context.ConnectionId);
+        await room.AddModeratorAsync(moderator, Context.ConnectionId);
       }
       catch (Exception ex)
       {
