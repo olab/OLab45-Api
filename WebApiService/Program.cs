@@ -20,21 +20,19 @@ namespace OLabWebAPI
     public static IHostBuilder CreateHostBuilder(string[] args) =>
     
         Host.CreateDefaultBuilder(args)
-            .ConfigureLogging((context, logging) =>
-            {
-              var config = context.Configuration.GetSection("Logging");
-              logging.ClearProviders();
-              logging.AddConsole(configure =>
-                {
-                  configure.FormatterName = ConsoleFormatterNames.Systemd;
-                });
-              logging.AddConfiguration(config);
-              logging.AddFilter("Microsoft", LogLevel.Error);
-              logging.AddFilter("Microsoft.AspNetCore", LogLevel.Error);
-            })
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-              webBuilder.UseStartup<Startup>();
-            });
+          .ConfigureLogging((context, logging) =>
+          {
+            var config = context.Configuration.GetSection("Logging");
+            logging.ClearProviders();
+            logging.AddConsole(configure =>
+              {
+                configure.FormatterName = ConsoleFormatterNames.Systemd;
+              });
+            logging.AddConfiguration(config);
+          })
+          .ConfigureWebHostDefaults(webBuilder =>
+          {
+            webBuilder.UseStartup<Startup>();
+          });
   }
 }

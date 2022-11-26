@@ -43,11 +43,13 @@ namespace OLabWebAPI.Services
                                    out SecurityToken validatedToken);
 
         var jwtToken = (JwtSecurityToken)validatedToken;
-        var userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value;
+        var userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub").Value;
+        var nickname = jwtToken.Claims.FirstOrDefault(x => x.Type == "name").Value;
         var role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
 
         httpContext.Items["Role"] = role;
         httpContext.Items["User"] = userName;
+        httpContext.Items["Name"] = nickname;
 
         if (string.IsNullOrEmpty(role))
         {

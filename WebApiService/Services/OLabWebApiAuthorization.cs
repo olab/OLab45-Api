@@ -15,7 +15,7 @@ namespace OLabWebAPI.Services
     private readonly OLabLogger logger;
     private readonly OLabDBContext context;
     private readonly HttpContext httpContext;
-    private readonly HttpRequest request;
+    // private readonly HttpRequest request;
     private UserContext userContext;
 
     public OLabWebApiAuthorization(OLabLogger logger, OLabDBContext context, HttpContext httpContext)

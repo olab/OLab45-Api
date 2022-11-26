@@ -246,7 +246,7 @@ namespace OLabWebAPI.Services
         Subject = new ClaimsIdentity(new Claim[]
         {
           new Claim(ClaimTypes.Name, user.Username),
-          new Claim("name", user.Username),
+          new Claim("name", user.Nickname),
           new Claim("sub", user.Username),
           new Claim(ClaimTypes.Role, $"{user.Role}"),
 
