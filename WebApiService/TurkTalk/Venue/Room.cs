@@ -50,7 +50,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     internal async Task AddLearner(LearnerGroupName learnerInfo, string connectionId)
     {
       learnerInfo.AssignToRoom( _index );
-      var learnerGroupName = learnerInfo.ToString();
+      var learnerGroupName = learnerInfo.GroupName;
 
       await _topic.Conference.AddConnectionToGroupAsync(connectionId, learnerGroupName);
       _learnerGroupNames.Add(learnerInfo);
@@ -84,7 +84,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       _learnerGroupNames.Lock();
 
       // foreach (var learnerGroupName in _learnerGroupNames.Items)
-      //   _topic.Conference.SendMessage(learnerGroupName.ToString(), new ModeratorJoinedPayload(moderatorName));
+      //   _topic.Conference.SendMessage(learnerGroupName.GroupName, new ModeratorJoinedPayload(moderatorName));
 
       // notify all moderators of atrium change
       _topic.Conference.SendMessage(

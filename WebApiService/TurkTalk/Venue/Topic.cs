@@ -136,10 +136,13 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
       // if replaced a atrium contents, remove it from group
       if (learnerReplaced)
-        await Conference.RemoveConnectionToGroupAsync(connectionId, learner.ToString());
+      {
+        Logger.LogDebug($"Replacing existing '{Name}' atrium learner '{learner.GroupName}'");
+        await Conference.RemoveConnectionToGroupAsync(connectionId, learner.GroupName);
+      }
 
       // add learner to its own group so it can receive room assigments
-      await Conference.AddConnectionToGroupAsync(connectionId, learner.ToString());
+      await Conference.AddConnectionToGroupAsync(connectionId, learner.GroupName);
 
       // notify all moderators of atrium change
       Conference.SendMessage(
@@ -147,7 +150,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
       // notify learner of atrium assignment
       Conference.SendMessage(
-        new AtriumAssignmentCommand(learner.ToString(), Atrium.Get(learner.Name)));
+        new AtriumAssignmentCommand(learner.GroupName, Atrium.Get(learner.Name)));
 
     }
   }

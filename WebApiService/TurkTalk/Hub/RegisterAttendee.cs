@@ -32,8 +32,8 @@ namespace OLabWebAPI.Services.TurkTalk
         Guard.Argument(userId).NotEmpty(userId);
         Guard.Argument(topicName).NotEmpty(topicName);
 
-        var learner = new LearnerGroupName(topicName, userId, nickName);
-        _logger.LogInformation($"RegisterAttendee: '{learner.ToString()}'");
+        var learner = new LearnerGroupName(topicName, userId, nickName, Context.ConnectionId );
+        _logger.LogInformation($"RegisterAttendee: '{learner.GroupName}' id: {Context.ConnectionId}");
 
         // get or create a topic
         var topic = _conference.GetCreateTopic(learner.TopicName);        

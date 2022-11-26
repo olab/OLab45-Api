@@ -90,14 +90,14 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     internal void Add(string nickName, LearnerGroupName participant)
     {
       _logger.LogDebug($"Adding learner '{nickName}({participant.Name})' to '{_topic.Name}' atrium");
-      AtriumLearners.Add(participant.Name, new AtriumLearner( participant.ToString(), nickName ) );
+      AtriumLearners.Add(participant.Name, new AtriumLearner( participant.GroupName, nickName ) );
     }
 
     private void Dump()
     {
       _logger.LogDebug($"Atrium contents");
       foreach (var item in AtriumLearners.Values)
-        _logger.LogDebug($"  {item.ToString()}");
+        _logger.LogDebug($"  {item.GroupName}");
     }
   }
 }
