@@ -18,23 +18,28 @@ namespace OLabWebAPI.Services.TurkTalk
     /// <summary>
     /// Register moderator to atrium
     /// </summary>
+    /// <param name="moderatorName">Moderator's name</param>
+    /// <param name="roomName">Atrium name</param>
     /// <param name="topicName">Topic id</param>
-    /// <param name="isRejoining">Is rejoining a previously attended topic</param>
+    /// <param name="isbot">Moderator is a bot</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task RegisterAttendee(string topicName)
+    public async Task AssignAttendee(string topicName)
     {
       try
       {
-        var learner = new Learner(topicName, Context);
-        _logger.LogInformation($"RegisterAttendee: '{learner.ToString()}");
+        // extract fields from bearer token
+        var identity = (ClaimsIdentity)Context.User.Identity;
+        var nickName = identity.FindFirst("name").Value;
+        var userId = identity.FindFirst(ClaimTypes.Name).Value;
 
-        // get or create a topic
-        var topic = _conference.GetCreateTopic(learner.TopicName);        
-        await topic.AddLearnerToAtriumAsync(learner);
+        Guard.Argument(userId).NotEmpty(userId);
+        Guard.Argument(topicName).NotEmpty(topicName);
+
+
       }
       catch (Exception ex)
       {
-        _logger.LogError($"RegisterAttendee exception: {ex.Message}");
+        _logger.LogError($"RegisterModerator exception: {ex.Message}");
       }
     }
   }

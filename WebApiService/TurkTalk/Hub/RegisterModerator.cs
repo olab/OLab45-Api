@@ -27,15 +27,7 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
-        // extract fields from bearer token
-        var identity = (ClaimsIdentity)Context.User.Identity;
-        var nickName = identity.FindFirst("name").Value;
-        var userId = identity.FindFirst(ClaimTypes.Name).Value;
-
-        Guard.Argument(userId).NotEmpty(userId);
-        Guard.Argument(topicName).NotEmpty(topicName);
-
-        var moderator = new Moderator(topicName, userId, nickName, Context.ConnectionId);
+        var moderator = new Moderator(topicName, Context);
         var room = _conference.GetCreateUnmoderatedTopicRoom(topicName);
 
         // add room index to moderator info

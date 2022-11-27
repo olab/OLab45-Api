@@ -1,4 +1,7 @@
+using Dawn;
+using Microsoft.AspNetCore.SignalR;
 using System;
+using System.Security.Claims;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
@@ -30,6 +33,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     {
       _prefix = prefix;
       _connectionId = connectionId;
+      _nickName = nickName;
 
       var topicNameParts = topicName.Split("/");
 
@@ -38,7 +42,6 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       {
         _topicName = topicName;
         _userId = userName;
-        _nickName = nickName;
       }
       else
       {
@@ -50,6 +53,17 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         _userId = topicNameParts[3];
       }
 
+    }
+
+    protected Participant(string topicName, HubCallerContext context)
+    {
+      // extract fields from bearer token
+      var identity = (ClaimsIdentity)context.User.Identity;
+      var nickName = identity.FindFirst("name").Value;
+      var userId = identity.FindFirst(ClaimTypes.Name).Value;
+
+      Guard.Argument(userId).NotEmpty(userId);
+      Guard.Argument(topicName).NotEmpty(topicName);
     }
 
     public void AssignToRoom(int index)
