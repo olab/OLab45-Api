@@ -9,7 +9,7 @@
 
     public AtriumLearner(Learner learner)
     {
-      GroupName = learner.Group;
+      GroupName = learner.MessageBox();
       NickName = learner.NickName;
       _connectionId = learner.ConnectionId;
     }

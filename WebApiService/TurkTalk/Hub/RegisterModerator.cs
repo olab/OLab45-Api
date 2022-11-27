@@ -20,19 +20,21 @@ namespace OLabWebAPI.Services.TurkTalk
     /// </summary>
     /// <param name="moderatorName">Moderator's name</param>
     /// <param name="roomName">Atrium name</param>
-    /// <param name="topicName">Topic id</param>
+    /// <param name="roomName">Topic id</param>
     /// <param name="isbot">Moderator is a bot</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task RegisterModerator(string topicName, bool isBot)
+    public async Task RegisterModerator(string roomName, bool isBot)
     {
       try
       {
-        var moderator = new Moderator(topicName, Context);
-        var room = _conference.GetCreateUnmoderatedTopicRoom(topicName);
+        _logger.LogInformation($"RegisterModerator: '{roomName}', {isBot}");
+
+        var moderator = new Moderator(roomName, Context);
+        var room = _conference.GetCreateUnmoderatedTopicRoom(moderator);
 
         // add room index to moderator info
         moderator.AssignToRoom(room.Index);
-        _logger.LogInformation($"RegisterModerator: '{moderator.ToString()}'");
+        _logger.LogInformation($"moderator: '{moderator}'");
 
         await room.AddModeratorAsync(moderator);
       }

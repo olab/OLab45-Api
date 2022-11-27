@@ -5,13 +5,40 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
   public class Learner : Participant
   {
-    public Learner(string topicName, HubCallerContext context) : base(topicName, context)
+    private const string _prefix = "learner";
+
+    public string RoomGroupName { get; private set; }
+
+    public Learner(HubCallerContext context) : base(context)
     {
+      Initialize();
     }
 
     public Learner(string topicName, string userName = null, string nickName = null, string connectionId = null)
-      : base("learner", topicName, userName, nickName, connectionId)
+      : base(topicName, userName, nickName, connectionId)
     {
+      Initialize();
+    }
+
+    private void Initialize()
+    {
+      if (RoomNumber.HasValue)
+        RoomGroupName = $"{TopicName}/{RoomNumber.Value}/{UserId}";
+      else
+        RoomGroupName = null;
+    }
+
+    public override void AssignToRoom(int index)
+    {
+      RoomNumber = index;
+      Initialize();
+    }
+
+    public override string MessageBox()
+    {
+      if (RoomNumber.HasValue)
+        return $"{TopicName}/{RoomNumber.Value}/{_prefix}/{UserId}";
+      return $"{TopicName}//{_prefix}/{UserId}";
     }
   }
 }

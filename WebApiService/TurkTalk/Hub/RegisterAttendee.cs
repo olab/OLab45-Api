@@ -25,7 +25,7 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
-        var learner = new Learner(topicName, Context);
+        var learner = new Learner(Context);
         _logger.LogInformation($"RegisterAttendee: '{learner.ToString()}");
 
         // get or create a topic

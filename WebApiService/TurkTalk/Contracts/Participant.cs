@@ -10,30 +10,52 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     private string _topicName;
     private string _userId;
     private string _nickName;
-    private int? _roomIndex;
-    private string _prefix;
-    private readonly string _connectionId;
+    private int? _roomNumber;
+    private string _connectionId;
 
     public string UserId { get { return _userId; } }
-    public string TopicName { get { return _topicName; } }
+    public string TopicName { get { return _topicName; } protected set { _topicName = value; } }
     public string NickName { get { return _nickName; } }
     public string ConnectionId { get { return _connectionId; } }
+    public string RoomGroupName { get; protected set; }
 
-    public string Group
-    {
-      get
-      {
-        if (_roomIndex.HasValue)
-          return $"{TopicName}/{_roomIndex.Value}/{_prefix}/{UserId}";
-        return $"{TopicName}//{_prefix}/{UserId}";
-      }
+    public int? RoomNumber { 
+      get { return _roomNumber; } 
+      protected set { _roomNumber = value; } 
     }
 
-    public Participant(string prefix, string topicName, string userName, string nickName, string connectionId)
+    // group name for direct methods messages
+    public abstract string MessageBox();
+    public abstract void AssignToRoom(int index);
+
+    protected Participant(HubCallerContext context)
     {
-      _prefix = prefix;
+      // extract fields from bearer token
+      var identity = (ClaimsIdentity)context.User.Identity;
+      var nickName = identity.FindFirst("name").Value;
+      var userId = identity.FindFirst(ClaimTypes.Name).Value;
+
+      Guard.Argument(context.ConnectionId).NotNull(nameof(context.ConnectionId));
+      Guard.Argument(userId).NotNull(nameof(userId));
+      Guard.Argument(nickName).NotNull(nameof(nickName));
+
+      _connectionId = context.ConnectionId;
+      _nickName = nickName;
+      _userId = userId;
+    }
+
+    public Participant(string topicName, string userId, string nickName, string connectionId)
+    {
+      Initialize(topicName, userId, nickName, connectionId);
+    }
+
+    private void Initialize(string topicName, string userId, string nickName, string connectionId)
+    {
       _connectionId = connectionId;
       _nickName = nickName;
+
+      Guard.Argument(userId).NotEmpty(userId);
+      Guard.Argument(topicName).NotEmpty(topicName);
 
       var topicNameParts = topicName.Split("/");
 
@@ -41,7 +63,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       if (topicNameParts.Length == 1)
       {
         _topicName = topicName;
-        _userId = userName;
+        _userId = userId;
       }
       else
       {
@@ -49,31 +71,19 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         // if not room index passed in, this this is an 
         // atrium group, not an actual room
         if (!string.IsNullOrEmpty(topicNameParts[1]))
-          _roomIndex = Convert.ToInt32(topicNameParts[1]);
+          _roomNumber = Convert.ToInt32(topicNameParts[1]);
         _userId = topicNameParts[3];
       }
-
     }
 
-    protected Participant(string topicName, HubCallerContext context)
+    public bool IsAssignedToRoom()
     {
-      // extract fields from bearer token
-      var identity = (ClaimsIdentity)context.User.Identity;
-      var nickName = identity.FindFirst("name").Value;
-      var userId = identity.FindFirst(ClaimTypes.Name).Value;
-
-      Guard.Argument(userId).NotEmpty(userId);
-      Guard.Argument(topicName).NotEmpty(topicName);
-    }
-
-    public void AssignToRoom(int index)
-    {
-      _roomIndex = index;
+      return RoomNumber.HasValue;
     }
 
     public override string ToString()
     {
-      return $"{Group} Id: {ConnectionId}";
+      return $"{MessageBox()} Id: {ConnectionId}";
     }
 
   }

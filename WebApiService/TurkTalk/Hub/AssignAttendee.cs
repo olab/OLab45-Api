@@ -23,7 +23,7 @@ namespace OLabWebAPI.Services.TurkTalk
     /// <param name="topicName">Topic id</param>
     /// <param name="isbot">Moderator is a bot</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task AssignAttendee(string topicName)
+    public void AssignAttendee(string topicName)
     {
       try
       {
@@ -34,7 +34,6 @@ namespace OLabWebAPI.Services.TurkTalk
 
         Guard.Argument(userId).NotEmpty(userId);
         Guard.Argument(topicName).NotEmpty(topicName);
-
 
       }
       catch (Exception ex)

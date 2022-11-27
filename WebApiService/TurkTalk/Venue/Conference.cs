@@ -31,8 +31,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
     public async Task AddConnectionToGroupAsync(Participant group)
     {
-      Logger.LogDebug($"Added connection '{group.ConnectionId}' to group '{group.Group}'");
-      await HubContext.Groups.AddToGroupAsync(group.ConnectionId, group.Group);
+      Logger.LogDebug($"Added connection '{group.ConnectionId}' to group '{group.MessageBox()}'");
+      await HubContext.Groups.AddToGroupAsync(group.ConnectionId, group.MessageBox());
     }
 
     public async Task AddConnectionToGroupAsync( string groupName, string connectionId)
@@ -57,7 +57,14 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       var groupName = method.RecipientGroupName;
       Guard.Argument(groupName).NotEmpty(groupName);
 
-      Logger.LogDebug($"Send message to '{groupName}' ({method.MethodName}): '{method.ToJson()}'");
+      if (method is CommandMethod)
+      {
+        var commandMethod = method as CommandMethod;
+        Logger.LogDebug($"Send message to '{groupName}' ({method.MethodName}/{commandMethod.Command}): '{method.ToJson()}'");
+      }
+      else
+        Logger.LogDebug($"Send message to '{groupName}' ({method.MethodName}): '{method.ToJson()}'");
+
       HubContext.Clients.Group(groupName).SendAsync(method.MethodName, method);
 
     }
@@ -65,15 +72,12 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <summary>
     /// Find/join an unmoderated room for a topic
     /// </summary>
-    /// <param name="topicId">Topic id</param>
-    /// <param name="create">Flag to create room</param>
+    /// <param name="moderator">Moderator requesting room</param>
     /// <returns>First unmoderated room</returns>
-    public Room GetCreateUnmoderatedTopicRoom(string topicId, bool create = true)
+    public Room GetCreateUnmoderatedTopicRoom(Moderator moderator)
     {
-      Guard.Argument(topicId).NotEmpty(topicId);
-
-      var topic = GetCreateTopic(topicId);
-      return topic.GetCreateUnmoderatedRoom(create);
+      var topic = GetCreateTopic(moderator.TopicName);
+      return topic.GetCreateUnmoderatedRoom(moderator);
     }
 
     /// <summary>

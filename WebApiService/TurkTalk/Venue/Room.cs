@@ -39,7 +39,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       _index = index;
       _learnerGroupNames = new ConcurrentList<Learner>(Logger);
 
-      Logger.LogDebug($"New topic '{Name}' instance");
+      Logger.LogDebug($"New room '{Name}'");
     }
 
     /// <summary>
@@ -47,13 +47,12 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="learnerName">Learner user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearner(Learner learnerInfo, string connectionId)
+    internal async Task AddLearner(Learner learner, string connectionId)
     {
-      learnerInfo.AssignToRoom(_index);
-      var learnerGroupName = learnerInfo.Group;
+      learner.AssignToRoom(_index);
 
-      await _topic.Conference.AddConnectionToGroupAsync(learnerGroupName, connectionId);
-      _learnerGroupNames.Add(learnerInfo);
+      await _topic.Conference.AddConnectionToGroupAsync(learner.MessageBox(), connectionId);
+      _learnerGroupNames.Add(learner);
 
       // if ( IsModerated )
       //   _topic.Conference.SendMessage(learnerGroupName, new ModeratorJoinedPayload(_moderatorName));
@@ -67,31 +66,27 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <param name="connectionId">Connection id</param>
     internal async Task AddModeratorAsync(Moderator moderator)
     {
-      Guard.Argument(moderator.ConnectionId).NotEmpty(nameof(moderator.ConnectionId));
-
-      if (IsModerated)
-        throw new OLabGeneralException($"Room {Name} already moderated.");
-
-      _moderatorName = moderator.NickName;
-
-      // add moderator to its own group so it can receive room assigments
-      await _topic.Conference.AddConnectionToGroupAsync(moderator);
+      if (!IsModerated)
+        _moderatorName = moderator.NickName;
 
       // add new moderator to moderators group (for atrium updates)
       await _topic.Conference.AddConnectionToGroupAsync(
         _topic.ModeratorsGroupName,
         moderator.ConnectionId);
 
+      // add new moderator to its own group so it can receive messages
+      await _topic.Conference.AddConnectionToGroupAsync(moderator);
+
       // notify moderator of room assignment
       _topic.Conference.SendMessage(
         new RoomAssignmentCommand(
-          moderator.Group,
+          moderator.MessageBox(),
           moderator));
 
       // notify new moderator of atrium contents
       _topic.Conference.SendMessage(
         new AtriumUpdateCommand(
-          moderator.Group,
+          moderator.MessageBox(),
           _topic.Atrium.GetContents()));
 
     }

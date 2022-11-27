@@ -69,10 +69,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <returns></returns>
     public Room CreateRoom()
     {
-      roomMutex.WaitOne();
       var room = new Room(this, _instances.Count);
       _instances.Add(room);
-      roomMutex.ReleaseMutex();
 
       var index = _instances.Count - 1;
       return _instances[index];
@@ -81,16 +79,35 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <summary>
     /// Get first existing or new/unmoderated room
     /// </summary>
-    /// <param name="create">Flag to create, if unmoderated room doesn't exist</param>
+    /// <param name="moderator">Moderator requesting room</param>
     /// <returns>Room instance of topic</returns>
-    public Room GetCreateUnmoderatedRoom(bool create)
+    public Room GetCreateUnmoderatedRoom(Moderator moderator)
     {
+      Room room = null;
       roomMutex.WaitOne();
-      var room = Rooms.Items.Where(x => !x.IsModerated).FirstOrDefault();
-      roomMutex.ReleaseMutex();
 
-      if ((room == null) && create)
+      // test if moderator was already assigned to room
+      if (moderator.IsAssignedToRoom())
+      {
+        room = Rooms.Items.FirstOrDefault(x => x.Index == moderator.RoomNumber);
+        if (room != null)
+          Logger.LogDebug($"Returning previously open room {moderator.RoomGroupName}");
+        else
+          Logger.LogDebug($"Previously assigned room {moderator.RoomGroupName} no longer exists");
+      }
+      else
+      {
+        room = Rooms.Items.Where(x => !x.IsModerated).FirstOrDefault();
+        if ( room != null )
+          Logger.LogDebug($"Returning first unmoderated room {room.Name}/{room.Index}");
+        else
+          Logger.LogDebug($"No existing, unmoderated rooms.");
+      }
+
+      if (room == null)
         room = CreateRoom();
+
+      roomMutex.ReleaseMutex();
 
       return room;
     }
@@ -137,20 +154,20 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // if replaced a atrium contents, remove it from group
       if (learnerReplaced)
       {
-        Logger.LogDebug($"Replacing existing '{Name}' atrium learner '{learner.Group}'");
-        await Conference.RemoveConnectionToGroupAsync(learner.ConnectionId, learner.Group);
+        Logger.LogDebug($"Replacing existing '{Name}' atrium learner '{learner.MessageBox()}'");
+        await Conference.RemoveConnectionToGroupAsync(learner.ConnectionId, learner.MessageBox());
       }
 
       // add learner to its own group so it can receive room assigments
       await Conference.AddConnectionToGroupAsync(learner);
 
+      // notify learner of atrium assignment
+      Conference.SendMessage(
+        new AtriumAssignmentCommand(learner.MessageBox(), Atrium.Get(learner.UserId)));
+
       // notify all moderators of atrium change
       Conference.SendMessage(
         new AtriumUpdateCommand(ModeratorsGroupName, Atrium.GetContents()));
-
-      // notify learner of atrium assignment
-      Conference.SendMessage(
-        new AtriumAssignmentCommand(learner.Group, Atrium.Get(learner.UserId)));
 
     }
   }

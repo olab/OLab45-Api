@@ -1,17 +1,42 @@
 using Microsoft.AspNetCore.SignalR;
+using NuGet.Protocol.Plugins;
 using System;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
   public class Moderator : Participant
   {
-    public Moderator(string topicName, HubCallerContext context) : base( topicName, context )
+    private const string _prefix = "moderator";
+
+    public Moderator(string roomName, HubCallerContext context) : base(context)
     {
+      var roomNameParts = roomName.Split("/");
+      TopicName = roomNameParts[0];
+
+      // test for topic and room
+      if ( roomNameParts.Length == 2 )
+        AssignToRoom(Convert.ToInt32(roomNameParts[1]));
     }
 
     public Moderator(string topicName, string userName = null, string nickName = null, string connectionId = null)
-  : base("moderator", topicName, userName, nickName, connectionId)
+    : base(topicName, userName, nickName, connectionId)
     {
+    }
+
+    public override void AssignToRoom(int index)
+    {
+      RoomNumber = index;
+      if (RoomNumber.HasValue)
+        RoomGroupName = $"{TopicName}/{RoomNumber.Value}";
+      else
+        RoomGroupName = null;
+    }
+
+    public override string MessageBox()
+    {
+      if (RoomNumber.HasValue)
+        return $"{TopicName}/{RoomNumber.Value}/{_prefix}/{UserId}";
+      return $"{TopicName}//{_prefix}/{UserId}";
     }
   }
 }
