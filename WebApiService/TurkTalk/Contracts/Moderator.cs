@@ -11,7 +11,10 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     public Moderator(string roomName, HubCallerContext context) : base(context)
     {
       var roomNameParts = roomName.Split("/");
+
       TopicName = roomNameParts[0];
+      RoomName = TopicName;
+      CommandChannel = $"{TopicName}/{_prefix}/{UserId}";
 
       // test for topic and room
       if ( roomNameParts.Length == 2 )
@@ -27,16 +30,10 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     {
       RoomNumber = index;
       if (RoomNumber.HasValue)
-        RoomGroupName = $"{TopicName}/{RoomNumber.Value}";
+        RoomName = $"{TopicName}/{RoomNumber.Value}";
       else
-        RoomGroupName = null;
+        RoomName = null;
     }
 
-    public override string MessageBox()
-    {
-      if (RoomNumber.HasValue)
-        return $"{TopicName}/{RoomNumber.Value}/{_prefix}/{UserId}";
-      return $"{TopicName}//{_prefix}/{UserId}";
-    }
   }
 }

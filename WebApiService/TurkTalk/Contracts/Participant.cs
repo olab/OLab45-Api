@@ -17,15 +17,15 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     public string TopicName { get { return _topicName; } protected set { _topicName = value; } }
     public string NickName { get { return _nickName; } }
     public string ConnectionId { get { return _connectionId; } }
-    public string RoomGroupName { get; protected set; }
+    public string RoomName { get; protected set; }
+    // group name for direct-to-user method messages
+    public string CommandChannel { get; protected set; }
 
     public int? RoomNumber { 
       get { return _roomNumber; } 
       protected set { _roomNumber = value; } 
     }
 
-    // group name for direct methods messages
-    public abstract string MessageBox();
     public abstract void AssignToRoom(int index);
 
     protected Participant(HubCallerContext context)
@@ -83,7 +83,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 
     public override string ToString()
     {
-      return $"{MessageBox()} Id: {ConnectionId}";
+      return $"{CommandChannel} Id: {ConnectionId}";
     }
 
   }

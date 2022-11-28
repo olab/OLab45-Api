@@ -21,7 +21,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     private readonly Conference _conference;
     private ConcurrentList<Room> _instances;
     private string _name;
-    public string ModeratorsGroupName;
+    public string TopicModeratorsChannel;
 
     // Needed because there's no such thing as a thread-safe List<>.
     private static Mutex roomMutex = new Mutex();
@@ -58,7 +58,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // AtriumLearners = new ConcurrentDictionary<string, LearnerGroupName>();
       Atrium = new TopicAtrium(Logger, this);
 
-      ModeratorsGroupName = $"{Name}/moderators";
+      TopicModeratorsChannel = $"{Name}/moderators";
 
       Logger.LogDebug($"New topic '{Name}'");
     }
@@ -91,17 +91,17 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       {
         room = Rooms.Items.FirstOrDefault(x => x.Index == moderator.RoomNumber);
         if (room != null)
-          Logger.LogDebug($"Returning previously open room {moderator.RoomGroupName}");
+          Logger.LogDebug($"Returning previously open room '{moderator.RoomName}'");
         else
-          Logger.LogDebug($"Previously assigned room {moderator.RoomGroupName} no longer exists");
+          Logger.LogDebug($"Previously assigned room '{moderator.RoomName}' no longer exists");
       }
       else
       {
         room = Rooms.Items.Where(x => !x.IsModerated).FirstOrDefault();
         if ( room != null )
-          Logger.LogDebug($"Returning first unmoderated room {room.Name}/{room.Index}");
+          Logger.LogDebug($"Returning first unmoderated room '{room.Name}/{room.Index}'");
         else
-          Logger.LogDebug($"No existing, unmoderated rooms.");
+          Logger.LogDebug($"No existing, unmoderated rooms for '{moderator.RoomName}'.");
       }
 
       if (room == null)
@@ -142,32 +142,32 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     }
 
     /// <summary>
-    /// Add learner to topic atrium
+    /// Add participant to topic atrium
     /// </summary>
-    /// <param name="learner">Leaner info</param>
+    /// <param name="participant">Leaner info</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearnerToAtriumAsync(Learner learner)
+    internal async Task AddToAtriumAsync(Learner participant)
     {
-      // add/replace learner in atrium
-      var learnerReplaced = Atrium.Upsert(learner);
+      // add/replace participant in atrium
+      var learnerReplaced = Atrium.Upsert(participant);
 
       // if replaced a atrium contents, remove it from group
       if (learnerReplaced)
       {
-        Logger.LogDebug($"Replacing existing '{Name}' atrium learner '{learner.MessageBox()}'");
-        await Conference.RemoveConnectionToGroupAsync(learner.ConnectionId, learner.MessageBox());
+        Logger.LogDebug($"Replacing existing '{Name}' atrium participant '{participant.CommandChannel}'");
+        await Conference.RemoveConnectionToGroupAsync(participant.ConnectionId, participant.CommandChannel);
       }
 
-      // add learner to its own group so it can receive room assigments
-      await Conference.AddConnectionToGroupAsync(learner);
+      // add participant to its own group so it can receive room assigments
+      await Conference.AddConnectionToGroupAsync(participant);
 
-      // notify learner of atrium assignment
+      // notify participant of atrium assignment
       Conference.SendMessage(
-        new AtriumAssignmentCommand(learner.MessageBox(), Atrium.Get(learner.UserId)));
+        new AtriumAssignmentCommand(participant, Atrium.Get(participant.UserId)));
 
-      // notify all moderators of atrium change
+      // notify all topic moderators of atrium change
       Conference.SendMessage(
-        new AtriumUpdateCommand(ModeratorsGroupName, Atrium.GetContents()));
+        new AtriumUpdateCommand(this, Atrium.GetContents()));
 
     }
   }

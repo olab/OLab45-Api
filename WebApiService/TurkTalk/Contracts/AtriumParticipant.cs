@@ -1,15 +1,17 @@
 ﻿namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-  public class AtriumLearner
+  public class AtriumParticipant
   {
     private readonly string _connectionId;
 
     public string GroupName { get; private set; }
     public string NickName { get; private set; }
+    public string TopicName { get; private set; }
 
-    public AtriumLearner(Learner learner)
+    public AtriumParticipant(Learner learner)
     {
-      GroupName = learner.MessageBox();
+      GroupName = learner.CommandChannel;
+      TopicName = learner.TopicName;
       NickName = learner.NickName;
       _connectionId = learner.ConnectionId;
     }

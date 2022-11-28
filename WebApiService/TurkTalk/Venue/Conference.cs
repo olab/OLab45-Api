@@ -31,8 +31,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
     public async Task AddConnectionToGroupAsync(Participant group)
     {
-      Logger.LogDebug($"Added connection '{group.ConnectionId}' to group '{group.MessageBox()}'");
-      await HubContext.Groups.AddToGroupAsync(group.ConnectionId, group.MessageBox());
+      Logger.LogDebug($"Added connection '{group.ConnectionId}' to group '{group.CommandChannel}'");
+      await HubContext.Groups.AddToGroupAsync(group.ConnectionId, group.CommandChannel);
     }
 
     public async Task AddConnectionToGroupAsync( string groupName, string connectionId)
@@ -93,6 +93,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // test if topic doesn't exist yet
       if (!_topics.TryGetValue(topicId, out var topic))
       {
+        Logger.LogDebug($"Topic '{topicId}' does not already exist");
+
         if (create)
         {
           _topics.Add(topicId, new Topic(this, topicId));
@@ -101,6 +103,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
         else
           topic = null;
       }
+      else
+        Logger.LogDebug($"Topic {topicId} already exists");
 
       return topic;
     }

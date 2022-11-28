@@ -10,7 +10,8 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
   public class TopicAtrium
   {
-    public IDictionary<string, AtriumLearner> AtriumLearners;
+    public IDictionary<string, Learner> AtriumLearners;
+    //public IDictionary<string, AtriumParticipant> AtriumLearners;
     private ILogger _logger;
     private Topic _topic;
 
@@ -18,20 +19,20 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     {
       _logger = logger;
       _topic = topic;
-      AtriumLearners = new ConcurrentDictionary<string, AtriumLearner>();
+      AtriumLearners = new ConcurrentDictionary<string, Learner>();
     }
 
     /// <summary>
-    /// Get list of learner
+    /// Get list of participant
     /// </summary>
-    /// <returns>List of learner group strings</returns>
-    public IList<AtriumLearner> GetContents()
+    /// <returns>List of participant group strings</returns>
+    public IList<Learner> GetContents()
     {
       return AtriumLearners.Values.ToList();
     }
 
     /// <summary>
-    /// Test if learner already exists in atrium
+    /// Test if participant already exists in atrium
     /// </summary>
     /// <param name="name">Participant name</param>
     /// <returns>true, if exists</returns>
@@ -41,17 +42,17 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Get learner from atrium
+    /// Get participant from atrium
     /// </summary>
     /// <param name="name">Participant name</param>
     /// <returns>true, if exists</returns>
-    public AtriumLearner Get(string name)
+    public Learner Get(string name)
     {
       return AtriumLearners[ name ];
     }
 
     /// <summary>
-    /// Remove learner from atrium
+    /// Remove participant from atrium
     /// </summary>
     /// <param name="participantName">Participant name</param>
     internal void Remove(string participantName)
@@ -62,10 +63,10 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Add/update learner to atrium
+    /// Add/update participant to atrium
     /// </summary>
     /// <param name="participant">Participant to add</param>
-    /// <returns>true if learner replaced (versus just added)</returns>
+    /// <returns>true if participant replaced (versus just added)</returns>
     public bool Upsert(Learner participant)
     {
       bool replaced = false;
@@ -84,13 +85,13 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Add learner to atrium
+    /// Add participant to atrium
     /// </summary>
-    /// <param name="learner">learner to add</param>
-    internal void Add(Learner learner)
+    /// <param name="participant">participant to add</param>
+    internal void Add(Learner participant)
     {
-      _logger.LogDebug($"Adding learner '{learner.NickName}({learner.UserId})' to '{_topic.Name}' atrium");
-      AtriumLearners.Add(learner.UserId, new AtriumLearner( learner ) );
+      _logger.LogDebug($"Adding participant '{participant.NickName}({participant.UserId})' to '{_topic.Name}' atrium");
+      AtriumLearners.Add(participant.UserId, participant );
     }
 
     private void Dump()

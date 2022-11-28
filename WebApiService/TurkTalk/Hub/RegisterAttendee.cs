@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.Services.TurkTalk.Venue;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
@@ -21,16 +22,18 @@ namespace OLabWebAPI.Services.TurkTalk
     /// <param name="topicName">Topic id</param>
     /// <param name="isRejoining">Is rejoining a previously attended topic</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task RegisterAttendee(string topicName)
+    public async Task RegisterAttendee(string roomName)
     {
       try
       {
-        var learner = new Learner(Context);
+        Guard.Argument(roomName).NotNull(nameof(roomName));
+
+        var learner = new Learner(roomName, Context);
         _logger.LogInformation($"RegisterAttendee: '{learner.ToString()}");
 
         // get or create a topic
         var topic = _conference.GetCreateTopic(learner.TopicName);        
-        await topic.AddLearnerToAtriumAsync(learner);
+        await topic.AddToAtriumAsync(learner);
       }
       catch (Exception ex)
       {

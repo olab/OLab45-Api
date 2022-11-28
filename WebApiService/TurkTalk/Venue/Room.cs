@@ -51,7 +51,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     {
       learner.AssignToRoom(_index);
 
-      await _topic.Conference.AddConnectionToGroupAsync(learner.MessageBox(), connectionId);
+      await _topic.Conference.AddConnectionToGroupAsync(learner.CommandChannel, connectionId);
       _learnerGroupNames.Add(learner);
 
       // if ( IsModerated )
@@ -71,7 +71,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
       // add new moderator to moderators group (for atrium updates)
       await _topic.Conference.AddConnectionToGroupAsync(
-        _topic.ModeratorsGroupName,
+        _topic.TopicModeratorsChannel,
         moderator.ConnectionId);
 
       // add new moderator to its own group so it can receive messages
@@ -80,13 +80,13 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // notify moderator of room assignment
       _topic.Conference.SendMessage(
         new RoomAssignmentCommand(
-          moderator.MessageBox(),
+          moderator.CommandChannel,
           moderator));
 
       // notify new moderator of atrium contents
       _topic.Conference.SendMessage(
         new AtriumUpdateCommand(
-          moderator.MessageBox(),
+          moderator.CommandChannel,
           _topic.Atrium.GetContents()));
 
     }

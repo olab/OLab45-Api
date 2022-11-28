@@ -10,11 +10,12 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   /// </summary>
   public class AtriumAssignmentCommand : CommandMethod
   {
-    public AtriumLearner Data { get; set; }
+    public Learner Data { get; set; }
 
-    public AtriumAssignmentCommand(string recipientGroupName, AtriumLearner atrium) : base(recipientGroupName, "atriumassignment")
+    public AtriumAssignmentCommand(Participant participant, Learner atriumParticipant) 
+      : base(participant.CommandChannel, "atriumassignment")
     {
-      Data = atrium;
+      Data = atriumParticipant;
     }
 
     public override string ToJson()

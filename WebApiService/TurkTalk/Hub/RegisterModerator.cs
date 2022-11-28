@@ -27,6 +27,8 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
+        Guard.Argument(roomName).NotNull(nameof(roomName));
+
         _logger.LogInformation($"RegisterModerator: '{roomName}', {isBot}");
 
         var moderator = new Moderator(roomName, Context);

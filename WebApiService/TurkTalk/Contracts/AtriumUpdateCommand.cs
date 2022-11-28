@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using OLabWebAPI.Services.TurkTalk.Venue;
 using OLabWebAPI.Utils;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
@@ -10,9 +11,16 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   /// </summary>
   public class AtriumUpdateCommand : CommandMethod
   {
-    public IList<AtriumLearner> Data { get; set; }
+    public IList<Learner> Data { get; set; }
 
-    public AtriumUpdateCommand(string recipientGroupName, IList<AtriumLearner> atriumLearners) : base(recipientGroupName, "atriumupdate")
+    // constructor for targetted group
+    public AtriumUpdateCommand(string groupName, IList<Learner> atriumLearners) : base(groupName, "atriumupdate")
+    {
+      Data = atriumLearners;
+    }
+
+    // constructor for all moderators in a topic
+    public AtriumUpdateCommand(Topic topic, IList<Learner> atriumLearners) : base(topic.TopicModeratorsChannel, "atriumupdate")
     {
       Data = atriumLearners;
     }
