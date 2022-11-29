@@ -55,10 +55,10 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     /// Remove participant from atrium
     /// </summary>
     /// <param name="participantName">Participant name</param>
-    internal void Remove(string participantName)
+    internal void Remove(Learner participant)
     {
-      _logger.LogDebug($"Removing '{participantName}' in '{_topic.Name}' atrium");
-      AtriumLearners.Remove(participantName);
+      _logger.LogDebug($"Removing '{participant.UserId}' from '{_topic.Name}' atrium");
+      AtriumLearners.Remove(participant.UserId);
       Dump();
     }
 

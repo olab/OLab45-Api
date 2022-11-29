@@ -8,6 +8,11 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   {
     private const string _prefix = "moderator";
 
+    public Moderator()
+    {
+
+    }
+
     public Moderator(string roomName, HubCallerContext context) : base(context)
     {
       var roomNameParts = roomName.Split("/");

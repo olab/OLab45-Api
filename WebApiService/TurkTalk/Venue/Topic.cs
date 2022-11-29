@@ -98,7 +98,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       else
       {
         room = Rooms.Items.Where(x => !x.IsModerated).FirstOrDefault();
-        if ( room != null )
+        if (room != null)
           Logger.LogDebug($"Returning first unmoderated room '{room.Name}/{room.Index}'");
         else
           Logger.LogDebug($"No existing, unmoderated rooms for '{moderator.RoomName}'.");
@@ -142,6 +142,21 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     }
 
     /// <summary>
+    /// Remove user from atrium 
+    /// </summary>
+    /// <param name="participant">Learner to remove</param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    internal void RemoveFromAtrium(Learner participant)
+    {
+      Atrium.Remove(participant);
+
+      // notify all topic moderators of atrium change
+      Conference.SendMessage(
+        new AtriumUpdateCommand(this, Atrium.GetContents()));
+    }
+
+    /// <summary>
     /// Add participant to topic atrium
     /// </summary>
     /// <param name="participant">Leaner info</param>
@@ -170,5 +185,6 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
         new AtriumUpdateCommand(this, Atrium.GetContents()));
 
     }
+
   }
 }

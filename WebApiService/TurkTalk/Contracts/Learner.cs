@@ -7,6 +7,10 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   {
     private const string _prefix = "learner";
 
+    public Learner()
+    {
+    }
+
     public Learner(string roomName, HubCallerContext context) : base(context)
     {
       var roomNameParts = roomName.Split("/");

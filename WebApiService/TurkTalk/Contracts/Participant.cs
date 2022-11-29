@@ -13,20 +13,25 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     private int? _roomNumber;
     private string _connectionId;
 
-    public string UserId { get { return _userId; } }
-    public string TopicName { get { return _topicName; } protected set { _topicName = value; } }
-    public string NickName { get { return _nickName; } }
-    public string ConnectionId { get { return _connectionId; } }
-    public string RoomName { get; protected set; }
+    public string UserId { get { return _userId; } set { _userId = value; } }
+    public string TopicName { get { return _topicName; } set { _topicName = value; } }
+    public string NickName { get { return _nickName; } set { _nickName = value; } }
+    public string ConnectionId { get { return _connectionId; } set { _connectionId = value; } }
+    public string RoomName { get; set; }
     // group name for direct-to-user method messages
-    public string CommandChannel { get; protected set; }
+    public string CommandChannel { get; set; }
 
     public int? RoomNumber { 
       get { return _roomNumber; } 
-      protected set { _roomNumber = value; } 
+      set { _roomNumber = value; } 
     }
 
     public abstract void AssignToRoom(int index);
+
+    public Participant()
+    {
+
+    }
 
     protected Participant(HubCallerContext context)
     {

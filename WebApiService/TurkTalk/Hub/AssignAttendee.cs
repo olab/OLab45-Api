@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dawn;
@@ -6,7 +7,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.Services.TurkTalk.Venue;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
@@ -16,29 +19,28 @@ namespace OLabWebAPI.Services.TurkTalk
   public partial class TurkTalkHub : Hub
   {
     /// <summary>
-    /// Register moderator to atrium
+    /// Remove assigned learner from atrium
     /// </summary>
-    /// <param name="moderatorName">Moderator's name</param>
-    /// <param name="roomName">Atrium name</param>
+    /// <param name="learner">Learner to remove</param>
     /// <param name="topicName">Topic id</param>
-    /// <param name="isbot">Moderator is a bot</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public void AssignAttendee(string topicName)
+    public void AssignAttendee(Learner learner, string topicName)
     {
       try
       {
-        // extract fields from bearer token
-        var identity = (ClaimsIdentity)Context.User.Identity;
-        var nickName = identity.FindFirst("name").Value;
-        var userId = identity.FindFirst(ClaimTypes.Name).Value;
+        Guard.Argument(topicName).NotNull(nameof(topicName));
+        _logger.LogInformation($"AssignAttendee: '{learner}', {topicName}");
 
-        Guard.Argument(userId).NotEmpty(userId);
-        Guard.Argument(topicName).NotEmpty(topicName);
+        var topic = _conference.GetCreateTopic(learner.TopicName, false);
+        if (topic == null)
+          return;
+
+        topic.RemoveFromAtrium(learner);
 
       }
       catch (Exception ex)
       {
-        _logger.LogError($"RegisterModerator exception: {ex.Message}");
+        _logger.LogError($"AssignAttendee exception: {ex.Message}");
       }
     }
   }
