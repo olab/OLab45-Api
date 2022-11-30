@@ -1,11 +1,11 @@
 using System;
-using System.Threading.Tasks;
 using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.Services.TurkTalk.Venue;
 using OLabWebAPI.TurkTalk.Contracts;
 
 namespace OLabWebAPI.Services.TurkTalk
@@ -16,29 +16,26 @@ namespace OLabWebAPI.Services.TurkTalk
   public partial class TurkTalkHub : Hub
   {
     /// <summary>
-    /// Moderator assigns a learner (remove from atrium)
+    /// Remove assigned learner from atrium
     /// </summary>
     /// <param name="learner">Learner to remove</param>
     /// <param name="topicName">Topic id</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task AssignAttendee(Learner learner, string topicName)
+    public void Message(MessagePayload payload)
     {
       try
       {
-        Guard.Argument(topicName).NotNull(nameof(topicName));
-        _logger.LogInformation($"AssignAttendeeASync: '{learner}', {topicName}");
+        _logger.LogInformation($"Message: from '{payload.Envelope.From}', {payload.Data}");
 
-        var topic = _conference.GetCreateTopic(learner.TopicName, false);
+        // get or create a topic
+        var topic = _conference.GetCreateTopic(payload.Envelope.From.TopicName, false);
         if (topic == null)
           return;
 
-        topic.RemoveFromAtrium(learner);
-
-        // add the moderator to the command channel for
-        // the assigned learner
-        learner.ConnectionId = Context.ConnectionId;
-        await topic.Conference.AddConnectionToGroupAsync(learner);
-
+        // dispatch message
+        topic.Conference.SendMessage(
+          new MessageCommand(
+            payload));
       }
       catch (Exception ex)
       {

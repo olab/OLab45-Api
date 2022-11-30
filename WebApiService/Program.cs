@@ -10,29 +10,29 @@ using Microsoft.Extensions.Logging.Console;
 
 namespace OLabWebAPI
 {
-  public class Program
-  {
-    public static void Main(string[] args)
+    public class Program
     {
-      CreateHostBuilder(args).Build().Run();
-    }
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-    
-        Host.CreateDefaultBuilder(args)
-          .ConfigureLogging((context, logging) =>
-          {
-            var config = context.Configuration.GetSection("Logging");
-            logging.ClearProviders();
-            logging.AddConsole(configure =>
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+
+            Host.CreateDefaultBuilder(args)
+              .ConfigureLogging((context, logging) =>
               {
-                configure.FormatterName = ConsoleFormatterNames.Systemd;
+                  var config = context.Configuration.GetSection("Logging");
+                  logging.ClearProviders();
+                  logging.AddConsole(configure =>
+                {
+                      configure.FormatterName = ConsoleFormatterNames.Systemd;
+                  });
+                  logging.AddConfiguration(config);
+              })
+              .ConfigureWebHostDefaults(webBuilder =>
+              {
+                  webBuilder.UseStartup<Startup>();
               });
-            logging.AddConfiguration(config);
-          })
-          .ConfigureWebHostDefaults(webBuilder =>
-          {
-            webBuilder.UseStartup<Startup>();
-          });
-  }
+    }
 }

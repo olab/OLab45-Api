@@ -2,17 +2,17 @@ using System;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-  public abstract class Method
-  {
-    public string MethodName { get; set; }
-    public string RecipientGroupName { get; set; }
-
-    public Method(string recipientGroupName, string methodName)
+    public abstract class Method
     {
-      MethodName = methodName;
-      RecipientGroupName = recipientGroupName;
-    }
+        public string MethodName { get; set; }
+        public string RecipientGroupName { get; set; }
 
-    public abstract string ToJson();
-  }
+        public Method(string recipientGroupName, string methodName)
+        {
+            MethodName = methodName;
+            RecipientGroupName = recipientGroupName;
+        }
+
+        public abstract string ToJson();
+    }
 }

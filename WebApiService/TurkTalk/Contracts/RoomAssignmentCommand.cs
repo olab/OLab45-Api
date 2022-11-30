@@ -5,21 +5,21 @@ using OLabWebAPI.Utils;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-  /// <summary>
-  /// Defines a Atrium Update command method
-  /// </summary>
-  public class RoomAssignmentCommand : CommandMethod
-  {
-    public string Data { get; set; }
-
-    public RoomAssignmentCommand(string recipientGroupName, Participant group) : base(recipientGroupName, "roomassignment")
+    /// <summary>
+    /// Defines a Atrium Update command method
+    /// </summary>
+    public class RoomAssignmentCommand : CommandMethod
     {
-      Data = group.RoomName;
-    }
+        public string Data { get; set; }
 
-    public override string ToJson()
-    {
-      return JsonSerializer.Serialize(this);
+        public RoomAssignmentCommand(string recipientGroupName, Participant group) : base(recipientGroupName, "roomassignment")
+        {
+            Data = group.RoomName;
+        }
+
+        public override string ToJson()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
-  }
 }

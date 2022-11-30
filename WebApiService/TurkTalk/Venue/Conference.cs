@@ -31,20 +31,19 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
     public async Task AddConnectionToGroupAsync(Participant group)
     {
-      Logger.LogDebug($"Added connection '{group.ConnectionId}' to group '{group.CommandChannel}'");
-      await HubContext.Groups.AddToGroupAsync(group.ConnectionId, group.CommandChannel);
+      await AddConnectionToGroupAsync(group.CommandChannel, group.ConnectionId);
     }
 
-    public async Task AddConnectionToGroupAsync( string groupName, string connectionId)
+    public async Task AddConnectionToGroupAsync(string groupName, string connectionId)
     {
       Logger.LogDebug($"Added connection '{connectionId}' to group '{groupName}'");
-      await HubContext.Groups.AddToGroupAsync( connectionId, groupName );
+      await HubContext.Groups.AddToGroupAsync(connectionId, groupName);
     }
 
-    public async Task RemoveConnectionToGroupAsync( string connectionId, string groupName )
+    public async Task RemoveConnectionToGroupAsync(string connectionId, string groupName)
     {
       Logger.LogDebug($"Removing connection '{connectionId}' from group '{groupName}'");
-      await HubContext.Groups.RemoveFromGroupAsync( connectionId, groupName );
+      await HubContext.Groups.RemoveFromGroupAsync(connectionId, groupName);
     }
 
     /// <summary>
