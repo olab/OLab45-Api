@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.Services.TurkTalk.Venue;
+using Common.Utils;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
@@ -29,7 +30,7 @@ namespace OLabWebAPI.Services.TurkTalk
                 Guard.Argument(roomName).NotNull(nameof(roomName));
 
                 var learner = new Learner(roomName, Context);
-                _logger.LogInformation($"RegisterAttendee: '{learner.ToString()}");
+                _logger.LogInformation($"RegisterAttendee: '{learner.CommandChannel} ({ConnectionId.Shorten(Context.ConnectionId)})");
 
                 // get or create a topic
                 var topic = _conference.GetCreateTopic(learner.TopicName);

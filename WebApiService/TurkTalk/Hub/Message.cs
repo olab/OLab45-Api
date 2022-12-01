@@ -1,4 +1,5 @@
 using System;
+using Common.Utils;
 using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +26,7 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
-        _logger.LogInformation($"Message: from '{payload.Envelope.From}', {payload.Data}");
+        _logger.LogInformation($"Message: from '{payload.Envelope.From}', {payload.Data} ({ConnectionId.Shorten(Context.ConnectionId)})");
 
         // get or create a topic
         var topic = _conference.GetCreateTopic(payload.Envelope.From.TopicName, false);

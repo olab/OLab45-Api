@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using Dawn;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using System.Linq;
 
 namespace OLabWebAPI.Services.TurkTalk.Venue
 {
@@ -27,6 +28,11 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       _topics = new ConcurrentDictionary<string, Topic>();
 
       logger.LogDebug($"New Conference");
+    }
+
+    public IList<Topic> Topics
+    {
+      get { return _topics.Values.ToList(); }
     }
 
     public async Task AddConnectionToGroupAsync(Participant group)

@@ -10,11 +10,11 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     /// </summary>
     public class RoomAssignmentCommand : CommandMethod
     {
-        public string Data { get; set; }
+        public Participant Data { get; set; }
 
-        public RoomAssignmentCommand(string recipientGroupName, Participant group) : base(recipientGroupName, "roomassignment")
+        public RoomAssignmentCommand(string recipientGroupName, Participant participant) : base(recipientGroupName, "roomassignment")
         {
-            Data = group.RoomName;
+            Data = participant;
         }
 
         public override string ToJson()

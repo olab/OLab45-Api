@@ -149,11 +149,26 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <exception cref="NotImplementedException"></exception>
     internal void RemoveFromAtrium(Learner participant)
     {
-      Atrium.Remove(participant);
+      // try and remove learner.  if removed, notify all topic
+      // moderators of atrium change
+      if ( Atrium.Remove(participant) )
+        Conference.SendMessage(
+          new AtriumUpdateCommand(this, Atrium.GetContents()));
+    }
 
-      // notify all topic moderators of atrium change
-      Conference.SendMessage(
-        new AtriumUpdateCommand(this, Atrium.GetContents()));
+    /// <summary>
+    /// Remove connection id from atrium 
+    /// </summary>
+    /// <param name="connectionId">Connection remove</param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    internal void RemoveFromAtrium(string connectionId)
+    {
+      // try and remove connection.  if removed, notify all topic
+      // moderators of atrium change
+      if (Atrium.Remove(connectionId))
+        Conference.SendMessage(
+          new AtriumUpdateCommand(this, Atrium.GetContents()));
     }
 
     /// <summary>
