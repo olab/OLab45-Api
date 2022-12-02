@@ -151,9 +151,25 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     {
       // try and remove learner.  if removed, notify all topic
       // moderators of atrium change
-      if ( Atrium.Remove(participant) )
+      if (Atrium.Remove(participant))
         Conference.SendMessage(
           new AtriumUpdateCommand(this, Atrium.GetContents()));
+    }
+
+    /// <summary>
+    /// Removes a connection from the topic
+    /// </summary>
+    /// <param name="connectionId"></param>
+    internal void RemoveConnection(string connectionId)
+    {
+      // first remove from atrium
+      RemoveFromAtrium(connectionId);
+
+      // go thru each room and signal a disconnected
+      // connection id
+      foreach (var room in Rooms.Items)
+        room.RemoveConnection(connectionId);
+
     }
 
     /// <summary>

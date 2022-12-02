@@ -58,11 +58,10 @@ namespace OLabWebAPI.Services.TurkTalk
       {
         _logger.LogDebug($"OnDisconnectedAsync: '{ConnectionId.Shorten(Context.ConnectionId)}'");
 
-        // we don't know which participant disconnected, so we have to search
-        // any open topic atriums and remove his first
+        // we don't know which user disconnected, so we have to search
+        // any topics and notify it of the disconnection by the id
         foreach (var topic in _conference.Topics)
-          topic.RemoveFromAtrium(Context.ConnectionId);
-
+          topic.RemoveConnection(Context.ConnectionId);
       }
       catch (Exception ex)
       {
