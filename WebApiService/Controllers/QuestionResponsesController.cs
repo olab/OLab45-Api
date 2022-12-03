@@ -1,23 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OLabWebAPI.Model;
-using OLabWebAPI.Dto;
-using OLabWebAPI;
-using OLabWebAPI.Endpoints;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-
-using OLabWebAPI.Services;
-using OLabWebAPI.ObjectMapper;
 using OLabWebAPI.Common;
-using OLabWebAPI.Utils;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Model;
+using OLabWebAPI.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -43,7 +34,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.PutAsync(auth, id, dto);
             }
             catch (Exception ex)
@@ -67,7 +58,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 dto = await _endpoint.PostAsync(auth, dto);
                 return OLabObjectResult<QuestionResponsesDto>.Result(dto);
             }
@@ -88,7 +79,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteAsync(uint id)
         {
-            var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+            OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
             return await _endpoint.DeleteAsync(auth, id);
         }
 

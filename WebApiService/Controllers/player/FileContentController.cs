@@ -1,21 +1,21 @@
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
-using System;
-using System.IO;
-using System.Reflection;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using OLabWebAPI.Utils;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
-using Microsoft.Extensions.Configuration;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -41,17 +41,17 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetFileContentAccessTokenAsync(uint id)
         {
-            var phys = await context.SystemFiles.FirstOrDefaultAsync(x => x.Id == id);
+            SystemFiles phys = await context.SystemFiles.FirstOrDefaultAsync(x => x.Id == id);
             if (phys == null)
                 return new NotFoundResult();
 
             // authentication successful so generate jwt token
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var keyByteArray = Encoding.ASCII.GetBytes(OLabConfiguration.SIGNING_SECRET);
-            var signingKey =
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            byte[] keyByteArray = Encoding.ASCII.GetBytes(OLabConfiguration.SIGNING_SECRET);
+            SymmetricSecurityKey signingKey =
               new SymmetricSecurityKey(Encoding.Default.GetBytes(this.Configuration["AppSetting:Secret"][..16]));
 
-            var tokenDescriptor = new SecurityTokenDescriptor
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
@@ -62,8 +62,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
                 SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var response = new LoginResponseDto();
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+            LoginResponseDto response = new LoginResponseDto();
 
             response.AuthInfo.Token = tokenHandler.WriteToken(token);
             response.Group = "";
@@ -86,12 +86,12 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             logger.LogDebug($"FileContentController.GetFileContentAsync(uint id={id})");
 
-            var phys = await context.SystemFiles.FirstOrDefaultAsync(x => x.Id == id);
+            SystemFiles phys = await context.SystemFiles.FirstOrDefaultAsync(x => x.Id == id);
             if (phys == null)
                 return new NotFoundResult();
 
-            var filesRoot = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            var filePath = Path.Combine(filesRoot, "files");
+            string filesRoot = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            string filePath = Path.Combine(filesRoot, "files");
             filePath = Path.Combine(filePath, phys.ImageableType, phys.ImageableId.ToString());
             filePath = Path.Combine(filePath, phys.Path);
 

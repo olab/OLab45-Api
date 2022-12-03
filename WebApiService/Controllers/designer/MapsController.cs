@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Endpoints.WebApi.Player;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Designer;
+using OLabWebAPI.Endpoints.WebApi.Player;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using System;
@@ -38,8 +37,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
                 return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -61,8 +60,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                System.Collections.Generic.IList<MapNodesFullDto> dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
                 return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
             }
             catch (Exception ex)
@@ -83,8 +82,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                PostNewLinkResponse dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
                 return OLabObjectResult<PostNewLinkResponse>.Result(dto);
             }
             catch (Exception ex)
@@ -105,8 +104,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.PostMapNodesAsync(auth, body);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                PostNewNodeResponse dto = await _endpoint.PostMapNodesAsync(auth, body);
                 return OLabObjectResult<PostNewNodeResponse>.Result(dto);
             }
             catch (Exception ex)
@@ -128,8 +127,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
                 return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -151,8 +150,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(auth, id);
                 return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -176,7 +175,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
+                Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
                 DecorateDto(dto);
                 return OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto);
             }
@@ -198,33 +197,33 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
             Type t = typeof(QuestionsController);
             RouteAttribute attribute =
                 (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-            var questionRoute = attribute.Template;
+            string questionRoute = attribute.Template;
 
             t = typeof(ConstantsController);
             attribute =
                 (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-            var constantRoute = attribute.Template;
+            string constantRoute = attribute.Template;
 
             t = typeof(CountersController);
             attribute =
                 (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-            var counterRoute = attribute.Template;
+            string counterRoute = attribute.Template;
 
             t = typeof(FilesController);
             attribute =
                 (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-            var fileRoute = attribute.Template;
+            string fileRoute = attribute.Template;
 
-            foreach (var item in dto.Questions)
+            foreach (Dto.Designer.ScopedObjectDto item in dto.Questions)
                 item.Url = $"{BaseUrl}/{questionRoute}/{item.Id}";
 
-            foreach (var item in dto.Counters)
+            foreach (Dto.Designer.ScopedObjectDto item in dto.Counters)
                 item.Url = $"{BaseUrl}/{counterRoute}/{item.Id}";
 
-            foreach (var item in dto.Constants)
+            foreach (Dto.Designer.ScopedObjectDto item in dto.Constants)
                 item.Url = $"{BaseUrl}/{constantRoute}/{item.Id}";
 
-            foreach (var item in dto.Files)
+            foreach (Dto.Designer.ScopedObjectDto item in dto.Files)
                 item.Url = $"{BaseUrl}/{fileRoute}/{item.Id}";
         }
     }

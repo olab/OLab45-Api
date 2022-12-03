@@ -1,18 +1,17 @@
-using System.IO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-
-using OLabWebAPI.Model;
-using OLabWebAPI.Importer;
 using Microsoft.Extensions.Options;
-using OLabWebAPI.Utils;
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 using OLabWebAPI.Common;
+using OLabWebAPI.Importer;
+using OLabWebAPI.Model;
+using OLabWebAPI.Utils;
 using System;
+using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -44,11 +43,11 @@ namespace OLabWebAPI.Endpoints.WebApi
                 logger.LogInformation($"UploadAsync: file name '{file.FileName}', size {file.Length}");
 
                 // test if user has access to import.
-                var userContext = new UserContext(logger, context, HttpContext);
+                UserContext userContext = new UserContext(logger, context, HttpContext);
                 if (!userContext.HasAccess("X", "Import", 0))
                     return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
 
-                var fileName = await WriteFile(file);
+                string fileName = await WriteFile(file);
 
                 if (!CheckIfValidFile(fileName))
                 {
@@ -68,7 +67,7 @@ namespace OLabWebAPI.Endpoints.WebApi
                 return BadRequest(new { message = ex.Message });
             }
 
-            var dto = new ImportResponse
+            ImportResponse dto = new ImportResponse
             {
                 Messages = logger.GetMessages()
             };
@@ -86,7 +85,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         public IActionResult Post(ImportRequest request)
         {
             // test if user has access to map.
-            var userContext = new UserContext(logger, context, HttpContext);
+            UserContext userContext = new UserContext(logger, context, HttpContext);
             if (!userContext.HasAccess("X", "Import", 0))
                 return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
 
@@ -95,7 +94,7 @@ namespace OLabWebAPI.Endpoints.WebApi
                 logger.LogError("Invalid file name");
             else
             {
-                var fullFileName = Path.Combine(GetUploadDirectory(), request.FileName);
+                string fullFileName = Path.Combine(GetUploadDirectory(), request.FileName);
 
                 if (!System.IO.File.Exists(fullFileName))
                     logger.LogError("Unable to load file");
@@ -108,7 +107,7 @@ namespace OLabWebAPI.Endpoints.WebApi
                 }
             }
 
-            var dto = new ImportResponse
+            ImportResponse dto = new ImportResponse
             {
                 Messages = logger.GetMessages(request.MessageLevel)
             };
@@ -122,9 +121,9 @@ namespace OLabWebAPI.Endpoints.WebApi
 
             try
             {
-                using (var zipFile = ZipFile.OpenRead(path))
+                using (ZipArchive zipFile = ZipFile.OpenRead(path))
                 {
-                    var entries = zipFile.Entries;
+                    System.Collections.ObjectModel.ReadOnlyCollection<ZipArchiveEntry> entries = zipFile.Entries;
                 }
             }
             catch (InvalidDataException)
@@ -141,15 +140,15 @@ namespace OLabWebAPI.Endpoints.WebApi
             // strip off any directory
             string fileName = Path.GetRandomFileName();
 
-            var pathBuilt = GetUploadDirectory();
+            string pathBuilt = GetUploadDirectory();
             if (!Directory.Exists(pathBuilt))
             {
                 Directory.CreateDirectory(pathBuilt);
             }
 
-            var path = Path.Combine(GetUploadDirectory(), fileName);
+            string path = Path.Combine(GetUploadDirectory(), fileName);
 
-            using (var stream = new FileStream(path, FileMode.Create))
+            using (FileStream stream = new FileStream(path, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
                 logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");

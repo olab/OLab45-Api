@@ -1,16 +1,15 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using OLabWebAPI.Model;
+using OLabWebAPI.Utils;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
 using System.Security.Cryptography;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using System.Text;
 
 namespace OLabWebAPI.Services
 {
@@ -45,14 +44,14 @@ namespace OLabWebAPI.Services
 
         private static TokenValidationParameters SetupConfiguration(AppSettings appSettings)
         {
-            var jwtIssuer = "moodle";
-            var jwtAudience = appSettings.Audience;
-            var signingSecret = appSettings.Secret;
+            string jwtIssuer = "moodle";
+            string jwtAudience = appSettings.Audience;
+            string signingSecret = appSettings.Secret;
 
-            var securityKey =
+            SymmetricSecurityKey securityKey =
               new SymmetricSecurityKey(Encoding.Default.GetBytes(signingSecret[..16]));
 
-            var tokenParameters = new TokenValidationParameters
+            TokenValidationParameters tokenParameters = new TokenValidationParameters
             {
                 ValidateIssuer = false,
                 ValidIssuers = new List<string> { jwtIssuer, appSettings.Issuer },
@@ -97,7 +96,7 @@ namespace OLabWebAPI.Services
         /// <returns>Authenticate response, or null</returns>
         public AuthenticateResponse Authenticate(LoginRequest model)
         {
-            var user = _users.SingleOrDefault(x => x.Username == model.Username);
+            Users user = _users.SingleOrDefault(x => x.Username == model.Username);
 
             // return null if user not found
             if (user != null)
@@ -120,7 +119,7 @@ namespace OLabWebAPI.Services
         /// <returns></returns>
         public void ChangePassword(Users user, ChangePasswordRequest model)
         {
-            var clearText = model.NewPassword;
+            string clearText = model.NewPassword;
 
             // add password salt, if it's defined
             if (!string.IsNullOrEmpty(user.Salt))
@@ -198,21 +197,21 @@ namespace OLabWebAPI.Services
         /// <returns>AuthenticateResponse</returns>
         private AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var tokenParameters = GetValidationParameters();
+            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+            TokenValidationParameters tokenParameters = GetValidationParameters();
 
-            var readToken = handler.ReadJwtToken(model.ExternalToken);
+            JwtSecurityToken readToken = handler.ReadJwtToken(model.ExternalToken);
 
             _logger.LogDebug($"Incoming token claims:");
-            foreach (var claim in readToken.Claims)
+            foreach (Claim claim in readToken.Claims)
                 _logger.LogDebug($" {claim}");
 
             handler.ValidateToken(model.ExternalToken,
                                   tokenParameters,
                                   out SecurityToken validatedToken);
-            var jwtToken = (JwtSecurityToken)validatedToken;
+            JwtSecurityToken jwtToken = (JwtSecurityToken)validatedToken;
 
-            var response = new AuthenticateResponse();
+            AuthenticateResponse response = new AuthenticateResponse();
 
             DateTime createdAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
             response.CreatedAt = createdAt;
@@ -238,10 +237,10 @@ namespace OLabWebAPI.Services
         /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
         private AuthenticateResponse GenerateJwtToken(Users user)
         {
-            var securityKey =
+            SymmetricSecurityKey securityKey =
               new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
 
-            var tokenDescriptor = new SecurityTokenDescriptor
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
               {
@@ -257,11 +256,11 @@ namespace OLabWebAPI.Services
                 SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var securityToken = tokenHandler.WriteToken(token);
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+            string securityToken = tokenHandler.WriteToken(token);
 
-            var response = new AuthenticateResponse();
+            AuthenticateResponse response = new AuthenticateResponse();
             response.AuthInfo.Token = securityToken;
             response.AuthInfo.Refresh = null;
             response.Role = $"{user.Role}";
@@ -275,8 +274,8 @@ namespace OLabWebAPI.Services
 
         public string GenerateRefreshToken()
         {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
+            byte[] randomNumber = new byte[32];
+            using RandomNumberGenerator rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }

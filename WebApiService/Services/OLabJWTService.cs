@@ -1,16 +1,10 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Services;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services
 {
@@ -37,15 +31,15 @@ namespace OLabWebAPI.Services
         {
             try
             {
-                var tokenHandler = new JwtSecurityTokenHandler();
+                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
                 tokenHandler.ValidateToken(token,
                                            GetValidationParameters(),
                                            out SecurityToken validatedToken);
 
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                var userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub").Value;
-                var nickname = jwtToken.Claims.FirstOrDefault(x => x.Type == "name").Value;
-                var role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
+                JwtSecurityToken jwtToken = (JwtSecurityToken)validatedToken;
+                string userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub").Value;
+                string nickname = jwtToken.Claims.FirstOrDefault(x => x.Type == "name").Value;
+                string role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
 
                 httpContext.Items["Role"] = role;
                 httpContext.Items["User"] = userName;
@@ -54,7 +48,7 @@ namespace OLabWebAPI.Services
                 if (string.IsNullOrEmpty(role))
                 {
                     // attach user to context on successful jwt validation
-                    var user = userService.GetByUserName(userName);
+                    Model.Users user = userService.GetByUserName(userName);
                     httpContext.Items["User"] = user.Username;
                     httpContext.Items["Role"] = $"{user.Role}";
                 }

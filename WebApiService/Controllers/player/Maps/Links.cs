@@ -1,19 +1,12 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OLabWebAPI.Model;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using OLabWebAPI.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OLabWebAPI.Common;
-using OLabWebAPI.Model.ReaderWriter;
-using System;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
 using OLabWebAPI.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -32,7 +25,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, linkdto);
             }
             catch (Exception ex)

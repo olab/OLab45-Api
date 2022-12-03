@@ -1,21 +1,16 @@
-using System;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using OLabWebAPI.Services;
-using OLabWebAPI.Model;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using System.Security.Cryptography;
-using Microsoft.Extensions.Logging;
-
-using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
-using OLabWebAPI.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
+using OLabWebAPI.Model;
+using OLabWebAPI.Services;
+using OLabWebAPI.Utils;
+using System;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -44,8 +39,8 @@ namespace OLabWebAPI.Endpoints.WebApi
         /// <returns></returns>
         private RefreshToken CreateRefreshToken()
         {
-            var randomNumber = new byte[32];
-            using (var generator = RandomNumberGenerator.Create())
+            byte[] randomNumber = new byte[32];
+            using (RandomNumberGenerator generator = RandomNumberGenerator.Create())
             {
                 generator.GetBytes(randomNumber);
                 return new RefreshToken
@@ -70,7 +65,7 @@ namespace OLabWebAPI.Endpoints.WebApi
             logger.LogDebug($"ChangePassword(user = '{model.Username}')");
 
             // authenticate target user with their password
-            var response = _userService.Authenticate(
+            AuthenticateResponse response = _userService.Authenticate(
               new LoginRequest
               {
                   Username = model.Username,
@@ -80,7 +75,7 @@ namespace OLabWebAPI.Endpoints.WebApi
             if (response == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
-            var user = _userService.GetByUserName(model.Username);
+            Users user = _userService.GetByUserName(model.Username);
             _userService.ChangePassword(user, model);
 
             context.Users.Update(user);
@@ -99,7 +94,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         {
             logger.LogDebug($"Login(user = '{model.Username}')");
 
-            var response = _userService.Authenticate(model);
+            AuthenticateResponse response = _userService.Authenticate(model);
             if (response == null)
                 return BadRequest(new { statusCode = 401, message = "Username or password is incorrect" });
 
@@ -117,7 +112,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         {
             logger.LogDebug($"LoginExternal(user = '{model.ExternalToken}')");
 
-            var response = _userService.AuthenticateExternal(model);
+            AuthenticateResponse response = _userService.AuthenticateExternal(model);
             if (response == null)
                 return BadRequest(new { statusCode = 401, message = "Invalid external token" });
 
@@ -135,12 +130,12 @@ namespace OLabWebAPI.Endpoints.WebApi
             logger.LogDebug($"AddUsers()");
 
             // test if user has access to add users.
-            var userContext = new UserContext(logger, context, HttpContext);
+            UserContext userContext = new UserContext(logger, context, HttpContext);
             if (!userContext.HasAccess("X", "UserAdmin", 0))
                 return OLabUnauthorizedResult.Result();
 
-            var httpRequest = HttpContext.Request;
-            var postedFile = httpRequest.Form["File"];
+            HttpRequest httpRequest = HttpContext.Request;
+            Microsoft.Extensions.Primitives.StringValues postedFile = httpRequest.Form["File"];
 
             return OLabObjectResult<AddUserResponse>.Result(new AddUserResponse());
         }
@@ -157,16 +152,16 @@ namespace OLabWebAPI.Endpoints.WebApi
             logger.LogDebug($"AddUser(user = '{model.Username}')");
 
             // test if user has access to add users.
-            var userContext = new UserContext(logger, context, HttpContext);
+            UserContext userContext = new UserContext(logger, context, HttpContext);
             if (!userContext.HasAccess("X", "UserAdmin", 0))
                 return OLabUnauthorizedResult.Result();
 
-            var user = _userService.GetByUserName(model.Username);
+            Users user = _userService.GetByUserName(model.Username);
             if (user != null)
                 throw new Exception($"User {model.Username} already exists");
 
-            var newUser = Users.CreateDefault(model);
-            var newPassword = newUser.Password;
+            Users newUser = Users.CreateDefault(model);
+            string newPassword = newUser.Password;
 
             _userService.ChangePassword(newUser, new ChangePasswordRequest
             {
@@ -176,7 +171,7 @@ namespace OLabWebAPI.Endpoints.WebApi
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
 
-            var response = new AddUserResponse
+            AddUserResponse response = new AddUserResponse
             {
                 Username = newUser.Username,
                 Password = newPassword

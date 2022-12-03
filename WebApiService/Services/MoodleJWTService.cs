@@ -1,18 +1,11 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Services;
-using System;
-using System.IO;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
-using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services
 {
@@ -48,14 +41,14 @@ namespace OLabWebAPI.Services
         {
             try
             {
-                var tokenHandler = new JwtSecurityTokenHandler();
+                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
                 tokenHandler.ValidateToken(token,
                                            GetValidationParameters(),
                                            out SecurityToken validatedToken);
 
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                var userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub").Value;
-                var role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
+                JwtSecurityToken jwtToken = (JwtSecurityToken)validatedToken;
+                string userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub").Value;
+                string role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
 
                 httpContext.Items["Role"] = role;
                 httpContext.Items["User"] = userName;

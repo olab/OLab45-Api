@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Services;
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -44,7 +38,7 @@ namespace OLabWebAPI.Services
             _jwtAudience = config["AppSettings:Audience"];
             _signingSecret = config["AppSettings:Secret"];
 
-            var securityKey =
+            SymmetricSecurityKey securityKey =
               new SymmetricSecurityKey(Encoding.Default.GetBytes(_signingSecret[..16]));
 
             _tokenParameters = new TokenValidationParameters
@@ -81,27 +75,27 @@ namespace OLabWebAPI.Services
                 {
                     OnMessageReceived = context =>
               {
-                    var accessToken = context.Request.Query["access_token"];
-                    if (string.IsNullOrEmpty(accessToken))
-                        accessToken = context.Request.Headers["Authorization"];
+                  Microsoft.Extensions.Primitives.StringValues accessToken = context.Request.Query["access_token"];
+                  if (string.IsNullOrEmpty(accessToken))
+                      accessToken = context.Request.Headers["Authorization"];
 
                   // If the request is for our hub...
-                    var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/turktalk")))
-                    {
+                  PathString path = context.HttpContext.Request.Path;
+                  if (!string.IsNullOrEmpty(accessToken) &&
+              (path.StartsWithSegments("/turktalk")))
+                  {
                       // Read the token out of the query string
-                        context.Token = accessToken;
-                    }
-                    return Task.CompletedTask;
-                }
+                      context.Token = accessToken;
+                  }
+                  return Task.CompletedTask;
+              }
                 };
             });
         }
 
         public async Task InvokeAsync(HttpContext context, IUserService userService)
         {
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            string token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (token != null)
                 AttachUserToContext(context,

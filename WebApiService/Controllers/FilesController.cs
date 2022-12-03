@@ -7,18 +7,17 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
+using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.ObjectMapper;
+using OLabWebAPI.Services;
 using OLabWebAPI.Utils;
-using OLabWebAPI.Endpoints;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -27,7 +26,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
         public void OnResourceExecuting(ResourceExecutingContext context)
         {
-            var factories = context.ValueProviderFactories;
+            System.Collections.Generic.IList<IValueProviderFactory> factories = context.ValueProviderFactories;
             factories.RemoveType<FormValueProviderFactory>();
             factories.RemoveType<JQueryFormValueProviderFactory>();
         }
@@ -69,7 +68,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
             if (str.Length == 1)
                 return char.ToUpper(str[0]).ToString();
             else
-                return char.ToUpper(str[0]) + str.Substring(1);
+                return char.ToUpper(str[0]) + str[1..];
         }
 
         /// <summary>
@@ -82,11 +81,11 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             string tempFileName;
 
-            var fileName = ContentDispositionHeaderValue
+            string fileName = ContentDispositionHeaderValue
                 .Parse(postedFile.ContentDisposition)
                 .FileName.Trim('"');
 
-            var dirName = Path.Combine(
+            string dirName = Path.Combine(
               GetStaticFilesDirectory(),
               CapitalizeFirstLetter(dto.ImageableType),
               dto.ImageableId.ToString());
@@ -109,7 +108,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
             if (postedFile.Length > 0)
             {
-                var fileName = ContentDispositionHeaderValue
+                string fileName = ContentDispositionHeaderValue
                     .Parse(postedFile.ContentDisposition)
                     .FileName.Trim('"');
 
@@ -119,7 +118,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
                 tempFileName = Path.Combine(GetUploadDirectory(), fileName);
                 logger.LogDebug($"Temporary file name: {tempFileName}");
 
-                using (var fileStream = new FileStream(tempFileName, FileMode.Create))
+                using (FileStream fileStream = new FileStream(tempFileName, FileMode.Create))
                 {
                     postedFile.CopyTo(fileStream);
                 }
@@ -162,7 +161,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var pagedResult = await _endpoint.GetAsync(take, skip);
+                OLabAPIPagedResponse<FilesDto> pagedResult = await _endpoint.GetAsync(take, skip);
                 return OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining);
             }
             catch (Exception ex)
@@ -184,8 +183,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetAsync(auth, id);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                FilesFullDto dto = await _endpoint.GetAsync(auth, id);
                 return OLabObjectResult<FilesFullDto>.Result(dto);
             }
             catch (Exception ex)
@@ -208,7 +207,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.PutAsync(auth, id, dto);
             }
             catch (Exception ex)
@@ -233,10 +232,10 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
             try
             {
                 logger.LogDebug($"FilesController.PostAsync()");
-                var dto = new FilesFullDto(Request.Form);
+                FilesFullDto dto = new FilesFullDto(Request.Form);
 
-                var builder = new FilesFull(logger);
-                var phys = builder.DtoToPhysical(dto);
+                FilesFull builder = new FilesFull(logger);
+                SystemFiles phys = builder.DtoToPhysical(dto);
 
                 phys.CreatedAt = DateTime.Now;
 
@@ -245,10 +244,10 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
                 // save just the file name to the database
                 phys.Path = Path.GetFileName(staticFileName);
-                MimeTypes.TryGetMimeType(phys.Path, out var mimeType);
+                MimeTypes.TryGetMimeType(phys.Path, out string mimeType);
                 phys.Mime = mimeType;
 
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 dto = await _endpoint.PostAsync(auth, phys);
 
                 // successful save to database, copy the file to the
@@ -274,7 +273,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.DeleteAsync(auth, id);
             }
             catch (Exception ex)

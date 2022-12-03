@@ -1,18 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
-using OLabWebAPI.Endpoints.Player;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Endpoints.Player;
+using OLabWebAPI.Model;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -38,7 +33,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var pagedResponse = await _endpoint.GetAsync(take, skip);
+                OLabAPIPagedResponse<Servers> pagedResponse = await _endpoint.GetAsync(take, skip);
                 return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
             }
             catch (Exception ex)
@@ -61,7 +56,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
+                Dto.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
                 return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -83,7 +78,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
+                Dto.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
                 return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)

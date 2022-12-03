@@ -1,18 +1,11 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -24,7 +17,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
+                ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
                 return OLabObjectResult<ScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -41,7 +34,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
+                ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
                 return OLabObjectResult<ScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -58,7 +51,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
+                ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
                 return OLabObjectResult<ScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)

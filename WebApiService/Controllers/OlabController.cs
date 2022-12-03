@@ -1,17 +1,14 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Model;
+using OLabWebAPI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using OLabWebAPI.Common;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
-using OLabWebAPI.Interface;
-using Microsoft.AspNetCore.Http;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -33,7 +30,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async ValueTask<Maps> GetMapAsync(uint id)
         {
-            var phys = await context.Maps.FirstOrDefaultAsync(x => x.Id == id);
+            Maps phys = await context.Maps.FirstOrDefaultAsync(x => x.Id == id);
             context.Entry(phys).Collection(b => b.MapNodes).Load();
             return phys;
         }
@@ -47,7 +44,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         {
             if (dto.ImageableType == Constants.ScopeLevelServer)
             {
-                var obj = context.Servers.FirstOrDefault(x => x.Id == dto.ImageableId);
+                Servers obj = context.Servers.FirstOrDefault(x => x.Id == dto.ImageableId);
                 dto.ParentObj.Id = obj.Id;
                 dto.ParentObj.Name = obj.Name;
                 dto.ParentObj.Description = obj.Description;
@@ -55,7 +52,7 @@ namespace OLabWebAPI.Endpoints.WebApi
 
             else if (dto.ImageableType == Constants.ScopeLevelMap)
             {
-                var obj = context.Maps.FirstOrDefault(x => x.Id == dto.ImageableId);
+                Maps obj = context.Maps.FirstOrDefault(x => x.Id == dto.ImageableId);
                 dto.ParentObj.Id = obj.Id;
                 dto.ParentObj.Name = obj.Name;
                 dto.ParentObj.Description = obj.Name;
@@ -63,7 +60,7 @@ namespace OLabWebAPI.Endpoints.WebApi
 
             else if (dto.ImageableType == Constants.ScopeLevelNode)
             {
-                var obj = context.MapNodes.FirstOrDefault(x => x.Id == dto.ImageableId);
+                MapNodes obj = context.MapNodes.FirstOrDefault(x => x.Id == dto.ImageableId);
                 dto.ParentObj.Id = obj.Id;
                 dto.ParentObj.Name = obj.Title;
                 dto.ParentObj.Description = obj.Title;
@@ -100,10 +97,10 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<IList<MapNodesFullDto>> GetNodesAsync(Maps map, bool enableWikiTanslation = true)
         {
-            var physList = await context.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
+            List<MapNodes> physList = await context.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
             logger.LogDebug(string.Format("found {0} mapNodes", physList.Count));
 
-            var dtoList = new ObjectMapper.MapNodesFullMapper(logger, enableWikiTanslation).PhysicalToDto(physList);
+            IList<MapNodesFullDto> dtoList = new ObjectMapper.MapNodesFullMapper(logger, enableWikiTanslation).PhysicalToDto(physList);
             return dtoList;
         }
 
@@ -117,7 +114,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<MapsNodesFullRelationsDto> GetNodeAsync(Maps map, uint nodeId, bool enableWikiTanslation = true)
         {
-            var phys = await context.MapNodes
+            MapNodes phys = await context.MapNodes
               .FirstOrDefaultAsync(x => x.MapId == map.Id && x.Id == nodeId);
 
             if (phys == null)
@@ -126,15 +123,15 @@ namespace OLabWebAPI.Endpoints.WebApi
             // explicitly load the related objects.
             context.Entry(phys).Collection(b => b.MapNodeLinksNodeId1Navigation).Load();
 
-            var builder = new ObjectMapper.MapsNodesFullRelationsMapper(logger, enableWikiTanslation);
-            var dto = builder.PhysicalToDto(phys);
+            ObjectMapper.MapsNodesFullRelationsMapper builder = new ObjectMapper.MapsNodesFullRelationsMapper(logger, enableWikiTanslation);
+            MapsNodesFullRelationsDto dto = builder.PhysicalToDto(phys);
 
-            var linkedIds = phys.MapNodeLinksNodeId1Navigation.Select(x => x.NodeId2).Distinct().ToList();
-            var linkedNodes = context.MapNodes.Where(x => linkedIds.Contains(x.Id)).ToList();
+            List<uint> linkedIds = phys.MapNodeLinksNodeId1Navigation.Select(x => x.NodeId2).Distinct().ToList();
+            List<MapNodes> linkedNodes = context.MapNodes.Where(x => linkedIds.Contains(x.Id)).ToList();
 
-            foreach (var item in dto.MapNodeLinks)
+            foreach (MapNodeLinksDto item in dto.MapNodeLinks)
             {
-                var link = linkedNodes.Where(x => x.Id == item.DestinationId).FirstOrDefault();
+                MapNodes link = linkedNodes.Where(x => x.Id == item.DestinationId).FirstOrDefault();
                 item.DestinationTitle = linkedNodes.Where(x => x.Id == item.DestinationId).Select(x => x.Title).FirstOrDefault();
                 if (string.IsNullOrEmpty(item.LinkText))
                     item.LinkText = item.DestinationTitle;
@@ -180,7 +177,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async ValueTask<SystemConstants> GetConstantAsync(uint id)
         {
-            var item = await context.SystemConstants
+            SystemConstants item = await context.SystemConstants
                 .FirstOrDefaultAsync(x => x.Id == id);
             return item;
         }
@@ -193,7 +190,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async ValueTask<SystemFiles> GetFileAsync(uint id)
         {
-            var item = await context.SystemFiles
+            SystemFiles item = await context.SystemFiles
                 .FirstOrDefaultAsync(x => x.Id == id);
             return item;
         }
@@ -206,7 +203,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async ValueTask<SystemQuestions> GetQuestionSimpleAsync(uint id)
         {
-            var item = await context.SystemQuestions
+            SystemQuestions item = await context.SystemQuestions
                 .FirstOrDefaultAsync(x => x.Id == id);
             return item;
         }
@@ -219,7 +216,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async ValueTask<SystemQuestions> GetQuestionAsync(uint id)
         {
-            var item = await context.SystemQuestions
+            SystemQuestions item = await context.SystemQuestions
                 .Include(x => x.SystemQuestionResponses)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return item;
@@ -238,7 +235,7 @@ namespace OLabWebAPI.Endpoints.WebApi
           uint sinceTime,
           string scopeLevel)
         {
-            var phys = new ScopedObjects
+            ScopedObjects phys = new ScopedObjects
             {
                 Counters = await GetScopedCountersAsync(scopeLevel, parentId, sinceTime)
             };
@@ -257,7 +254,7 @@ namespace OLabWebAPI.Endpoints.WebApi
           uint parentId,
           string scopeLevel)
         {
-            var phys = new ScopedObjects
+            ScopedObjects phys = new ScopedObjects
             {
                 Constants = await GetScopedConstantsAsync(parentId, scopeLevel),
                 Questions = await GetScopedQuestionsAsync(parentId, scopeLevel),
@@ -269,7 +266,7 @@ namespace OLabWebAPI.Endpoints.WebApi
 
             if (scopeLevel == Constants.ScopeLevelMap)
             {
-                var items = new List<SystemCounterActions>();
+                List<SystemCounterActions> items = new List<SystemCounterActions>();
                 items.AddRange(await context.SystemCounterActions.Where(x =>
                     x.MapId == parentId).ToListAsync());
 
@@ -288,7 +285,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<List<SystemConstants>> GetScopedConstantsAsync(uint parentId, string scopeLevel)
         {
-            var items = new List<SystemConstants>();
+            List<SystemConstants> items = new List<SystemConstants>();
 
             items.AddRange(await context.SystemConstants.Where(x =>
               x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
@@ -305,7 +302,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<List<SystemFiles>> GetScopedFilesAsync(uint parentId, string scopeLevel)
         {
-            var items = new List<SystemFiles>();
+            List<SystemFiles> items = new List<SystemFiles>();
 
             items.AddRange(await context.SystemFiles.Where(x =>
               x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
@@ -322,7 +319,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<List<SystemQuestions>> GetScopedQuestionsAsync(uint parentId, string scopeLevel)
         {
-            var items = new List<SystemQuestions>();
+            List<SystemQuestions> items = new List<SystemQuestions>();
 
             items.AddRange(await context.SystemQuestions
               .Where(x => x.ImageableType == scopeLevel && x.ImageableId == parentId)
@@ -330,7 +327,7 @@ namespace OLabWebAPI.Endpoints.WebApi
               .ToListAsync());
 
             // order the responses by Order field
-            foreach (var item in items)
+            foreach (SystemQuestions item in items)
                 item.SystemQuestionResponses = item.SystemQuestionResponses.OrderBy(x => x.Order).ToList();
 
             return items;
@@ -345,7 +342,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<List<SystemThemes>> GetScopedThemesAsync(uint parentId, string scopeLevel)
         {
-            var items = new List<SystemThemes>();
+            List<SystemThemes> items = new List<SystemThemes>();
 
             items.AddRange(await context.SystemThemes.Where(x =>
               x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
@@ -362,7 +359,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<List<SystemScripts>> GetScopedScriptsAsync(uint parentId, string scopeLevel)
         {
-            var items = new List<SystemScripts>();
+            List<SystemScripts> items = new List<SystemScripts>();
 
             items.AddRange(await context.SystemScripts.Where(x =>
               x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
@@ -378,7 +375,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<SystemCounters> GetCounterAsync(uint id)
         {
-            var phys = await context.SystemCounters.SingleOrDefaultAsync(x => x.Id == id);
+            SystemCounters phys = await context.SystemCounters.SingleOrDefaultAsync(x => x.Id == id);
             if (phys.Value == null)
                 phys.Value = new List<byte>().ToArray();
             if (phys.StartValue == null)
@@ -396,7 +393,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         [NonAction]
         protected async Task<List<SystemCounters>> GetScopedCountersAsync(string scopeLevel, uint parentId, uint sinceTime = 0)
         {
-            var items = new List<SystemCounters>();
+            List<SystemCounters> items = new List<SystemCounters>();
 
             if (sinceTime != 0)
             {

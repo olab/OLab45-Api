@@ -1,19 +1,15 @@
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using OLabWebAPI.Model;
-using System;
 using OLabWebAPI.Common;
-using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Endpoints.Player;
+using OLabWebAPI.Model;
 using OLabWebAPI.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -39,7 +35,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.GetNodeTranslatedAsync(nodeId);
+                MapsNodesFullRelationsDto dto = await _endpoint.GetNodeTranslatedAsync(nodeId);
                 return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -63,7 +59,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.PutNodeAsync(auth, id, dto);
             }
             catch (Exception ex)
@@ -92,7 +88,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.PostLinkAsync(nodeId, data);
+                MapNodeLinksPostResponseDto dto = await _endpoint.PostLinkAsync(nodeId, data);
                 return OLabObjectResult<MapNodeLinksPostResponseDto>.Result(dto);
             }
             catch (Exception ex)
@@ -119,7 +115,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.PostNodeAsync(mapId, data);
+                MapNodesPostResponseDto dto = await _endpoint.PostNodeAsync(mapId, data);
                 return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
             }
             catch (Exception ex)

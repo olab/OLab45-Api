@@ -1,19 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OLabWebAPI.Model;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using OLabWebAPI.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OLabWebAPI.Common;
-using OLabWebAPI.Model.ReaderWriter;
-using System;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Model;
 using OLabWebAPI.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -32,10 +26,10 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
 
-                var userContext = new UserContext(logger, context, HttpContext);
+                UserContext userContext = new UserContext(logger, context, HttpContext);
 
                 // test if end node, meaning we can close the session.  otherwise
                 // record the OnPlay event
@@ -84,8 +78,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                MapNodesPostResponseDto dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
                 return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
             }
             catch (Exception ex)
@@ -114,8 +108,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                MapNodesPostResponseDto newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
                 return OLabObjectResult<MapNodesPostResponseDto>.Result(newDto);
             }
             catch (Exception ex)

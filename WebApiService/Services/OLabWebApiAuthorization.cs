@@ -1,7 +1,5 @@
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Interface;
@@ -16,7 +14,7 @@ namespace OLabWebAPI.Services
         private readonly OLabDBContext context;
         private readonly HttpContext httpContext;
         // private readonly HttpRequest request;
-        private UserContext userContext;
+        private readonly UserContext userContext;
 
         public OLabWebApiAuthorization(OLabLogger logger, OLabDBContext context, HttpContext httpContext)
         {

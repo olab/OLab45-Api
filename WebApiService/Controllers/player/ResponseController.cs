@@ -1,22 +1,14 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using OLabWebAPI.Model;
-
-using OLabWebAPI.Utils;
-using System.Text;
-using System;
-using System.Security.Claims;
-using System.Collections.Generic;
-using System.Linq;
 using OLabWebAPI.Common;
-using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Endpoints.Player;
+using OLabWebAPI.Model;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -44,13 +36,13 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
             try
             {
-                var question = await GetQuestionAsync(body.QuestionId);
+                SystemQuestions question = await GetQuestionAsync(body.QuestionId);
                 if (question == null)
                     throw new Exception($"Question {body.QuestionId} not found");
 
-                var result = await _endpoint.PostQuestionResponseAsync(body);
+                DynamicScopedObjectsDto result = await _endpoint.PostQuestionResponseAsync(body);
 
-                var userContext = new UserContext(logger, context, HttpContext);
+                UserContext userContext = new UserContext(logger, context, HttpContext);
                 userContext.Session.OnQuestionResponse(
                   userContext.SessionId,
                   body.MapId,

@@ -1,15 +1,14 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using OLabWebAPI.Model;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Endpoints;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Common.Exceptions;
-using System;
 using OLabWebAPI.Common;
+using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Model;
 using OLabWebAPI.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -36,7 +35,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var pagedResult = await _endpoint.GetAsync(take, skip);
+                OLabAPIPagedResponse<QuestionsDto> pagedResult = await _endpoint.GetAsync(take, skip);
                 return OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining);
             }
             catch (Exception ex)
@@ -58,8 +57,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetAsync(auth, id);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                QuestionsFullDto dto = await _endpoint.GetAsync(auth, id);
                 return OLabObjectResult<QuestionsFullDto>.Result(dto);
             }
             catch (Exception ex)
@@ -81,7 +80,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.PutAsync(auth, id, dto);
             }
             catch (Exception ex)
@@ -105,7 +104,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 dto = await _endpoint.PostAsync(auth, dto);
                 return OLabObjectResult<QuestionsFullDto>.Result(dto);
             }

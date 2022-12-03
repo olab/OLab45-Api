@@ -1,12 +1,12 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using OLabWebAPI.Dto;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
-using System;
+using OLabWebAPI.Dto;
 using OLabWebAPI.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -26,8 +26,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
                 return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -52,8 +52,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
                 return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -80,7 +80,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation); ;
+                DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation); ;
                 return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
             }
             catch (Exception ex)

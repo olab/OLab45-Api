@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
@@ -37,7 +36,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var pagedResponse = await _endpoint.GetAsync(take, skip);
+                OLabAPIPagedResponse<MapsDto> pagedResponse = await _endpoint.GetAsync(take, skip);
                 return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
             }
             catch (Exception ex)
@@ -59,7 +58,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var dto = _endpoint.Links();
+                MapNodeLinkTemplateDto dto = _endpoint.Links();
                 return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
             }
             catch (Exception ex)
@@ -80,7 +79,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         {
             try
             {
-                var dto = _endpoint.Nodes();
+                MapNodeTemplateDto dto = _endpoint.Nodes();
                 return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
             }
             catch (Exception ex)

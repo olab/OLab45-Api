@@ -1,22 +1,15 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OLabWebAPI.Model;
-using OLabWebAPI.Dto;
-using OLabWebAPI.ObjectMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Utils;
 using OLabWebAPI.Common;
-using OLabWebAPI.Model.ReaderWriter;
-using OLabWebAPI.Endpoints.Player;
-using Microsoft.AspNetCore.Http;
-using System;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Dto;
+using OLabWebAPI.Endpoints.Player;
+using OLabWebAPI.Model;
 using OLabWebAPI.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -43,8 +36,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabAPIPagedResponse<MapsDto> pagedResponse = await _endpoint.GetAsync(auth, take, skip);
                 return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
             }
             catch (Exception ex)
@@ -67,8 +60,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.GetAsync(auth, id);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                MapsFullDto dto = await _endpoint.GetAsync(auth, id);
                 return OLabObjectResult<MapsFullDto>.Result(dto);
             }
             catch (Exception ex)
@@ -91,8 +84,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                ExtendMapResponse dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
                 return OLabObjectResult<ExtendMapResponse>.Result(dto);
             }
             catch (Exception ex)
@@ -115,8 +108,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dto = await _endpoint.PostCreateMapAsync(auth, body);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                MapsFullRelationsDto dto = await _endpoint.PostCreateMapAsync(auth, body);
                 return OLabObjectResult<MapsFullRelationsDto>.Result(dto);
             }
             catch (Exception ex)
@@ -139,7 +132,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.PutAsync(auth, id, mapdto);
             }
             catch (Exception ex)
@@ -163,7 +156,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
                 await _endpoint.DeleteAsync(auth, id);
             }
             catch (Exception ex)
@@ -187,8 +180,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                var auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-                var dtoList = await _endpoint.GetLinksAsync(auth, mapId);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                System.Collections.Generic.IList<MapNodeLinksFullDto> dtoList = await _endpoint.GetLinksAsync(auth, mapId);
                 return OLabObjectListResult<MapNodeLinksFullDto>.Result(dtoList);
             }
             catch (Exception ex)
