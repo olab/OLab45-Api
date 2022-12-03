@@ -10,49 +10,54 @@ using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
+  /// <summary>
+  /// 
+  /// </summary>
+  public partial class TurkTalkHub : Hub
+  {
     /// <summary>
-    /// 
+    /// Moderator assigns a learner (remove from atrium)
     /// </summary>
-    public partial class TurkTalkHub : Hub
+    /// <param name="learner">Learner to assign</param>
+    /// <param name="topicName">Topic id</param>
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task AssignAttendee(Learner learner, string roomName)
     {
-        /// <summary>
-        /// Moderator assigns a learner (remove from atrium)
-        /// </summary>
-        /// <param name="learner">Learner to assign</param>
-        /// <param name="topicName">Topic id</param>
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task AssignAttendee(Learner learner, string topicName)
-        {
-            try
-            {
-                Guard.Argument(topicName).NotNull(nameof(topicName));
-                _logger.LogInformation(
-                  $"AssignAttendeeASync: '{learner.CommandChannel}', {topicName} ({ConnectionId.Shorten(Context.ConnectionId)})");
+      try
+      {
+        Guard.Argument(roomName).NotNull(nameof(roomName));
 
-                Venue.Topic topic = _conference.GetCreateTopic(learner.TopicName, false);
-                if (topic == null)
-                    return;
+        _logger.LogInformation(
+          $"AssignAttendeeAsync: '{learner.CommandChannel}', {roomName} ({ConnectionId.Shorten(Context.ConnectionId)})");
 
-                topic.RemoveFromAtrium(learner);
+        var topic = _conference.GetCreateTopic(learner.TopicName, false);
+        if (topic == null)
+          return;
 
-                // add the moderator connection id to the newly
-                // assigned learner's command group name
-                await topic.Conference.AddConnectionToGroupAsync(
-                  learner.CommandChannel,
-                  Context.ConnectionId);
+        topic.RemoveFromAtrium(learner);
 
-                // post a message to the learner that they've
-                // been assigned to a room
-                topic.Conference.SendMessage(
-                  new RoomAssignmentCommand(
-                    learner.CommandChannel,
-                    learner));
+        var room = topic.GetRoom(roomName);
+        if (room != null)
+          await room.AddLearnerAsync(learner, learner.ConnectionId);
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"AssignAttendeeASync exception: {ex.Message}");
-            }
-        }
+        // add the moderator connection id to the newly
+        // assigned learner's command group name
+        await topic.Conference.AddConnectionToGroupAsync(
+          learner.CommandChannel,
+          Context.ConnectionId);
+
+        // post a message to the learner that they've
+        // been assigned to a room
+        topic.Conference.SendMessage(
+          new RoomAssignmentCommand(
+            learner.CommandChannel,
+            learner));
+
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError($"AssignAttendeeAsync exception: {ex.Message}");
+      }
     }
+  }
 }

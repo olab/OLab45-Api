@@ -1,11 +1,12 @@
 using Dawn;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Security.Claims;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-    public abstract class Participant
+    public class Participant
     {
         private string _topicName;
         private string _userId;
@@ -27,14 +28,14 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
             set { _roomNumber = value; }
         }
 
-        public abstract void AssignToRoom(int index);
+        public virtual void AssignToRoom(int index) { throw new NotImplementedException(); }
 
         public Participant()
         {
 
         }
 
-        protected Participant(HubCallerContext context)
+        public Participant(HubCallerContext context)
         {
             // extract fields from bearer token
             ClaimsIdentity identity = (ClaimsIdentity)context.User.Identity;

@@ -54,7 +54,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         /// Remove participant from atrium
         /// </summary>
         /// <param name="participantName">Participant name</param>
-        internal bool Remove(Learner participant)
+        internal bool Remove(Participant participant)
         {
             bool foundInAtrium = AtriumLearners.ContainsKey(participant.UserId);
             if (foundInAtrium)
