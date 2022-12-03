@@ -99,7 +99,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     internal void RemoveConnection(string connectionId)
     {
       Logger.LogDebug($"Disconnecting {ConnectionId.Shorten(connectionId)} from room '{Name}'");
-      
+
       // notify moderators of room unassignment 
       // for connectionId
       _topic.Conference.SendMessage(

@@ -80,7 +80,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     {
       foreach (var item in AtriumLearners.Values)
       {
-        if ( item.ConnectionId == connectionId )
+        if (item.ConnectionId == connectionId)
           return Remove(item);
       }
 

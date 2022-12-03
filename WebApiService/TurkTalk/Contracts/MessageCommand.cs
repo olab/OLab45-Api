@@ -13,7 +13,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   public class MessageCommand : Method
   {
     public string Data { get; set; }
-    public string From{ get; set; }
+    public string From { get; set; }
 
     // message for specific group
     public MessageCommand(MessagePayload payload) : base(payload.Envelope.To, "message")
