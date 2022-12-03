@@ -46,5 +46,6 @@ Ankh.NoLoad
 
 #Other
 .svn
+.vs
 local.settings.json
 Service/appsettings.json
