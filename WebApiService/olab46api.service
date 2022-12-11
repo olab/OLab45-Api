@@ -1,0 +1,11 @@
+[Unit]  
+Description=OLab 4.6 API  
+[Service]  
+WorkingDirectory=/opt/olab46/api/Release/net6.0
+ExecStart=/opt/olab46/api/Release/net6.0/OLabWebAPI --urls http://logan.local:5000
+Restart=always  
+RestartSec=10  
+SyslogIdentifier=olab46-api
+User=corey.wirun  
+[Install]  
+WantedBy=multi-user.target 
