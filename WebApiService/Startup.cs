@@ -110,7 +110,7 @@ namespace OLabWebAPI
             // get signalR endpoint
             string signalREndpoint = Configuration["AppSettings:SignalREndpoint"];
             if (string.IsNullOrEmpty(signalREndpoint))
-                signalREndpoint = "/player/turktalk";
+                signalREndpoint = "/olab/turktalk";
 
             app.UseEndpoints(x =>
             {
