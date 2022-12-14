@@ -15,9 +15,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Common\Endpoints\Endpoints.csproj" />
     <ProjectReference Include="..\..\Common\Data\Data.csproj" />
     <ProjectReference Include="..\..\Common\Import\Import.csproj" />
-    <ProjectReference Include="..\..\Common\Endpoints\Endpoints.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
