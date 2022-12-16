@@ -24,6 +24,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       private set { _index = value; }
     }
 
+    public Moderator Moderator {  get { return _moderator; } }
     public string Name { get { return $"{_topic.Name}/{Index}"; } }
     public bool IsModerated { get { return _moderator != null; } }
     protected ILogger Logger { get { return _topic.Logger; } }

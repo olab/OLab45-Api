@@ -155,13 +155,15 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     }
 
     /// <summary>
-    /// Remove user from atrium 
+    /// Remove user from topic atrium 
     /// </summary>
     /// <param name="participant">Learner to remove</param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
     internal void RemoveFromAtrium(Participant participant)
     {
+      Logger.LogDebug($"Removing participant '{participant.UserId}' from topic '{Name}' atrium");
+
       // try and remove learner.  if removed, notify all topic
       // moderators of atrium change
       if (Atrium.Remove(participant))

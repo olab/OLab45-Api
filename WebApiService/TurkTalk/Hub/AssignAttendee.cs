@@ -19,7 +19,7 @@ namespace OLabWebAPI.Services.TurkTalk
     /// Moderator assigns a learner (remove from atrium)
     /// </summary>
     /// <param name="learner">Learner to assign</param>
-    /// <param name="topicName">Topic id</param>
+    /// <param name="roomName">Room name</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task AssignAttendee(Learner learner, string roomName)
     {
@@ -34,7 +34,10 @@ namespace OLabWebAPI.Services.TurkTalk
         if (topic == null)
           return;
 
-        topic.RemoveFromAtrium(learner);
+        // test if learner isn't already assigned to room,
+        // meaning we need to remove from atrium
+        if (!learner.IsAssignedToRoom())
+          topic.RemoveFromAtrium(learner);
 
         var room = topic.GetRoom(roomName);
         if (room != null)
@@ -53,6 +56,14 @@ namespace OLabWebAPI.Services.TurkTalk
             learner.CommandChannel,
             learner));
 
+        // if learner is/was assigned to a room and the room has
+        // a moderator, the post a message to the moderator that the 
+        // learner as rejoined the room
+        if (learner.IsAssignedToRoom() && room.IsModerated)
+          topic.Conference.SendMessage(
+            new RoomRejoinedCommand(
+              room.Moderator.CommandChannel,
+              learner));
       }
       catch (Exception ex)
       {
