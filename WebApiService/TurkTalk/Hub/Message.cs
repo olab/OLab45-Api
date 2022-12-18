@@ -9,37 +9,36 @@ using System;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
+  /// <summary>
+  /// 
+  /// </summary>
+  public partial class TurkTalkHub : Hub
+  {
     /// <summary>
-    /// 
+    /// Remove assigned learner from atrium
     /// </summary>
-    public partial class TurkTalkHub : Hub
+    /// <param name="learner">Learner to remove</param>
+    /// <param name="topicName">Topic id</param>
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public void Message(MessagePayload payload)
     {
-        /// <summary>
-        /// Remove assigned learner from atrium
-        /// </summary>
-        /// <param name="learner">Learner to remove</param>
-        /// <param name="topicName">Topic id</param>
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public void Message(MessagePayload payload)
-        {
-            try
-            {
-                _logger.LogInformation($"Message: from '{payload.Envelope.From}', {payload.Data} ({ConnectionId.Shorten(Context.ConnectionId)})");
+      try
+      {
+        _logger.LogInformation($"Message: from '{payload.Envelope.From}', {payload.Data} ({ConnectionId.Shorten(Context.ConnectionId)})");
 
-                // get or create a topic
-                Venue.Topic topic = _conference.GetCreateTopic(payload.Envelope.From.TopicName, false);
-                if (topic == null)
-                    return;
+        // get or create a topic
+        Venue.Topic topic = _conference.GetCreateTopic(payload.Envelope.From.TopicName, false);
+        if (topic == null)
+          return;
 
-                // dispatch message
-                topic.Conference.SendMessage(
-                  new MessageCommand(
-                    payload));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"AssignAttendeeASync exception: {ex.Message}");
-            }
-        }
+        // dispatch message
+        topic.Conference.SendMessage(
+          new MessageMethod(payload));
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError($"AssignAttendeeASync exception: {ex.Message}");
+      }
     }
+  }
 }

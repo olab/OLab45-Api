@@ -1,19 +1,21 @@
+﻿using OLabWebAPI.TurkTalk.Contracts;
 using System.Text.Json;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
     /// <summary>
-    /// Defines a Message method
+    /// Defines a Atrium Update command method
     /// </summary>
     public class MessageMethod : Method
     {
         public string Data { get; set; }
-        public string FromName { get; set; }
+        public string From { get; set; }
 
-        public MessageMethod(string groupName, string fromName, string messageText) : base(groupName, "message")
+        // message for specific group
+        public MessageMethod(MessagePayload payload) : base(payload.Envelope.To, "message")
         {
-            Data = messageText;
-            FromName = fromName;
+            Data = payload.Data;
+            From = payload.Envelope.From.UserId;
         }
 
         public override string ToJson()

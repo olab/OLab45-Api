@@ -2,24 +2,37 @@
 
 namespace OLabWebAPI.TurkTalk.Contracts
 {
-    public class Envelope
+  public class Envelope
+  {
+    public string To { get; set; }
+    public Learner From { get; set; }
+
+    public Envelope()
     {
-        public string To { get; set; }
-        public Learner From { get; set; }
+      From = new Learner();
+    }
+  }
 
-        public Envelope()
-        {
+  public class MessagePayload
+  {
+    public Envelope Envelope { get; set; }
+    public string Data { get; set; }
 
-        }
+    public MessagePayload()
+    {
+      Envelope = new Envelope();
     }
 
-    public class MessagePayload
+    /// <summary>
+    /// Construct message to specific participant
+    /// </summary>
+    /// <param name="participant">Recipient</param>
+    /// <param name="message">Message to send</param>
+    public MessagePayload(Participant participant, string message)
     {
-        public Envelope Envelope { get; set; }
-        public string Data { get; set; }
-
-        public MessagePayload()
-        {
-        }
+      Envelope = new Envelope();
+      Envelope.To = participant.CommandChannel;
+      Data = message;
     }
+  }
 }

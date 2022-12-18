@@ -162,13 +162,15 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <exception cref="NotImplementedException"></exception>
     internal void RemoveFromAtrium(Participant participant)
     {
-      Logger.LogDebug($"Removing participant '{participant.UserId}' from topic '{Name}' atrium");
-
       // try and remove learner.  if removed, notify all topic
       // moderators of atrium change
       if (Atrium.Remove(participant))
+      {
+        Logger.LogDebug($"Removed participant '{participant.UserId}' from topic '{Name}' atrium");
+
         Conference.SendMessage(
           new AtriumUpdateCommand(this, Atrium.GetContents()));
+      }
     }
 
     /// <summary>
@@ -177,7 +179,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <param name="participant">Participant to remove</param>
     internal async Task RemoveParticipantAsync(Participant participant)
     {
-      // first remove from atrium
+      // first remove from atrium, if exists
       RemoveFromAtrium(participant);
 
       // remove (potential) moderator from moderators
@@ -187,7 +189,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
         TopicModeratorsChannel);
 
       // go thru each room and signal a disconnected
-      // connection id
+      // participant
       foreach (Room room in Rooms.Items)
         room.RemoveParticipant(participant);
 

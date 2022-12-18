@@ -2,6 +2,7 @@ using Common.Utils;
 using Dawn;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.TurkTalk.Contracts;
 using OLabWebAPI.Utils;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       private set { _index = value; }
     }
 
-    public Moderator Moderator {  get { return _moderator; } }
+    public Moderator Moderator { get { return _moderator; } }
     public string Name { get { return $"{_topic.Name}/{Index}"; } }
     public bool IsModerated { get { return _moderator != null; } }
     protected ILogger Logger { get { return _topic.Logger; } }
@@ -81,11 +82,27 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
           moderator.CommandChannel,
           moderator));
 
-      // notify new moderator of atrium contents
+      // notify moderator of atrium contents
       _topic.Conference.SendMessage(
         new AtriumUpdateCommand(
           moderator.CommandChannel,
           _topic.Atrium.GetContents()));
+
+      // notify moderator of already assigned learners
+      _topic.Conference.SendMessage(
+        new LearnerListCommand(
+          moderator.CommandChannel,
+          _learners.Items));
+
+      foreach (var learner in _learners.Items)
+      {
+        // notify all known learners in room of
+        // moderator (re)connection
+        _topic.Conference.SendMessage(
+            new RoomAssignmentCommand(
+              learner.CommandChannel,
+              learner));
+      }
 
     }
 
@@ -103,28 +120,28 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
         return;
       }
 
-      // notify room moderator of unassignment 
-      // of (potential) learner from connectionId
-      _topic.Conference.SendMessage(
-        new RoomUnassignmentCommand(
-          _moderator.CommandChannel,
-          participant.ConnectionId));
-
-      // trest if participant to remove is the moderator
+      // test if participant to remove is the moderator
       if (participant.ConnectionId == _moderator.ConnectionId)
       {
-        Logger.LogDebug($"Participant {participant.UserId} ({ConnectionId.Shorten(participant.ConnectionId)}) is a moderator for room '{Name}'. removing.");
+        Logger.LogDebug($"Participant '{participant.UserId}' ({ConnectionId.Shorten(participant.ConnectionId)}) is a moderator for room '{Name}'. removing.");
 
         // notify all known learners in room of moderator disconnection
         foreach (var learner in _learners.Items)
-        {
           _topic.Conference.SendMessage(
-            new ModeratorRemovedCommand(learner.CommandChannel));
-        }
+            new ModeratorDisconnectedCommand(learner.CommandChannel));
 
-        // the moderator has left hte buiding
+        // the moderator has left the buiding
         _moderator = null;
 
+      }
+      else
+      {
+        // notify room moderator of unassignment 
+        // of (potential) learner from connectionId
+        _topic.Conference.SendMessage(
+          new RoomUnassignmentCommand(
+            _moderator.CommandChannel,
+            participant.ConnectionId));
       }
 
     }

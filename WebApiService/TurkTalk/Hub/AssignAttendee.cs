@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.Services.TurkTalk.Venue;
+using OLabWebAPI.TurkTalk.Contracts;
 using System;
 using System.Threading.Tasks;
 
