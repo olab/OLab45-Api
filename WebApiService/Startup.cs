@@ -6,12 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
-using OLabWebAPI.Data.Session;
+using OLabWebAPI.Data;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using OLabWebAPI.Services.TurkTalk;
 using OLabWebAPI.Services.TurkTalk.Venue;
 using OLabWebAPI.Utils;
+using IOLabSession = OLabWebAPI.Data.Interface.IOLabSession;
 
 namespace OLabWebAPI
 {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Data;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Model;
@@ -42,9 +43,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
                 DynamicScopedObjectsDto result = await _endpoint.PostQuestionResponseAsync(body);
 
-                UserContext userContext = new UserContext(logger, context, HttpContext);
+                var userContext = new UserContext(logger, context, HttpContext);
                 userContext.Session.OnQuestionResponse(
-                  userContext.SessionId,
                   body.MapId,
                   body.NodeId,
                   question.Id,
