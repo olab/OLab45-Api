@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OLabWebAPI.Common;
 using OLabWebAPI.Dto;
-using OLabWebAPI.Interface;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
+using UserContext = OLabWebAPI.Data.UserContext;
+using IUserContext = OLabWebAPI.Data.Interface.IUserContext;
+using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
 
 namespace OLabWebAPI.Services
 {
@@ -13,8 +15,7 @@ namespace OLabWebAPI.Services
         private readonly OLabLogger logger;
         private readonly OLabDBContext context;
         private readonly HttpContext httpContext;
-        // private readonly HttpRequest request;
-        private readonly UserContext userContext;
+        private readonly IUserContext userContext;
 
         public OLabWebApiAuthorization(OLabLogger logger, OLabDBContext context, HttpContext httpContext)
         {

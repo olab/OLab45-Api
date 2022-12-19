@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
+using OLabWebAPI.Data;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using OLabWebAPI.Utils;
@@ -130,7 +131,7 @@ namespace OLabWebAPI.Endpoints.WebApi
             logger.LogDebug($"AddUsers()");
 
             // test if user has access to add users.
-            UserContext userContext = new UserContext(logger, context, HttpContext);
+            var userContext = new UserContext(logger, context, HttpContext);
             if (!userContext.HasAccess("X", "UserAdmin", 0))
                 return OLabUnauthorizedResult.Result();
 
