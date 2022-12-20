@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using System;
 using System.Threading.Tasks;

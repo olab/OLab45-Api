@@ -2,21 +2,21 @@
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-    /// <summary>
-    /// Defines a command to remove a connection from a room
-    /// </summary>
-    public class RoomUnassignmentCommand : CommandMethod
+  /// <summary>
+  /// Defines a command to remove a connection from a room
+  /// </summary>
+  public class RoomUnassignmentCommand : CommandMethod
+  {
+    public Participant Data { get; set; }
+
+    public RoomUnassignmentCommand(string recipientGroupName, Participant participant) : base(recipientGroupName, "roomunassignment")
     {
-        public string Data { get; set; }
-
-        public RoomUnassignmentCommand(string recipientGroupName, string connectionId) : base(recipientGroupName, "roomunassignment")
-        {
-            Data = connectionId;
-        }
-
-        public override string ToJson()
-        {
-            return JsonSerializer.Serialize(this);
-        }
+      Data = participant;
     }
+
+    public override string ToJson()
+    {
+      return JsonSerializer.Serialize(this);
+    }
+  }
 }

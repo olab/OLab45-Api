@@ -141,7 +141,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
         _topic.Conference.SendMessage(
           new RoomUnassignmentCommand(
             _moderator.CommandChannel,
-            participant.ConnectionId));
+            participant));
       }
 
     }

@@ -3,24 +3,26 @@ using System.Text.Json;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-    /// <summary>
-    /// Defines a Atrium Update command method
-    /// </summary>
-    public class MessageMethod : Method
+  /// <summary>
+  /// Defines a Atrium Update command method
+  /// </summary>
+  public class MessageMethod : Method
+  {
+    public string Data { get; set; }
+    public string SessionId { get; set; }
+    public string From { get; set; }
+
+    // message for specific group
+    public MessageMethod(MessagePayload payload) : base(payload.Envelope.To, "message")
     {
-        public string Data { get; set; }
-        public string From { get; set; }
-
-        // message for specific group
-        public MessageMethod(MessagePayload payload) : base(payload.Envelope.To, "message")
-        {
-            Data = payload.Data;
-            From = payload.Envelope.From.UserId;
-        }
-
-        public override string ToJson()
-        {
-            return JsonSerializer.Serialize(this);
-        }
+      Data = payload.Data;
+      SessionId = payload.SessionId;
+      From = payload.Envelope.From.UserId;
     }
+
+    public override string ToJson()
+    {
+      return JsonSerializer.Serialize(this);
+    }
+  }
 }

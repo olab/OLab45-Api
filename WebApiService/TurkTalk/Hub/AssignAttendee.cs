@@ -61,11 +61,11 @@ namespace OLabWebAPI.Services.TurkTalk
         // if learner is/was assigned to a room and the room has
         // a moderator, the post a message to the moderator that the 
         // learner as rejoined the room
-        if (learner.IsAssignedToRoom() && room.IsModerated)
-          topic.Conference.SendMessage(
-            new RoomRejoinedCommand(
-              room.Moderator.CommandChannel,
-              learner));
+        //if (learner.IsAssignedToRoom() && room.IsModerated)
+        //  topic.Conference.SendMessage(
+        //    new RoomRejoinedCommand(
+        //      room.Moderator.CommandChannel,
+        //      learner));
       }
       catch (Exception ex)
       {

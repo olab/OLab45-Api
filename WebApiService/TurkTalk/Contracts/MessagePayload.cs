@@ -17,6 +17,7 @@ namespace OLabWebAPI.TurkTalk.Contracts
   {
     public Envelope Envelope { get; set; }
     public string Data { get; set; }
+    public string SessionId { get; set; }
 
     public MessagePayload()
     {
