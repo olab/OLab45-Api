@@ -56,6 +56,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         /// <param name="participantName">Participant name</param>
         internal bool Remove(Participant participant)
         {
+            // search atrium by user id
             bool foundInAtrium = AtriumLearners.ContainsKey(participant.UserId);
             if (foundInAtrium)
             {
@@ -63,7 +64,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
                 _logger.LogDebug($"Removing participant '{participant.UserId}' ({participant.ConnectionId}) from '{_topic.Name}' atrium");
             }
             else
-                _logger.LogDebug($"Participant '{participant.UserId}' not already in '{_topic.Name}' atrium");
+                _logger.LogDebug($"Participant '{participant.UserId}' not found in '{_topic.Name}' atrium");
 
             Dump();
 

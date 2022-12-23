@@ -45,17 +45,22 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="learnerName">Learner user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearnerAsync(Learner learner, string connectionId)
+    internal async Task AddLearnerAsync(Participant participant)
     {
-      learner.AssignToRoom(_index);
+      participant.AssignToRoom(_index);
 
-      await _topic.Conference.AddConnectionToGroupAsync(learner.CommandChannel, connectionId);
+      // associate participant connection to participate group
+      await _topic.Conference.AddConnectionToGroupAsync(participant);
 
-      _learners.Add(learner);
+      _learners.Add(participant as Learner);
 
-      Logger.LogDebug($"Added learner {learner} to room '{Name}'");
+      Logger.LogDebug($"Added learner {participant} to room '{Name}'");
 
-
+      // if have moderator, notify that the learner has been
+      // assigned to their room
+      if ( Moderator != null )
+        _topic.Conference.SendMessage(
+          new LearnerAssignmentCommand(Moderator, participant));
     }
 
     /// <summary>
@@ -73,14 +78,12 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
         _topic.TopicModeratorsChannel,
         moderator.ConnectionId);
 
-      // add new moderator to its own group so it can receive messages
+      // add moderator to its own group so it can receive messages
       await _topic.Conference.AddConnectionToGroupAsync(moderator);
 
       // notify moderator of room assignment
       _topic.Conference.SendMessage(
-        new RoomAssignmentCommand(
-          moderator.CommandChannel,
-          moderator));
+        new RoomAssignmentCommand(moderator));
 
       // notify moderator of atrium contents
       _topic.Conference.SendMessage(
@@ -94,16 +97,11 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
           moderator.CommandChannel,
           _learners.Items));
 
+      // notify all learners in room of
+      // moderator (re)connection
       foreach (var learner in _learners.Items)
-      {
-        // notify all known learners in room of
-        // moderator (re)connection
         _topic.Conference.SendMessage(
-            new RoomAssignmentCommand(
-              learner.CommandChannel,
-              learner));
-      }
-
+            new RoomAssignmentCommand(learner));
     }
 
     /// <summary>
@@ -114,6 +112,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     {
       Logger.LogDebug($"Disconnecting {ConnectionId.Shorten(participant.ConnectionId)} from room '{Name}'");
 
+      // not a moderated room, return since there's 
+      // nothing more to do
       if (!IsModerated)
       {
         Logger.LogInformation($"Room {Name} is not already moderated");
@@ -121,7 +121,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       }
 
       // test if participant to remove is the moderator
-      if (participant.ConnectionId == _moderator.ConnectionId)
+      if (participant.UserId == _moderator.UserId)
       {
         Logger.LogDebug($"Participant '{participant.UserId}' ({ConnectionId.Shorten(participant.ConnectionId)}) is a moderator for room '{Name}'. removing.");
 
@@ -136,8 +136,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       }
       else
       {
-        // notify room moderator of unassignment 
-        // of (potential) learner from connectionId
+        // Participant is a learner, notify room moderator
+        // of unassignment of (potential) learner 
         _topic.Conference.SendMessage(
           new RoomUnassignmentCommand(
             _moderator.CommandChannel,

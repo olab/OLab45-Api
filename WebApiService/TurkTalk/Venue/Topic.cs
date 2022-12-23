@@ -163,14 +163,10 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     internal void RemoveFromAtrium(Participant participant)
     {
       // try and remove learner.  if removed, notify all topic
-      // moderators of atrium change
+      // moderators of atrium content change
       if (Atrium.Remove(participant))
-      {
-        Logger.LogDebug($"Removed participant '{participant.UserId}' from topic '{Name}' atrium");
-
         Conference.SendMessage(
           new AtriumUpdateCommand(this, Atrium.GetContents()));
-      }
     }
 
     /// <summary>
@@ -185,8 +181,9 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // remove (potential) moderator from moderators
       // command channel
       await Conference.RemoveConnectionToGroupAsync(
-        participant.ConnectionId,
-        TopicModeratorsChannel);
+        TopicModeratorsChannel,
+        participant.ConnectionId
+      );
 
       // go thru each room and signal a disconnected
       // participant
@@ -224,7 +221,9 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       if (learnerReplaced)
       {
         Logger.LogDebug($"Replacing existing '{Name}' atrium participant '{participant.CommandChannel}'");
-        await Conference.RemoveConnectionToGroupAsync(participant.ConnectionId, participant.CommandChannel);
+        await Conference.RemoveConnectionToGroupAsync(
+          participant.CommandChannel,
+          participant.ConnectionId);
       }
 
       // add participant to its own group so it can receive room assigments

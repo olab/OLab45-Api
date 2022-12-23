@@ -43,7 +43,7 @@ namespace OLabWebAPI.Services.TurkTalk
 
         var room = topic.GetRoom(roomName);
         if (room != null)
-          await room.AddLearnerAsync(learner, learner.ConnectionId);
+          await room.AddLearnerAsync(learner);
 
         // add the moderator connection id to the newly
         // assigned learner's command group name
@@ -54,9 +54,7 @@ namespace OLabWebAPI.Services.TurkTalk
         // post a message to the learner that they've
         // been assigned to a room
         topic.Conference.SendMessage(
-          new RoomAssignmentCommand(
-            learner.CommandChannel,
-            learner));
+          new RoomAssignmentCommand(learner, room.Moderator));
 
         // if learner is/was assigned to a room and the room has
         // a moderator, the post a message to the moderator that the 

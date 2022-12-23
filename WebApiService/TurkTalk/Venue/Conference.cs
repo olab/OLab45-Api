@@ -44,7 +44,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
             await HubContext.Groups.AddToGroupAsync(connectionId, groupName);
         }
 
-        public async Task RemoveConnectionToGroupAsync(string connectionId, string groupName)
+        public async Task RemoveConnectionToGroupAsync(string groupName, string connectionId)
         {
             Logger.LogDebug($"Removing connection '{connectionId}' from group '{groupName}'");
             await HubContext.Groups.RemoveFromGroupAsync(connectionId, groupName);
