@@ -136,11 +136,11 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       }
       else
       {
-        // Participant is a learner, notify room moderator
-        // of unassignment of (potential) learner 
+        // Participant is a learner, notify it's room
+        // of disconnect
         _topic.Conference.SendMessage(
           new RoomUnassignmentCommand(
-            _moderator.CommandChannel,
+            participant.CommandChannel,
             participant));
       }
 

@@ -51,7 +51,7 @@ namespace OLabWebAPI
         builder.ClearProviders();
         builder.AddConsole(configure =>
         {
-      configure.FormatterName = ConsoleFormatterNames.Systemd;
+      configure.FormatterName = ConsoleFormatterNames.Simple;
     });
         builder.AddConfiguration(config);
 
