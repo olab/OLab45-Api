@@ -63,8 +63,6 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
                 AtriumLearners.Remove(participant.UserId);
                 _logger.LogDebug($"Removing participant '{participant.UserId}' ({participant.ConnectionId}) from '{_topic.Name}' atrium");
             }
-            else
-                _logger.LogDebug($"Participant '{participant.UserId}' not found in '{_topic.Name}' atrium");
 
             Dump();
 

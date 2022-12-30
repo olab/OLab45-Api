@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Dawn;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
@@ -11,6 +12,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 
     public RoomUnassignmentCommand(string recipientGroupName, Participant participant) : base(recipientGroupName, "learnerunassignment")
     {
+      Guard.Argument(participant).NotNull(nameof(participant));
       Data = participant;
     }
 

@@ -1,3 +1,5 @@
+using Dawn;
+
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
     /// <summary>
@@ -9,6 +11,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 
         public CommandMethod(string recipientGroupName, string command) : base(recipientGroupName, "Command")
         {
+            Guard.Argument(command).NotEmpty(command);
             Command = command;
         }
     }

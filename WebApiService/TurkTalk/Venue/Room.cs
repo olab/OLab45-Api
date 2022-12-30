@@ -105,7 +105,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     }
 
     /// <summary>
-    /// Signals a disconnection of a signalr session
+    /// Signals a disconnection of a room participant
     /// </summary>
     /// <param name="connectionId"></param>
     internal void RemoveParticipant(Participant participant)
@@ -136,11 +136,15 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       }
       else
       {
-        // Participant is a learner, notify it's room
+        // build/set assumed command channel for learner
+        var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{participant.UserId}";
+        participant.CommandChannel = commandChannel;
+
+        // Participant is a learner, notify it's channel
         // of disconnect
         _topic.Conference.SendMessage(
           new RoomUnassignmentCommand(
-            participant.CommandChannel,
+            commandChannel,
             participant));
       }
 

@@ -178,18 +178,17 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // first remove from atrium, if exists
       RemoveFromAtrium(participant);
 
-      // remove (potential) moderator from moderators
+      // go thru each room and remove a (potential)
+      // participant
+      foreach (Room room in Rooms.Items)
+        room.RemoveParticipant(participant);
+
+      // finally remove (potential) moderator from moderators
       // command channel
       await Conference.RemoveConnectionToGroupAsync(
         TopicModeratorsChannel,
         participant.ConnectionId
       );
-
-      // go thru each room and signal a disconnected
-      // participant
-      foreach (Room room in Rooms.Items)
-        room.RemoveParticipant(participant);
-
     }
 
     /// <summary>

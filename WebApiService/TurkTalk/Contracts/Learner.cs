@@ -5,7 +5,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
   public class Learner : Participant
   {
-    private const string _prefix = "learner";
+    public const string Prefix = "learner";
 
     public Learner()
     {
@@ -17,7 +17,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 
       TopicName = roomNameParts[0];
       RoomName = TopicName;
-      CommandChannel = $"{TopicName}/{_prefix}/{UserId}";
+      CommandChannel = $"{TopicName}/{Prefix}/{UserId}";
 
       // test if topic and room provided
       if (roomNameParts.Length == 2)
@@ -28,6 +28,11 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       : base(topicName, userName, nickName, connectionId)
     {
     }
+
+    public static string MakeCommandChannel( Participant source) {
+      return $"{source.TopicName}/{Learner.Prefix}/{source.UserId}";
+    }
+
     public override void AssignToRoom(int index)
     {
       RoomNumber = index;
