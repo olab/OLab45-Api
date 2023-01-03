@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using Dawn;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
@@ -14,6 +16,12 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     {
       Guard.Argument(participant).NotNull(nameof(participant));
       Data = participant;
+    }
+
+    public override string ToJson()
+    {
+      var rawJson = System.Text.Json.JsonSerializer.Serialize(this);
+      return JValue.Parse(rawJson).ToString(Formatting.Indented);
     }
 
   }

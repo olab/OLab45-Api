@@ -1,5 +1,7 @@
 using OLabWebAPI.Services.TurkTalk.Venue;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text.Json;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
@@ -21,6 +23,11 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     public LearnerListCommand(Topic topic, IList<Learner> atriumLearners) : base(topic.TopicModeratorsChannel, "learnerlist")
     {
       Data = atriumLearners;
+    }
+    public override string ToJson()
+    {
+      var rawJson = System.Text.Json.JsonSerializer.Serialize(this);
+      return JValue.Parse(rawJson).ToString(Formatting.Indented);
     }
   }
 }

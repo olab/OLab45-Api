@@ -19,10 +19,6 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       CommandChannel = recipientGroupName;
     }
 
-    public virtual string ToJson()
-    {
-      var rawJson = System.Text.Json.JsonSerializer.Serialize(this);
-      return JValue.Parse(rawJson).ToString(Formatting.Indented);
-    }
+    public abstract string ToJson();
   }
 }

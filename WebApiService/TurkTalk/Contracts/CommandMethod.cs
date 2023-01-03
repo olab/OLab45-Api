@@ -1,4 +1,6 @@
 using Dawn;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
@@ -13,6 +15,12 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     {
       Guard.Argument(command).NotEmpty(command);
       Command = command;
+    }
+
+    public override string ToJson()
+    {
+      var rawJson = System.Text.Json.JsonSerializer.Serialize(this);
+      return JValue.Parse(rawJson).ToString(Formatting.Indented);
     }
   }
 }
