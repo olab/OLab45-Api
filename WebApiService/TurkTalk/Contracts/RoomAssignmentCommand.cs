@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace OLabWebAPI.Services.TurkTalk.Contracts
+﻿namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
   public class RoomAssignmentData
   {
@@ -21,9 +19,5 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       Data = new RoomAssignmentData { Local = local, Remote = remote };
     }
 
-    public override string ToJson()
-    {
-      return JsonSerializer.Serialize(this);
-    }
   }
 }

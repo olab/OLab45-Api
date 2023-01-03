@@ -20,9 +20,5 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       From = payload.Envelope.From.UserId;
     }
 
-    public override string ToJson()
-    {
-      return JsonSerializer.Serialize(this);
-    }
   }
 }

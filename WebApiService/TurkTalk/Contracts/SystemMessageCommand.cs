@@ -14,9 +14,5 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       Data = payload.Data;
     }
 
-    public override string ToJson()
-    {
-      return JsonSerializer.Serialize(this);
-    }
   }
 }
