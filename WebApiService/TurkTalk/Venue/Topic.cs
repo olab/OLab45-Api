@@ -15,7 +15,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
   public class Topic
   {
     private readonly Conference _conference;
-    private readonly ConcurrentList<Room> _instances;
+    private readonly ConcurrentList<Room> _rooms;
     private string _name;
     public string TopicModeratorsChannel;
 
@@ -35,7 +35,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
     // public IDictionary<string, LearnerGroupName> AtriumLearners;
     public TopicAtrium Atrium;
-    public ConcurrentList<Room> Rooms { get { return _instances; } }
+    public ConcurrentList<Room> Rooms { get { return _rooms; } }
     public ILogger Logger { get { return _conference.Logger; } }
 
     /// <summary>
@@ -48,7 +48,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       Guard.Argument(conference).NotNull(nameof(conference));
 
       _conference = conference;
-      _instances = new ConcurrentList<Room>(Logger);
+      _rooms = new ConcurrentList<Room>(Logger);
 
       Name = topicId;
       Atrium = new TopicAtrium(Logger, this);
@@ -65,11 +65,13 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <returns></returns>
     public Room CreateRoom()
     {
-      Room room = new Room(this, _instances.Count);
-      _instances.Add(room);
+      Room room = new Room(this, _rooms.Count);
+      _rooms.Add(room);
 
-      int index = _instances.Count - 1;
-      return _instances[index];
+      Logger.LogDebug($"Created room '{room.Name}'");
+
+      int index = _rooms.Count - 1;
+      return _rooms[index];
     }
 
     /// <summary>
@@ -82,30 +84,37 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       Room room = null;
       roomMutex.WaitOne();
 
-      // test if moderator was already assigned to room
-      if (moderator.IsAssignedToRoom())
+      try
       {
-        room = Rooms.Items.FirstOrDefault(x => x.Index == moderator.RoomNumber);
-        if (room != null)
-          Logger.LogDebug($"Returning previously open room '{moderator.RoomName}'");
+        // test if moderator was already assigned to room
+        if (moderator.IsAssignedToRoom())
+        {
+          room = Rooms.Items.FirstOrDefault(x => x.Index == moderator.RoomNumber);
+          if (room != null)
+            Logger.LogDebug($"Returning previously open room '{moderator.RoomName}'");
+          else
+            Logger.LogDebug($"Previously assigned room '{moderator.RoomName}' no longer exists");
+        }
         else
-          Logger.LogDebug($"Previously assigned room '{moderator.RoomName}' no longer exists");
+        {
+          room = Rooms.Items.Where(x => !x.IsModerated).FirstOrDefault();
+          if (room != null)
+            Logger.LogDebug($"Returning first unmoderated room '{room.Name}/{room.Index}'");
+          else
+            Logger.LogDebug($"No existing, unmoderated rooms for '{moderator.RoomName}'.");
+        }
+
+        if (room == null)
+          room = CreateRoom();
+
+        return room;
+
       }
-      else
+      finally
       {
-        room = Rooms.Items.Where(x => !x.IsModerated).FirstOrDefault();
-        if (room != null)
-          Logger.LogDebug($"Returning first unmoderated room '{room.Name}/{room.Index}'");
-        else
-          Logger.LogDebug($"No existing, unmoderated rooms for '{moderator.RoomName}'.");
+        roomMutex.ReleaseMutex();
       }
 
-      if (room == null)
-        room = CreateRoom();
-
-      roomMutex.ReleaseMutex();
-
-      return room;
     }
 
     /// <summary>
@@ -115,10 +124,17 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     public int RoomCount()
     {
       roomMutex.WaitOne();
-      int count = _instances.Count;
-      roomMutex.ReleaseMutex();
 
-      return count;
+      try
+      {
+        int count = _rooms.Count;
+        return count;
+      }
+      finally
+      {
+        roomMutex.ReleaseMutex();
+      }
+
     }
 
     /// <summary>
@@ -146,12 +162,20 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     public Room GetRoom(int index)
     {
       roomMutex.WaitOne();
-      if (index >= Rooms.Count)
-        throw new ArgumentOutOfRangeException("Invalid topic room instance argument");
-      Room room = _instances[index];
-      roomMutex.ReleaseMutex();
 
-      return room;
+      try
+      {
+        if (index >= Rooms.Count)
+          throw new ArgumentOutOfRangeException("Invalid topic room instance argument");
+
+        Room room = _rooms[index];
+        return room;
+      }
+      finally
+      {
+        roomMutex.ReleaseMutex();
+      }
+
     }
 
     /// <summary>
@@ -271,7 +295,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // topic id shold be the first
       var roomIndex = Convert.ToInt32(roomParts[1]);
 
-      _instances.Remove(roomIndex);
+      _rooms.Remove(roomIndex);
 
     }
   }
