@@ -5,7 +5,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     public abstract class Method
     {
         public string MethodName { get; set; }
-        public string RecipientGroupName { get; set; }
+        public string CommandChannel { get; set; }
 
         public Method(string recipientGroupName, string methodName)
         {
@@ -13,7 +13,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
             Guard.Argument(methodName).NotEmpty(methodName);
 
             MethodName = methodName;
-            RecipientGroupName = recipientGroupName;
+            CommandChannel = recipientGroupName;
         }
 
         public abstract string ToJson();

@@ -16,9 +16,9 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   {
     public RoomAssignmentData Data { get; set; }
 
-    public RoomAssignmentCommand(Participant participant, Participant moderator = null) : base(participant.CommandChannel, "roomassignment")
+    public RoomAssignmentCommand(Participant local, Participant remote = null) : base(local.CommandChannel, "roomassignment")
     {
-      Data = new RoomAssignmentData { Local = participant, Remote = moderator };
+      Data = new RoomAssignmentData { Local = local, Remote = remote };
     }
 
     public override string ToJson()

@@ -170,6 +170,23 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     }
 
     /// <summary>
+    /// Gets room for participant
+    /// </summary>
+    /// <param name="participant">Participant to check</param>
+    internal Room GetParticipantRoom(Participant participant)
+    {
+      // go thru each room and remove a (potential)
+      // participant
+      foreach (Room room in Rooms.Items)
+      {
+        if (room.ParticipantExists(participant))
+          return room;
+      }
+
+      return null;
+    }
+
+    /// <summary>
     /// Removes a participant from the topic
     /// </summary>
     /// <param name="participant">Participant to remove</param>
@@ -238,5 +255,24 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
     }
 
+    // removes a room from the topic
+    internal void RemoveRoom(string roomId)
+    {
+      Logger.LogDebug($"Removing room '{roomId}'");
+
+      var room = Rooms.Items.FirstOrDefault(x => x.Name == roomId);
+      if (room == null)
+        return;
+
+      room.Close();
+
+      // remove any room parts from roomId
+      var roomParts = roomId.Split('/');
+      // topic id shold be the first
+      var roomIndex = Convert.ToInt32(roomParts[1]);
+
+      _instances.Remove(roomIndex);
+
+    }
   }
 }

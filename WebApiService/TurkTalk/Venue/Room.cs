@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.TurkTalk.Contracts;
 using OLabWebAPI.Utils;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services.TurkTalk.Venue
@@ -58,7 +60,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
       // if have moderator, notify that the learner has been
       // assigned to their room
-      if ( Moderator != null )
+      if (Moderator != null)
         _topic.Conference.SendMessage(
           new LearnerAssignmentCommand(Moderator, participant));
     }
@@ -123,7 +125,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // test if participant to remove is the moderator
       if (participant.UserId == _moderator.UserId)
       {
-        Logger.LogDebug($"Participant '{participant.UserId}' ({ConnectionId.Shorten(participant.ConnectionId)}) is a moderator for room '{Name}'. removing.");
+        Logger.LogDebug($"Participant '{participant.UserId}' is a moderator for room '{Name}'. removing.");
 
         // notify all known learners in room of moderator disconnection
         foreach (var learner in _learners.Items)
@@ -136,6 +138,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       }
       else
       {
+        Logger.LogDebug($"Participant '{participant.UserId}' is a learner for room '{Name}'. removing.");
+
         // build/set assumed command channel for learner
         var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{participant.UserId}";
         participant.CommandChannel = commandChannel;
@@ -146,9 +150,44 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
           new RoomUnassignmentCommand(
             commandChannel,
             participant));
+
+        // remove learner from list
+        var serverParticipant = _learners.Items.FirstOrDefault( x => x.UserId == participant.UserId );
+        if ( serverParticipant != null )
+          _learners.Remove(serverParticipant);
       }
 
     }
 
+    /// <summary>
+    /// TESt if participant exists in room
+    /// </summary>
+    /// <param name="participant">Participant to look for</param>
+    /// <returns>true/false</returns>
+    internal bool ParticipantExists(Participant participant)
+    {
+      bool found = false;
+
+      try
+      {
+        _learners.Lock();
+        found = _learners.Items.Any(x => x.UserId == participant.UserId);
+      }
+      finally
+      {
+        _learners.Unlock();
+      }
+
+      return found;
+    }
+
+    /// <summary>
+    /// Notify all participants of room closure
+    /// before romm is deleted
+    /// </summary>
+    internal void Close()
+    {
+
+    }
   }
 }
