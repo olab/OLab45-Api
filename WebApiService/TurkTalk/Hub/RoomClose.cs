@@ -23,7 +23,7 @@ namespace OLabWebAPI.Services.TurkTalk
     /// <param name="roomName">Topic id</param>
     /// <param name="isbot">Moderator is a bot</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public void RoomClose(string roomName)
+    public async Task RoomClose(string roomName)
     {
       try
       {
@@ -35,7 +35,7 @@ namespace OLabWebAPI.Services.TurkTalk
         Venue.Topic topic = _conference.GetCreateTopic(roomName, false);
 
         if ( topic != null)
-          topic.RemoveRoom(roomName);
+          await topic.RemoveRoomAsync(roomName);
       }
       catch (Exception ex)
       {

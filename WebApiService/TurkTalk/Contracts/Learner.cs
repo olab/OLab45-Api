@@ -27,6 +27,12 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         AssignToRoom(Convert.ToInt32(roomNameParts[1]));
     }
 
+    public Learner(Participant participant)
+      : base(participant.TopicName, participant.UserId, participant.NickName, participant.ConnectionId)
+    {
+      CommandChannel = participant.CommandChannel;
+    }
+
     public Learner(string topicName, string userName = null, string nickName = null, string connectionId = null)
       : base(topicName, userName, nickName, connectionId)
     {

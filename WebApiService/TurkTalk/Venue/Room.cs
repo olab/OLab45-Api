@@ -31,6 +31,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     public string Name { get { return $"{_topic.Name}/{Index}"; } }
     public bool IsModerated { get { return _moderator != null; } }
     protected ILogger Logger { get { return _topic.Logger; } }
+    public Topic Topic { get { return _topic; } }
 
     public Room(Topic topic, int index)
     {
@@ -110,9 +111,9 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// Signals a disconnection of a room participant
     /// </summary>
     /// <param name="connectionId"></param>
-    internal void RemoveParticipant(Participant participant)
+    internal async Task RemoveParticipantAsync(Participant participant)
     {
-      Logger.LogDebug($"Disconnecting {ConnectionId.Shorten(participant.ConnectionId)} from room '{Name}'");
+      Logger.LogDebug($"Removing {participant.UserId} from room '{Name}'");
 
       // not a moderated room, return since there's 
       // nothing more to do
@@ -124,39 +125,55 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
       // test if participant to remove is the moderator
       if (participant.UserId == _moderator.UserId)
-      {
-        Logger.LogDebug($"Participant '{participant.UserId}' is a moderator for room '{Name}'. removing.");
-
-        // notify all known learners in room of moderator disconnection
-        foreach (var learner in _learners.Items)
-          _topic.Conference.SendMessage(
-            new ModeratorDisconnectedCommand(learner.CommandChannel));
-
-        // the moderator has left the buiding
-        _moderator = null;
-
-      }
+        await RemoveModeratorAsync(participant);
       else
+        await RemoveLearnerAsync(participant);
+
+    }
+
+    internal async Task RemoveModeratorAsync(Participant participant)
+    {
+      Logger.LogDebug($"Participant '{participant.UserId}' is a moderator for room '{Name}'. removing all learners.");
+
+      // notify all known learners in room of moderator disconnection
+      foreach (var learner in _learners.Items)
+        await RemoveLearnerAsync(learner, false);
+
+      _learners.Clear();
+
+      // the moderator has left the building
+      _moderator = null;
+    }
+
+    internal async Task RemoveLearnerAsync(Participant participant, bool instantRemove = true)
+    {
+      Logger.LogDebug($"Participant '{participant.UserId}' is a learner for room '{Name}'. removing.");
+
+      // add missing properties since proably isn't in the participant
+      participant.TopicName = _topic.Name;
+      participant.RoomName = Name;
+      participant.RoomNumber = Index;
+      var learner = new Learner(participant);
+
+      // build/set assumed command channel for learner
+      var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{learner.UserId}";
+
+      // Participant is a learner, notify it's channel of disconnect
+      _topic.Conference.SendMessage(
+        new RoomUnassignmentCommand(
+          commandChannel,
+          learner));
+
+      // add the learner back to the atrium
+      await _topic.AddToAtriumAsync(learner);
+
+      // remove learner from list if needing instant removal
+      if (instantRemove)
       {
-        Logger.LogDebug($"Participant '{participant.UserId}' is a learner for room '{Name}'. removing.");
-
-        // build/set assumed command channel for learner
-        var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{participant.UserId}";
-        participant.CommandChannel = commandChannel;
-
-        // Participant is a learner, notify it's channel
-        // of disconnect
-        _topic.Conference.SendMessage(
-          new RoomUnassignmentCommand(
-            commandChannel,
-            participant));
-
-        // remove learner from list
-        var serverParticipant = _learners.Items.FirstOrDefault( x => x.UserId == participant.UserId );
-        if ( serverParticipant != null )
+        var serverParticipant = _learners.Items.FirstOrDefault(x => x.UserId == learner.UserId);
+        if (serverParticipant != null)
           _learners.Remove(serverParticipant);
       }
-
     }
 
     /// <summary>
@@ -181,13 +198,5 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       return found;
     }
 
-    /// <summary>
-    /// Notify all participants of room closure
-    /// before romm is deleted
-    /// </summary>
-    internal void Close()
-    {
-
-    }
   }
 }

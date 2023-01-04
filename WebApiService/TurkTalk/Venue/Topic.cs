@@ -147,7 +147,10 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       foreach (var room in Rooms.Items)
       {
         if (room.Name == roomName)
+        {
+          Logger.LogDebug($"Found existing room '{roomName}'");
           return room;
+        }
       }
 
       Logger.LogError($"Room {roomName} does not exist");
@@ -219,10 +222,24 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // first remove from atrium, if exists
       RemoveFromAtrium(participant);
 
+      Room emptyRoom = null;
+
       // go thru each room and remove a (potential)
       // participant
       foreach (Room room in Rooms.Items)
-        room.RemoveParticipant(participant);
+      {
+        await room.RemoveParticipantAsync(participant);
+
+        // test if room now has no moderator, meaning we can remove the room
+        if (room.Moderator == null)
+        {
+          Logger.LogDebug($"Room '{room.Name}' has it's moderator disconnected.  Deleting room");
+          emptyRoom = room;
+        }
+      }
+
+      // delete the room (out of the enumeration)
+      Rooms.Remove(emptyRoom);
 
       // finally remove (potential) moderator from moderators
       // command channel
@@ -280,7 +297,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     }
 
     // removes a room from the topic
-    internal void RemoveRoom(string roomId)
+    internal async Task RemoveRoomAsync(string roomId)
     {
       Logger.LogDebug($"Removing room '{roomId}'");
 
@@ -288,14 +305,12 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       if (room == null)
         return;
 
-      room.Close();
+      // remove the room by removing the moderator
+      // which deletes the room
+      await room.RemoveParticipantAsync(room.Moderator);
 
-      // remove any room parts from roomId
-      var roomParts = roomId.Split('/');
-      // topic id shold be the first
-      var roomIndex = Convert.ToInt32(roomParts[1]);
-
-      _rooms.Remove(roomIndex);
+      // remove the room from the topic
+      _rooms.Remove(room);
 
     }
   }
