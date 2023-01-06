@@ -36,18 +36,29 @@ namespace OLabWebAPI.Services.TurkTalk
         if (topic == null)
           return;
 
+        // test if learner was removed by
+        // by someone else
+        if (!topic.Atrium.Contains(learner))
+        {
+          topic.Conference.SendMessage(
+            new SystemMessageCommand(
+              new MessagePayload(
+                Context.ConnectionId,
+                $"Participant was already assigned")));
+          return;
+        }
+
         // test if learner isn't already assigned to room,
         // meaning we need to remove from atrium
         if (!learner.IsAssignedToRoom())
           topic.RemoveFromAtrium(learner);
 
         var room = topic.GetRoom(roomName);
-
         if (room != null)
           await room.AddLearnerAsync(learner);
 
-        // add the moderator connection id to the newly
-        // assigned learner's command group name
+        // add the moderator to the newly
+        // assigned learner's group name
         await topic.Conference.AddConnectionToGroupAsync(
           learner.CommandChannel,
           Context.ConnectionId);

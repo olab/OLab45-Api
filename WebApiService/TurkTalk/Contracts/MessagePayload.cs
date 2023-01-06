@@ -32,6 +32,18 @@ namespace OLabWebAPI.TurkTalk.Contracts
     /// </summary>
     /// <param name="participant">Recipient</param>
     /// <param name="message">Message to send</param>
+    public MessagePayload(string commandChannel, string message)
+    {
+      Envelope = new Envelope();
+      Envelope.To = commandChannel;
+      Data = message;
+    }
+
+    /// <summary>
+    /// Construct message to specific participant
+    /// </summary>
+    /// <param name="participant">Recipient</param>
+    /// <param name="message">Message to send</param>
     public MessagePayload(Participant participant, string message)
     {
       Envelope = new Envelope();
