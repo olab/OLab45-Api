@@ -1,4 +1,7 @@
 #!/bin/bash
+cd ../Player
+git pull
+npm run-script build:prod
 cd ../Common
 git pull
 cd ../Api
