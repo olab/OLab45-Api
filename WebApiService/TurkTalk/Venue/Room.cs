@@ -165,7 +165,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
           learner));
 
       // add the learner back to the atrium
-      await _topic.AddToAtriumAsync(learner);
+      //await _topic.AddToAtriumAsync(learner);
 
       // remove learner from list if needing instant removal
       if (instantRemove)
