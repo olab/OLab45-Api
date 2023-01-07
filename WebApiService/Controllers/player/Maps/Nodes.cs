@@ -26,8 +26,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
-        UserContext userContext = new UserContext(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        UserContext userContext = new UserContext(logger, dbContext, HttpContext);
         _endpoint.SetUserContext(userContext);
 
         MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
@@ -57,7 +57,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         MapNodesPostResponseDto dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
       }
@@ -87,7 +87,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         MapNodesPostResponseDto newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(newDto);
       }

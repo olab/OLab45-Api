@@ -34,7 +34,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
@@ -58,7 +58,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         dto = await _endpoint.PostAsync(auth, dto);
         return OLabObjectResult<QuestionResponsesDto>.Result(dto);
       }
@@ -79,7 +79,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> DeleteAsync(uint id)
     {
-      OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+      OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
       return await _endpoint.DeleteAsync(auth, id);
     }
 

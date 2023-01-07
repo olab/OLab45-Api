@@ -27,7 +27,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       _appSettings = appSettings.Value;
       this.logger = new OLabLogger(logger);
-      _importer = new Importer.Importer(_appSettings, this.logger, this.context);
+      _importer = new Importer.Importer(_appSettings, this.logger, this.dbContext);
     }
 
     private string GetUploadDirectory()
@@ -45,7 +45,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         logger.LogInformation($"UploadAsync: file name '{file.FileName}', size {file.Length}");
 
         // test if user has access to import.
-        UserContext userContext = new UserContext(logger, context, HttpContext);
+        UserContext userContext = new UserContext(logger, dbContext, HttpContext);
         if (!userContext.HasAccess("X", "Import", 0))
           return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
 
@@ -87,7 +87,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     public IActionResult Post(IFormFile file)
     {
       // test if user has access to map.
-      UserContext userContext = new UserContext(logger, context, HttpContext);
+      UserContext userContext = new UserContext(logger, dbContext, HttpContext);
       if (!userContext.HasAccess("X", "Import", 0))
         return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
 

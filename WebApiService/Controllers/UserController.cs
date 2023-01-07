@@ -79,7 +79,7 @@ namespace OLabWebAPI.Endpoints.WebApi
             Users user = _userService.GetByUserName(model.Username);
             _userService.ChangePassword(user, model);
 
-            context.Users.Update(user);
+            dbContext.Users.Update(user);
 
             return Ok();
         }
@@ -131,7 +131,7 @@ namespace OLabWebAPI.Endpoints.WebApi
             logger.LogDebug($"AddUsers()");
 
             // test if user has access to add users.
-            var userContext = new UserContext(logger, context, HttpContext);
+            var userContext = new UserContext(logger, dbContext, HttpContext);
             if (!userContext.HasAccess("X", "UserAdmin", 0))
                 return OLabUnauthorizedResult.Result();
 
@@ -153,7 +153,7 @@ namespace OLabWebAPI.Endpoints.WebApi
             logger.LogDebug($"AddUser(user = '{model.Username}')");
 
             // test if user has access to add users.
-            UserContext userContext = new UserContext(logger, context, HttpContext);
+            UserContext userContext = new UserContext(logger, dbContext, HttpContext);
             if (!userContext.HasAccess("X", "UserAdmin", 0))
                 return OLabUnauthorizedResult.Result();
 

@@ -37,7 +37,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
       try
       {
-        var userContext = new UserContext(logger, context, HttpContext);
+        var userContext = new UserContext(logger, dbContext, HttpContext);
         _endpoint.SetUserContext(userContext);
 
         SystemQuestions question = await GetQuestionAsync(body.QuestionId);

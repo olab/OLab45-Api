@@ -30,7 +30,7 @@ namespace OLabWebAPI.Services.TurkTalk
         var participant = new Participant(Context);
 
         // we don't know which user disconnected, so we have to search
-        // the known topics by SignalR context
+        // the known topics by SignalR DbContext
         foreach (Topic topic in _conference.Topics)
           await topic.RemoveParticipantAsync(participant);
       }

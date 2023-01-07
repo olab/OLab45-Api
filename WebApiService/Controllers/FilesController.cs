@@ -146,7 +146,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
         private bool Exists(uint id)
         {
-            return context.SystemFiles.Any(e => e.Id == id);
+            return dbContext.SystemFiles.Any(e => e.Id == id);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 FilesFullDto dto = await _endpoint.GetAsync(auth, id);
                 return OLabObjectResult<FilesFullDto>.Result(dto);
             }
@@ -207,7 +207,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 await _endpoint.PutAsync(auth, id, dto);
             }
             catch (Exception ex)
@@ -247,7 +247,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
                 MimeTypes.TryGetMimeType(phys.Path, out string mimeType);
                 phys.Mime = mimeType;
 
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 dto = await _endpoint.PostAsync(auth, phys);
 
                 // successful save to database, copy the file to the
@@ -273,7 +273,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 await _endpoint.DeleteAsync(auth, id);
             }
             catch (Exception ex)

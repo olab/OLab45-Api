@@ -37,7 +37,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }
@@ -60,7 +60,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         System.Collections.Generic.IList<MapNodesFullDto> dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
         return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
       }
@@ -82,7 +82,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         PostNewLinkResponse dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
         return OLabObjectResult<PostNewLinkResponse>.Result(dto);
       }
@@ -104,7 +104,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         PostNewNodeResponse dto = await _endpoint.PostMapNodesAsync(auth, body);
         return OLabObjectResult<PostNewNodeResponse>.Result(dto);
       }
@@ -127,7 +127,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
@@ -150,7 +150,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, context, HttpContext);
+        OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
