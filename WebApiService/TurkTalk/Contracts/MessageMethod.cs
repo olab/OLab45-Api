@@ -18,7 +18,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     public MessageMethod(MessagePayload payload) : base(payload.Envelope.To, "message")
     {
       Data = payload.Data;
-      SessionId = payload.SessionId;
+      SessionId = payload.Session.ContextId;
       From = payload.Envelope.From.UserId;
     }
     public override string ToJson()

@@ -28,15 +28,14 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
+        _logger.LogDebug($"OnConnectedAsync: '{ConnectionId.Shorten(Context.ConnectionId)}'.");
+
         ContextId = Convert.ToString(Context.GetHttpContext().Request.Query["contextId"]);
         var request = Context.GetHttpContext().Request;
 
         var accessToken = $"Bearer {Convert.ToString(Context.GetHttpContext().Request.Query["access_token"])}";
         request.Headers.Add("Authorization", accessToken);
 
-        UserContext userContext = new UserContext(_logger, DbContext, request);
-
-        _logger.LogDebug($"OnConnectedAsync: '{ConnectionId.Shorten(Context.ConnectionId)}'. ContextId: '{ContextId}'");
       }
       catch (Exception ex)
       {

@@ -12,6 +12,7 @@ using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
 using Dawn;
+using OLabWebAPI.TurkTalk.Contracts;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
@@ -22,8 +23,12 @@ namespace OLabWebAPI.Services.TurkTalk
     private readonly OLabLogger _logger;
     private readonly Conference _conference;
     protected readonly OLabDBContext DbContext;
+    private readonly UserContext _userContext;
 
     public string ContextId { get; set; }
+    public uint QuestionId { get; set; }
+    public uint NodeId { get; private set; }
+    public uint MapId { get; private set; }
 
     /// <summary>
     /// TurkTalkHub constructor
@@ -58,6 +63,16 @@ namespace OLabWebAPI.Services.TurkTalk
       {
         _logger.LogError($"BroadcastMessage exception: {ex.Message}");
       }
+    }
+
+    private UserContext GetUserContext()
+    {
+      var request = Context.GetHttpContext().Request;
+
+      //var accessToken = $"Bearer {Convert.ToString(Context.GetHttpContext().Request.Query["access_token"])}";
+      //request.Headers.Add("Authorization", accessToken);
+
+      return new UserContext(_logger, DbContext, request);
     }
 
   }

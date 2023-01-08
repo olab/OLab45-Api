@@ -49,7 +49,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         userContext.Session.OnQuestionResponse(
           body.MapId,
           body.NodeId,
-          question,
+          question.Id,
           body.Value);
 
       }

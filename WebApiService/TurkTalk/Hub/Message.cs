@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using OLabWebAPI.Data;
+using OLabWebAPI.Endpoints;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.TurkTalk.Contracts;
 using System;
@@ -34,6 +36,17 @@ namespace OLabWebAPI.Services.TurkTalk
         // dispatch message
         topic.Conference.SendMessage(
           new MessageMethod(payload));
+
+        var userContext = GetUserContext();
+        userContext.Session.SetSessionId(payload.Session.ContextId);
+
+        // add message event session activity
+        userContext.Session.OnQuestionResponse(
+          payload.Session.MapId,
+          payload.Session.NodeId,
+          payload.Session.QuestionId,
+          payload.Data);
+
       }
       catch (Exception ex)
       {

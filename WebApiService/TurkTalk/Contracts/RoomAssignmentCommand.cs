@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-  public class RoomAssignmentData
+  public class RoomAssignmentPayload
   {
     public Participant Local{ get; set; }
     public Participant Remote { get; set; }
@@ -16,11 +16,11 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   /// </summary>
   public class RoomAssignmentCommand : CommandMethod
   {
-    public RoomAssignmentData Data { get; set; }
+    public RoomAssignmentPayload Data { get; set; }
 
     public RoomAssignmentCommand(Participant local, Participant remote = null) : base(local.CommandChannel, "roomassignment")
     {
-      Data = new RoomAssignmentData { Local = local, Remote = remote };
+      Data = new RoomAssignmentPayload { Local = local, Remote = remote };
     }
 
     public override string ToJson()
