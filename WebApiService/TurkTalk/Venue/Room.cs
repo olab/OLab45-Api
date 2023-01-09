@@ -86,7 +86,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
 
       // notify moderator of room assignment
       _topic.Conference.SendMessage(
-        new RoomAssignmentCommand(moderator));
+        new RoomAssignmentCommand(null, moderator));
 
       // notify moderator of atrium contents
       _topic.Conference.SendMessage(

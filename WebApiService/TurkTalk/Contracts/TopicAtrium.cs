@@ -21,7 +21,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
       AtriumLearners = new ConcurrentDictionary<string, Learner>();
     }
 
-    private static string GetDictionaryKey( Participant participant )
+    private static string GetDictionaryKey(Participant participant)
     {
       return participant.UserId;
     }
@@ -48,7 +48,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     /// <summary>
     /// Test if participant name already exists in atrium
     /// </summary>
-    /// <param name="name">Participant name</param>
+    /// <param name="name">Participant name (userId)</param>
     /// <returns>true, if exists</returns>
     public bool Contains(string name)
     {
@@ -62,7 +62,10 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     /// <returns>true, if exists</returns>
     public Learner Get(string name)
     {
-      return AtriumLearners[name];
+      if (AtriumLearners.ContainsKey(name))
+        return AtriumLearners[name];
+
+      return null;
     }
 
     /// <summary>

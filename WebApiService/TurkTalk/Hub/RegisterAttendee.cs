@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.Services.TurkTalk.Venue;
+using OLabWebAPI.TurkTalk.Contracts;
 using System;
 using System.Threading.Tasks;
 
@@ -21,14 +23,16 @@ namespace OLabWebAPI.Services.TurkTalk
     /// </summary>
     /// <param name="roomName">Room name</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task RegisterAttendee(string roomName)
+    public async Task RegisterAttendee(RegisterAttendeePayload payload)
     {
       try
       {
-        Guard.Argument(roomName).NotNull(nameof(roomName));
+        Guard.Argument(payload).NotNull(nameof(payload));
+        Guard.Argument(payload.RoomName).NotNull("RoomName");
 
-        Learner learner = new Learner(roomName, Context);
-        _logger.LogDebug($"RegisterAttendee: room: {roomName} '{learner.CommandChannel} ({ConnectionId.Shorten(Context.ConnectionId)})");
+        Learner learner = new Learner(payload, Context);
+
+        _logger.LogDebug($"RegisterAttendee: room: {payload.RoomName} '{learner.CommandChannel} ({ConnectionId.Shorten(Context.ConnectionId)})");
 
         // get or create a conference topic
         Venue.Topic topic = _conference.GetCreateTopic(learner.TopicName);
@@ -38,7 +42,7 @@ namespace OLabWebAPI.Services.TurkTalk
         // topic atrium
         if (room == null)
         {
-          _logger.LogDebug($"RegisterAttendee: adding to '{roomName}' atrium");
+          _logger.LogDebug($"RegisterAttendee: adding to '{payload.RoomName}' atrium");
           await topic.AddToAtriumAsync(learner);
         }
 
@@ -50,7 +54,7 @@ namespace OLabWebAPI.Services.TurkTalk
           // disconnected) add the attendee to the topic atrium
           if (room.Moderator == null)
           {
-            _logger.LogDebug($"RegisterAttendee: room '{roomName}' has no moderator.  Assigning to atrium.");
+            _logger.LogDebug($"RegisterAttendee: room '{payload.RoomName}' has no moderator.  Assigning to atrium.");
             await topic.AddToAtriumAsync(learner);
           }
 
@@ -58,7 +62,7 @@ namespace OLabWebAPI.Services.TurkTalk
           // signal room assignment to re-attach the learner to the room
           else
           {
-            _logger.LogInformation($"RegisterAttendee: assigning participant to existing room '{roomName}'");
+            _logger.LogInformation($"RegisterAttendee: assigning participant to existing room '{payload.RoomName}'");
             await AssignAttendee(learner, room.Name);
           }
         }

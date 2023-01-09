@@ -6,8 +6,8 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
   public class RoomAssignmentPayload
   {
-    public Participant Local{ get; set; }
-    public Participant Remote { get; set; }
+    public Learner Local { get; set; }
+    public Moderator Remote { get; set; }
 
   }
 
@@ -18,7 +18,8 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
   {
     public RoomAssignmentPayload Data { get; set; }
 
-    public RoomAssignmentCommand(Participant local, Participant remote = null) : base(local.CommandChannel, "roomassignment")
+    public RoomAssignmentCommand(Learner local, Moderator remote = null) : 
+      base((local == null) ? remote.CommandChannel : local.CommandChannel, "roomassignment")
     {
       Data = new RoomAssignmentPayload { Local = local, Remote = remote };
     }

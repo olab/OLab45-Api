@@ -3,20 +3,23 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text.Json;
+using OLabWebAPI.TurkTalk.Contracts;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
   public class Learner : Participant
   {
     public const string Prefix = "learner";
+    public RegisterAttendeePayload Session{ get; set; }
 
     public Learner()
     {
     }
 
-    public Learner(string roomName, HubCallerContext context) : base(context)
+    public Learner(RegisterAttendeePayload session, HubCallerContext context) : base(context)
     {
-      string[] roomNameParts = roomName.Split("/");
+      Session = session;
+      string[] roomNameParts = session.RoomName.Split("/");
 
       TopicName = roomNameParts[0];
       RoomName = TopicName;
@@ -38,7 +41,8 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
     {
     }
 
-    public static string MakeCommandChannel( Participant source) {
+    public static string MakeCommandChannel(Participant source)
+    {
       return $"{source.TopicName}/{Learner.Prefix}/{source.UserId}";
     }
 

@@ -40,12 +40,16 @@ namespace OLabWebAPI.Services.TurkTalk
         var userContext = GetUserContext();
         userContext.Session.SetSessionId(payload.Session.ContextId);
 
+        // add the sender name to the message so we 
+        // know who sent it in the log
+        var message = $"{payload.Envelope.From.UserId}: {payload.Data}";
+
         // add message event session activity
         userContext.Session.OnQuestionResponse(
           payload.Session.MapId,
           payload.Session.NodeId,
           payload.Session.QuestionId,
-          payload.Data);
+          message);
 
       }
       catch (Exception ex)
