@@ -1,5 +1,6 @@
 using Dawn;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using System.Collections.Concurrent;
@@ -16,10 +17,15 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     public ILogger Logger { get { return _logger; } }
     public readonly IHubContext<TurkTalkHub> HubContext;
 
-    public Conference(ILogger logger, IHubContext<TurkTalkHub> hubContext)
+    public readonly IServiceScopeFactory ScopeFactory;
+
+    public Conference(ILogger logger, IHubContext<TurkTalkHub> hubContext, IServiceScopeFactory scopeFactory)
     {
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(hubContext).NotNull(nameof(hubContext));
+      Guard.Argument(scopeFactory).NotNull(nameof(scopeFactory));
+
+      ScopeFactory = scopeFactory;
 
       _logger = logger;
       HubContext = hubContext;

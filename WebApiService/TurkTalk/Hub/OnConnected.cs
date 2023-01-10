@@ -30,11 +30,15 @@ namespace OLabWebAPI.Services.TurkTalk
       {
         _logger.LogDebug($"OnConnectedAsync: '{ConnectionId.Shorten(Context.ConnectionId)}'.");
 
-        ContextId = Convert.ToString(Context.GetHttpContext().Request.Query["contextId"]);
         var request = Context.GetHttpContext().Request;
 
-        var accessToken = $"Bearer {Convert.ToString(Context.GetHttpContext().Request.Query["access_token"])}";
+        //ContextId = Convert.ToString(request.Query["contextId"]);
+        //MapId = Convert.ToUInt32(request.Query["mapId"]);
+
+        var accessToken = $"Bearer {Convert.ToString(request.Query["access_token"])}";
         request.Headers.Add("Authorization", accessToken);
+
+
 
       }
       catch (Exception ex)

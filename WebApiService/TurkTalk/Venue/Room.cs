@@ -1,10 +1,15 @@
 using Common.Utils;
 using Dawn;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OLabWebAPI.Model;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.TurkTalk.Contracts;
 using OLabWebAPI.Utils;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -69,9 +74,9 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// <summary>
     /// Add moderator to room
     /// </summary>
-    /// <param name="moderatorName">Moderator user name</param>
-    /// <param name="connectionId">Connection id</param>
-    internal async Task AddModeratorAsync(Moderator moderator)
+    /// <param name="moderator">Moderator</param>
+    /// <param name="mapId">Map id for topic</param>
+    internal async Task AddModeratorAsync(Moderator moderator, uint mapId)
     {
       if (!IsModerated)
         _moderator = moderator;
@@ -84,9 +89,12 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // add moderator to its own group so it can receive messages
       await _topic.Conference.AddConnectionToGroupAsync(moderator);
 
+      // get all nodes from the current map
+      var mapNodes = GetMapNodes(mapId);
+
       // notify moderator of room assignment
       _topic.Conference.SendMessage(
-        new RoomAssignmentCommand(null, moderator));
+        new ModeratorAssignmentCommand(moderator, mapNodes));
 
       // notify moderator of atrium contents
       _topic.Conference.SendMessage(
@@ -105,6 +113,24 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       foreach (var learner in _learners.Items)
         _topic.Conference.SendMessage(
             new RoomAssignmentCommand(learner));
+    }
+
+    private IList<MapNodeList> GetMapNodes(uint mapId)
+    {
+      var mapNodes = new List<MapNodeList>();
+
+      using (var scope = _topic.Conference.ScopeFactory.CreateScope())
+      {
+        var dbContext = scope.ServiceProvider.GetRequiredService<OLabDBContext>();
+        Logger.LogDebug($"Got dbContext");
+
+        var nodes = dbContext.MapNodes.Where(x => x.MapId == mapId).ToList();
+        foreach (var node in nodes)
+          mapNodes.Add(new MapNodeList { Id = node.Id, Name = node.Title, Type = node.TypeId.Value });
+
+      }
+
+      return mapNodes;
     }
 
     /// <summary>
