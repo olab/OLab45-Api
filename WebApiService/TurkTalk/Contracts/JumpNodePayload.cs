@@ -9,6 +9,7 @@ namespace OLabWebAPI.TurkTalk.Contracts
   {
     public uint MapId { get; set; }
     public uint NodeId { get; set; }
+    public string NodeName { get; set; }
   }
 
   public class JumpNodePayload
