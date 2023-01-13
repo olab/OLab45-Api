@@ -10,7 +10,7 @@ namespace OLabWebAPI.TurkTalk.Contracts
 
     public Moderator Remote { get; set; }
 
-    public ModeratorAssignmentCommand(Moderator remote, IList<MapNodeList> mapNodes) : base(remote.CommandChannel, "moderatorassignment")
+    public ModeratorAssignmentCommand(Moderator remote, IList<MapNodeListItem> mapNodes) : base(remote.CommandChannel, "moderatorassignment")
     {
       Data = new ModeratorAssignmentPayload { Remote = remote, MapNodes = mapNodes };
     }

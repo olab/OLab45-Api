@@ -23,7 +23,7 @@ namespace OLabWebAPI.Services.TurkTalk
     /// <param name="roomName">Topic id</param>
     /// <param name="isbot">Moderator is a bot</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task RegisterModerator(uint mapId, string roomName, bool isBot)
+    public async Task RegisterModerator(uint mapId, uint nodeId, string roomName, bool isBot)
     {
       try
       {
@@ -38,7 +38,7 @@ namespace OLabWebAPI.Services.TurkTalk
         moderator.AssignToRoom(room.Index);
         _logger.LogInformation($"moderator: '{moderator}'");
 
-        await room.AddModeratorAsync(moderator, mapId);
+        await room.AddModeratorAsync(moderator, mapId, nodeId);
       }
       catch (Exception ex)
       {

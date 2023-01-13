@@ -76,7 +76,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
     /// </summary>
     /// <param name="moderator">Moderator</param>
     /// <param name="mapId">Map id for topic</param>
-    internal async Task AddModeratorAsync(Moderator moderator, uint mapId)
+    internal async Task AddModeratorAsync(Moderator moderator, uint mapId, uint nodeId)
     {
       if (!IsModerated)
         _moderator = moderator;
@@ -89,8 +89,8 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
       // add moderator to its own group so it can receive messages
       await _topic.Conference.AddConnectionToGroupAsync(moderator);
 
-      // get all nodes from the current map
-      var mapNodes = GetMapNodes(mapId);
+      // get nodes from the current map that exist the current node
+      var mapNodes = GetExitMapNodes(mapId, nodeId);
 
       // notify moderator of room assignment
       _topic.Conference.SendMessage(
@@ -115,22 +115,28 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
             new RoomAssignmentCommand(learner));
     }
 
-    private IList<MapNodeList> GetMapNodes(uint mapId)
+    private IList<MapNodeListItem> GetExitMapNodes(uint mapId, uint nodeId)
     {
-      var mapNodes = new List<MapNodeList>();
+      var mapNodeList = new List<MapNodeListItem>();
 
       using (var scope = _topic.Conference.ScopeFactory.CreateScope())
       {
         var dbContext = scope.ServiceProvider.GetRequiredService<OLabDBContext>();
         Logger.LogDebug($"Got dbContext");
 
-        var nodes = dbContext.MapNodes.Where(x => x.MapId == mapId).ToList();
-        foreach (var node in nodes)
-          mapNodes.Add(new MapNodeList { Id = node.Id, Name = node.Title, Type = node.TypeId.Value });
+        // get all destination nodes from the non-hidden map links that
+        // start from the nodeId we are interested in
+        var mapNodeIds = dbContext.MapNodeLinks
+          .Where(x => ( x.NodeId1 == nodeId ) && ( x.MapId == mapId ) && !x.Hidden.Value )
+          .Select(x => x.NodeId2 )
+          .ToList();
 
+        var mapNodes = dbContext.MapNodes.Where(x => mapNodeIds.Contains( x.Id ) ).ToList();
+        foreach (var mapNode in mapNodes)
+          mapNodeList.Add(new MapNodeListItem { Id = mapNode.Id, Name = mapNode.Title });
       }
 
-      return mapNodes;
+      return mapNodeList;
     }
 
     /// <summary>

@@ -23,7 +23,6 @@ namespace OLabWebAPI.Services.TurkTalk
     private readonly OLabLogger _logger;
     private readonly Conference _conference;
     protected readonly OLabDBContext DbContext;
-    private readonly UserContext _userContext;
 
     public string ContextId { get; set; }
     public uint QuestionId { get; set; }
