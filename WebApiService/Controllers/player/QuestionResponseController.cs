@@ -44,7 +44,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         if (question == null)
           throw new Exception($"Question {body.QuestionId} not found");
 
-        DynamicScopedObjectsDto result = await _endpoint.PostQuestionResponseAsync(question, body);
+        DynamicScopedObjectsDto result = 
+          await _endpoint.PostQuestionResponseAsync(question, body);
 
         userContext.Session.OnQuestionResponse(
           body.MapId,

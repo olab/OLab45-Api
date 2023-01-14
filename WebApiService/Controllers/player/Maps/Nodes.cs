@@ -14,14 +14,17 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
   public partial class MapsController : OlabController
   {
     /// <summary>
-    /// Plays specific map node
+    /// Plays specific map node with a dynamic object state
     /// </summary>
     /// <param name="mapId">map id</param>
     /// <param name="nodeId">node id</param>
     /// <returns>IActionResult</returns>
-    [HttpGet("{mapId}/node/{nodeId}")]
+    [HttpPost("{mapId}/node/{nodeId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetMapNodeAsync(uint mapId, uint nodeId)
+    public async Task<IActionResult> PostMapNodeAsync(
+      uint mapId, 
+      uint nodeId, 
+      [FromBody] DynamicScopedObjectsDto body)
     {
 
       try
@@ -31,6 +34,19 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         _endpoint.SetUserContext(userContext);
 
         MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
+
+        if (body.IsEmpty() || ( dto.TypeId == 1 ) )
+          // requested a root node, so return an initial set of dynammic objects
+          dto.DynamicObjects = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId);
+        else
+        {
+          // apply any node open counter actions
+          var dtoList = await _endpoint.ProcessNodeOpenCountersAsync(nodeId, body.Map.Counters);
+          dto.DynamicObjects.Map.Counters.Clear();
+          dto.DynamicObjects.Map.Counters.AddRange(dtoList);
+        }
+
+
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }
       catch (Exception ex)
