@@ -1,6 +1,5 @@
 using Dawn;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Security.Claims;
 
@@ -38,9 +37,9 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         public Participant(HubCallerContext context)
         {
             // extract fields from bearer token
-            ClaimsIdentity identity = (ClaimsIdentity)context.User.Identity;
-            string nickName = identity.FindFirst("name").Value;
-            string userId = identity.FindFirst(ClaimTypes.Name).Value;
+            var identity = (ClaimsIdentity)context.User.Identity;
+            var nickName = identity.FindFirst("name").Value;
+            var userId = identity.FindFirst(ClaimTypes.Name).Value;
 
             Guard.Argument(context.ConnectionId).NotNull(nameof(context.ConnectionId));
             Guard.Argument(userId).NotNull(nameof(userId));
@@ -64,7 +63,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
             Guard.Argument(userId).NotEmpty(userId);
             Guard.Argument(topicName).NotEmpty(topicName);
 
-            string[] topicNameParts = topicName.Split("/");
+            var topicNameParts = topicName.Split("/");
 
             // test not a multipart topic, then this learner is for the atrium
             if (topicNameParts.Length == 1)

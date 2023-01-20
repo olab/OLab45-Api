@@ -4,9 +4,9 @@ using OLabWebAPI.Common;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
-using UserContext = OLabWebAPI.Data.UserContext;
-using IUserContext = OLabWebAPI.Data.Interface.IUserContext;
 using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
+using IUserContext = OLabWebAPI.Data.Interface.IUserContext;
+using UserContext = OLabWebAPI.Data.UserContext;
 
 namespace OLabWebAPI.Services
 {

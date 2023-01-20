@@ -11,5 +11,5 @@ service olab46api status
 cd ../Player
 git pull
 npm install
-npm run-script build:dev
+npm run-script build:prod
 npm run-script build:dev

@@ -46,12 +46,12 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
                 return new NotFoundResult();
 
             // authentication successful so generate jwt token
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            byte[] keyByteArray = Encoding.ASCII.GetBytes(OLabConfiguration.SIGNING_SECRET);
-            SymmetricSecurityKey signingKey =
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var keyByteArray = Encoding.ASCII.GetBytes(OLabConfiguration.SIGNING_SECRET);
+            var signingKey =
               new SymmetricSecurityKey(Encoding.Default.GetBytes(this.Configuration["AppSetting:Secret"][..16]));
 
-            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
@@ -63,7 +63,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
             };
 
             SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-            LoginResponseDto response = new LoginResponseDto();
+            var response = new LoginResponseDto();
 
             response.AuthInfo.Token = tokenHandler.WriteToken(token);
             response.Group = "";
@@ -90,8 +90,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
             if (phys == null)
                 return new NotFoundResult();
 
-            string filesRoot = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            string filePath = Path.Combine(filesRoot, "files");
+            var filesRoot = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var filePath = Path.Combine(filesRoot, "files");
             filePath = Path.Combine(filePath, phys.ImageableType, phys.ImageableId.ToString());
             filePath = Path.Combine(filePath, phys.Path);
 
@@ -103,7 +103,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
                 return new NoContentResult();
             }
 
-            byte[] byteArray = await System.IO.File.ReadAllBytesAsync(filePath);
+            var byteArray = await System.IO.File.ReadAllBytesAsync(filePath);
             logger.LogDebug($"file size '{byteArray.Count()}')");
             return new FileContentResult(byteArray, phys.Mime);
         }

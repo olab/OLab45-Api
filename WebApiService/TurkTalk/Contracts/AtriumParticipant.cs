@@ -1,25 +1,25 @@
 ﻿
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-  public class AtriumParticipant
-  {
-    private readonly string _connectionId;
-
-    public string GroupName { get; private set; }
-    public string NickName { get; private set; }
-    public string TopicName { get; private set; }
-
-    public AtriumParticipant(Learner learner)
+    public class AtriumParticipant
     {
-      GroupName = learner.CommandChannel;
-      TopicName = learner.TopicName;
-      NickName = learner.NickName;
-      _connectionId = learner.ConnectionId;
-    }
+        private readonly string _connectionId;
 
-    public override string ToString()
-    {
-      return $"{NickName}({GroupName}) id: {_connectionId}";
+        public string GroupName { get; private set; }
+        public string NickName { get; private set; }
+        public string TopicName { get; private set; }
+
+        public AtriumParticipant(Learner learner)
+        {
+            GroupName = learner.CommandChannel;
+            TopicName = learner.TopicName;
+            NickName = learner.NickName;
+            _connectionId = learner.ConnectionId;
+        }
+
+        public override string ToString()
+        {
+            return $"{NickName}({GroupName}) id: {_connectionId}";
+        }
     }
-  }
 }

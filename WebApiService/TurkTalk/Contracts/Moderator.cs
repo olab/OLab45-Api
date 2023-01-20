@@ -14,7 +14,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
 
         public Moderator(string roomName, HubCallerContext context) : base(context)
         {
-            string[] roomNameParts = roomName.Split("/");
+            var roomNameParts = roomName.Split("/");
 
             TopicName = roomNameParts[0];
             RoomName = TopicName;

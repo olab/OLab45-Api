@@ -81,11 +81,11 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             string tempFileName;
 
-            string fileName = ContentDispositionHeaderValue
+            var fileName = ContentDispositionHeaderValue
                 .Parse(postedFile.ContentDisposition)
                 .FileName.Trim('"');
 
-            string dirName = Path.Combine(
+            var dirName = Path.Combine(
               GetStaticFilesDirectory(),
               CapitalizeFirstLetter(dto.ImageableType),
               dto.ImageableId.ToString());
@@ -108,7 +108,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
             if (postedFile.Length > 0)
             {
-                string fileName = ContentDispositionHeaderValue
+                var fileName = ContentDispositionHeaderValue
                     .Parse(postedFile.ContentDisposition)
                     .FileName.Trim('"');
 
@@ -118,7 +118,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
                 tempFileName = Path.Combine(GetUploadDirectory(), fileName);
                 logger.LogDebug($"Temporary file name: {tempFileName}");
 
-                using (FileStream fileStream = new FileStream(tempFileName, FileMode.Create))
+                using (var fileStream = new FileStream(tempFileName, FileMode.Create))
                 {
                     postedFile.CopyTo(fileStream);
                 }
@@ -183,7 +183,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+                var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 FilesFullDto dto = await _endpoint.GetAsync(auth, id);
                 return OLabObjectResult<FilesFullDto>.Result(dto);
             }
@@ -207,7 +207,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+                var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 await _endpoint.PutAsync(auth, id, dto);
             }
             catch (Exception ex)
@@ -232,22 +232,22 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
             try
             {
                 logger.LogDebug($"FilesController.PostAsync()");
-                FilesFullDto dto = new FilesFullDto(Request.Form);
+                var dto = new FilesFullDto(Request.Form);
 
-                FilesFull builder = new FilesFull(logger);
+                var builder = new FilesFull(logger);
                 SystemFiles phys = builder.DtoToPhysical(dto);
 
                 phys.CreatedAt = DateTime.Now;
 
-                string tempFileName = SaveTemporaryFile(Request.Form.Files[0]);
-                string staticFileName = BuildStaticFileName(dto, Request.Form.Files[0]);
+                var tempFileName = SaveTemporaryFile(Request.Form.Files[0]);
+                var staticFileName = BuildStaticFileName(dto, Request.Form.Files[0]);
 
                 // save just the file name to the database
                 phys.Path = Path.GetFileName(staticFileName);
-                MimeTypes.TryGetMimeType(phys.Path, out string mimeType);
+                MimeTypes.TryGetMimeType(phys.Path, out var mimeType);
                 phys.Mime = mimeType;
 
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+                var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 dto = await _endpoint.PostAsync(auth, phys);
 
                 // successful save to database, copy the file to the
@@ -273,7 +273,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         {
             try
             {
-                OLabWebApiAuthorization auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+                var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
                 await _endpoint.DeleteAsync(auth, id);
             }
             catch (Exception ex)

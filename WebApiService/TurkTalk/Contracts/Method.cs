@@ -1,24 +1,21 @@
 using Dawn;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Text.Json;
 
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
-  public abstract class Method
-  {
-    public string MethodName { get; set; }
-    public string CommandChannel { get; set; }
-
-    public Method(string recipientGroupName, string methodName)
+    public abstract class Method
     {
-      Guard.Argument(recipientGroupName).NotEmpty(recipientGroupName);
-      Guard.Argument(methodName).NotEmpty(methodName);
+        public string MethodName { get; set; }
+        public string CommandChannel { get; set; }
 
-      MethodName = methodName;
-      CommandChannel = recipientGroupName;
+        public Method(string recipientGroupName, string methodName)
+        {
+            Guard.Argument(recipientGroupName).NotEmpty(recipientGroupName);
+            Guard.Argument(methodName).NotEmpty(methodName);
+
+            MethodName = methodName;
+            CommandChannel = recipientGroupName;
+        }
+
+        public abstract string ToJson();
     }
-
-    public abstract string ToJson();
-  }
 }

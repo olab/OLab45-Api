@@ -38,7 +38,7 @@ namespace OLabWebAPI.Services
             _jwtAudience = config["AppSettings:Audience"];
             _signingSecret = config["AppSettings:Secret"];
 
-            SymmetricSecurityKey securityKey =
+            var securityKey =
               new SymmetricSecurityKey(Encoding.Default.GetBytes(_signingSecret[..16]));
 
             _tokenParameters = new TokenValidationParameters
@@ -95,7 +95,7 @@ namespace OLabWebAPI.Services
 
         public async Task InvokeAsync(HttpContext context, IUserService userService)
         {
-            string token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (token != null)
                 AttachUserToContext(context,

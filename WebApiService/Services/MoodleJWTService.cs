@@ -26,7 +26,7 @@ namespace OLabWebAPI.Services
 
             SetupConfiguration(config);
 
-            X509Certificate2 cert = new X509Certificate2(_certificateFile);
+            var cert = new X509Certificate2(_certificateFile);
             SecurityKey key = new X509SecurityKey(cert);
 
             _tokenParameters.ValidateLifetime = true;
@@ -41,14 +41,14 @@ namespace OLabWebAPI.Services
         {
             try
             {
-                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+                var tokenHandler = new JwtSecurityTokenHandler();
                 tokenHandler.ValidateToken(token,
                                            GetValidationParameters(),
                                            out SecurityToken validatedToken);
 
-                JwtSecurityToken jwtToken = (JwtSecurityToken)validatedToken;
-                string userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub").Value;
-                string role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                var userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub").Value;
+                var role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
 
                 httpContext.Items["Role"] = role;
                 httpContext.Items["User"] = userName;

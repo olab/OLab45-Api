@@ -1,14 +1,11 @@
-using Common.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using OLabWebAPI.Data;
-using OLabWebAPI.Endpoints;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.Services.TurkTalk.Venue;
 using OLabWebAPI.TurkTalk.Contracts;
 using System;
+using System.Text.Json;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
@@ -26,10 +23,10 @@ namespace OLabWebAPI.Services.TurkTalk
     {
       try
       {
-        _logger.LogInformation($"OnJumpNodeCommand entry");
+        _logger.LogInformation($"OnJumpNodeCommand '{JsonSerializer.Serialize(payload)}'");
 
         // get or create a topic
-        Venue.Topic topic = _conference.GetCreateTopic(payload.Envelope.From.TopicName, false);
+        Topic topic = _conference.GetCreateTopic(payload.Envelope.From.TopicName, false);
         if (topic == null)
           return;
 
