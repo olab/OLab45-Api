@@ -15,7 +15,7 @@ namespace OLabWebAPI.Services.TurkTalk
     public partial class TurkTalkHub : Hub
     {
         /// <summary>
-        /// Remove assigned learner from atrium
+        /// Message is received
         /// </summary>
         /// <param name="learner">Learner to remove</param>
         /// <param name="topicName">Topic id</param>
