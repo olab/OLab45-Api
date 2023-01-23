@@ -33,33 +33,15 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         var userContext = new UserContext(logger, dbContext, HttpContext);
         _endpoint.SetUserContext(userContext);
 
-        // test for valid dynamic objects
-        if ( !body.IsValid() )
-            throw new OLabUnauthorizedException("Object validity check failed");
-
-        MapsNodesFullRelationsDto dto = 
-          await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
-
-        if (body.IsEmpty() || (dto.TypeId == 1))
-          // requested a root node, so return an initial set of dynamic objects
-          dto.DynamicObjects = await _endpoint.GetDynamicScopedObjectsRawAsync(
-            auth, 
-            mapId, 
-            nodeId);
-        else
-        {
-          // apply any node open counter actions
-          var dtoList = 
-            await _endpoint.ProcessNodeOpenCountersAsync(nodeId, body.Map.Counters);
-          dto.DynamicObjects.Map.Counters.Clear();
-          dto.DynamicObjects.Map.Counters.AddRange(dtoList);
-        }
-
+        MapsNodesFullRelationsDto dto =
+          await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
 
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }
       catch (Exception ex)
       {
+        logger.LogError(ex, "PostMapNodeAsync failed");
+
         if (ex is OLabUnauthorizedException)
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
