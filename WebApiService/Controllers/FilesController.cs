@@ -47,6 +47,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       _endpoint = new FilesEndpoint(this.logger, context);
       _appSettings = appSettings.Value;
+
+      logger.LogDebug($"DefaultImportDirectory: '{_appSettings.DefaultImportDirectory}'");
+      logger.LogDebug($"WebsitePublicFilesDirectory: '{_appSettings.WebsitePublicFilesDirectory}'");
     }
 
     private string GetUploadDirectory()
