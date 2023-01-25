@@ -10,6 +10,8 @@ using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Model;
 using System;
 using System.Threading.Tasks;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -19,9 +21,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
         private readonly ResponseEndpoint _endpoint;
 
-        public QuestionResponseController(ILogger<QuestionResponseController> logger, OLabDBContext context) : base(logger, context)
+        public QuestionResponseController(ILogger<QuestionResponseController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
-            _endpoint = new ResponseEndpoint(this.logger, context);
+            _endpoint = new ResponseEndpoint(this.logger, appSettings, context);
         }
 
         /// <summary>

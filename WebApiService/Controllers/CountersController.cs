@@ -9,6 +9,8 @@ using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using System;
 using System.Threading.Tasks;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -18,9 +20,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
         private readonly CountersEndpoint _endpoint;
 
-        public CountersController(ILogger<CountersController> logger, OLabDBContext context) : base(logger, context)
+        public CountersController(ILogger<CountersController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
-            _endpoint = new CountersEndpoint(this.logger, context);
+            _endpoint = new CountersEndpoint(this.logger, appSettings, context);
         }
 
         /// <summary>

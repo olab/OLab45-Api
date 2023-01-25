@@ -9,6 +9,8 @@ using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Model;
 using System;
 using System.Threading.Tasks;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -17,9 +19,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
         private readonly ReportEndpoint _endpoint;
 
-        public ReportController(ILogger<ReportController> logger, OLabDBContext context) : base(logger, context)
+        public ReportController(ILogger<ReportController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
-            _endpoint = new ReportEndpoint(this.logger, context);
+            _endpoint = new ReportEndpoint(this.logger, appSettings, context);
         }
 
         /// <summary>

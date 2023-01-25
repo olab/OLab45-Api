@@ -11,6 +11,8 @@ using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using System;
 using System.Threading.Tasks;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer
 {
@@ -20,9 +22,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
         private readonly MapsEndpoint _endpoint;
 
-        public MapsController(ILogger<ConstantsController> logger, OLabDBContext context) : base(logger, context)
+        public MapsController(ILogger<ConstantsController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
-            _endpoint = new MapsEndpoint(this.logger, context);
+            _endpoint = new MapsEndpoint(this.logger, appSettings, context);
         }
 
         /// <summary>

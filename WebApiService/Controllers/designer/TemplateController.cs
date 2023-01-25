@@ -10,6 +10,8 @@ using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Model;
 using System;
 using System.Threading.Tasks;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer
 {
@@ -19,9 +21,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
         private readonly TemplateEndpoint _endpoint;
 
-        public TemplatesController(ILogger<TemplatesController> logger, OLabDBContext context) : base(logger, context)
+        public TemplatesController(ILogger<TemplatesController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
-            _endpoint = new TemplateEndpoint(this.logger, context);
+            _endpoint = new TemplateEndpoint(this.logger, appSettings, context);
         }
 
         /// <summary>

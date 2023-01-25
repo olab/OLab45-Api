@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
@@ -27,7 +28,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         public IConfiguration Configuration { get; }
         public static int defaultTokenExpiryMinutes = 1;
 
-        public FileContentController(IConfiguration configuration, ILogger<NodesController> logger, OLabDBContext context) : base(logger, context)
+        public FileContentController(IConfiguration configuration, ILogger<NodesController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
             Configuration = configuration;
         }

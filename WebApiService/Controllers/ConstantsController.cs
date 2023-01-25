@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
+using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
 
@@ -18,9 +20,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
         private readonly ConstantsEndpoint _endpoint;
 
-        public ConstantsController(ILogger<ConstantsController> logger, OLabDBContext context) : base(logger, context)
+        public ConstantsController(ILogger<ConstantsController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
-            _endpoint = new ConstantsEndpoint(this.logger, context);
+            _endpoint = new ConstantsEndpoint(this.logger, appSettings, context);
         }
 
         /// <summary>

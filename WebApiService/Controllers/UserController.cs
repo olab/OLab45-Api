@@ -31,8 +31,8 @@ namespace OLabWebAPI.Endpoints.WebApi
         protected readonly OLabDBContext _context;
         private readonly AppSettings _appSettings;
 
-        public AuthController(IOptions<AppSettings> appSettings, IUserService userService, ILogger<AuthController> logger, OLabDBContext context)
-          : base(logger, context)
+        public AuthController(IUserService userService, ILogger<AuthController> logger, IOptions<AppSettings> appSettings, OLabDBContext context)
+          : base(logger, appSettings, context)
         {
             _userService = userService;
             _context = context;

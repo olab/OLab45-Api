@@ -43,9 +43,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     private readonly AppSettings _appSettings;
     private readonly FilesEndpoint _endpoint;
 
-    public FilesController(ILogger<CountersController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, context)
+    public FilesController(ILogger<CountersController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
     {
-      _endpoint = new FilesEndpoint(this.logger, context);
+      _endpoint = new FilesEndpoint(this.logger, appSettings, context);
       _appSettings = appSettings.Value;
 
       logger.LogDebug($"DefaultImportDirectory: '{_appSettings.DefaultImportDirectory}'");

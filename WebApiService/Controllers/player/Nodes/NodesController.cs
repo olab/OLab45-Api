@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
+using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
 
@@ -19,9 +21,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
         private readonly NodesEndpoint _endpoint;
 
-        public NodesController(ILogger<NodesController> logger, OLabDBContext context) : base(logger, context)
+        public NodesController(ILogger<NodesController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
         {
-            _endpoint = new NodesEndpoint(this.logger, context);
+            _endpoint = new NodesEndpoint(this.logger, appSettings, context);
         }
 
         /// <summary>
