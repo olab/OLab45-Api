@@ -39,38 +39,6 @@ namespace OLabWebAPI.Endpoints.WebApi
       return phys;
     }
 
-    /// <summary>
-    /// Attach parent information to scoped object
-    /// </summary>
-    /// <param name="dto"></param>
-    [NonAction]
-    protected void AttachParentObject(ScopedObjectDto dto)
-    {
-      if (dto.ImageableType == Constants.ScopeLevelServer)
-      {
-        Servers obj = dbContext.Servers.FirstOrDefault(x => x.Id == dto.ImageableId);
-        dto.ParentObj.Id = obj.Id;
-        dto.ParentObj.Name = obj.Name;
-        dto.ParentObj.Description = obj.Description;
-      }
-
-      else if (dto.ImageableType == Constants.ScopeLevelMap)
-      {
-        Maps obj = dbContext.Maps.FirstOrDefault(x => x.Id == dto.ImageableId);
-        dto.ParentObj.Id = obj.Id;
-        dto.ParentObj.Name = obj.Name;
-        dto.ParentObj.Description = obj.Name;
-      }
-
-      else if (dto.ImageableType == Constants.ScopeLevelNode)
-      {
-        MapNodes obj = dbContext.MapNodes.FirstOrDefault(x => x.Id == dto.ImageableId);
-        dto.ParentObj.Id = obj.Id;
-        dto.ParentObj.Name = obj.Title;
-        dto.ParentObj.Description = obj.Title;
-      }
-    }
-
     [NonAction]
     protected async Task<MapNodes> GetMapRootNode(uint mapId, uint nodeId)
     {

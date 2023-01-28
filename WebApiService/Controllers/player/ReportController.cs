@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
-    [Route("olab/api/v3/servers")]
+    [Route("olab/api/v3/reports")]
     public partial class ReportController : OlabController
     {
         private readonly ReportEndpoint _endpoint;
