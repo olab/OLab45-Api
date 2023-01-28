@@ -32,7 +32,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         /// <returns>IActionResult</returns>
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetAsync([FromQuery] string sessionId)
+        public async Task<IActionResult> GetReportAsync([FromQuery] string sessionId)
         {
             try
             {
