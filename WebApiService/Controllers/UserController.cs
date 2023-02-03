@@ -99,6 +99,9 @@ namespace OLabWebAPI.Endpoints.WebApi
     public IActionResult Login(LoginRequest model)
     {
       var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
+      if ( string.IsNullOrEmpty(ipAddress) )
+        ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
+
       logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
       AuthenticateResponse response = _userService.Authenticate(model);
