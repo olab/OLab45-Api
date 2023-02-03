@@ -11,7 +11,7 @@ using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using OLabWebAPI.Services.TurkTalk;
-using OLabWebAPI.Services.TurkTalk.Venue;
+using OLabWebAPI.TurkTalk.BusinessObjects;
 using OLabWebAPI.Utils;
 using IOLabSession = OLabWebAPI.Data.Interface.IOLabSession;
 using IUserService = OLabWebAPI.Services.IUserService;

@@ -1,4 +1,4 @@
-﻿using OLabWebAPI.Services.TurkTalk.Contracts;
+﻿using OLabWebAPI.TurkTalk.BusinessObjects;
 
 namespace OLabWebAPI.TurkTalk.Contracts
 {

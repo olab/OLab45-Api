@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Security.Claims;
 
-namespace OLabWebAPI.Services.TurkTalk.Contracts
+namespace OLabWebAPI.TurkTalk.BusinessObjects
 {
     public class Participant
     {

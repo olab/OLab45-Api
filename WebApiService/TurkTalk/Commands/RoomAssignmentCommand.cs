@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OLabWebAPI.TurkTalk.BusinessObjects;
 
-namespace OLabWebAPI.Services.TurkTalk.Contracts
+namespace OLabWebAPI.TurkTalk.Commands
 {
     public class RoomAssignmentPayload
     {
@@ -18,7 +19,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         public RoomAssignmentPayload Data { get; set; }
 
         public RoomAssignmentCommand(Learner local, Moderator remote = null) :
-          base((local == null) ? remote.CommandChannel : local.CommandChannel, "roomassignment")
+          base(local == null ? remote.CommandChannel : local.CommandChannel, "roomassignment")
         {
             Data = new RoomAssignmentPayload { Local = local, Remote = remote };
         }
@@ -26,7 +27,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         public override string ToJson()
         {
             var rawJson = System.Text.Json.JsonSerializer.Serialize(this);
-            return JValue.Parse(rawJson).ToString(Formatting.Indented);
+            return JToken.Parse(rawJson).ToString(Formatting.Indented);
         }
 
     }

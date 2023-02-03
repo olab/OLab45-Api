@@ -2,17 +2,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using OLabWebAPI.Services.TurkTalk.Contracts;
-using OLabWebAPI.Services.TurkTalk.Venue;
+using OLabWebAPI.TurkTalk.BusinessObjects;
 using OLabWebAPI.TurkTalk.Contracts;
 using System;
 using System.Text.Json;
 
 namespace OLabWebAPI.Services.TurkTalk
 {
-  /// <summary>
-  /// 
-  /// </summary>
-  public partial class TurkTalkHub : Hub
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial class TurkTalkHub : Hub
   {
     /// <summary>
     /// Moderator has request a learner to jump to a node

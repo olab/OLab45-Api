@@ -1,6 +1,6 @@
 using Dawn;
 
-namespace OLabWebAPI.Services.TurkTalk.Contracts
+namespace OLabWebAPI.TurkTalk.Commands
 {
     public abstract class Method
     {

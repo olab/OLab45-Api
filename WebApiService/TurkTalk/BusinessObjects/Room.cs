@@ -3,13 +3,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.TurkTalk.Commands;
 using OLabWebAPI.TurkTalk.Contracts;
 using OLabWebAPI.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Services.TurkTalk.Venue
+namespace OLabWebAPI.TurkTalk.BusinessObjects
 {
     /// <summary>
     /// A instance of a topic (to handle when there are
@@ -123,7 +124,7 @@ namespace OLabWebAPI.Services.TurkTalk.Venue
                 // get all destination nodes from the non-hidden map links that
                 // start from the nodeId we are interested in
                 var mapNodeIds = dbContext.MapNodeLinks
-                  .Where(x => (x.NodeId1 == nodeId) && (x.MapId == mapId) && !x.Hidden.Value)
+                  .Where(x => x.NodeId1 == nodeId && x.MapId == mapId && !x.Hidden.Value)
                   .Select(x => x.NodeId2)
                   .ToList();
 

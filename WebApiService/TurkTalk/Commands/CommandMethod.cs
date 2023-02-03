@@ -2,7 +2,7 @@ using Dawn;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace OLabWebAPI.Services.TurkTalk.Contracts
+namespace OLabWebAPI.TurkTalk.Commands
 {
     /// <summary>
     /// Defines a command method
@@ -20,7 +20,7 @@ namespace OLabWebAPI.Services.TurkTalk.Contracts
         public override string ToJson()
         {
             var rawJson = System.Text.Json.JsonSerializer.Serialize(this);
-            return JValue.Parse(rawJson).ToString(Formatting.Indented);
+            return JToken.Parse(rawJson).ToString(Formatting.Indented);
         }
     }
 }

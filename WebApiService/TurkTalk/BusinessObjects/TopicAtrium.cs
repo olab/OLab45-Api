@@ -1,11 +1,10 @@
 using Common.Utils;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Services.TurkTalk.Venue;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OLabWebAPI.Services.TurkTalk.Contracts
+namespace OLabWebAPI.TurkTalk.BusinessObjects
 {
     public class TopicAtrium
     {

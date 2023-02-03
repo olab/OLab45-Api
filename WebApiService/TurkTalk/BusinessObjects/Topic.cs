@@ -1,13 +1,14 @@
 using Dawn;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.TurkTalk.Commands;
 using OLabWebAPI.Utils;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Services.TurkTalk.Venue
+namespace OLabWebAPI.TurkTalk.BusinessObjects
 {
     /// <summary>
     /// Chat topic

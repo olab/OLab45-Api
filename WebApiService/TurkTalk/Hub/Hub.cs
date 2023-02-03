@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using OLabWebAPI.Data;
 using OLabWebAPI.Model;
-using OLabWebAPI.Services.TurkTalk.Venue;
+using OLabWebAPI.TurkTalk.BusinessObjects;
 using OLabWebAPI.Utils;
 using System;
 
