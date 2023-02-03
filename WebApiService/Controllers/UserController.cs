@@ -98,7 +98,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [HttpPost]
     public IActionResult Login(LoginRequest model)
     {
-      logger.LogDebug($"Login(user = '{model.Username}')");
+      logger.LogDebug($"Login(user = '{model.Username}' ip: {HttpContext.Connection.RemoteIpAddress})");
 
       AuthenticateResponse response = _userService.Authenticate(model);
       if (response == null)

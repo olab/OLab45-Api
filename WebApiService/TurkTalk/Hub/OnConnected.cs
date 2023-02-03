@@ -1,5 +1,6 @@
 ﻿using Common.Utils;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
@@ -23,13 +24,11 @@ namespace OLabWebAPI.Services.TurkTalk
 
         HttpRequest request = Context.GetHttpContext().Request;
 
-        //ContextId = Convert.ToString(request.Query["contextId"]);
-        //MapId = Convert.ToUInt32(request.Query["mapId"]);
-
         var accessToken = $"Bearer {Convert.ToString(request.Query["access_token"])}";
         request.Headers.Add("Authorization", accessToken);
 
-
+        var feature = Context.Features.Get<IHttpConnectionFeature>();
+        _logger.LogInformation($"SignalR client connected with IP {feature.RemoteIpAddress}");
 
       }
       catch (Exception ex)
