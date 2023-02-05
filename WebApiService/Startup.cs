@@ -85,7 +85,7 @@ namespace OLabWebAPI
             // );
 
             // MoodleJWTService.Setup(Configuration, services);
-            OLabJWTService.Setup(Configuration, services);
+            OLabJWTService.Setup(Configuration, services );
 
             services.AddTransient<IUserContext, UserContext>();
 

@@ -40,6 +40,28 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
+    /// Interactive login
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpPost]
+    public IActionResult Login(LoginRequest model)
+    {
+      var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
+      if (string.IsNullOrEmpty(ipAddress))
+        ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
+
+      logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
+
+      AuthenticateResponse response = _userService.Authenticate(model);
+      if (response == null)
+        return BadRequest(new { statusCode = 401, message = "Username or password is incorrect" });
+
+      return Ok(response);
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
@@ -87,28 +109,6 @@ namespace OLabWebAPI.Endpoints.WebApi
       dbContext.Users.Update(user);
 
       return Ok();
-    }
-
-    /// <summary>
-    /// Interactive login
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpPost]
-    public IActionResult Login(LoginRequest model)
-    {
-      var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
-      if ( string.IsNullOrEmpty(ipAddress) )
-        ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
-
-      logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
-
-      AuthenticateResponse response = _userService.Authenticate(model);
-      if (response == null)
-        return BadRequest(new { statusCode = 401, message = "Username or password is incorrect" });
-
-      return Ok(response);
     }
 
     /// <summary>
