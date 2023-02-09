@@ -162,6 +162,7 @@ namespace OLabWebAPI.Endpoints.WebApi
           }
         }
 
+
         return OLabObjectListResult<AddUserResponse>.Result(responses);
 
       }
@@ -216,7 +217,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       Users user = _userService.GetByUserName(userRequest.Username);
       if (user != null)
-        throw new Exception($"User {userRequest.Username} already exists");
+        return new AddUserResponse { Username = userRequest.Username, Message = $"Already exists" };
 
       var newUser = Users.CreateDefault(userRequest);
       var newPassword = newUser.Password;
