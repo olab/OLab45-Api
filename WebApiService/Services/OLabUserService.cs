@@ -96,7 +96,7 @@ namespace OLabWebAPI.Services
     /// <returns>Authenticate response, or null</returns>
     public AuthenticateResponse Authenticate(LoginRequest model)
     {
-      Users user = _users.SingleOrDefault(x => x.Username == model.Username);
+      Users user = _users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
       // return null if user not found
       if (user != null)
@@ -158,7 +158,7 @@ namespace OLabWebAPI.Services
     /// <returns>User record</returns>
     public Users GetByUserName(string userName)
     {
-      return _users.FirstOrDefault(x => x.Username == userName);
+      return _users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
     }
 
     /// <summary>
@@ -244,7 +244,7 @@ namespace OLabWebAPI.Services
       {
         Subject = new ClaimsIdentity(new Claim[]
         {
-          new Claim(ClaimTypes.Name, user.Username),
+          new Claim(ClaimTypes.Name, user.Username.ToLower()),
           new Claim(ClaimTypes.Role, $"{user.Role}"),
           new Claim("name", user.Nickname),
           new Claim("sub", user.Username),

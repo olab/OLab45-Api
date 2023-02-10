@@ -52,6 +52,8 @@ namespace OLabWebAPI.Endpoints.WebApi
       if (string.IsNullOrEmpty(ipAddress))
         ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
 
+      model.Username = model.Username.ToLower();
+
       logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
       AuthenticateResponse response = _userService.Authenticate(model);
@@ -91,6 +93,8 @@ namespace OLabWebAPI.Endpoints.WebApi
     public IActionResult ChangePassword(ChangePasswordRequest model)
     {
       logger.LogDebug($"ChangePassword(user = '{model.Username}')");
+
+      model.Username = model.Username.ToLower();
 
       // authenticate target user with their password
       AuthenticateResponse response = _userService.Authenticate(
@@ -217,7 +221,11 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       Users user = _userService.GetByUserName(userRequest.Username);
       if (user != null)
-        return new AddUserResponse { Username = userRequest.Username, Message = $"Already exists" };
+        return new AddUserResponse 
+        { 
+          Username = userRequest.Username.ToLower(), 
+          Message = $"Already exists" 
+        };
 
       var newUser = Users.CreateDefault(userRequest);
       var newPassword = newUser.Password;
