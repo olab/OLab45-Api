@@ -56,7 +56,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-            new Claim(ClaimTypes.UserData, phys.Path)
+                  new Claim(ClaimTypes.UserData, phys.Path)
                 }),
 
                 Expires = DateTime.UtcNow.AddMinutes(defaultTokenExpiryMinutes),

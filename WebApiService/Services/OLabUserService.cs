@@ -216,17 +216,18 @@ namespace OLabWebAPI.Services
       DateTime createdAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
       response.CreatedAt = createdAt;
 
-      response.AuthInfo.Token = model.ExternalToken;
-      response.AuthInfo.Refresh = null;
-      response.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
-      response.UserName = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
+      var user = new Users
+      {
+        Id = 0,
+        Username = jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value,
+        Role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value,
+        Nickname = jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value
+      };
 
-      DateTime issuedAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
-      response.AuthInfo.Created = issuedAt;
-      DateTime expiresAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "exp").Value));
-      response.AuthInfo.Expires = expiresAt;
+      var issuedBy = jwtToken.Claims.FirstOrDefault(x => x.Type == "iss").Value;
 
-      return response;
+      var authResponse = GenerateJwtToken(user, issuedBy);
+      return authResponse;
     }
 
     /// <summary>
@@ -235,10 +236,13 @@ namespace OLabWebAPI.Services
     /// <param name="user">User record from database</param>
     /// <returns>AuthenticateResponse</returns>
     /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
-    private AuthenticateResponse GenerateJwtToken(Users user)
+    private AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = null)
     {
       var securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
+
+      if (string.IsNullOrEmpty(issuedBy))
+        issuedBy = "olab";
 
       var tokenDescriptor = new SecurityTokenDescriptor
       {
@@ -248,10 +252,11 @@ namespace OLabWebAPI.Services
           new Claim(ClaimTypes.Role, $"{user.Role}"),
           new Claim("name", user.Nickname),
           new Claim("sub", user.Username),
-          new Claim("id", $"{user.Id}")
+          new Claim("id", $"{user.Id}"),
+          new Claim("ist", $"{DateTime.UtcNow.ToString()}")
         }),
         Expires = DateTime.UtcNow.AddDays(7),
-        Issuer = "olab",
+        Issuer = issuedBy,
         Audience = _appSettings.Audience,
         SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
       };

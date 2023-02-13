@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Data;
+using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using OLabWebAPI.Utils;
@@ -64,6 +65,24 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
+    /// External, non-interactive login
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpPost]
+    public IActionResult LoginExternal(ExternalLoginRequest model)
+    {
+      logger.LogDebug($"LoginExternal(user = '{model.ExternalToken}')");
+
+      AuthenticateResponse response = _userService.AuthenticateExternal(model);
+      if (response == null)
+        return BadRequest(new { statusCode = 401, message = "Invalid external token" });
+
+      return Ok(response);
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
@@ -113,24 +132,6 @@ namespace OLabWebAPI.Endpoints.WebApi
       dbContext.Users.Update(user);
 
       return Ok();
-    }
-
-    /// <summary>
-    /// Interactive login
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpPost]
-    public IActionResult LoginExternal(ExternalLoginRequest model)
-    {
-      logger.LogDebug($"LoginExternal(user = '{model.ExternalToken}')");
-
-      AuthenticateResponse response = _userService.AuthenticateExternal(model);
-      if (response == null)
-        return BadRequest(new { statusCode = 401, message = "Invalid external token" });
-
-      return Ok(response);
     }
 
     /// <summary>
