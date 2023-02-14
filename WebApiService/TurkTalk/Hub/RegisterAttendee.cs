@@ -7,6 +7,7 @@ using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.TurkTalk.BusinessObjects;
 using OLabWebAPI.TurkTalk.Contracts;
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services.TurkTalk
@@ -30,7 +31,7 @@ namespace OLabWebAPI.Services.TurkTalk
 
         var learner = new Learner(payload, Context);
 
-        _logger.LogDebug($"RegisterAttendee: room: {payload.RoomName} '{learner.CommandChannel} ({ConnectionId.Shorten(Context.ConnectionId)})");
+        _logger.LogDebug($"RegisterAttendee: room: {payload.ToJson()} '{learner.CommandChannel} ({ConnectionId.Shorten(Context.ConnectionId)})");
 
         // get or create a conference topic
         Topic topic = _conference.GetCreateTopic(learner.TopicName);
