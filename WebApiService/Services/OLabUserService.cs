@@ -202,7 +202,7 @@ namespace OLabWebAPI.Services
 
       JwtSecurityToken readToken = handler.ReadJwtToken(model.ExternalToken);
 
-      _logger.LogDebug($"Incoming token claims:");
+      _logger.LogDebug($"External JWT Incoming token claims:");
       foreach (Claim claim in readToken.Claims)
         _logger.LogDebug($" {claim}");
 

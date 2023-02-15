@@ -126,11 +126,19 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       logger.LogDebug($"LoginExternal(user = '{model.ExternalToken}')");
 
-      AuthenticateResponse response = _userService.AuthenticateExternal(model);
-      if (response == null)
-        return BadRequest(new { statusCode = 401, message = "Invalid external token" });
+      try
+      {
+        AuthenticateResponse response = _userService.AuthenticateExternal(model);
+        if (response == null)
+          return BadRequest(new { statusCode = 401, message = "Invalid external token" });
 
-      return Ok(response);
+        return Ok(response);
+
+      }
+      catch (Exception ex)
+      {
+        return BadRequest(new { statusCode = 401, message = ex.Message });
+      }
     }
 
     /// <summary>
