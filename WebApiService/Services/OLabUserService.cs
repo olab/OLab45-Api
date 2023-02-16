@@ -209,24 +209,18 @@ namespace OLabWebAPI.Services
       handler.ValidateToken(model.ExternalToken,
                             tokenParameters,
                             out SecurityToken validatedToken);
+
       var jwtToken = (JwtSecurityToken)validatedToken;
 
-      var response = new AuthenticateResponse();
+      Users user = new Users();
 
-      DateTime createdAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
-      response.CreatedAt = createdAt;
+      user.Username = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
+      user.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
+      user.Nickname = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
+      user.Id = (uint)Convert.ToInt32( $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "id").Value}" );
 
-      response.AuthInfo.Token = model.ExternalToken;
-      response.AuthInfo.Refresh = null;
-      response.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
-      response.UserName = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
-
-      DateTime issuedAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "iat").Value));
-      response.AuthInfo.Created = issuedAt;
-      DateTime expiresAt = FromUnixTime(Convert.ToInt64(jwtToken.Claims.FirstOrDefault(x => x.Type == "exp").Value));
-      response.AuthInfo.Expires = expiresAt;
-
-      return response;
+      var issuedBy = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "iss").Value}";
+      return GenerateJwtToken(user, issuedBy);
     }
 
     /// <summary>
@@ -235,7 +229,7 @@ namespace OLabWebAPI.Services
     /// <param name="user">User record from database</param>
     /// <returns>AuthenticateResponse</returns>
     /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
-    private AuthenticateResponse GenerateJwtToken(Users user)
+    private AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab" )
     {
       var securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
@@ -251,7 +245,7 @@ namespace OLabWebAPI.Services
           new Claim("id", $"{user.Id}")
         }),
         Expires = DateTime.UtcNow.AddDays(7),
-        Issuer = "olab",
+        Issuer = issuedBy,
         Audience = _appSettings.Audience,
         SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
       };

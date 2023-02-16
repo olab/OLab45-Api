@@ -38,8 +38,14 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         {
             // extract fields from bearer token
             var identity = (ClaimsIdentity)context.User.Identity;
-            var nickName = identity.FindFirst("name").Value;
+            var nameClaim = identity.FindFirst("name");
             var userId = identity.FindFirst(ClaimTypes.Name).Value;
+
+            string nickName = "";
+            if (nameClaim != null)
+              nickName = nameClaim.Value;
+            else
+              nickName = userId;
 
             Guard.Argument(context.ConnectionId).NotNull(nameof(context.ConnectionId));
             Guard.Argument(userId).NotNull(nameof(userId));
