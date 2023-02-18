@@ -61,8 +61,8 @@ namespace OLabWebAPI.Services.TurkTalk
           // signal room assignment to re-attach the learner to the room
           else
           {
-            _logger.LogInformation($"RegisterAttendee: assigning participant to existing room '{payload.RoomName}'");
-            await AssignAttendee(learner, room.Name, 0);
+            _logger.LogInformation($"RegisterAttendee: assigning Participant to existing room '{payload.RoomName}'");
+            await AssignAttendee(learner, room.Name);
           }
         }
 

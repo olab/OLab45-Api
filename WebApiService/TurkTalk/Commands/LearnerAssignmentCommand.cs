@@ -19,10 +19,9 @@ namespace OLabWebAPI.TurkTalk.Commands
 
     public LearnerAssignmentCommand(
       Participant moderator,
-      Participant learner,
-      int slotIndex) : base(moderator.CommandChannel, "learnerassignment")
+      Learner learner) : base(moderator.CommandChannel, "learnerassignment")
     {
-      Data = new LearnerAssignmentPayload { Learner = learner, SlotIndex = slotIndex };
+      Data = new LearnerAssignmentPayload { Learner = learner, SlotIndex = learner.SlotIndex };
     }
 
     public override string ToJson()

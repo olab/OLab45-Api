@@ -46,26 +46,26 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     }
 
     /// <summary>
-    /// Add learner to room
+    /// Add participant to room
     /// </summary>
     /// <param name="learnerName">Learner user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearnerAsync(Participant participant, int slotIndex)
+    internal async Task AddLearnerAsync(Learner learner)
     {
-      participant.AssignToRoom(_index);
+      learner.AssignToRoom(_index);
 
-      // associate participant connection to participate group
-      await _topic.Conference.AddConnectionToGroupAsync(participant);
+      // associate Participant connection to participate group
+      await _topic.Conference.AddConnectionToGroupAsync(learner);
 
-      _learners.Add(participant as Learner);
+      _learners.Add(learner);
 
-      Logger.LogDebug($"Added learner {participant} to room '{Name}'");
+      Logger.LogDebug($"Added participant {learner} to room '{Name}'");
 
-      // if have moderator, notify that the learner has been
+      // if have moderator, notify that the participant has been
       // assigned to their room
       if (Moderator != null)
         _topic.Conference.SendMessage(
-          new LearnerAssignmentCommand(Moderator, participant, slotIndex));
+          new LearnerAssignmentCommand(Moderator, learner));
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     }
 
     /// <summary>
-    /// Signals a disconnection of a room participant
+    /// Signals a disconnection of a room Participant
     /// </summary>
     /// <param name="connectionId"></param>
     internal async Task RemoveParticipantAsync(Participant participant)
@@ -152,7 +152,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         return;
       }
 
-      // test if participant to remove is the moderator
+      // test if Participant to remove is the moderator
       if (participant.UserId == _moderator.UserId)
         await RemoveModeratorAsync(participant);
       else
@@ -180,37 +180,33 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
 
     internal void RemoveLearner(Participant participant, bool instantRemove = true)
     {
-      Logger.LogDebug($"Participant '{participant.UserId}' is a learner for room '{Name}'. removing.");
 
-      // add missing properties since proably isn't in the participant
-      participant.TopicName = _topic.Name;
-      participant.RoomName = Name;
-      participant.RoomNumber = Index;
-      var learner = new Learner(participant);
-
-      // build/set assumed command channel for learner
-      var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{learner.UserId}";
-
-      // Participant is a learner, notify it's channel of disconnect
-      _topic.Conference.SendMessage(
-        new RoomUnassignmentCommand(
-          commandChannel,
-          learner));
-
-      // add the learner back to the atrium
-      //await _topic.AddToAtriumAsync(learner);
-
-      // remove learner from list if needing instant removal
-      if (instantRemove)
+      Learner serverParticipant = _learners.Items.FirstOrDefault(x => x.UserId == participant.UserId);
+      if (serverParticipant != null)
       {
-        Learner serverParticipant = _learners.Items.FirstOrDefault(x => x.UserId == learner.UserId);
-        if (serverParticipant != null)
+
+        Logger.LogDebug($"Participant '{participant.UserId}' is a participant for room '{Name}'. removing.");
+
+        // build/set assumed command channel for participant
+        var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{participant.UserId}";
+
+        // Participant is a participant, notify it's channel of disconnect
+        _topic.Conference.SendMessage(
+          new RoomUnassignmentCommand(
+            commandChannel,
+            participant));
+
+        // remove participant from list if needing instant removal
+        if (instantRemove)
           _learners.Remove(serverParticipant);
       }
+      else
+        Logger.LogError($"Participant '{participant.UserId}' is NOT participant for room '{Name}'.");
+
     }
 
     /// <summary>
-    /// TESt if participant exists in room
+    /// TESt if Participant exists in room
     /// </summary>
     /// <param name="participant">Participant to look for</param>
     /// <returns>true/false</returns>

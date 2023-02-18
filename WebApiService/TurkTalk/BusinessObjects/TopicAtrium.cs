@@ -26,16 +26,16 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Get list of participant
+        /// Get list of Participant
         /// </summary>
-        /// <returns>List of participant group strings</returns>
+        /// <returns>List of Participant group strings</returns>
         public IList<Learner> GetContents()
         {
             return AtriumLearners.Values.ToList();
         }
 
         /// <summary>
-        /// Test if participant already exists in atrium
+        /// Test if Participant already exists in atrium
         /// </summary>
         /// <param name="name">Participant name</param>
         /// <returns>true, if exists</returns>
@@ -45,7 +45,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Test if participant name already exists in atrium
+        /// Test if Participant name already exists in atrium
         /// </summary>
         /// <param name="name">Participant name (userId)</param>
         /// <returns>true, if exists</returns>
@@ -55,7 +55,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Get participant from atrium
+        /// Get Participant from atrium
         /// </summary>
         /// <param name="name">Participant name</param>
         /// <returns>true, if exists</returns>
@@ -68,7 +68,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Remove participant from atrium
+        /// Remove Participant from atrium
         /// </summary>
         /// <param name="participantName">Participant name</param>
         internal bool Remove(Participant participant)
@@ -78,7 +78,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
             if (foundInAtrium)
             {
                 AtriumLearners.Remove(GetDictionaryKey(participant));
-                _logger.LogDebug($"Removing participant '{participant.UserId}' ({participant.ConnectionId}) from '{_topic.Name}' atrium");
+                _logger.LogDebug($"Removing Participant '{participant.UserId}' ({participant.ConnectionId}) from '{_topic.Name}' atrium");
             }
 
             Dump();
@@ -102,10 +102,10 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Add/update participant to atrium
+        /// Add/update Participant to atrium
         /// </summary>
         /// <param name="participant">Participant to add</param>
-        /// <returns>true if participant replaced (versus just added)</returns>
+        /// <returns>true if Participant replaced (versus just added)</returns>
         public bool Upsert(Learner participant)
         {
             var replaced = false;
@@ -124,12 +124,12 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Add participant to atrium
+        /// Add Participant to atrium
         /// </summary>
-        /// <param name="participant">participant to add</param>
+        /// <param name="participant">Participant to add</param>
         internal void Add(Learner participant)
         {
-            _logger.LogDebug($"Adding participant '{participant.NickName}({GetDictionaryKey(participant)})' to '{_topic.Name}' atrium");
+            _logger.LogDebug($"Adding Participant '{participant.NickName}({GetDictionaryKey(participant)})' to '{_topic.Name}' atrium");
             AtriumLearners.Add(GetDictionaryKey(participant), participant);
         }
 

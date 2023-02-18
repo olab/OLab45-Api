@@ -190,11 +190,11 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         /// <exception cref="NotImplementedException"></exception>
         internal Learner RemoveFromAtrium(Participant participant)
         {
-            // save so we can return the entire participant
+            // save so we can return the entire Participant
             // (which contains the contextId
             Learner learner = Atrium.Get(participant.UserId);
 
-            // try and remove learner.  if removed, notify all topic
+            // try and remove Participant.  if removed, notify all topic
             // moderators of atrium content change
             if (Atrium.Remove(participant))
                 Conference.SendMessage(
@@ -204,13 +204,13 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Gets room for participant
+        /// Gets room for Participant
         /// </summary>
         /// <param name="participant">Participant to check</param>
         internal Room GetParticipantRoom(Participant participant)
         {
             // go thru each room and remove a (potential)
-            // participant
+            // Participant
             foreach (Room room in Rooms.Items)
             {
                 if (room.ParticipantExists(participant))
@@ -221,7 +221,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Removes a participant from the topic
+        /// Removes a Participant from the topic
         /// </summary>
         /// <param name="participant">Participant to remove</param>
         internal async Task RemoveParticipantAsync(Participant participant)
@@ -232,7 +232,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
             Room emptyRoom = null;
 
             // go thru each room and remove a (potential)
-            // participant
+            // Participant
             foreach (Room room in Rooms.Items)
             {
                 await room.RemoveParticipantAsync(participant);
@@ -272,28 +272,28 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         }
 
         /// <summary>
-        /// Add participant to topic atrium
+        /// Add Participant to topic atrium
         /// </summary>
         /// <param name="participant">Leaner info</param>
         /// <param name="connectionId">Connection id</param>
         internal async Task AddToAtriumAsync(Learner participant)
         {
-            // add/replace participant in atrium
+            // add/replace Participant in atrium
             var learnerReplaced = Atrium.Upsert(participant);
 
             // if replaced a atrium contents, remove it from group
             if (learnerReplaced)
             {
-                Logger.LogDebug($"Replacing existing '{Name}' atrium participant '{participant.CommandChannel}'");
+                Logger.LogDebug($"Replacing existing '{Name}' atrium Participant '{participant.CommandChannel}'");
                 await Conference.RemoveConnectionToGroupAsync(
                   participant.CommandChannel,
                   participant.ConnectionId);
             }
 
-            // add participant to its own group so it can receive room assigments
+            // add Participant to its own group so it can receive room assigments
             await Conference.AddConnectionToGroupAsync(participant);
 
-            // notify participant of atrium assignment
+            // notify Participant of atrium assignment
             Conference.SendMessage(
               new AtriumAssignmentCommand(participant, Atrium.Get(participant.UserId)));
 

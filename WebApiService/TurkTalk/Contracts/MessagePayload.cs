@@ -34,7 +34,7 @@ namespace OLabWebAPI.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Construct message to specific participant
+    /// Construct message to specific Participant
     /// </summary>
     /// <param name="participant">Recipient</param>
     /// <param name="message">Message to send</param>
@@ -47,7 +47,7 @@ namespace OLabWebAPI.TurkTalk.Contracts
     }
 
     /// <summary>
-    /// Construct message to specific participant
+    /// Construct message to specific Participant
     /// </summary>
     /// <param name="participant">Recipient</param>
     /// <param name="message">Message to send</param>

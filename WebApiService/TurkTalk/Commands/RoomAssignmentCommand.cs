@@ -18,10 +18,10 @@ namespace OLabWebAPI.TurkTalk.Commands
   {
     public RoomAssignmentPayload Data { get; set; }
 
-    public RoomAssignmentCommand(Learner local, Moderator remote = null, int slotIndex = 0 ) :
+    public RoomAssignmentCommand(Learner local, Moderator remote = null ) :
           base(local == null ? remote.CommandChannel : local.CommandChannel, "roomassignment")
     {
-      Data = new RoomAssignmentPayload { Local = local, Remote = remote, SlotIndex = slotIndex };
+      Data = new RoomAssignmentPayload { Local = local, Remote = remote, SlotIndex = local.SlotIndex };
     }
 
     public override string ToJson()

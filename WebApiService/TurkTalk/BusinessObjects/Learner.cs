@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OLabWebAPI.TurkTalk.Contracts;
 using System;
 
 namespace OLabWebAPI.TurkTalk.BusinessObjects
 {
-    public class Learner : Participant
+  public class Learner : Participant
   {
     public const string Prefix = "learner";
     public RegisterAttendeePayload Session { get; set; }
@@ -47,6 +49,11 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     {
       RoomNumber = index;
       RoomName = $"{TopicName}/{index}";
+    }
+    public string ToJson()
+    {
+      var rawJson = System.Text.Json.JsonSerializer.Serialize(this);
+      return JToken.Parse(rawJson).ToString(Formatting.Indented);
     }
   }
 }
