@@ -22,15 +22,16 @@ namespace OLabWebAPI.Services.TurkTalk
     /// </summary>
     /// <param name="learner">Learner to assign</param>
     /// <param name="roomName">Room name</param>
+    /// <param name="routingIndex">Moderator component slot index</param>
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task AssignAttendee(Learner learner, string roomName)
+    public async Task AssignAttendee(Learner learner, string roomName, int slotIndex)
     {
       try
       {
         Guard.Argument(roomName).NotNull(nameof(roomName));
 
         _logger.LogInformation(
-          $"AssignAttendeeAsync: '{learner.CommandChannel}', {roomName} ({ConnectionId.Shorten(Context.ConnectionId)})");
+          $"AssignAttendeeAsync: '{learner.CommandChannel}', {roomName} ({ConnectionId.Shorten(Context.ConnectionId)}), index {slotIndex}");
 
         Topic topic = _conference.GetCreateTopic(learner.TopicName, false);
         if (topic == null)
@@ -55,7 +56,7 @@ namespace OLabWebAPI.Services.TurkTalk
 
         Room room = topic.GetRoom(roomName);
         if (room != null)
-          await room.AddLearnerAsync(learner);
+          await room.AddLearnerAsync(learner, slotIndex);
 
         // add the moderator to the newly
         // assigned learner's group name
@@ -66,7 +67,7 @@ namespace OLabWebAPI.Services.TurkTalk
         // post a message to the learner that they've
         // been assigned to a room
         topic.Conference.SendMessage(
-          new RoomAssignmentCommand(learner, room.Moderator));
+          new RoomAssignmentCommand(learner, room.Moderator, slotIndex ));
 
       }
       catch (Exception ex)

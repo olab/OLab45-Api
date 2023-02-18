@@ -62,7 +62,7 @@ namespace OLabWebAPI.Services.TurkTalk
           else
           {
             _logger.LogInformation($"RegisterAttendee: assigning participant to existing room '{payload.RoomName}'");
-            await AssignAttendee(learner, room.Name);
+            await AssignAttendee(learner, room.Name, 0);
           }
         }
 

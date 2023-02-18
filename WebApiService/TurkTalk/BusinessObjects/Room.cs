@@ -50,7 +50,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     /// </summary>
     /// <param name="learnerName">Learner user name</param>
     /// <param name="connectionId">Connection id</param>
-    internal async Task AddLearnerAsync(Participant participant)
+    internal async Task AddLearnerAsync(Participant participant, int slotIndex)
     {
       participant.AssignToRoom(_index);
 
@@ -65,7 +65,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       // assigned to their room
       if (Moderator != null)
         _topic.Conference.SendMessage(
-          new LearnerAssignmentCommand(Moderator, participant));
+          new LearnerAssignmentCommand(Moderator, participant, slotIndex));
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       if (participant.UserId == _moderator.UserId)
         await RemoveModeratorAsync(participant);
       else
-        await RemoveLearnerAsync(participant);
+        RemoveLearner(participant);
 
     }
 
@@ -168,7 +168,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       // and add them back into the atrium
       foreach (Learner learner in _learners.Items)
       {
-        await RemoveLearnerAsync(learner, false);
+        RemoveLearner(learner, false);
         await _topic.AddToAtriumAsync(learner);
       }
 
@@ -178,7 +178,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       _moderator = null;
     }
 
-    internal async Task RemoveLearnerAsync(Participant participant, bool instantRemove = true)
+    internal void RemoveLearner(Participant participant, bool instantRemove = true)
     {
       Logger.LogDebug($"Participant '{participant.UserId}' is a learner for room '{Name}'. removing.");
 
