@@ -52,7 +52,7 @@ namespace OLabWebAPI.Services.TurkTalk
         // test if learner isn't already assigned to room,
         // meaning we need to remove from atrium
         if (!learner.IsAssignedToRoom())
-          learner = topic.RemoveFromAtrium(learner);
+          topic.RemoveFromAtrium(learner);
 
         Room room = topic.GetRoom(roomName);
         if (room != null)

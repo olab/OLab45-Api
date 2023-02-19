@@ -188,13 +188,13 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         Logger.LogDebug($"Participant '{participant.UserId}' is a participant for room '{Name}'. removing.");
 
         // build/set assumed command channel for participant
-        var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{participant.UserId}";
+        var commandChannel = $"{_topic.Name}/{Learner.Prefix}/{serverParticipant.UserId}";
 
         // Participant is a participant, notify it's channel of disconnect
         _topic.Conference.SendMessage(
           new RoomUnassignmentCommand(
             commandChannel,
-            participant));
+            serverParticipant));
 
         // remove participant from list if needing instant removal
         if (instantRemove)
