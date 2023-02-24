@@ -39,7 +39,7 @@ namespace OLabWebAPI.Services.TurkTalk
 
         // test if learner was removed by
         // by someone else
-        if (!topic.Atrium.Contains(learner))
+        if (!topic.AtriumContains(learner))
         {
           topic.Conference.SendMessage(
             new SystemMessageCommand(

@@ -4,10 +4,10 @@ using OLabWebAPI.TurkTalk.BusinessObjects;
 
 namespace OLabWebAPI.TurkTalk.Commands
 {
-    /// <summary>
-    /// Defines a Atrium Update command method
-    /// </summary>
-    public class RoomRejoinedCommand : CommandMethod
+  /// <summary>
+  /// Defines a Room Rejoined command method
+  /// </summary>
+  public class RoomRejoinedCommand : CommandMethod
     {
         public Participant Data { get; set; }
 

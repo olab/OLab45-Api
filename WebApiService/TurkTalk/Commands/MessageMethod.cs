@@ -5,7 +5,7 @@ using OLabWebAPI.TurkTalk.Contracts;
 namespace OLabWebAPI.TurkTalk.Commands
 {
     /// <summary>
-    /// Defines a Atrium Update command method
+    /// Defines a Message command method
     /// </summary>
     public class MessageMethod : Method
     {

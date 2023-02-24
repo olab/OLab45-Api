@@ -12,7 +12,7 @@ namespace OLabWebAPI.TurkTalk.Commands
   }
 
   /// <summary>
-  /// Defines a Atrium Update command method
+  /// Defines a Room Assignment command method
   /// </summary>
   public class RoomAssignmentCommand : CommandMethod
   {

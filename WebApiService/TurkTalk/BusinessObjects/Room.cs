@@ -97,7 +97,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       _topic.Conference.SendMessage(
         new AtriumUpdateCommand(
           moderator.CommandChannel,
-          _topic.Atrium.GetContents()));
+          _topic.AtriumGetContents()));
 
       // notify moderator of already assigned learners
       _topic.Conference.SendMessage(

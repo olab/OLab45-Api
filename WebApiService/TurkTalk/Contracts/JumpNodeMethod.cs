@@ -6,7 +6,7 @@ using OLabWebAPI.TurkTalk.Contracts;
 namespace OLabWebAPI.Services.TurkTalk.Contracts
 {
     /// <summary>
-    /// Defines a Atrium Update command method
+    /// Defines a Jump Node command method
     /// </summary>
     public class JumpNodeMethod : CommandMethod
     {

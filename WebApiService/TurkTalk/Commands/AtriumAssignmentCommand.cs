@@ -5,7 +5,7 @@ using OLabWebAPI.TurkTalk.BusinessObjects;
 namespace OLabWebAPI.TurkTalk.Commands
 {
     /// <summary>
-    /// Defines a Atrium Update command method
+    /// Defines a Atrium Assignment command method
     /// </summary>
     public class AtriumAssignmentCommand : CommandMethod
     {
