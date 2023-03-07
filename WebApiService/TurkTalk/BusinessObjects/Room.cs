@@ -8,6 +8,7 @@ using OLabWebAPI.TurkTalk.Contracts;
 using OLabWebAPI.Utils;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.TurkTalk.BusinessObjects
@@ -21,6 +22,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     private readonly Topic _topic;
     private int _index;
     private readonly ConcurrentList<Learner> _learners;
+
     private Moderator _moderator = null;
 
     public int Index
@@ -34,6 +36,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     public bool IsModerated { get { return _moderator != null; } }
     protected ILogger Logger { get { return _topic.Logger; } }
     public Topic Topic { get { return _topic; } }
+
 
     public Room(Topic topic, int index)
     {
@@ -52,20 +55,32 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     /// <param name="connectionId">Connection id</param>
     internal async Task AddLearnerAsync(Learner learner)
     {
-      learner.AssignToRoom(_index);
+      try
+      {
 
-      // associate Participant connection to participate group
-      await _topic.Conference.AddConnectionToGroupAsync(learner);
+        learner.AssignToRoom(_index);
 
-      _learners.Add(learner);
+        _learners.Lock();
 
-      Logger.LogDebug($"Added participant {learner} to room '{Name}'");
+        // associate Participant connection to participate group
+        await _topic.Conference.AddConnectionToGroupAsync(learner);
 
-      // if have moderator, notify that the participant has been
-      // assigned to their room
-      if (Moderator != null)
-        _topic.Conference.SendMessage(
-          new LearnerAssignmentCommand(Moderator, learner));
+        _learners.Add(learner);
+
+        Logger.LogDebug($"Added participant {learner} to room '{Name}'");
+
+        // if have moderator, notify that the participant has been
+        // assigned to their room
+        if (Moderator != null)
+          _topic.Conference.SendMessage(
+            new LearnerAssignmentCommand(Moderator, learner));
+
+      }
+      finally
+      {
+        _learners.Unlock();
+      }
+
     }
 
     /// <summary>
@@ -99,15 +114,17 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
           moderator.CommandChannel,
           _topic.AtriumGetContents()));
 
+      var learners = _learners.Items;
+
       // notify moderator of already assigned learners
       _topic.Conference.SendMessage(
         new LearnerListCommand(
           moderator.CommandChannel,
-          _learners.Items));
+          learners));
 
       // notify all learners in room of
       // moderator (re)connection
-      foreach (Learner learner in _learners.Items)
+      foreach (Learner learner in learners )
         _topic.Conference.SendMessage(
             new RoomAssignmentCommand(learner));
     }
@@ -152,15 +169,24 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
         return;
       }
 
-      // test if Participant to remove is the moderator
-      if (participant.UserId == _moderator.UserId)
-        await RemoveModeratorAsync(participant);
-      else
-        RemoveLearner(participant);
+      try
+      {
+        _learners.Lock();
+
+        // test if Participant to remove is the moderator
+        if (participant.UserId == _moderator.UserId)
+          await RemoveModeratorAsync(participant);
+        else
+          RemoveLearner(participant);
+      }
+      finally
+      {
+        _learners.Unlock();
+      }
 
     }
 
-    internal async Task RemoveModeratorAsync(Participant participant)
+    private async Task RemoveModeratorAsync(Participant participant)
     {
       Logger.LogDebug($"Participant '{participant.UserId}' is a moderator for room '{Name}'. removing all learners.");
 
@@ -178,7 +204,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       _moderator = null;
     }
 
-    internal void RemoveLearner(Participant participant, bool instantRemove = true)
+    private void RemoveLearner(Participant participant, bool instantRemove = true)
     {
 
       Learner serverParticipant = _learners.Items.FirstOrDefault(x => x.UserId == participant.UserId);

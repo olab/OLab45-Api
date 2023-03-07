@@ -4,6 +4,7 @@ using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.TurkTalk.Commands;
 using OLabWebAPI.Utils;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,13 +19,13 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
   {
     private readonly Conference _conference;
     private readonly ConcurrentList<Room> _rooms;
+
     private string _name;
     public string TopicModeratorsChannel;
     private TopicAtrium _atrium;
 
-    // Needed because there's no such thing as a thread-safe List<>.
-    private static readonly Mutex roomMutex = new Mutex();
     private static readonly Mutex atriumMutex = new Mutex();
+    public ILogger Logger { get { return _conference.Logger; } }
 
     public Conference Conference
     {
@@ -37,8 +38,11 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       private set { _name = value; }
     }
 
-    public ConcurrentList<Room> Rooms { get { return _rooms; } }
-    public ILogger Logger { get { return _conference.Logger; } }
+    public IList<Room> Rooms
+    {
+      get { return _rooms.Items; }
+    }
+
 
     /// <summary>
     /// Constructor
@@ -62,60 +66,47 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
     }
 
     /// <summary>
-    /// Crfeate room in topic
+    /// Get first existing or new/unmoderated newRoom
     /// </summary>
-    /// <returns></returns>
-    public Room CreateRoom()
-    {
-      var room = new Room(this, _rooms.Count);
-      _rooms.Add(room);
-
-      Logger.LogDebug($"Created room '{room.Name}'");
-
-      var index = _rooms.Count - 1;
-      return _rooms[index];
-    }
-
-    /// <summary>
-    /// Get first existing or new/unmoderated room
-    /// </summary>
-    /// <param name="moderator">Moderator requesting room</param>
+    /// <param name="moderator">Moderator requesting newRoom</param>
     /// <returns>Room instance of topic</returns>
-    public Room GetCreateUnmoderatedRoom(Moderator moderator)
+    public Room GetCreateRoom(Moderator moderator)
     {
       Room room = null;
 
       try
       {
-        roomMutex.WaitOne();
+        _rooms.Lock();
 
-        // test if moderator was already assigned to room
-        if (moderator.IsAssignedToRoom())
-        {
-          room = Rooms.Items.FirstOrDefault(x => x.Index == moderator.RoomNumber);
-          if (room != null)
-            Logger.LogDebug($"Returning previously open room '{moderator.RoomName}'");
-          else
-            Logger.LogDebug($"Previously assigned room '{moderator.RoomName}' no longer exists");
-        }
+        // look if moderator was already assigned to newRoom
+        room = Rooms.FirstOrDefault(x => x.Moderator != null && x.Moderator.UserId == moderator.UserId);
+        if (room != null)
+          Logger.LogDebug($"Returning existing moderated room '{room.Name}' by {moderator.UserId}");
+
         else
         {
-          room = Rooms.Items.Where(x => !x.IsModerated).FirstOrDefault();
+          // look for unmoderated, existing room
+          room = Rooms.FirstOrDefault(x => x.Moderator == null);
           if (room != null)
-            Logger.LogDebug($"Returning first unmoderated room '{room.Name}/{room.Index}'");
-          else
-            Logger.LogDebug($"No existing, unmoderated rooms for '{moderator.RoomName}'.");
-        }
+            Logger.LogDebug($"Returning existing unmoderated room '{room.Name}'");
 
-        if (room == null)
-          room = CreateRoom();
+          else
+          { 
+            var newRoom = new Room(this, _rooms.Count);
+            int index = _rooms.Add(newRoom);
+
+            Logger.LogDebug($"Created new room '{_rooms[index].Name}'");
+
+            room = _rooms[index];
+          }
+        }
 
         return room;
 
       }
       finally
       {
-        roomMutex.ReleaseMutex();
+        _rooms.Unlock();
       }
 
     }
@@ -129,40 +120,47 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
 
       try
       {
-        roomMutex.WaitOne();
+        _rooms.Lock();
 
         var count = _rooms.Count;
         return count;
       }
       finally
       {
-        roomMutex.ReleaseMutex();
+        _rooms.Unlock();
       }
 
     }
 
     /// <summary>
-    /// Get room from a room name
+    /// Get newRoom from a newRoom name
     /// </summary>
-    /// <param name="roomName">Fully qualified room name</param>
+    /// <param name="roomName">Fully qualified newRoom name</param>
     /// <returns>Room, or null if not found</returns>
     public Room GetRoom(string roomName)
     {
-      foreach (Room room in Rooms.Items)
+      try
       {
-        if (room.Name == roomName)
-        {
-          Logger.LogDebug($"Found existing room '{roomName}'");
-          return room;
-        }
+        _rooms.Lock();
+
+        var room = Rooms.FirstOrDefault(x => x.Name == roomName);
+        if (room != null)
+          Logger.LogDebug($"Found existing newRoom '{roomName}'");
+        else
+          Logger.LogError($"Room {roomName} does not exist");
+
+        return room;
+
+      }
+      finally
+      {
+        _rooms.Unlock();
       }
 
-      Logger.LogError($"Room {roomName} does not exist");
-      return null;
     }
 
     /// <summary>
-    /// Get session room by index
+    /// Get session newRoom by index
     /// </summary>
     /// <param name="index"></param>
     /// <returns>Room</returns>
@@ -171,36 +169,46 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
 
       try
       {
-        roomMutex.WaitOne();
+        _rooms.Lock();
 
         if (index >= Rooms.Count)
-          throw new ArgumentOutOfRangeException("Invalid topic room instance argument");
+          throw new ArgumentOutOfRangeException("Invalid topic newRoom instance argument");
 
         Room room = _rooms[index];
         return room;
       }
       finally
       {
-        roomMutex.ReleaseMutex();
+        _rooms.Unlock();
       }
 
     }
 
     /// <summary>
-    /// Gets room for Participant
+    /// Gets newRoom for Participant
     /// </summary>
     /// <param name="participant">Participant to check</param>
     internal Room GetParticipantRoom(Participant participant)
     {
-      // go thru each room and remove a (potential)
-      // Participant
-      foreach (Room room in Rooms.Items)
+      try
       {
-        if (room.ParticipantExists(participant))
-          return room;
+        _rooms.Lock();
+
+        // go thru each newRoom and remove a (potential)
+        // Participant
+        foreach (Room room in Rooms)
+        {
+          if (room.ParticipantExists(participant))
+            return room;
+        }
+
+        return null;
+      }
+      finally
+      {
+        _rooms.Unlock();
       }
 
-      return null;
     }
 
     /// <summary>
@@ -212,24 +220,34 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       // first remove from atrium, if exists
       RemoveFromAtrium(participant);
 
-      Room emptyRoom = null;
-
-      // go thru each room and remove a (potential)
-      // Participant
-      foreach (Room room in Rooms.Items)
+      try
       {
-        await room.RemoveParticipantAsync(participant);
+        _rooms.Lock();
 
-        // test if room now has no moderator, meaning we can remove the room
-        if (room.Moderator == null)
+        Room emptyRoom = null;
+
+        // go thru each newRoom and remove a (potential)
+        // Participant
+        foreach (Room room in Rooms)
         {
-          Logger.LogDebug($"Room '{room.Name}' has it's moderator disconnected.  Deleting room");
-          emptyRoom = room;
-        }
-      }
+          await room.RemoveParticipantAsync(participant);
 
-      // delete the room (out of the enumeration)
-      Rooms.Remove(emptyRoom);
+          // test if newRoom now has no moderator, meaning we can remove the newRoom
+          //if (room.Moderator == null)
+          //{
+          //  Logger.LogDebug($"Room '{room.Name}' has it's moderator disconnected.  Deleting newRoom");
+          //  emptyRoom = room;
+          //}
+        }
+
+        // delete the newRoom (out of the enumeration)
+        //Rooms.Remove(emptyRoom);
+
+      }
+      finally
+      {
+        _rooms.Unlock();
+      }
 
       // finally remove (potential) moderator from moderators
       // command channel
@@ -350,7 +368,7 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
             participant.ConnectionId);
         }
 
-        // add Participant to its own group so it can receive room assigments
+        // add Participant to its own group so it can receive newRoom assigments
         await Conference.AddConnectionToGroupAsync(participant);
 
         // notify Participant of atrium assignment
@@ -369,21 +387,32 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
 
     }
 
-    // removes a room from the topic
+    // removes a newRoom from the topic
     internal async Task RemoveRoomAsync(string roomId)
     {
-      Logger.LogDebug($"Removing room '{roomId}'");
+      try
+      {
+        Logger.LogDebug($"Removing newRoom '{roomId}'");
 
-      Room room = Rooms.Items.FirstOrDefault(x => x.Name == roomId);
-      if (room == null)
-        return;
+        _rooms.Lock();
 
-      // remove the room by removing the moderator
-      // which deletes the room
-      await room.RemoveParticipantAsync(room.Moderator);
+        Room room = Rooms.FirstOrDefault(x => x.Name == roomId);
+        if (room == null)
+          return;
 
-      // remove the room from the topic
-      _rooms.Remove(room);
+        // remove the newRoom by removing the moderator
+        // which deletes the newRoom
+        await room.RemoveParticipantAsync(room.Moderator);
+
+        // remove the newRoom from the topic
+        _rooms.Remove(room.Index);
+
+      }
+      finally
+      {
+        _rooms.Unlock();
+      }
+
 
     }
 

@@ -32,7 +32,7 @@ namespace OLabWebAPI.Services.TurkTalk
         _logger.LogInformation($"RegisterModerator: '{roomName}', {isBot} ({ConnectionId.Shorten(Context.ConnectionId)})");
 
         var moderator = new Moderator(roomName, Context);
-        Room room = _conference.GetCreateUnmoderatedTopicRoom(moderator);
+        Room room = _conference.GetCreateTopicRoom(moderator);
 
         // add room index to moderator info
         moderator.AssignToRoom(room.Index);
