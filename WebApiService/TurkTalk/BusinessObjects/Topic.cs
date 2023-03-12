@@ -1,6 +1,6 @@
 using Dawn;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Services.TurkTalk.Contracts;
+using OLabWebAPI.Common.Contracts;
 using OLabWebAPI.TurkTalk.Commands;
 using OLabWebAPI.Utils;
 using System;
