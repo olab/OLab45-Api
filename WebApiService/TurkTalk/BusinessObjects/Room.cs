@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.TurkTalk.Commands;
-using OLabWebAPI.TurkTalk.Contracts;
+using OLabWebAPI.Common.Contracts;
 using OLabWebAPI.Utils;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,5 @@
-﻿using OLabWebAPI.TurkTalk.BusinessObjects;
-using OLabWebAPI.TurkTalk.Contracts;
+﻿using OLabWebAPI.Common.Contracts;
+using OLabWebAPI.TurkTalk.BusinessObjects;
 using System.Collections.Generic;
 
 namespace OLabWebAPI.TurkTalk.Commands

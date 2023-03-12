@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using OLabWebAPI.Services.TurkTalk.Contracts;
 using OLabWebAPI.TurkTalk.BusinessObjects;
-using OLabWebAPI.TurkTalk.Contracts;
+using OLabWebAPI.Common.Contracts;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;

@@ -1,19 +1,10 @@
-﻿using OLabWebAPI.TurkTalk.BusinessObjects;
+﻿
+using OLabWebAPI.TurkTalk.BusinessObjects;
 
-namespace OLabWebAPI.TurkTalk.Contracts
+namespace OLabWebAPI.Common.Contracts
 {
-  public class Envelope
-  {
-    public string To { get; set; }
-    public Learner From { get; set; }
 
-    public Envelope()
-    {
-      From = new Learner();
-    }
-  }
-
-  public class SessionInfo
+    public class SessionInfo
   {
     public string ContextId { get; set; }
     public uint MapId { get; set; }

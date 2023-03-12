@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using OLabWebAPI.TurkTalk.Contracts;
+using OLabWebAPI.Common.Contracts;
 
 namespace OLabWebAPI.TurkTalk.Commands
 {

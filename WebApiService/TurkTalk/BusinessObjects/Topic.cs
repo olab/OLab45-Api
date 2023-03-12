@@ -224,8 +224,6 @@ namespace OLabWebAPI.TurkTalk.BusinessObjects
       {
         _rooms.Lock();
 
-        Room emptyRoom = null;
-
         // go thru each newRoom and remove a (potential)
         // Participant
         foreach (Room room in Rooms)

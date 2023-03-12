@@ -1,4 +1,4 @@
-﻿namespace OLabWebAPI.TurkTalk.Contracts
+﻿namespace OLabWebAPI.Common.Contracts
 {
     public class MapNodeListItem
     {
