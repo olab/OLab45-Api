@@ -54,7 +54,7 @@ namespace OLabWebAPI.Services.TurkTalk
       }
       catch (Exception ex)
       {
-        _logger.LogError($"AssignAttendeeASync exception: {ex.Message}");
+        _logger.LogError($"Message exception: {ex.Message}");
       }
     }
   }
