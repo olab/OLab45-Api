@@ -1,0 +1,11 @@
+[Unit]  
+Description=OLab 4.6 TurkTalk
+[Service]  
+WorkingDirectory=/opt/olab46/ttalk/Release/net6.0
+ExecStart=/opt/olab46/ttalk/Release/net6.0/TurkTalkSvc --urls http://logan.local:5002
+Restart=always  
+RestartSec=10  
+SyslogIdentifier=olab46-ttalk
+User=corey.wirun  
+[Install]  
+WantedBy=multi-user.target 
