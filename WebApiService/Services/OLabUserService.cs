@@ -220,7 +220,13 @@ namespace OLabWebAPI.Services
       user.Id = (uint)Convert.ToInt32( $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "id").Value}" );
 
       var issuedBy = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "iss").Value}";
-      return GenerateJwtToken(user, issuedBy);
+
+      var authenticateResponse = GenerateJwtToken(user, issuedBy);
+
+      // add (any) course name to the authenticate response
+      authenticateResponse.CourseName = readToken.Claims.FirstOrDefault(x => x.Type == "course").Value;
+
+      return authenticateResponse;
     }
 
     /// <summary>

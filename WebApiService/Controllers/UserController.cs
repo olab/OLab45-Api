@@ -119,7 +119,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// Interactive login
     /// </summary>
     /// <param name="model"></param>
-    /// <returns></returns>
+    /// <returns>AuthenticateResponse</returns>
     [AllowAnonymous]
     [HttpPost]
     public IActionResult LoginExternal(ExternalLoginRequest model)
