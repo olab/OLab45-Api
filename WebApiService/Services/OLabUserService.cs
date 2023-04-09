@@ -218,13 +218,14 @@ namespace OLabWebAPI.Services
       user.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
       user.Nickname = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
       user.Id = (uint)Convert.ToInt32( $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "id").Value}" );
+      user.Settings = readToken.Claims.FirstOrDefault(x => x.Type == "course").Value;
 
       var issuedBy = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "iss").Value}";
 
       var authenticateResponse = GenerateJwtToken(user, issuedBy);
 
       // add (any) course name to the authenticate response
-      authenticateResponse.CourseName = readToken.Claims.FirstOrDefault(x => x.Type == "course").Value;
+      authenticateResponse.CourseName = user.Settings;
 
       return authenticateResponse;
     }
@@ -248,7 +249,8 @@ namespace OLabWebAPI.Services
           new Claim(ClaimTypes.Role, $"{user.Role}"),
           new Claim("name", user.Nickname),
           new Claim("sub", user.Username),
-          new Claim("id", $"{user.Id}")
+          new Claim("id", $"{user.Id}"),
+          new Claim(ClaimTypes.UserData, $"{user.Settings}")
         }),
         Expires = DateTime.UtcNow.AddDays(7),
         Issuer = issuedBy,
