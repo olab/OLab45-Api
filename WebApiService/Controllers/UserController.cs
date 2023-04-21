@@ -118,6 +118,32 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <summary>
     /// Interactive login
     /// </summary>
+    /// <param name="mapId">map id to run</param>
+    /// <returns>AuthenticateResponse</returns>
+    [AllowAnonymous]
+    [HttpGet("{mapId}")]
+    public IActionResult LoginAnonymous(uint mapId)
+    {
+      logger.LogDebug($"LoginAnonymous(mapId = '{mapId}')");
+
+      try
+      {
+        AuthenticateResponse response = _userService.AuthenticateAnonymously(mapId);
+        if (response == null)
+          return BadRequest(new { statusCode = 401, message = "Unable to log on anonymously" });
+
+        return Ok(response);
+
+      }
+      catch (Exception ex)
+      {
+        return BadRequest(new { statusCode = 401, message = ex.Message });
+      }
+    }
+
+    /// <summary>
+    /// Interactive login
+    /// </summary>
     /// <param name="model"></param>
     /// <returns>AuthenticateResponse</returns>
     [AllowAnonymous]

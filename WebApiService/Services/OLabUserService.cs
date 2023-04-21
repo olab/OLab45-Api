@@ -80,6 +80,16 @@ namespace OLabWebAPI.Services
     }
 
     /// <summary>
+    /// Authenticate anonymously
+    /// </summary>
+    /// <param name="model">Login model</param>
+    /// <returns>Authenticate response, or null</returns>
+    public AuthenticateResponse AuthenticateAnonymously(uint mapId)
+    {
+      return GenerateAnonymousJwtToken(mapId);
+    }
+
+    /// <summary>
     /// Authenticate external-issued token
     /// </summary>
     /// <param name="model">Login model</param>
@@ -189,6 +199,49 @@ namespace OLabWebAPI.Services
     {
       return epoch.AddSeconds(unixTime);
     }
+
+    /// <summary>
+    /// Generate JWT token for anonymous use
+    /// </summary>
+    /// <param name="mapId">map id to query</param>
+    /// <returns>AuthenticateResponse</returns>
+    private AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
+    {
+      // get user flagged for anonymous use
+      var serverUser = _context.Users.FirstOrDefault(x => x.Group == "anonymous");
+      if (serverUser == null)
+      {
+        _logger.LogError($"No user is defined for anonymous map play");
+        return null;
+      }
+
+      var map = _context.Maps.FirstOrDefault( x => x.Id == mapId);
+      if ( map == null )
+      { 
+        _logger.LogError($"Map {mapId} is not defined for anonymous map play");
+        return null;
+      }
+
+      // test for 'open' map
+      if ( map.SecurityId != 1 ) 
+      { 
+        _logger.LogError($"Map {mapId} is not configured for anonymous map play");
+        return null;
+      }
+
+      Users user = new Users();
+
+      user.Username = serverUser.Username;
+      user.Role = serverUser.Role;
+      user.Nickname = serverUser.Nickname;
+      user.Id = serverUser.Id;
+      var issuedBy = "olab";
+
+      var authenticateResponse = GenerateJwtToken(user, issuedBy);
+
+      return authenticateResponse;
+    }
+
 
     /// <summary>
     /// Generate JWT token from external one
