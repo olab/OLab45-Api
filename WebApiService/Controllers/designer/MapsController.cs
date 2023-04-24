@@ -97,6 +97,30 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         }
 
         /// <summary>
+        /// Deletes a node link
+        /// </summary>
+        /// <param name="mapId">Map id</param>
+        /// <param name="linkId">Link id</param>
+        /// <returns>IActionResult</returns>
+        [HttpDelete("{mapId}/links/{linkId}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> DeleteMapNodeLinkAsync(uint mapId, uint linkId)
+        {
+            try
+            {
+                var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+                bool deleted = await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, linkId);
+                return OLabObjectResult<bool>.Result(deleted);
+            }
+            catch (Exception ex)
+            {
+                if (ex is OLabUnauthorizedException)
+                    return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+                return OLabServerErrorResult.Result(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Create a new node
         /// </summary>
         /// <returns>IActionResult</returns>
