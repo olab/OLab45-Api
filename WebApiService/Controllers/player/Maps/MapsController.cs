@@ -39,15 +39,14 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        MapsFullDto mapDto = await _endpoint.GetAsync(auth, id);
+        Maps map = await _endpoint.GetSimpleAnonymousAsync(id);
         MapsTestAccessDto dto = new MapsTestAccessDto
         {
-          Id = mapDto.Id,
-          SecurityId = mapDto.SecurityId
+          Id = map.Id,
+          SecurityId = map.SecurityId
         };
 
-        return OLabObjectResult<MapsTestAccessDto>.Result(dto);
+        return Ok(dto);
       }
       catch (OLabObjectNotFoundException)
       {
