@@ -130,7 +130,7 @@ namespace OLabWebAPI.Endpoints.WebApi
       {
         AuthenticateResponse response = _userService.AuthenticateAnonymously(mapId);
         if (response == null)
-          return BadRequest(new { statusCode = 401, message = "Unable to log on anonymously" });
+          return BadRequest(new { statusCode = 401, message = "Must be Logged on to Play Map" });
 
         return Ok(response);
 
