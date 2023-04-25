@@ -1,3 +1,4 @@
+using Humanizer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -58,9 +59,9 @@ namespace OLabWebAPI.Endpoints.WebApi
 
       AuthenticateResponse response = _userService.Authenticate(model);
       if (response == null)
-        return BadRequest(new { statusCode = 401, message = "Username or password is incorrect" });
+        return OLabUnauthorizedObjectResult<string>.Result("Username or password is incorrect");
 
-      return Ok(response);
+      return OLabObjectResult<AuthenticateResponse>.Result(response);
     }
 
     /// <summary>
@@ -130,9 +131,9 @@ namespace OLabWebAPI.Endpoints.WebApi
       {
         AuthenticateResponse response = _userService.AuthenticateAnonymously(mapId);
         if (response == null)
-          return BadRequest(new { statusCode = 401, message = "Must be Logged on to Play Map" });
+          return OLabUnauthorizedObjectResult<string>.Result("Must be Logged on to Play Map");
 
-        return Ok(response);
+        return OLabObjectResult<AuthenticateResponse>.Result(response);
 
       }
       catch (Exception ex)
@@ -255,10 +256,10 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       Users user = _userService.GetByUserName(userRequest.Username);
       if (user != null)
-        return new AddUserResponse 
-        { 
-          Username = userRequest.Username.ToLower(), 
-          Message = $"Already exists" 
+        return new AddUserResponse
+        {
+          Username = userRequest.Username.ToLower(),
+          Message = $"Already exists"
         };
 
       var newUser = Users.CreateDefault(userRequest);
