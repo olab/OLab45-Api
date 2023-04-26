@@ -23,7 +23,6 @@ namespace OLabWebAPI.Services
             this.context = context;
             this.httpContext = httpContext;
             userContext = new UserContext(logger, context, httpContext);
-
         }
 
         public IUserContext GetUserContext()

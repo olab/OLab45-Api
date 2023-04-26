@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Importer;
 using OLabWebAPI.Model;
+using OLabWebAPI.Services;
 using OLabWebAPI.Utils;
 using System;
 using System.IO;
@@ -42,7 +43,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       try
       {
-        logger.LogInformation($"UploadAsync: file name '{file.FileName}', size {file.Length}");
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
         // test if user has access to import.
         var userContext = new UserContext(logger, dbContext, HttpContext);
@@ -86,8 +87,10 @@ namespace OLabWebAPI.Endpoints.WebApi
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public IActionResult Post(IFormFile file)
     {
+      var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+
       // test if user has access to map.
-      var userContext = new UserContext(logger, dbContext, HttpContext);
+      var userContext = auth.GetUserContext();
       if (!userContext.HasAccess("X", "Import", 0))
         return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
 

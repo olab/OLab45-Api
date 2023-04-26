@@ -37,7 +37,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        OLabAPIPagedResponse<ConstantsDto> pagedResult = await _endpoint.GetAsync(take, skip);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        OLabAPIPagedResponse<ConstantsDto> pagedResult = await _endpoint.GetAsync(auth, take, skip);
         return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
       catch (Exception ex)

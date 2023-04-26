@@ -168,6 +168,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         OLabAPIPagedResponse<FilesDto> pagedResult = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
@@ -244,7 +245,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        logger.LogDebug($"FilesController.PostAsync()");
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         var dto = new FilesFullDto(Request.Form);
 
         var builder = new FilesFull(logger);
@@ -260,7 +261,6 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         MimeTypes.TryGetMimeType(phys.Path, out var mimeType);
         phys.Mime = mimeType;
 
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         dto = await _endpoint.PostAsync(auth, phys);
 
         // successful save to database, copy the file to the

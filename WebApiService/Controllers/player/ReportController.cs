@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using OLabWebAPI.Utils;
 using Microsoft.Extensions.Options;
 using Endpoints.player.ReportEndpoint;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -36,7 +37,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var response = await _endpoint.GetAsync(sessionId);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var response = await _endpoint.GetAsync(auth, sessionId);
         return OLabObjectResult<SessionReport>.Result(response);
       }
       catch (Exception ex)
