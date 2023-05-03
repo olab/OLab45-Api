@@ -50,6 +50,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     public IActionResult Login(LoginRequest model)
     {
       var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
+
       if (string.IsNullOrEmpty(ipAddress))
         ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
 
@@ -62,58 +63,6 @@ namespace OLabWebAPI.Endpoints.WebApi
         return OLabUnauthorizedObjectResult<string>.Result("Username or password is incorrect");
 
       return OLabObjectResult<AuthenticateResponse>.Result(response);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    private RefreshToken CreateRefreshToken()
-    {
-      var randomNumber = new byte[32];
-      using (var generator = RandomNumberGenerator.Create())
-      {
-        generator.GetBytes(randomNumber);
-        return new RefreshToken
-        {
-          Token = Convert.ToBase64String(randomNumber),
-          Expires = DateTime.UtcNow.AddDays(10),
-          Created = DateTime.UtcNow
-        };
-
-      }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult ChangePassword(ChangePasswordRequest model)
-    {
-      logger.LogDebug($"ChangePassword(user = '{model.Username}')");
-
-      model.Username = model.Username.ToLower();
-
-      // authenticate target user with their password
-      AuthenticateResponse response = _userService.Authenticate(
-        new LoginRequest
-        {
-          Username = model.Username,
-          Password = model.Password
-        });
-
-      if (response == null)
-        return BadRequest(new { message = "Username or password is incorrect" });
-
-      Users user = _userService.GetByUserName(model.Username);
-      _userService.ChangePassword(user, model);
-
-      dbContext.Users.Update(user);
-
-      return Ok();
     }
 
     /// <summary>
@@ -252,6 +201,38 @@ namespace OLabWebAPI.Endpoints.WebApi
 
     }
 
+    /// <summary>
+    /// User change password
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult ChangePassword(ChangePasswordRequest model)
+    {
+      logger.LogDebug($"ChangePassword(user = '{model.Username}')");
+
+      model.Username = model.Username.ToLower();
+
+      // authenticate target user with their password
+      AuthenticateResponse response = _userService.Authenticate(
+        new LoginRequest
+        {
+          Username = model.Username,
+          Password = model.Password
+        });
+
+      if (response == null)
+        return BadRequest(new { message = "Username or password is incorrect" });
+
+      Users user = _userService.GetByUserName(model.Username);
+      _userService.ChangePassword(user, model);
+
+      dbContext.Users.Update(user);
+
+      return Ok();
+    }
+
     private async Task<AddUserResponse> ProcessUserRequest(AddUserRequest userRequest)
     {
       Users user = _userService.GetByUserName(userRequest.Username);
@@ -283,4 +264,5 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
   }
+
 }
