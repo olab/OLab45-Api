@@ -2,17 +2,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Dto.Designer;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Model;
+using OLabWebAPI.Services;
+using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
-using OLabWebAPI.Utils;
-using Microsoft.Extensions.Options;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer
 {

@@ -208,28 +208,28 @@ namespace OLabWebAPI.Services
     private AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
     {
       // get user flagged for anonymous use
-      var serverUser = _context.Users.FirstOrDefault(x => x.Group == "anonymous");
+      Users serverUser = _context.Users.FirstOrDefault(x => x.Group == "anonymous");
       if (serverUser == null)
       {
         _logger.LogError($"No user is defined for anonymous map play");
         return null;
       }
 
-      var map = _context.Maps.FirstOrDefault( x => x.Id == mapId);
-      if ( map == null )
-      { 
+      Maps map = _context.Maps.FirstOrDefault(x => x.Id == mapId);
+      if (map == null)
+      {
         _logger.LogError($"Map {mapId} is not defined for anonymous map play");
         return null;
       }
 
       // test for 'open' map
-      if ( map.SecurityId != 1 ) 
-      { 
+      if (map.SecurityId != 1)
+      {
         _logger.LogError($"Map {mapId} is not configured for anonymous map play");
         return null;
       }
 
-      Users user = new Users();
+      var user = new Users();
 
       user.Username = serverUser.Username;
       user.Role = serverUser.Role;
@@ -237,7 +237,7 @@ namespace OLabWebAPI.Services
       user.Id = serverUser.Id;
       var issuedBy = "olab";
 
-      var authenticateResponse = GenerateJwtToken(user, issuedBy);
+      AuthenticateResponse authenticateResponse = GenerateJwtToken(user, issuedBy);
 
       return authenticateResponse;
     }
@@ -265,17 +265,17 @@ namespace OLabWebAPI.Services
 
       var jwtToken = (JwtSecurityToken)validatedToken;
 
-      Users user = new Users();
+      var user = new Users();
 
       user.Username = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
       user.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
       user.Nickname = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
-      user.Id = (uint)Convert.ToInt32( $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "id").Value}" );
+      user.Id = (uint)Convert.ToInt32($"{jwtToken.Claims.FirstOrDefault(x => x.Type == "id").Value}");
       user.Settings = readToken.Claims.FirstOrDefault(x => x.Type == "course").Value;
 
       var issuedBy = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "iss").Value}";
 
-      var authenticateResponse = GenerateJwtToken(user, issuedBy);
+      AuthenticateResponse authenticateResponse = GenerateJwtToken(user, issuedBy);
 
       // add (any) course name to the authenticate response
       authenticateResponse.CourseName = user.Settings;
@@ -289,7 +289,7 @@ namespace OLabWebAPI.Services
     /// <param name="user">User record from database</param>
     /// <returns>AuthenticateResponse</returns>
     /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
-    private AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab" )
+    private AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab")
     {
       var securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));

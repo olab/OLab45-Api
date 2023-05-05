@@ -90,7 +90,7 @@ namespace OLabWebAPI.Endpoints.WebApi
       var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
       // test if user has access to map.
-      var userContext = auth.GetUserContext();
+      Data.Interface.IUserContext userContext = auth.GetUserContext();
       if (!userContext.HasAccess("X", "Import", 0))
         return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
 

@@ -2,17 +2,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Data;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Player;
 using OLabWebAPI.Model;
+using OLabWebAPI.Services;
+using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
-using OLabWebAPI.Utils;
-using Microsoft.Extensions.Options;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -42,7 +41,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       {
         var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
-        var userContext = auth.GetUserContext();
+        Data.Interface.IUserContext userContext = auth.GetUserContext();
         _endpoint.SetUserContext(userContext);
 
         SystemQuestions question = await GetQuestionAsync(body.QuestionId);

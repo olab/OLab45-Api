@@ -1,4 +1,3 @@
-using Humanizer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +39,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       try
       {
         Maps map = await _endpoint.GetSimpleAnonymousAsync(id);
-        MapsTestAccessDto dto = new MapsTestAccessDto
+        var dto = new MapsTestAccessDto
         {
           Id = map.Id,
           SecurityId = map.SecurityId

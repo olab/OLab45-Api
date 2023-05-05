@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
@@ -9,10 +10,9 @@ using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Endpoints.WebApi.Player;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
+using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
-using OLabWebAPI.Utils;
-using Microsoft.Extensions.Options;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer
 {
@@ -109,7 +109,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
       try
       {
         var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        bool deleted = await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, linkId);
+        var deleted = await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, linkId);
         return OLabObjectResult<bool>.Result(deleted);
       }
       catch (Exception ex)

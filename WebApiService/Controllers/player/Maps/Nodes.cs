@@ -33,7 +33,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         var userContext = new UserContext(logger, dbContext, HttpContext);
         _endpoint.SetUserContext(userContext);
 
-        var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
+        MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
 
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }

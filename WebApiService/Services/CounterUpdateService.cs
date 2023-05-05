@@ -3,16 +3,16 @@ using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services
 {
-    public class CounterUpdateService : Hub
+  public class CounterUpdateService : Hub
+  {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public async Task SendMessage(string message)
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public async Task SendMessage(string message)
-        {
-            await Clients.All.SendAsync("newMessage", "anonymous", message);
-        }
+      await Clients.All.SendAsync("newMessage", "anonymous", message);
     }
+  }
 }

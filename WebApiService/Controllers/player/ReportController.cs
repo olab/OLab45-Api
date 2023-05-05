@@ -1,17 +1,17 @@
 using Data.Contracts;
+using Endpoints.player.ReportEndpoint;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Model;
+using OLabWebAPI.Services;
+using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
-using OLabWebAPI.Utils;
-using Microsoft.Extensions.Options;
-using Endpoints.player.ReportEndpoint;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -38,7 +38,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       try
       {
         var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        var response = await _endpoint.GetAsync(auth, sessionId);
+        SessionReport response = await _endpoint.GetAsync(auth, sessionId);
         return OLabObjectResult<SessionReport>.Result(response);
       }
       catch (Exception ex)
