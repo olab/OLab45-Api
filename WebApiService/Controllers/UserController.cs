@@ -106,7 +106,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         if (response == null)
           return BadRequest(new { statusCode = 401, message = "Invalid external token" });
 
-        return Ok(response);
+        return OLabObjectResult<AuthenticateResponse>.Result(response);
 
       }
       catch (Exception ex)
