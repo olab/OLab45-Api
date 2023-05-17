@@ -19,7 +19,7 @@ namespace OLabWebAPI.Services
     private readonly AppSettings _appSettings;
     private readonly OLabDBContext _context;
     private readonly ILogger _logger;
-    private readonly IList<Users> _users;
+    //private readonly IList<Users> _users;
     private static TokenValidationParameters _tokenParameters;
 
     public OLabUserService(ILogger logger, IOptions<AppSettings> appSettings, OLabDBContext context)
@@ -29,7 +29,7 @@ namespace OLabWebAPI.Services
       _context = context;
       _logger = logger;
 
-      _users = _context.Users.OrderBy(x => x.Id).ToList();
+      //_users = _context.Users.OrderBy(x => x.Id).ToList();
 
       _logger.LogDebug($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
 
@@ -106,7 +106,7 @@ namespace OLabWebAPI.Services
     /// <returns>Authenticate response, or null</returns>
     public AuthenticateResponse Authenticate(LoginRequest model)
     {
-      Users user = _users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+      Users user = _context.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
       // return null if user not found
       if (user != null)
@@ -148,7 +148,7 @@ namespace OLabWebAPI.Services
     /// <returns>Enumerable list of users</returns>
     public IEnumerable<Users> GetAll()
     {
-      return _users;
+      return _context.Users.ToList();
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ namespace OLabWebAPI.Services
     /// <returns>User record</returns>
     public Users GetById(int id)
     {
-      return _users.FirstOrDefault(x => x.Id == id);
+      return _context.Users.FirstOrDefault(x => x.Id == id);
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ namespace OLabWebAPI.Services
     /// <returns>User record</returns>
     public Users GetByUserName(string userName)
     {
-      return _users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
+      return _context.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
     }
 
     /// <summary>
