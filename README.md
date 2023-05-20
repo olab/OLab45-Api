@@ -155,9 +155,6 @@ RestartSec=10
 # enter your system user here
 User=olab 
 Environment="ASPNETCORE_ENVIRONMENT=Production"
-Environment="DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1"
-Environment="DOTNET_ROOT=/root/.dotnet"
-Environment=PATH=/root/.dotnet:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 [Install]  
 WantedBy=multi-user.target
