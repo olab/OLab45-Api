@@ -8,11 +8,17 @@ The API service requires .NET 6+ and MySQL or MariaDB installed. The instruction
 
 ### Prerequisites
 
-The following commands will install the mysql server/client, nginx, in addition to some packages needed for the build, and whitelist the http/https ports for `firewalld`.
+The following commands will install the mysql server/client, dotnet sdk, nginx, in addition to some packages needed for the build, and whitelist the http/https ports for `firewalld`.
 
 ```sh
 # update packages
 sudo dnf update
+
+# install .net 6
+sudo dnf install dotnet-sdk-6.0
+
+# verify you have .net 6 installed
+dotnet --version
 
 # install mariadb server and client - https://mariadb.com/kb/en/yum/
 sudo dnf install mariadb-server
@@ -37,47 +43,6 @@ sudo firewall-cmd --reload
 
 # install extra dependencies needed
 sudo dnf install git wget tar
-```
-
-### .NET 6
-
-As a root user, download the installer and install dotnet sdk from the `6.0` channel:
-
-```sh
-# get install helper
-wget https://dot.net/v1/dotnet-install.sh -O /usr/bin/dotnet-install
-chmod +x /usr/bin/dotnet-install
-
-# install dotnet 6.0
-dotnet-install --channel 6.0
-```
-
-Add the environment variables for the root user bash prompt:
-
-```sh
-sudo vi /root/.bash_profile # or ~/.bashrc if you don't have one
-```
-
-Append the following lines towards the end of the file:
-
-```sh
-export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
-export DOTNET_ROOT="$HOME/.dotnet"
-export PATH="$PATH:/root/.dotnet:/root/.dotnet/tools"
-```
-
-Apply your recent changes to your current bash session:
-
-```sh
-. /root/.bash_profile
-```
-
-Verify you have .NET 6 installed: `dotnet --version` or `dotnet --info`
-
-Lastly, we want to create a symbolic link for `dotnet` binary to be accessible by all users:
-
-```sh
-test -f /usr/bin/dotnet || ln -s $(which dotnet) /usr/bin/dotnet
 ```
 
 ## Building the API service
