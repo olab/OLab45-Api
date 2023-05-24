@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Data.Exceptions;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Endpoints.WebApi.Player;
@@ -13,6 +14,7 @@ using OLabWebAPI.Services;
 using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer
 {
@@ -211,7 +213,110 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
+    }
 
+    /// <summary>
+    /// Get a list of users
+    /// </summary>
+    /// <param name="mapId"></param>
+    /// <returns></returns>
+    [HttpGet("{mapId}/securityusers/candidates")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult GetMapAccessCandidates(uint mapId)
+    {
+      try
+			{
+        Maps map = dbContext.Maps.Find(mapId);
+
+        if (map == null)
+          throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
+
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+
+        // only allow users with write-access to list olab users users from this endpoint
+        if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
+          throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
+
+        var dtos = _endpoint.GetMapAccessCandidates(map);
+
+        return OLabObjectResult<IList<Users>>.Result(dtos);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+    }
+
+		/// <summary>
+		/// Insert a user to the users table
+		/// </summary>
+		/// <param name="mapId">Relevent map object</param>
+		/// <returns></returns>
+		[HttpPut("{mapId}/securityusers/candidates")]
+		[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+		public async Task<IActionResult> InsertMapAccessCandidate(uint mapId, [FromBody] MapAccessCandidateRequest body)
+		{
+			try
+			{
+				Maps map = dbContext.Maps.Find(mapId);
+
+				if (map == null)
+					throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
+
+				var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+
+				// only allow users with write-access to list olab users users from this endpoint
+				if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
+					throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
+
+        body.MapId = map.Id;
+
+				var dto = await _endpoint.PutMapAccessCandidate(map, body);
+
+				return OLabObjectResult<bool>.Result(dto);
+			}
+			catch (Exception ex)
+			{
+				if (ex is OLabUnauthorizedException)
+					return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+				return OLabServerErrorResult.Result(ex.Message);
+			}
+		}
+
+		/// <summary>
+		/// Get a list of security users for a given map
+		/// </summary>
+		/// <param name="mapId"></param>
+		/// <returns></returns>
+		[HttpGet("{mapId}/securityusers")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult GetSecurityUsersAsync(uint mapId)
+    {
+      try
+      {
+        Maps map = dbContext.Maps.Find(mapId);
+
+        if (map == null)
+          throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
+
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+
+        // only allow users with write-access to list map security users
+        if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
+          throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
+
+        var dtos = _endpoint.GetSecurityUsersRaw(map);
+
+        return OLabObjectResult<IList<SecurityUsers>>.Result(dtos);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
     }
 
     /// <summary>
