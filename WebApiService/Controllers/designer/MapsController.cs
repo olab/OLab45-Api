@@ -225,7 +225,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     public IActionResult GetMapAccessCandidates(uint mapId)
     {
       try
-			{
+      {
         Maps map = dbContext.Maps.Find(mapId);
 
         if (map == null)
@@ -249,50 +249,50 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
       }
     }
 
-		/// <summary>
-		/// Insert a user to the users table
-		/// </summary>
-		/// <param name="mapId">Relevent map object</param>
-		/// <returns></returns>
-		[HttpPut("{mapId}/securityusers/candidates")]
-		[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-		public async Task<IActionResult> InsertMapAccessCandidate(uint mapId, [FromBody] MapAccessCandidateRequest body)
-		{
-			try
-			{
-				Maps map = dbContext.Maps.Find(mapId);
+    /// <summary>
+    /// Insert a user to the users table
+    /// </summary>
+    /// <param name="mapId">Relevent map object</param>
+    /// <returns></returns>
+    [HttpPut("{mapId}/securityusers/candidates")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> InsertMapAccessCandidateAsync(uint mapId, [FromBody] MapAccessCandidateRequest body)
+    {
+      try
+      {
+        Maps map = dbContext.Maps.Find(mapId);
 
-				if (map == null)
-					throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
+        if (map == null)
+          throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
 
-				var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
-				// only allow users with write-access to list olab users users from this endpoint
-				if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
-					throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
+        // only allow users with write-access to list olab users users from this endpoint
+        if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
+          throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
 
         body.MapId = map.Id;
 
-				var dto = await _endpoint.PutMapAccessCandidate(map, body);
+        var result = await _endpoint.PutMapAccessCandidateAsync(map, body);
 
-				return OLabObjectResult<bool>.Result(dto);
-			}
-			catch (Exception ex)
-			{
-				if (ex is OLabUnauthorizedException)
-					return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-				return OLabServerErrorResult.Result(ex.Message);
-			}
-		}
+        return OLabObjectResult<bool>.Result(result);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+    }
 
-		/// <summary>
-		/// Get a list of security users for a given map
-		/// </summary>
-		/// <param name="mapId"></param>
-		/// <returns></returns>
-		[HttpGet("{mapId}/securityusers")]
+    /// <summary>
+    /// Get a list of security users for a given map
+    /// </summary>
+    /// <param name="mapId"></param>
+    /// <returns></returns>
+    [HttpGet("{mapId}/securityusers")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult GetSecurityUsersAsync(uint mapId)
+    public IActionResult GetSecurityUsers(uint mapId)
     {
       try
       {
@@ -310,6 +310,75 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         var dtos = _endpoint.GetSecurityUsersRaw(map);
 
         return OLabObjectResult<IList<SecurityUsers>>.Result(dtos);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+    }
+
+    /// <summary>
+    /// Assign a security user to a given map
+    /// </summary>
+    /// <param name="mapId"></param>
+    /// <returns></returns>
+    [HttpPost("{mapId}/securityusers")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> SetMapSecurityUserAsync(uint mapId, [FromBody] AssignSecurityUserRequest body)
+    {
+      try
+      {
+        Maps map = dbContext.Maps.Find(mapId);
+
+        if (map == null)
+          throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
+
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+
+        // only allow users with write-access to list map security users
+        if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
+          throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
+
+        var result = await _endpoint.SetMapSecurityUserAsync(map, body);
+
+        return OLabObjectResult<bool>.Result(result);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+    }
+
+    /// <summary>
+    /// Unassign a security user from a given map
+    /// </summary>
+    /// <param name="mapId">Map ID</param>
+    /// <param name="userId">User ID</param>
+    /// <returns></returns>
+    [HttpDelete("{mapId}/securityusers/{userId}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> UnsetMapSecurityUserAsync(uint mapId, uint userId)
+    {
+      try
+      {
+        Maps map = dbContext.Maps.Find(mapId);
+
+        if (map == null)
+          throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
+
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+
+        // only allow users with write-access to list map security users
+        if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
+          throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
+
+        var result = await _endpoint.UnsetMapSecurityUserAsync(map, userId);
+
+        return OLabObjectResult<bool>.Result(result);
       }
       catch (Exception ex)
       {
