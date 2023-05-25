@@ -1,5 +1,5 @@
-using Mapster;
-using MapsterMapper;
+//using Mapster;
+//using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -23,14 +23,14 @@ using IUserService = OLabWebAPI.Services.IUserService;
 namespace OLabWebAPI
 {
 
-  public static class MapsterConfiguration
-  {
-    public static void AddMapster(this IServiceCollection services)
-    {
-      var config = TypeAdapterConfig.GlobalSettings;
-      config.Scan(AppDomain.CurrentDomain.GetAssemblies());
-    }
-  }
+  //public static class MapsterConfiguration
+  //{
+  //  public static void AddMapster(this IServiceCollection services)
+  //  {
+  //    var config = TypeAdapterConfig.GlobalSettings;
+  //    config.Scan(AppDomain.CurrentDomain.GetAssemblies());
+  //  }
+  //}
 
   public class Startup
   {
@@ -79,9 +79,9 @@ namespace OLabWebAPI
 
       });
 
-      services.AddMapster();
-      services.AddSingleton(TypeAdapterConfig.GlobalSettings);
-      services.AddScoped<IMapper, ServiceMapper>();
+      //services.AddMapster();
+      //services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+      //services.AddScoped<IMapper, ServiceMapper>();
 
       // Additional code to register the ILogger as a ILogger<T> where T is the Startup class
       services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
