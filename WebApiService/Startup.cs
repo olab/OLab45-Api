@@ -1,3 +1,5 @@
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -8,21 +10,43 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using OLabWebAPI.Data;
 using OLabWebAPI.Data.Interface;
+using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.Services;
 using OLabWebAPI.Utils;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using IOLabSession = OLabWebAPI.Data.Interface.IOLabSession;
 using IUserService = OLabWebAPI.Services.IUserService;
 
 namespace OLabWebAPI
 {
+
+  public static class MapsterConfiguration
+  {
+    public static void AddMapster(this IServiceCollection services)
+    {
+      var config = TypeAdapterConfig.GlobalSettings;
+      config.Scan(AppDomain.CurrentDomain.GetAssemblies());
+    }
+  }
+
   public class Startup
   {
     public IConfiguration Configuration { get; }
+    private readonly ILogger<Startup> _logger;
 
     public Startup(IConfiguration configuration)
     {
       Configuration = configuration;
+      using var loggerFactory = LoggerFactory.Create(builder =>
+      {
+        builder.SetMinimumLevel(LogLevel.Information);
+        builder.AddConsole();
+        builder.AddEventSourceLogger();
+      });
+      _logger = loggerFactory.CreateLogger<Startup>();
     }
 
     // This method gets called by the runtime. Use this method to add services to the container.
@@ -55,6 +79,10 @@ namespace OLabWebAPI
 
       });
 
+      services.AddMapster();
+      services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+      services.AddScoped<IMapper, ServiceMapper>();
+
       // Additional code to register the ILogger as a ILogger<T> where T is the Startup class
       services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
 
@@ -83,7 +111,7 @@ namespace OLabWebAPI
       // );
 
       // MoodleJWTService.Setup(Configuration, services);
-      OLabJWTService.Setup(Configuration, services);
+      OLabJWTService.Setup(_logger, Configuration, services);
 
       services.AddTransient<IUserContext, UserContext>();
 
