@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OLabWebAPI.Utils;
 using System;
@@ -18,6 +19,7 @@ namespace OLabWebAPI.Services
     protected static string _jwtAudience;
     protected static string _signingSecret;
     public static TokenValidationParameters _tokenParameters;
+    protected static ILogger _logger;
 
     protected abstract void AttachUserToContext(HttpContext httpContext,
                                      IUserService userService,
@@ -113,10 +115,13 @@ namespace OLabWebAPI.Services
     {
       var token = AccessTokenUtils.ExtractAccessToken(context.Request, true);
 
-      if (token != null)
+      if (!string.IsNullOrEmpty(token))
+      {
+        _logger.LogInformation($"attaching user context to: {context.Request.Path}");
         AttachUserToContext(context,
                             userService,
                             token);
+      }
 
       await _next(context);
     }

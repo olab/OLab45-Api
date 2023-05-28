@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace OLabWebAPI.Services
@@ -16,10 +18,13 @@ namespace OLabWebAPI.Services
     {
     }
 
-    public static void Setup(IConfiguration config, IServiceCollection services)
+    public static void Setup(ILogger logger, IConfiguration config, IServiceCollection services)
     {
+      _logger = logger;
+
       _securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(config["AppSettings:Secret"][..16]));
+
       SetupConfiguration(config);
 
       SetupServices(services, GetValidationParameters());
@@ -40,6 +45,13 @@ namespace OLabWebAPI.Services
         var issuedBy = jwtToken.Claims.FirstOrDefault(x => x.Type == "iss").Value;
         var userName = jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value;
         var role = jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value;
+
+        _logger.LogInformation($"Request claim for {httpContext.Request.Path}:");
+        string claimValues = "";
+        foreach (var claim in jwtToken.Claims)
+          claimValues += $"{claim.Type} = {claim.Value}\n";
+
+        _logger.LogInformation(claimValues);
 
         var nickName = "";
         if (jwtToken.Claims.Any(x => x.Type == "name"))
