@@ -48,8 +48,14 @@ namespace OLabWebAPI.Services
       var jwtAudience = appSettings.Audience;
       var signingSecret = appSettings.Secret;
 
+      if (string.IsNullOrEmpty(jwtAudience))
+        throw new SystemException("Audience must be provided");
+
+      if (signingSecret.Length < 32)
+        throw new SystemException("Signing secret must be 32 characters");
+
       var securityKey =
-        new SymmetricSecurityKey(Encoding.Default.GetBytes(signingSecret[..16]));
+        new SymmetricSecurityKey(Encoding.Default.GetBytes(signingSecret[..32]));
 
       var tokenParameters = new TokenValidationParameters
       {
@@ -292,7 +298,7 @@ namespace OLabWebAPI.Services
     private AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab")
     {
       var securityKey =
-        new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
+        new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..32]));
 
       var tokenDescriptor = new SecurityTokenDescriptor
       {

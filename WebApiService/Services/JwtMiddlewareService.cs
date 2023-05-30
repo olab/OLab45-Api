@@ -47,7 +47,7 @@ namespace OLabWebAPI.Services
         validIssuers.Add(issuerPart.Trim());
 
       var securityKey =
-        new SymmetricSecurityKey(Encoding.Default.GetBytes(_signingSecret[..16]));
+        new SymmetricSecurityKey(Encoding.Default.GetBytes(_signingSecret[..32]));
 
       _tokenParameters = new TokenValidationParameters
       {
