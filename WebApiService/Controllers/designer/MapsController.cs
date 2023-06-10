@@ -15,6 +15,8 @@ using OLabWebAPI.Utils;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer
 {
@@ -239,7 +241,20 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
 
         var dtos = _endpoint.GetMapAccessCandidates(map, search ?? "");
 
-        return OLabObjectResult<IList<Users>>.Result(dtos);
+        var list = new List<Hashtable>();
+
+        foreach( var user in dtos )
+        {
+          list.Add(new Hashtable
+          {
+            { "id", user.Id },
+            { "email", user.Email },
+            { "username", user.Username },
+            { "nickname", user.Nickname },
+          });
+        }
+
+        return OLabObjectResult<IList<Hashtable>>.Result(list);
       }
       catch (Exception ex)
       {
@@ -275,7 +290,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
 
         var result = await _endpoint.PutMapAccessCandidateAsync(map, body);
 
-        return OLabObjectResult<bool>.Result(result);
+        return OLabObjectResult<int>.Result(result);
       }
       catch (Exception ex)
       {
@@ -309,7 +324,28 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
 
         var dtos = _endpoint.GetSecurityUsersRaw(map);
 
-        return OLabObjectResult<IList<SecurityUsers>>.Result(dtos);
+        var list = new List<Hashtable>();
+
+        foreach( var rule in dtos )
+        {
+          var user = dbContext.Users.Where(x => x.Id == rule.UserId).FirstOrDefault();
+
+          list.Add(new Hashtable
+          {
+            { "userId", rule.UserId },
+            { "acl", rule.Acl },
+            { "user", user != null ? new Hashtable
+              {
+                { "id", user.Id },
+                { "email", user.Email },
+                { "username", user.Username },
+                { "nickname", user.Nickname },
+              } : null
+            },
+          });
+        }
+
+        return OLabObjectResult<IList<Hashtable>>.Result(list);
       }
       catch (Exception ex)
       {
