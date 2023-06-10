@@ -222,7 +222,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     /// <returns></returns>
     [HttpGet("{mapId}/securityusers/candidates")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult GetMapAccessCandidates(uint mapId)
+    public IActionResult GetMapAccessCandidates(uint mapId, [FromQuery] string? search)
     {
       try
       {
@@ -237,7 +237,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
           throw new OLabUnauthorizedException(Utils.Constants.ScopeLevelMap, map.Id);
 
-        var dtos = _endpoint.GetMapAccessCandidates(map);
+        var dtos = _endpoint.GetMapAccessCandidates(map, search ?? "");
 
         return OLabObjectResult<IList<Users>>.Result(dtos);
       }
