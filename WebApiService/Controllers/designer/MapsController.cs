@@ -143,6 +143,30 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     }
 
     /// <summary>
+    /// Update a given map's nodegrid
+    /// </summary>
+    /// <param name="mapId">Map id</param>
+    /// <param name="body">nodegrid DTO</param>
+    /// <returns>IActionResult</returns>
+    [HttpPut("{mapId}/nodes")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> PutMapNodegridAsync(uint mapId, PutNodeGridRequest[] body)
+    {
+      try
+      {
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        bool dto = await _endpoint.PutMapNodegridAsync(auth, mapId, body);
+        return OLabObjectResult<bool>.Result(dto);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="id"></param>
