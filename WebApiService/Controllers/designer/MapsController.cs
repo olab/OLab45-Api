@@ -248,7 +248,12 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     /// <returns></returns>
     [HttpGet("{mapId}/securityusers/candidates")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult GetMapAccessCandidates(uint mapId, [FromQuery] string? search)
+    public IActionResult GetMapAccessCandidates(
+      uint mapId,
+      #nullable enable
+      [FromQuery] string? search
+      #nullable disable
+    )
     {
       try
       {
