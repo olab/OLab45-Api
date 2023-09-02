@@ -15,6 +15,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using OLabWebAPI.Endpoints.Designer;
 using OLabWebAPI.Dto.Designer;
+using OLabWebAPI.Data.Exceptions;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLab.Endpoints.Azure.Designer
 {
@@ -24,14 +27,14 @@ namespace OLab.Endpoints.Azure.Designer
 
     public TemplateFunction(
       IUserService userService,
-      ILogger<ConstantsFunction> logger,
+      IOptions<AppSettings> appSettings, ILogger<ConstantsFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(context).NotNull(nameof(context));
 
-      _endpoint = new TemplateEndpoint(this.logger, context);
+      _endpoint = new TemplateEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -57,7 +60,7 @@ namespace OLab.Endpoints.Azure.Designer
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
@@ -88,7 +91,7 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var dto = _endpoint.Links();
         return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
@@ -118,7 +121,7 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var dto = _endpoint.Nodes();
         return OLabObjectResult<MapNodeTemplateDto>.Result(dto);

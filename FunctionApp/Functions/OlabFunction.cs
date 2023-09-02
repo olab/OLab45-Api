@@ -1,10 +1,17 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OLab.FunctionApp.Api;
 using OLab.FunctionApp.Api.Services;
+using OLabWebAPI.Data;
+using OLabWebAPI.Data.Interface;
+using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
+using System.IO;
+using System.Threading.Tasks;
+using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
 
 namespace OLab.Endpoints.Azure
 {
@@ -14,9 +21,8 @@ namespace OLab.Endpoints.Azure
     protected OLabLogger logger;
     protected string token;
     protected readonly IUserService userService;
-    protected OLabWebApiAuthorization auth;
-    protected UserContext userContext;
-    
+    protected IUserContext userContext;
+
     public OLabFunction(ILogger logger, IUserService userService, OLabDBContext context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
@@ -28,14 +34,19 @@ namespace OLab.Endpoints.Azure
       this.userService = userService;
     }
 
-    protected void AuthorizeRequest(HttpRequest request)
+    protected IOLabAuthentication AuthorizeRequest(HttpRequest request)
     {
       logger.LogInformation($"Authorizing request");
+
       // validate user access token.  throws if not successful
       userService.ValidateToken(request);
-      auth = new OLabWebApiAuthorization(logger, context, request);
+
+      var auth = new OLabAuthorization(logger, context, request);
       userContext = new UserContext(logger, context, request);
+
       logger.LogInformation($"Request authorized");
+
+      return auth;
     }
   }
 }

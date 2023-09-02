@@ -25,7 +25,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, linkdto);
       }
       catch (Exception ex)

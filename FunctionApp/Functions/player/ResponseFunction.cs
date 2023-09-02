@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Player;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 
 namespace OLab.Endpoints.Azure.Player
 {
@@ -29,13 +32,15 @@ namespace OLab.Endpoints.Azure.Player
     public ResponseFunction(
       IUserService userService,
       ILogger<ConstantsFunction> logger,
+      IOptions<AppSettings> appSettings,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(context).NotNull(nameof(context));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
 
-      _endpoint = new ResponseEndpoint(this.logger, context);
+      _endpoint = new ResponseEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -55,18 +60,24 @@ namespace OLab.Endpoints.Azure.Player
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        body = JsonConvert.DeserializeObject<QuestionResponsePostDataDto>(content);
+        body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>();
 
-        var result = await _endpoint.PostQuestionResponseAsync(body);
+        SystemQuestions question = await context.SystemQuestions
+          .Include(x => x.SystemQuestionResponses)
+          .FirstOrDefaultAsync(x => x.Id == body.QuestionId);
+
+        if (question == null)
+          throw new Exception($"Question {body.QuestionId} not found");
+
+        DynamicScopedObjectsDto result =
+          await _endpoint.PostQuestionResponseAsync(question, body);
 
         userContext.Session.OnQuestionResponse(
-          userContext.SessionId,
           body.MapId,
           body.NodeId,
-          body.QuestionId,
+          question.Id,
           body.Value);
 
       }

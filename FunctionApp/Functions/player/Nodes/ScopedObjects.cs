@@ -29,7 +29,7 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
         return OLabObjectResult<ScopedObjectsDto>.Result(dto);
@@ -58,7 +58,7 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
         return OLabObjectResult<ScopedObjectsDto>.Result(dto);

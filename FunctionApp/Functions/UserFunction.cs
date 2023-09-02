@@ -33,11 +33,11 @@ namespace OLab.Endpoints.Azure
       Guard.Argument(logger).NotNull(nameof(logger));
 
       logger.LogInformation("C# HTTP trigger function processed a request.");
-      var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
+      var body = await request.ParseBodyFromRequestAsync<LoginRequest>();
 
-      logger.LogDebug($"Login(user = '{model.Username}')");
+      logger.LogDebug($"Login(user = '{body.Username}')");
 
-      var response = userService.Authenticate(model);
+      var response = userService.Authenticate(body);
       if (response == null)
         return new StatusCodeResult(401);
 

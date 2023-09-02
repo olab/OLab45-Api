@@ -51,7 +51,7 @@ namespace OLab.Endpoints.Azure.Player
           sinceTime = (uint)Convert.ToInt32(request.Query["sinceTime"]);
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
@@ -89,7 +89,7 @@ namespace OLab.Endpoints.Azure.Player
           sinceTime = (uint)Convert.ToInt32(request.Query["sinceTime"]);
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);

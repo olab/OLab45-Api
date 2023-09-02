@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Designer;
+using OLabWebAPI.Data.Exceptions;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLab.Endpoints.Azure.Designer
 {
@@ -28,6 +31,7 @@ namespace OLab.Endpoints.Azure.Designer
 
     public MapsFunction(
       IUserService userService,
+      IOptions<AppSettings> appSettings,
       ILogger<ConstantsFunction> logger,
       OLabDBContext context) : base(logger, userService, context)
     {
@@ -35,7 +39,7 @@ namespace OLab.Endpoints.Azure.Designer
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(context).NotNull(nameof(context));
 
-      _endpoint = new MapsEndpoint(this.logger, context);
+      _endpoint = new MapsEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -57,7 +61,7 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(mapId, nameof(mapId)).NotZero();
         Guard.Argument(request).NotNull(nameof(request));
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
@@ -89,7 +93,7 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
         return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
@@ -123,12 +127,11 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        PostNewLinkRequest body = JsonConvert.DeserializeObject<PostNewLinkRequest>(content);
-
+        var body = await request.ParseBodyFromRequestAsync<PostNewLinkRequest>();
         var dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
+
         return OLabObjectResult<PostNewLinkResponse>.Result(dto);
       }
       catch (Exception ex)
@@ -159,12 +162,11 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        PostNewNodeRequest body = JsonConvert.DeserializeObject<PostNewNodeRequest>(content);
-
+        var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>();
         var dto = await _endpoint.PostMapNodesAsync(auth, body);
+
         return OLabObjectResult<PostNewNodeResponse>.Result(dto);
 
       }
@@ -193,7 +195,7 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, mapId);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
@@ -223,7 +225,7 @@ namespace OLab.Endpoints.Azure.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetScopedObjectsAsync(auth, mapId);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);

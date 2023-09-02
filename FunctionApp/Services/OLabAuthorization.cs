@@ -1,28 +1,35 @@
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using OLabWebAPI.Common;
+using OLabWebAPI.Data;
+using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Dto;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
-using IUserContext = OLabWebAPI.Data.Interface.IUserContext;
-using UserContext = OLabWebAPI.Data.UserContext;
 
-namespace OLabWebAPI.Services
+namespace OLab.FunctionApp.Api.Services
 {
-  class OLabWebApiAuthorization : IOLabAuthentication
+  public class OLabAuthorization : IOLabAuthentication
   {
     private readonly OLabLogger logger;
     private readonly OLabDBContext context;
-    private readonly HttpContext httpContext;
-    private readonly IUserContext userContext;
+    private readonly HttpRequest request;
+    private IUserContext userContext;
 
-    public OLabWebApiAuthorization(OLabLogger logger, OLabDBContext context, HttpContext httpContext)
+    public OLabAuthorization(
+      OLabLogger logger, 
+      OLabDBContext context, 
+      HttpRequest request
+    )
     {
       this.logger = logger;
       this.context = context;
-      this.httpContext = httpContext;
-      userContext = new UserContext(logger, context, httpContext);
+      this.request = request;
+
+      userContext = new UserContext(logger, context, request);
     }
 
     public IUserContext GetUserContext()
@@ -54,7 +61,7 @@ namespace OLabWebAPI.Services
 
     public bool HasAccess(string acl, string objectType, uint? objectId)
     {
-      return userContext.HasAccess(acl, objectType, objectId);
+      return userContext.HasAccess( acl, objectType, objectId );
     }
   }
 }

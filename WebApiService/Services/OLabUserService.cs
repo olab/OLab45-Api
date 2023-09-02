@@ -1,3 +1,4 @@
+using Dawn;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +20,6 @@ namespace OLabWebAPI.Services
     private readonly AppSettings _appSettings;
     private readonly OLabDBContext _context;
     private readonly ILogger _logger;
-    //private readonly IList<Users> _users;
     private static TokenValidationParameters _tokenParameters;
 
     public OLabUserService(ILogger logger, IOptions<AppSettings> appSettings, OLabDBContext context)
@@ -28,8 +28,6 @@ namespace OLabWebAPI.Services
       _appSettings = appSettings.Value;
       _context = context;
       _logger = logger;
-
-      //_users = _context.Users.OrderBy(x => x.Id).ToList();
 
       _logger.LogDebug($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
 
@@ -106,6 +104,8 @@ namespace OLabWebAPI.Services
     /// <returns>Authenticate response, or null</returns>
     public AuthenticateResponse Authenticate(LoginRequest model)
     {
+      Guard.Argument(model, nameof(model)).NotNull();
+
       Users user = _context.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
       // return null if user not found
@@ -282,6 +282,8 @@ namespace OLabWebAPI.Services
     /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
     private AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab")
     {
+      Guard.Argument(user, nameof(user)).NotNull();
+
       var securityKey =
         new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
 

@@ -45,10 +45,8 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
-
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        MapNodeLinksFullDto body = JsonConvert.DeserializeObject<MapNodeLinksFullDto>(content);
+        var auth = AuthorizeRequest(request);
+        var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>();
 
         await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, body);
       }

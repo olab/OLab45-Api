@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
+using OLab.FunctionApp.Api;
 using OLabWebAPI.Common;
 using OLabWebAPI.Common.Exceptions;
 using OLabWebAPI.Dto;
@@ -23,10 +24,10 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="mapId">map id</param>
     /// <param name="nodeId">node id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("MapNodeGet")]
-    public async Task<IActionResult> MapNodeGetAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/node/{nodeId}")] HttpRequest request,
-      uint mapId, 
+    [FunctionName("PostNode")]
+    public async Task<IActionResult> PostMapNodeAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}/node/{nodeId}")] HttpRequest request,
+      uint mapId,
       uint nodeId)
     {
 
@@ -35,30 +36,9 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
-
-        // test if end node, meaning we can close the session.  otherwise
-        // record the OnPlay event
-        if (dto.End.HasValue && dto.End.Value)
-        {
-          userContext.Session.OnPlayNode(userContext.SessionId, mapId, dto.Id.Value);
-          userContext.Session.OnEndSession(userContext.SessionId, mapId, dto.Id.Value);
-        }
-        else
-        {
-          if (nodeId == 0)
-          {
-            userContext.Session.OnStartSession(userContext.UserName, mapId, userContext.IPAddress);
-            dto.SessionId = userContext.Session.GetSessionId();
-            userContext.SessionId = dto.SessionId;
-          }
-
-          userContext.Session.OnPlayNode(userContext.SessionId, mapId, dto.Id.Value);
-        }
-
-        _endpoint.UpdateNodeCounter();
 
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }
@@ -77,8 +57,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="mapId">map id that owns node</param>
     /// <param name="nodeId">node id</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("MapNodeDelete")]
-    public async Task<IActionResult> MapNodeDeleteAsync(
+    [FunctionName("DeleteNode")]
+    public async Task<IActionResult> DeleteNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId
@@ -89,7 +69,7 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
@@ -110,8 +90,8 @@ namespace OLab.Endpoints.Azure.Player
     /// <param name="nodeId">node id</param>
     /// <param name="dto">node data</param>
     /// <returns>IActionResult</returns>
-    [FunctionName("MapNodePut")]
-    public async Task<IActionResult> MapNodePutAsync(
+    [FunctionName("PutNode")]
+    public async Task<IActionResult> PutNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequest request,
       uint mapId,
       uint nodeId
@@ -122,13 +102,12 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        MapNodesFullDto body = JsonConvert.DeserializeObject<MapNodesFullDto>(content);
+        var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
+        var dto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, body);
 
-        var newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, body);
-        return OLabObjectResult<MapNodesPostResponseDto>.Result(newDto);
+        return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
       }
       catch (Exception ex)
       {

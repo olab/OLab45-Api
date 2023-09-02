@@ -64,31 +64,20 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: appService
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
+    'AppSettings:Audience': 'https://www.olab.ca'
+    'AppSettings:CertificateFile': 'D:\\Documents\\Downloads\\RSA256Cert.crt'
+    'AppSettings:DefaultImportDirectory': 'D:\\temp'
+    'AppSettings:Issuer': 'olab,moodle'
+    'AppSettings:Secret': AuthTokenKey
+    'AppSettings:SignalREndpoint': '/turktalk'
+    'AppSettings:WebsitePublicFilesDirectory': 'D:\\Client\\olab\\devel\\repos\\dev\\Player\\build\\static\\files'
     AzureWebJobsStorage: functionAppStorageConnectionString
+    DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
     FUNCTIONS_EXTENSION_VERSION: '~4'
     FUNCTIONS_WORKER_RUNTIME: 'dotnet'
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: functionAppStorageConnectionString
     WEBSITE_CONTENTSHARE: '${resourceNameFunctionApp}9552'
     WEBSITE_RUN_FROM_PACKAGE: '1'
-    'AppSettings:Secret': AuthTokenKey
-    'AppSettings:Issuer': 'olab,moodle'
-    'AppSettings:Audience': 'https://www.olab.ca'
-    'AppSettings:WebsitePublicFilesDirectory': 'D:\\Client\\olab\\devel\\repos\\dev\\Player\\build\\static\\files'
-    'AppSettings:DefaultImportDirectory': 'D:\\temp'
-    'AppSettings:CertificateFile': 'D:\\Documents\\Downloads\\RSA256Cert.crt'
-    'AppSettings:SignalREndpoint': '/turktalk'
-  }
-}
-
-resource resourceNameFunctionApp_connectionstrings 'Microsoft.Web/sites/config@2022-09-01' = {
-  parent: appService
-  name: 'connectionstrings'
-  kind: 'string'
-  properties: {
-    DefaultDatabase: {
-      type: 'MySql'
-      value: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
-    }
   }
 }
 

@@ -37,7 +37,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         SessionReport response = await _endpoint.GetAsync(auth, sessionId);
         return OLabObjectResult<SessionReport>.Result(response);
       }

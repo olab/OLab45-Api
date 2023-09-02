@@ -18,6 +18,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using OLabWebAPI.Data.Exceptions;
+using Microsoft.Extensions.Options;
+using OLabWebAPI.Utils;
 
 namespace OLab.Endpoints.Azure
 {
@@ -28,13 +31,15 @@ namespace OLab.Endpoints.Azure
     public ConstantsFunction(
       IUserService userService,
       ILogger<ConstantsFunction> logger,
+      IOptions<AppSettings> appSettings,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
+      Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));
-      Guard.Argument(context).NotNull(nameof(context));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
 
-      _endpoint = new ConstantsEndpoint(this.logger, context);
+      _endpoint = new ConstantsEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -61,9 +66,9 @@ namespace OLab.Endpoints.Azure
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var pagedResult = await _endpoint.GetAsync(take, skip);
+        var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         logger.LogInformation(string.Format("Found {0} constants", pagedResult.Data.Count));
 
         return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
@@ -93,7 +98,7 @@ namespace OLab.Endpoints.Azure
         Guard.Argument(id, nameof(id)).NotZero();
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<ConstantsDto>.Result(dto);
@@ -122,12 +127,12 @@ namespace OLab.Endpoints.Azure
       {
         Guard.Argument(id, nameof(id)).NotZero();
 
-        // validate token/setup up common properties
-        AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        ConstantsDto dto = JsonConvert.DeserializeObject<ConstantsDto>(content);
-        await _endpoint.PutAsync(auth, id, dto);
+        // validate token/setup up common properties
+        var auth = AuthorizeRequest(request);
+        var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
+
+        await _endpoint.PutAsync(auth, id, body);
       }
       catch (Exception ex)
       {
@@ -153,13 +158,12 @@ namespace OLab.Endpoints.Azure
     {
       try
       {
+        var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
+
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        ConstantsDto dto = JsonConvert.DeserializeObject<ConstantsDto>(content);
-
-        dto = await _endpoint.PostAsync(auth, dto);
+        var dto = await _endpoint.PostAsync(auth, body);
         return OLabObjectResult<ConstantsDto>.Result(dto);
       }
       catch (Exception ex)
@@ -185,8 +189,8 @@ namespace OLab.Endpoints.Azure
         Guard.Argument(id, nameof(id)).NotZero();
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
-        
+        var auth = AuthorizeRequest(request);
+
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)

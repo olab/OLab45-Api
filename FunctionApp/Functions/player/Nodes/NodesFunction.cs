@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Player;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLab.Endpoints.Azure.Player
 {
@@ -29,13 +31,15 @@ namespace OLab.Endpoints.Azure.Player
     public NodesFunction(
       IUserService userService,
       ILogger<ConstantsFunction> logger,
+      IOptions<AppSettings> appSettings,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(context).NotNull(nameof(context));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
 
-      _endpoint = new NodesEndpoint(this.logger, context);
+      _endpoint = new NodesEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -50,7 +54,10 @@ namespace OLab.Endpoints.Azure.Player
     {
       try
       {
-        var dto = await _endpoint.GetNodeTranslatedAsync(nodeId);
+        // validate token/setup up common properties
+        var auth = AuthorizeRequest(request);
+        var dto = await _endpoint.GetNodeTranslatedAsync(auth, nodeId);
+
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }
       catch (Exception ex)
@@ -76,10 +83,8 @@ namespace OLab.Endpoints.Azure.Player
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
-
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        MapNodesFullDto body = JsonConvert.DeserializeObject<MapNodesFullDto>(content);
+        var auth = AuthorizeRequest(request);
+        var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
 
         await _endpoint.PutNodeAsync(auth, id, body);
       }
@@ -109,12 +114,11 @@ namespace OLab.Endpoints.Azure.Player
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        MapNodeLinksPostDataDto body = JsonConvert.DeserializeObject<MapNodeLinksPostDataDto>(content);
+        var body = await request.ParseBodyFromRequestAsync<MapNodeLinksPostDataDto>();
+        var dto = await _endpoint.PostLinkAsync(auth, nodeId, body);
 
-        var dto = await _endpoint.PostLinkAsync(nodeId, body);
         return OLabObjectResult<MapNodeLinksPostResponseDto>.Result(dto);
       }
       catch (Exception ex)
@@ -141,12 +145,11 @@ namespace OLab.Endpoints.Azure.Player
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        MapNodesPostDataDto body = JsonConvert.DeserializeObject<MapNodesPostDataDto>(content);
+        var body = await request.ParseBodyFromRequestAsync<MapNodesPostDataDto>();
+        var dto = await _endpoint.PostNodeAsync(auth, mapId, body);
 
-        var dto = await _endpoint.PostNodeAsync(mapId, body);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
       }
       catch (Exception ex)

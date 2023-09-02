@@ -18,6 +18,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
+using OLabWebAPI.Data.Exceptions;
 
 namespace OLab.Endpoints.Azure
 {
@@ -27,10 +30,16 @@ namespace OLab.Endpoints.Azure
 
     public CountersFunction(
       IUserService userService,
-      ILogger<CountersFunction> logger,
+      ILogger<CountersFunction> logger, 
+      IOptions<AppSettings> appSettings,
       OLabDBContext context) : base(logger, userService, context)
     {
-      _endpoint = new CountersEndpoint(this.logger, context);
+      Guard.Argument(userService).NotNull(nameof(userService));
+      Guard.Argument(userService).NotNull(nameof(userService));
+      Guard.Argument(logger).NotNull(nameof(logger));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
+
+      _endpoint = new CountersEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -56,9 +65,9 @@ namespace OLab.Endpoints.Azure
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var pagedResult = await _endpoint.GetAsync(take, skip);
+        var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         logger.LogInformation(string.Format("Found {0} counters", pagedResult.Data.Count));
 
         return OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining);
@@ -86,7 +95,7 @@ namespace OLab.Endpoints.Azure
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<CountersDto>.Result(dto);
@@ -114,11 +123,10 @@ namespace OLab.Endpoints.Azure
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
+        var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
-        await _endpoint.PutAsync(auth, id, dto);
+        await _endpoint.PutAsync(auth, id, body);
       }
       catch (Exception ex)
       {
@@ -144,12 +152,12 @@ namespace OLab.Endpoints.Azure
     {
       try
       {
-        // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        CountersFullDto dto = JsonConvert.DeserializeObject<CountersFullDto>(content);
-        dto = await _endpoint.PostAsync(auth, dto);
+        // validate token/setup up common properties
+        var auth = AuthorizeRequest(request);
+
+        var dto = await _endpoint.PostAsync(auth, body);
 
         return OLabObjectResult<CountersFullDto>.Result(dto);
       }
@@ -174,7 +182,7 @@ namespace OLab.Endpoints.Azure
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
         
         await _endpoint.DeleteAsync(auth, id);
       }

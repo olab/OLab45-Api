@@ -15,6 +15,9 @@ using System;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using OLabWebAPI.Data.Exceptions;
+using OLabWebAPI.Utils;
+using Microsoft.Extensions.Options;
 
 namespace OLab.Endpoints.Azure
 {
@@ -25,13 +28,14 @@ namespace OLab.Endpoints.Azure
     public QuestionsFunction(
       IUserService userService,
       ILogger<CountersFunction> logger,
+      IOptions<AppSettings> appSettings,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(context).NotNull(nameof(context));
 
-      _endpoint = new QuestionsEndpoint(this.logger, context);
+      _endpoint = new QuestionsEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -84,7 +88,7 @@ namespace OLab.Endpoints.Azure
         Guard.Argument(id, nameof(id)).NotZero();
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<QuestionsFullDto>.Result(dto);
@@ -113,11 +117,10 @@ namespace OLab.Endpoints.Azure
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
+        var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        QuestionsFullDto dto = JsonConvert.DeserializeObject<QuestionsFullDto>(content);
-        await _endpoint.PutAsync(auth, id, dto);
+        await _endpoint.PutAsync(auth, id, body);
       }
       catch (Exception ex)
       {
@@ -144,12 +147,11 @@ namespace OLab.Endpoints.Azure
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        QuestionsFullDto dto = JsonConvert.DeserializeObject<QuestionsFullDto>(content);
+        var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
+        var dto = await _endpoint.PostAsync(auth, body);
 
-        dto = await _endpoint.PostAsync(auth, dto);
         return OLabObjectResult<QuestionsFullDto>.Result(dto);
       }
       catch (Exception ex)
@@ -158,7 +160,7 @@ namespace OLab.Endpoints.Azure
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
-    }    
+    }
 
   }
 }

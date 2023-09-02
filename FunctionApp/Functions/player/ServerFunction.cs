@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using OLabWebAPI.Endpoints.Player;
+using Microsoft.Extensions.Options;
+using OLabWebAPI.Utils;
 
 namespace OLab.Endpoints.Azure.Player
 {
@@ -29,13 +31,15 @@ namespace OLab.Endpoints.Azure.Player
     public ServerFunction(
       IUserService userService,
       ILogger<ConstantsFunction> logger,
+      IOptions<AppSettings> appSettings,
       OLabDBContext context) : base(logger, userService, context)
     {
       Guard.Argument(userService).NotNull(nameof(userService));
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(context).NotNull(nameof(context));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
 
-      _endpoint = new ServerEndpoint(this.logger, context);
+      _endpoint = new ServerEndpoint(this.logger, appSettings, context);
     }
 
     /// <summary>
@@ -59,7 +63,7 @@ namespace OLab.Endpoints.Azure.Player
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var pagedResponse = await _endpoint.GetAsync(take, skip);
         return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
@@ -88,7 +92,7 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
         return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
@@ -116,7 +120,7 @@ namespace OLab.Endpoints.Azure.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+       var auth =  AuthorizeRequest(request);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
         return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);

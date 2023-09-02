@@ -23,6 +23,7 @@ using OLabWebAPI.Utils;
 using OLabWebAPI.ObjectMapper;
 using Microsoft.AspNetCore.StaticFiles;
 using Azure.Storage.Blobs;
+using OLabWebAPI.Data.Exceptions;
 
 namespace OLab.Endpoints.Azure
 {
@@ -43,7 +44,7 @@ namespace OLab.Endpoints.Azure
       Guard.Argument(context).NotNull(nameof(context));
 
       _appSettings = appSettings.Value;
-      _endpoint = new FilesEndpoint(this.logger, context);
+      _endpoint = new FilesEndpoint(this.logger, appSettings, context);
     }
 
     public string GetMimeTypeForFileExtension(string filePath)
@@ -114,7 +115,7 @@ namespace OLab.Endpoints.Azure
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
@@ -146,9 +147,8 @@ namespace OLab.Endpoints.Azure
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var auth = new OLabWebApiAuthorization(logger, context, request);
         var dto = await _endpoint.GetAsync(auth, id);
         var blobName = BuildStaticFileName(dto);
 
@@ -182,9 +182,6 @@ namespace OLab.Endpoints.Azure
 
       try
       {
-        // validate token/setup up common properties
-        AuthorizeRequest(request);
-
         logger.LogDebug($"FilesController.PostAsync()");
         var dto = new FilesFullDto(request.Form);
 
@@ -199,6 +196,10 @@ namespace OLab.Endpoints.Azure
         phys.Path = Path.GetFileName(staticFileName);
         // infer the mimetype from the file name
         phys.Mime = GetMimeTypeForFileExtension(phys.Name);
+
+        // validate token/setup up common properties
+        var auth = AuthorizeRequest(request);
+
         dto = await _endpoint.PostAsync(auth, phys);
 
         // TODO: successful save to database, copy the file to the
@@ -206,7 +207,11 @@ namespace OLab.Endpoints.Azure
         Stream myBlob = new MemoryStream();
         var file = request.Form.Files["selectedFile"];
         myBlob = file.OpenReadStream();
-        var blobClient = new BlobContainerClient(_appSettings.StaticFilesConnectionString, _appSettings.StaticFilesContainerName);
+
+        var blobClient = new BlobContainerClient(
+          _appSettings.StaticFilesConnectionString, 
+          _appSettings.StaticFilesContainerName);
+
         var blob = blobClient.GetBlobClient(staticFileName);
         await blob.UploadAsync(myBlob);
 
@@ -215,12 +220,12 @@ namespace OLab.Endpoints.Azure
       }
       catch (Exception ex)
       {
-        if ( ex is global::Azure.RequestFailedException )
+        if (ex is global::Azure.RequestFailedException)
         {
           var azureException = ex as global::Azure.RequestFailedException;
-          if ( azureException.Status == 409 )
+          if (azureException.Status == 409)
             return OLabServerErrorResult.Result($"File '{phys.Path}' already exists", HttpStatusCode.Conflict);
-          return OLabServerErrorResult.Result($"Error creating static file '{phys.Path}'.  {ex.Message}", ( HttpStatusCode )azureException.Status);
+          return OLabServerErrorResult.Result($"Error creating static file '{phys.Path}'.  {ex.Message}", (HttpStatusCode)azureException.Status);
         }
 
         return OLabServerErrorResult.Result(ex.Message);
@@ -240,8 +245,8 @@ namespace OLab.Endpoints.Azure
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
-        
+        var auth = AuthorizeRequest(request);
+
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)

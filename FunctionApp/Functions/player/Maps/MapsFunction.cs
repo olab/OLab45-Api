@@ -57,7 +57,7 @@ namespace OLab.Endpoints.Azure.Player
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         logger.LogInformation(string.Format("Found {0} maps", pagedResult.Data.Count));
@@ -87,7 +87,7 @@ namespace OLab.Endpoints.Azure.Player
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
         var dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<MapsFullDto>.Result(dto);
@@ -115,12 +115,11 @@ namespace OLab.Endpoints.Azure.Player
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        ExtendMapRequest body = JsonConvert.DeserializeObject<ExtendMapRequest>(content);
-
+        var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
         var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
+
         return OLabObjectResult<ExtendMapResponse>.Result(dto);
       }
       catch (Exception ex)
@@ -130,7 +129,7 @@ namespace OLab.Endpoints.Azure.Player
         return OLabServerErrorResult.Result(ex.Message);
       }
 
-    }    
+    }
 
     /// <summary>
     /// Create new map (using optional template)
@@ -145,12 +144,11 @@ namespace OLab.Endpoints.Azure.Player
       try
       {
         // validate token/setup up common properties
-        AuthorizeRequest(request);
+        var auth = AuthorizeRequest(request);
 
-        var content = await new StreamReader(request.Body).ReadToEndAsync();
-        CreateMapRequest body = JsonConvert.DeserializeObject<CreateMapRequest>(content);
-
+        var body = await request.ParseBodyFromRequestAsync<CreateMapRequest>();
         var dto = await _endpoint.PostCreateMapAsync(auth, body);
+
         return OLabObjectResult<MapsFullRelationsDto>.Result(dto);
       }
       catch (Exception ex)
@@ -159,7 +157,7 @@ namespace OLab.Endpoints.Azure.Player
           return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
         return OLabServerErrorResult.Result(ex.Message);
       }
-    }    
+    }
 
   }
 }

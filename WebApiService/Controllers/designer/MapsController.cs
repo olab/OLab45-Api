@@ -43,7 +43,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
       }
@@ -66,7 +66,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         System.Collections.Generic.IList<MapNodesFullDto> dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
         return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
       }
@@ -88,7 +88,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         PostNewLinkResponse dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
         return OLabObjectResult<PostNewLinkResponse>.Result(dto);
       }
@@ -112,7 +112,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         var deleted = await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, linkId);
         return OLabObjectResult<bool>.Result(deleted);
       }
@@ -134,7 +134,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         PostNewNodeResponse dto = await _endpoint.PostMapNodesAsync(auth, body);
         return OLabObjectResult<PostNewNodeResponse>.Result(dto);
       }
@@ -158,7 +158,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         bool dto = await _endpoint.PutMapNodegridAsync(auth, mapId, body);
         return OLabObjectResult<bool>.Result(dto);
       }
@@ -181,7 +181,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
@@ -204,7 +204,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(auth, id);
         return OLabObjectResult<OLabWebAPI.Dto.Designer.ScopedObjectsDto>.Result(dto);
       }
@@ -262,7 +262,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         if (map == null)
           throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
 
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
         // only allow users with write-access to list olab users users from this endpoint
         if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
@@ -309,7 +309,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         if (map == null)
           throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
 
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
         // only allow users with write-access to list olab users users from this endpoint
         if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
@@ -345,7 +345,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         if (map == null)
           throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
 
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
         // only allow users with write-access to list map security users
         if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
@@ -400,7 +400,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         if (map == null)
           throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
 
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
         // only allow users with write-access to list map security users
         if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
@@ -435,7 +435,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
         if (map == null)
           throw new OLabObjectNotFoundException(Utils.Constants.ScopeLevelMap, mapId);
 
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
         // only allow users with write-access to list map security users
         if (!auth.HasAccess("W", Utils.Constants.ScopeLevelMap, map.Id))
