@@ -40,6 +40,7 @@ namespace OLab.FunctionApp.Api.Services
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(appSettings).NotNull(nameof(appSettings));
       Guard.Argument(context).NotNull(nameof(context));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
 
       defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
       _appSettings = appSettings.Value;

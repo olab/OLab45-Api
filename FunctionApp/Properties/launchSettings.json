@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OLab4FunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 5001 --useHttps --cores * --cert D:\\Client\\olab\\devel\\repos\\certificate.pfx --password 1234"
+    }
+  }
+}

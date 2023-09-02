@@ -51,14 +51,7 @@ namespace OLab.FunctionApp.Api
       
       builder
           .Services.AddOptions<AppSettings>()
-          .Configure<IConfiguration>((settings, configuration) =>
-          {
-            settings.Secret = configuration.GetValue<string>("Secret");
-            settings.Issuer = configuration.GetValue<string>("Issuer");
-            settings.Audience = configuration.GetValue<string>("Audience");
-            settings.StaticFilesConnectionString = configuration.GetValue<string>("StaticFilesConnectionString");
-            settings.StaticFilesContainerName = configuration.GetValue<string>("StaticFilesContainerName");            
-          });
+          .Configure<IConfiguration>((options, c) => { c.GetSection("AppSettings").Bind(options); });
 
       var connectionString = builder.GetContext().Configuration["DefaultDatabase"];
 
