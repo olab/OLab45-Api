@@ -1,114 +1,199 @@
-@description('The name of the Azure Function app.')
-param environmentName string = 'dev'
+@description('Environment short code')
+param environment_code string = 'dev'
 
-@description('The name of the Azure Function app.')
-param serviceName string = 'olab45'
+@description('The prefix for Azure resources (e.g. kuvadev).')
+param resource_prefix string = 'olab'
 
-@description('Storage Account type')
-@allowed([
-  'Standard_LRS'
-  'Standard_GRS'
-  'Standard_RAGRS'
-])
-param storageAccountType string = 'Standard_LRS'
+// Note: Array of allowable values not recommended by Microsoft in this case as the list of SKUs can be different per region
+@description('Describes plan\'s pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/')
+param sku string = 'B1'
 
-@description('Location for all resources.')
-param location string = resourceGroup().location
+@description('The location to deploy the service resources')
+param location string = 'canadacentral'
 
-@description('Location for Application Insights')
-param appInsightsLocation string = resourceGroup().location
 
-@description('The language worker runtime to load in the function app.')
-@allowed([
-  'dotnet'
-  'node'
-  'python'
-  'java'
-])
-param functionWorkerRuntime string = 'dotnet'
+// Variables
+// Note: Declaring variable blocks is not recommended by Microsoft
+var serviceName = 'api'
+var resourceNameFunctionApp = '${resource_prefix}${environment_code}${serviceName}'
+var resourceNameFunctionAppFarm = resourceNameFunctionApp
+var resourceNameFunctionAppInsights = resourceNameFunctionApp
+var resourceNameFunctionAppStorage = '${resourceNameFunctionApp}az'
+var resourceNameSignalr = '${resource_prefix}signalr'
 
-var functionAppName = '${serviceName}${environmentName}api'
-var hostingPlanName = functionAppName
-var applicationInsightsName = functionAppName
-var storageAccountName = functionAppName
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
-  name: storageAccountName
+resource appService 'Microsoft.Web/sites@2021-02-01' = {
+  name: resourceNameFunctionApp
   location: location
-  sku: {
-    name: storageAccountType
+  kind: 'functionapp'
+  identity: {
+    type: 'SystemAssigned'
   }
-  kind: 'Storage'
-}
-
-resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: hostingPlanName
-  location: location
-  kind: 'linux'
-  sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
-    size: 'Y1'
-    family: 'Y'
+  tags: {
+    disposable: 'yes'
   }
   properties: {
-    reserved: true
+    serverFarmId: appServicePlan.id
+    enabled: true
+    httpsOnly: true
+    hostNamesDisabled: false
+    siteConfig: {
+      alwaysOn: true
+      healthCheckPath: '/api/health'
+    }
   }
 }
 
-resource applicationInsight 'Microsoft.Insights/components@2020-02-02' = {
-  name: applicationInsightsName
-  location: appInsightsLocation
+resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
+  name: 'appsettings'
+  parent: appService
+  properties: {
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
+    AzureWebJobsStorage: functionAppStorageConnectionString
+    FUNCTIONS_EXTENSION_VERSION: '~4'
+    FUNCTIONS_WORKER_RUNTIME: 'dotnet'
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: functionAppStorageConnectionString
+    WEBSITE_CONTENTSHARE: '${resourceNameFunctionApp}9552'
+    WEBSITE_RUN_FROM_PACKAGE: '1'
+  }
+}
+
+resource appCors 'Microsoft.Web/sites/config@2021-02-01' = {
+  parent: appService
+  name: 'web'
+  properties: {
+    cors: {
+      allowedOrigins: [
+        '*'        
+      ]
+      supportCredentials: false
+    }
+  }
+}
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: resourceNameFunctionAppFarm
+  location: location
+  kind: 'app'
+  sku: {
+    name: sku
+  }
   tags: {
-    'hidden-link:${resourceId('Microsoft.Web/sites', functionAppName)}': 'Resource'
+    disposable: 'yes'
+  }
+  properties: {
+    // Note: These properties probably not required
+    perSiteScaling: false
+    elasticScaleEnabled: false
+    maximumElasticWorkerCount: 1
+    isSpot: false
+    reserved: false
+    isXenon: false
+    hyperV: false
+    targetWorkerCount: 0
+    targetWorkerSizeId: 0
+  }
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: resourceNameFunctionAppInsights
+  location: location
+  kind: 'web'
+  tags: {
+    disposable: 'yes'
   }
   properties: {
     Application_Type: 'web'
+
+    // Note: These properties probably not required
+    RetentionInDays: 90
+    IngestionMode: 'ApplicationInsights'
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: 'Enabled'
   }
-  kind: 'web'
 }
 
-resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
-  name: functionAppName
+var functionAppStorageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${resourceFunctionAppStorage.name};AccountKey=${listKeys(resourceFunctionAppStorage.id, resourceFunctionAppStorage.apiVersion).keys[0].value};EndpointSuffix=core.windows.net'
+resource resourceFunctionAppStorage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+  name: resourceNameFunctionAppStorage
   location: location
-  kind: 'functionapp,linux'
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  tags: {
+    disposable: 'yes'
+  }
+}
+
+var signalrConnectionString = listkeys(resourceSignalr.id, resourceSignalr.apiVersion).primaryConnectionString
+resource resourceSignalr 'Microsoft.SignalRService/SignalR@2022-02-01' = {
+  name: resourceNameSignalr
+  location: location
+  sku: {
+    name: 'Free_F1'
+    tier: 'Free'
+    capacity: 1
+  }
+  tags: {
+    disposable: 'yes'
+  }
+  kind: 'SignalR'
   properties: {
-    reserved: true
-    serverFarmId: hostingPlan.id
-    siteConfig: {
-      appSettings: [
+    tls: {
+      clientCertEnabled: false
+    }
+    features: [
+      {
+        flag: 'ServiceMode'
+        value: 'Serverless'
+      }
+      {
+        flag: 'EnableConnectivityLogs'
+        value: 'True'
+      }
+    ]
+    liveTraceConfiguration: {
+      enabled: 'true'
+      categories: [
         {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: reference(resourceId('Microsoft.Insights/components', functionAppName), '2020-02-02').InstrumentationKey
+          name: 'ConnectivityLogs'
+          enabled: 'true'
         }
         {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+          name: 'MessagingLogs'
+          enabled: 'true'
         }
         {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-        }
-        {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower(functionAppName)
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionWorkerRuntime
-        }
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
+          name: 'HttpRequestLogs'
+          enabled: 'true'
         }
       ]
     }
+    cors: {
+      allowedOrigins: [
+        '*'
+      ]
+    }
+    upstream: {
+      templates: []
+    }
+    networkACLs: {
+      defaultAction: 'Deny'
+      publicNetwork: {
+        allow: [
+          'ServerConnection'
+          'ClientConnection'
+          'RESTAPI'
+          'Trace'
+        ]
+      }
+      privateEndpoints: []
+    }
+    publicNetworkAccess: 'Enabled'
+    disableLocalAuth: false
+    disableAadAuth: false
   }
-  dependsOn: [
-    applicationInsight
-  ]
 }
+
+output FunctionAppResourceName string = resourceNameFunctionApp
+
