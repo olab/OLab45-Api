@@ -11,6 +11,22 @@ param sku string = 'B1'
 @description('The location to deploy the service resources')
 param location string = 'canadacentral'
 
+@description('MySQL database user id')
+param MySqlUserId string = 'olab4admin'
+
+@description('MySQL database user id')
+param MySqlDatabaseId string = 'olab45'
+
+@description('MySQL database host name')
+param MySqlHostName string = 'olab45db'
+
+@description('MySQL database password')
+@secure()
+param MySqlPassword string
+
+@description('Auth Token key')
+@secure()
+param AuthTokenKey string
 
 // Variables
 // Note: Declaring variable blocks is not recommended by Microsoft
@@ -54,6 +70,25 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: functionAppStorageConnectionString
     WEBSITE_CONTENTSHARE: '${resourceNameFunctionApp}9552'
     WEBSITE_RUN_FROM_PACKAGE: '1'
+    'AppSettings:Secret': AuthTokenKey
+    'AppSettings:Issuer': 'olab,moodle'
+    'AppSettings:Audience': 'https://www.olab.ca'
+    'AppSettings:WebsitePublicFilesDirectory': 'D:\\Client\\olab\\devel\\repos\\dev\\Player\\build\\static\\files'
+    'AppSettings:DefaultImportDirectory': 'D:\\temp'
+    'AppSettings:CertificateFile': 'D:\\Documents\\Downloads\\RSA256Cert.crt'
+    'AppSettings:SignalREndpoint': '/turktalk'
+  }
+}
+
+resource resourceNameFunctionApp_connectionstrings 'Microsoft.Web/sites/config@2022-09-01' = {
+  parent: appService
+  name: 'connectionstrings'
+  kind: 'string'
+  properties: {
+    DefaultDatabase: {
+      type: 'MySql'
+      value: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
+    }
   }
 }
 
@@ -112,7 +147,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-var functionAppStorageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${resourceFunctionAppStorage.name};AccountKey=${listKeys(resourceFunctionAppStorage.id, resourceFunctionAppStorage.apiVersion).keys[0].value};EndpointSuffix=core.windows.net'
+var functionAppStorageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${resourceFunctionAppStorage.name};AccountKey=${resourceFunctionAppStorage.listkeys().keys[0].value};EndpointSuffix=core.windows.net'
 resource resourceFunctionAppStorage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: resourceNameFunctionAppStorage
   location: location
@@ -125,7 +160,7 @@ resource resourceFunctionAppStorage 'Microsoft.Storage/storageAccounts@2021-06-0
   }
 }
 
-var signalrConnectionString = listkeys(resourceSignalr.id, resourceSignalr.apiVersion).primaryConnectionString
+var signalrConnectionString = resourceSignalr.listKeys().primaryConnectionString
 resource resourceSignalr 'Microsoft.SignalRService/SignalR@2022-02-01' = {
   name: resourceNameSignalr
   location: location
