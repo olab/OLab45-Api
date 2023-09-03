@@ -35,6 +35,7 @@ var resourceNameFunctionApp = '${resource_prefix}${environment_code}${serviceNam
 var resourceNameFunctionAppFarm = resourceNameFunctionApp
 var resourceNameFunctionAppInsights = resourceNameFunctionApp
 var resourceNameFunctionAppStorage = '${resourceNameFunctionApp}az'
+var resourceNameFileStorage = resourceNameFunctionApp
 var resourceNameSignalr = '${resource_prefix}signalr'
 
 resource appService 'Microsoft.Web/sites@2021-02-01' = {
@@ -66,13 +67,14 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
     'AppSettings:Audience': 'https://www.olab.ca'
     'AppSettings:CertificateFile': 'D:\\Documents\\Downloads\\RSA256Cert.crt'
-    'AppSettings:DefaultImportDirectory': 'D:\\temp'
+    'AppSettings:DefaultImportDirectory': '${resourceFileStorage.properties.primaryEndpoints.blob}/$web/import'
     'AppSettings:Issuer': 'olab,moodle'
     'AppSettings:Secret': AuthTokenKey
     'AppSettings:SignalREndpoint': '/turktalk'
-    'AppSettings:WebsitePublicFilesDirectory': 'D:\\Client\\olab\\devel\\repos\\dev\\Player\\build\\static\\files'
+    'AppSettings:WebsitePublicFilesDirectory': '${resourceFileStorage.properties.primaryEndpoints.blob}/$web/files'
     AzureWebJobsStorage: functionAppStorageConnectionString
     DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
+    FileStorageConnectionString: fileStorageConnectionString
     FUNCTIONS_EXTENSION_VERSION: '~4'
     FUNCTIONS_WORKER_RUNTIME: 'dotnet'
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: functionAppStorageConnectionString
@@ -139,6 +141,19 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 var functionAppStorageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${resourceFunctionAppStorage.name};AccountKey=${resourceFunctionAppStorage.listkeys().keys[0].value};EndpointSuffix=core.windows.net'
 resource resourceFunctionAppStorage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: resourceNameFunctionAppStorage
+  location: location
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  tags: {
+    disposable: 'yes'
+  }
+}
+
+var fileStorageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${resourceFileStorage.name};AccountKey=${resourceFileStorage.listkeys().keys[0].value};EndpointSuffix=core.windows.net'
+resource resourceFileStorage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+  name: resourceNameFileStorage
   location: location
   kind: 'StorageV2'
   sku: {
@@ -218,6 +233,4 @@ resource resourceSignalr 'Microsoft.SignalRService/SignalR@2022-02-01' = {
     disableAadAuth: false
   }
 }
-
-output FunctionAppResourceName string = resourceNameFunctionApp
 
