@@ -58,6 +58,8 @@ namespace OLabWebAPI.Endpoints.WebApi
           throw new Exception("Invalid file");
         }
 
+        logger.ClearMessages();
+
         logger.LogInformation($"Loading archive: '{fileName}'");
 
         if (_importer.LoadAll(fileName))
@@ -72,7 +74,7 @@ namespace OLabWebAPI.Endpoints.WebApi
 
       var dto = new ImportResponse
       {
-        Messages = logger.GetMessages()
+        Messages = logger.GetMessageStrings()
       };
 
       return OLabObjectResult<ImportResponse>.Result(dto);
@@ -112,10 +114,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         }
       }
 
-      var dto = new ImportResponse
-      {
-        Messages = logger.GetMessages(OLabLogMessage.MessageLevel.Info)
-      };
+      var dto = new ImportResponse { Messages = logger.GetMessageStrings() };
 
       return OLabObjectResult<ImportResponse>.Result(dto);
     }
