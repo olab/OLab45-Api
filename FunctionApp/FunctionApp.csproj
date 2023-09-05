@@ -36,6 +36,8 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common\Common.csproj" />
     <ProjectReference Include="..\..\Common\Data\Data.csproj" />
+    <ProjectReference Include="..\..\Common\Endpoints\Endpoints.csproj" />
   </ItemGroup>
 </Project>

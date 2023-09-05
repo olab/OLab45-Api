@@ -1,5 +1,6 @@
 ﻿
 using Azure.Core;
+using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
@@ -17,8 +18,11 @@ namespace OLab.FunctionApp.Middleware
 
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
+      Guard.Argument(context).NotNull(nameof(context));
+      Guard.Argument(next).NotNull(nameof(next));
+
       ILogger logger = context.GetLogger<OLabAuthMiddleware>();
-      logger.LogInformation("Middleware executing for function '{name}'", context.FunctionDefinition.Name );
+      logger.LogInformation("Middleware executing for function '{name}'", context.FunctionDefinition.Name);
 
       // if not login endpoint, then continue with middleware
       if (!context.FunctionDefinition.Name.Contains("login"))

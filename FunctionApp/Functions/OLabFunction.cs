@@ -9,6 +9,7 @@ using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace OLab.FunctionApp.Functions
 {
@@ -19,7 +20,7 @@ namespace OLab.FunctionApp.Functions
     protected string token;
     protected readonly IUserService userService;
     protected IUserContext userContext;
-
+    protected IOptions<AppSettings> appSettings;
     protected readonly Configuration _configuration;
 
     public OLabFunction(
