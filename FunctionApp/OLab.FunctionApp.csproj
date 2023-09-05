@@ -5,8 +5,6 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <RootNamespace>OLab.FunctionApp</RootNamespace>
-    <AssemblyName>OLab.FunctionApp</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.8.1" />
@@ -36,8 +34,8 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\Common\Common.csproj" />
-    <ProjectReference Include="..\..\Common\Data\Data.csproj" />
-    <ProjectReference Include="..\..\Common\Endpoints\Endpoints.csproj" />
+    <ProjectReference Include="..\..\Common\Common\OLab.Common.csproj" />
+    <ProjectReference Include="..\..\Common\Data\OLab.Data.csproj" />
+    <ProjectReference Include="..\..\Common\Endpoints\OLab.Endpoints.csproj" />
   </ItemGroup>
 </Project>

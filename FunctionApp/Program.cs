@@ -2,11 +2,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OLab.FunctionApp.Api;
+using OLab.FunctionApp;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Middleware;
+using OLabWebAPI.Data.Interface;
+using OLabWebAPI.Data;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
+using Microsoft.Extensions.Logging;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>
@@ -17,15 +20,12 @@ var host = new HostBuilder()
         reloadOnChange: true);
     })
 
-    .ConfigureFunctionsWorkerDefaults(builder =>
-    {
-      builder.UseMiddleware<OLabAuthMiddleware>();
-      builder.UseMiddleware<ExceptionLoggingMiddleware>();
-    })
-
     .ConfigureServices((context, services) =>
     {
+      services.AddTransient<IUserContext, UserContext>();
       services.AddScoped<IUserService, OLabUserService>();
+      services.AddScoped<IOLabSession, OLabSession>();
+      services.AddSingleton<IClaimsPrincipalAccessor, ClaimsPrincipalAccessor>();
 
       var connectionString = Environment.GetEnvironmentVariable("DefaultDatabase");
       var serverVersion = ServerVersion.AutoDetect(connectionString);
@@ -38,6 +38,13 @@ var host = new HostBuilder()
       services.AddAzureAppConfiguration();
 
     })
+
+    .ConfigureFunctionsWorkerDefaults(builder =>
+    {
+      builder.UseMiddleware<OLabAuthMiddleware>();
+      //builder.UseMiddleware<ExceptionLoggingMiddleware>();
+    })
+
     .Build();
 
 host.Run();

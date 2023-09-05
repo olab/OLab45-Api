@@ -1,94 +1,161 @@
 ﻿
+using Api;
 using Azure.Core;
 using Dawn;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using OLab.FunctionApp.Functions;
+using OLabWebAPI.Common.Exceptions;
+using OLabWebAPI.Data;
+using OLabWebAPI.Data.Interface;
+using OLabWebAPI.Utils;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Text.Json;
+using System.Security.Claims;
 
-namespace OLab.FunctionApp.Middleware
+namespace OLab.FunctionApp.Middleware;
+
+public class OLabAuthMiddleware : JWTMiddleware
 {
-  public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
+  private IUserService _userService;
+
+  public OLabAuthMiddleware(IConfiguration config, ILoggerFactory loggerFactory, IUserService userService) : base(config)
   {
-    public OLabAuthMiddleware()
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+    Guard.Argument(userService).NotNull(nameof(userService));
+
+    Logger = new OLabLogger(loggerFactory.CreateLogger<OLabAuthMiddleware>());
+    _userService = userService;
+  }
+
+  public override async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
+  {
+    Guard.Argument(context).NotNull(nameof(context));
+    Guard.Argument(next).NotNull(nameof(next));
+
+    Logger.LogInformation($"Middleware executing for function '{context.FunctionDefinition.Name}'");
+
+    // if not login endpoint, then continue with middleware evaluation
+    if (!context.FunctionDefinition.Name.ToLower().Contains("login"))
     {
+      // This is added pre-function execution, function will have access to this information
+      // in the context.Items dictionary
+      context.Items.Add("middlewareitem", "Hello, from middleware");
 
-    }
+      string token = string.Empty;
 
-    public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
-    {
-      Guard.Argument(context).NotNull(nameof(context));
-      Guard.Argument(next).NotNull(nameof(next));
-
-      ILogger logger = context.GetLogger<OLabAuthMiddleware>();
-      logger.LogInformation("Middleware executing for function '{name}'", context.FunctionDefinition.Name);
-
-      // if not login endpoint, then continue with middleware
-      if (!context.FunctionDefinition.Name.Contains("login"))
+      try
       {
-        // This is added pre-function execution, function will have access to this information
-        // in the context.Items dictionary
-        // context.Items.Add("middlewareitem", "Hello, from middleware");
+        token = ExtractAccessToken(context, true);
 
-        if (!GetToken(logger, context, out var authHeaderValue))
+        (Type featureType, object featureInstance) = context.Features.SingleOrDefault(x => x.Key.Name == "IFunctionBindingsFeature");
+
+        // find the input binding of the function which has been invoked and then find the associated parameter of the function for the data we want
+        var inputData = featureType.GetProperties().SingleOrDefault(p => p.Name == "InputData")?.GetValue(featureInstance) as IReadOnlyDictionary<string, object>;
+        var requestData = inputData?.Values.SingleOrDefault(obj => obj is HttpRequestData) as HttpRequestData;
+
+        if (requestData?.ParsePrincipal() is ClaimsPrincipal principal)
         {
-          // Unable to get token from headers
-          await context.CreateJsonResponse(HttpStatusCode.Unauthorized, new { Message = "Token is not valid." });
-          logger.LogInformation("Could not get token from header");
-          return;
+          // set the principal on the accessor from DI
+          var accessor = context.InstanceServices.GetRequiredService<IClaimsPrincipalAccessor>();
+          accessor.Principal = principal;
         }
 
-        // TODO: validate token
+        ValidateToken(context, token);
 
       }
-
-      await next(context);
-
-      // This happens after function execution. We can inspect the context after the function
-      // was invoked
-      if (context.Items.TryGetValue("functionitem", out var value) && value is string message)
+      catch (OLabUnauthorizedException)
       {
-        logger.LogInformation("From function: {message}", message);
+        // Unable to get token from headers
+        await context.CreateJsonResponse(HttpStatusCode.Unauthorized, new { Message = "Token is not valid." });
+        Logger.LogInformation("Could not get token from request");
+        return;
       }
+
+      // TODO: validate token
+
     }
 
-    private static bool GetToken(ILogger logger, FunctionContext context, out string token)
+    await next(context);
+
+    // This happens after function execution. We can inspect the context after the function
+    // was invoked
+    if (context.Items.TryGetValue("functionitem", out var value) && value is string message)
     {
-      var headers = context.GetHttpRequestHeaders();
+      Logger.LogInformation($"From function: {message}");
+    }
+  }
 
-      token = null;
+  private void ValidateToken(FunctionContext context, string token)
+  {
+    try
+    {
+      Guard.Argument(context).NotNull(nameof(context));
 
-      if (headers.TryGetValue("authorization", out var authHeaderValue))
+      // Try to validate the token. Throws if the 
+      // token cannot be validated.
+      var tokenHandler = new JwtSecurityTokenHandler();
+      tokenHandler.ValidateToken(token,
+                                 TokenValidation,
+                                 out SecurityToken validatedToken);
+    }
+    catch (Exception ex)
+    {
+      Logger.LogException(ex);
+      throw new OLabUnauthorizedException();
+    }
+  }
+
+  /// <summary>
+  /// Gets the access token from the request
+  /// </summary>
+  /// <param name="logger">ILogger instance</param>
+  /// <param name="context">Function context</param>
+  /// <param name="token">(out) JWT token</param>
+  /// <returns>true if token found</returns>
+  private static string ExtractAccessToken(FunctionContext context, bool allowAnonymous = false)
+  {
+    Guard.Argument(context).NotNull(nameof(context));
+
+    var headers = context.GetHttpRequestHeaders();
+
+    string token = string.Empty;
+
+    if (headers.TryGetValue("authorization", out var authHeaderValue))
+    {
+      if (authHeaderValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
       {
-
-        if (!authHeaderValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-          return false;
-
         token = authHeaderValue.Substring("Bearer ".Length).Trim();
-        logger.LogInformation("got bearer token");
-
-        return true;
+        Logger.LogInformation("bearer token provided");
       }
-
-      // handler for external logins
-      if (context.BindingContext.BindingData.TryGetValue("token", out var externalToken))
-      {
-        token = externalToken as string;
-        logger.LogInformation("got external login token");
-        return true;
-      }
-
-      // handler for signalR logins 
-      if (context.BindingContext.BindingData.TryGetValue("access_token", out var signalRToken))
-      {
-        token = signalRToken as string;
-        logger.LogInformation("got signalr token");
-        return true;
-      }
-
-      return false;
     }
 
+    // handler for external logins
+    else if (context.BindingContext.BindingData.TryGetValue("token", out var externalToken))
+    {
+      token = externalToken as string;
+      Logger.LogInformation("external token provided");
+    }
+
+    // handler for signalR logins 
+    else if (context.BindingContext.BindingData.TryGetValue("access_token", out var signalRToken))
+    {
+      token = signalRToken as string;
+      Logger.LogInformation("signalr token provided");
+    }
+
+    if (string.IsNullOrEmpty(token) && !allowAnonymous)
+      throw new OLabUnauthorizedException();
+
+    return token;
   }
+
 }

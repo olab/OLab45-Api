@@ -12,7 +12,8 @@
       "Host.Results": "Error", // Host.Results will collect only Error
       "Function": "Error", // Disable logging for the Function catagory
       "Host.Aggregator": "Debug",
-      "Function.Function1.User": "Debug"
+      "Function.Function1.User": "Debug",
+      "Function.OLab.FunctionApp.Middleware": "Debug"
     }
   },
   "extensions": {
