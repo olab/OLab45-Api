@@ -168,7 +168,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         OLabAPIPagedResponse<FilesDto> pagedResult = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
@@ -193,7 +193,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         FilesFullDto dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<FilesFullDto>.Result(dto);
       }
@@ -219,7 +219,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
@@ -245,7 +245,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         var dto = new FilesFullDto(Request.Form);
 
         var builder = new FilesFull(logger);
@@ -287,7 +287,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)

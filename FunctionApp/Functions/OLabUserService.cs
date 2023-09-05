@@ -17,8 +17,9 @@ using OLabWebAPI.Common.Exceptions;
 using JWT.Algorithms;
 using JWT;
 using JWT.Serializers;
+using OLab.FunctionApp.Api;
 
-namespace OLab.FunctionApp.Api.Services
+namespace OLab.FunctionApp.Functions
 {
   public class OLabUserService : IUserService
   {
@@ -26,18 +27,11 @@ namespace OLab.FunctionApp.Api.Services
     private readonly AppSettings _appSettings;
     private readonly OLabDBContext _context;
     private readonly OLabLogger _logger;
-    private readonly IList<Users> _users;
     private static TokenValidationParameters _tokenParameters;
-    private IEnumerable<Claim> _claims;
 
     public bool IsValid { get; private set; }
     public bool UserName { get; private set; }
     public bool Role { get; private set; }
-
-    private readonly IJwtAlgorithm _algorithm;
-    private readonly IJsonSerializer _serializer;
-    private readonly IBase64UrlEncoder _base64Encoder;
-    private readonly IJwtEncoder _jwtEncoder;
 
     public OLabUserService(
       ILogger<OLabUserService> logger,
@@ -47,25 +41,22 @@ namespace OLab.FunctionApp.Api.Services
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(appSettings).NotNull(nameof(appSettings));
       Guard.Argument(context).NotNull(nameof(context));
+      Guard.Argument(appSettings).NotNull(nameof(appSettings));
 
       defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
       _appSettings = appSettings.Value;
       _context = context;
       _logger = new OLabLogger(logger);
 
-      _users = _context.Users.OrderBy(x => x.Id).ToList();
-
       _logger.LogInformation($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
 
       _tokenParameters = SetupValidationParameters(_appSettings);
-
-      // JWT specific initialization.
-      _algorithm = new HMACSHA256Algorithm();
-      _serializer = new JsonNetSerializer();
-      _base64Encoder = new JwtBase64UrlEncoder();
-      _jwtEncoder = new JwtEncoder(_algorithm, _serializer, _base64Encoder);
     }
 
+    public static TokenValidationParameters GetValidationParameters()
+    {
+      return _tokenParameters;
+    }
 
     /// <summary>
     /// Extract claims from token
@@ -114,6 +105,26 @@ namespace OLab.FunctionApp.Api.Services
     }
 
     /// <summary>
+    /// Authenticate anonymously
+    /// </summary>
+    /// <param name="model">Login model</param>
+    /// <returns>Authenticate response, or null</returns>
+    public AuthenticateResponse AuthenticateAnonymously(uint mapId)
+    {
+      return GenerateAnonymousJwtToken(mapId);
+    }
+
+    /// <summary>
+    /// Authenticate external-issued token
+    /// </summary>
+    /// <param name="model">Login model</param>
+    /// <returns>Authenticate response, or null</returns>
+    public AuthenticateResponse AuthenticateExternal(ExternalLoginRequest model)
+    {
+      return GenerateExternalJwtToken(model);
+    }
+
+    /// <summary>
     /// Authenticate user
     /// </summary>
     /// <param name="model">Login model</param>
@@ -123,17 +134,13 @@ namespace OLab.FunctionApp.Api.Services
       Guard.Argument(model, nameof(model)).NotNull();
 
       _logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
-      var user = _users.SingleOrDefault(x => x.Username == model.Username);
+      var user = _context.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
       // return null if user not found
       if (user != null)
-      {
         if (ValidatePassword(model.Password, user))
-        {
           // authentication successful so generate jwt token
-          return IssueJWT(user);
-        }
-      }
+          return GenerateJwtToken(user);
 
       return null;
     }
@@ -155,9 +162,9 @@ namespace OLab.FunctionApp.Api.Services
       if (!string.IsNullOrEmpty(user.Salt))
         clearText += user.Salt;
 
-      SHA1 hash = SHA1.Create();
-      byte[] plainTextBytes = Encoding.ASCII.GetBytes(clearText);
-      byte[] hashBytes = hash.ComputeHash(plainTextBytes);
+      var hash = SHA1.Create();
+      var plainTextBytes = Encoding.ASCII.GetBytes(clearText);
+      var hashBytes = hash.ComputeHash(plainTextBytes);
 
       user.Password = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
     }
@@ -168,7 +175,7 @@ namespace OLab.FunctionApp.Api.Services
     /// <returns>Enumerable list of users</returns>
     public IEnumerable<Users> GetAll()
     {
-      return _users;
+      return _context.Users.ToList();
     }
 
     /// <summary>
@@ -178,7 +185,7 @@ namespace OLab.FunctionApp.Api.Services
     /// <returns>User record</returns>
     public Users GetById(int id)
     {
-      return _users.FirstOrDefault(x => x.Id == id);
+      return _context.Users.FirstOrDefault(x => x.Id == id);
     }
 
     /// <summary>
@@ -188,7 +195,7 @@ namespace OLab.FunctionApp.Api.Services
     /// <returns>User record</returns>
     public Users GetByUserName(string userName)
     {
-      return _users.FirstOrDefault(x => x.Username == userName);
+      return _context.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
     }
 
     /// <summary>
@@ -202,15 +209,15 @@ namespace OLab.FunctionApp.Api.Services
       Guard.Argument(user, nameof(user)).NotNull();
       Guard.Argument(clearText, nameof(clearText)).NotEmpty();
 
-      bool result = false;
+      var result = false;
 
       if (!string.IsNullOrEmpty(user.Salt))
       {
         clearText += user.Salt;
-        SHA1 hash = SHA1.Create();
-        byte[] plainTextBytes = Encoding.ASCII.GetBytes(clearText);
-        byte[] hashBytes = hash.ComputeHash(plainTextBytes);
-        string localChecksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        var hash = SHA1.Create();
+        var plainTextBytes = Encoding.ASCII.GetBytes(clearText);
+        var hashBytes = hash.ComputeHash(plainTextBytes);
+        var localChecksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
 
         result = localChecksum == user.Password;
       }
@@ -228,34 +235,118 @@ namespace OLab.FunctionApp.Api.Services
     {
       Guard.Argument(numberOfDays, nameof(numberOfDays)).NotZero();
 
-      TimeSpan t = DateTime.UtcNow.AddDays(7) - new DateTime(1970, 1, 1);
+      var t = DateTime.UtcNow.AddDays(7) - new DateTime(1970, 1, 1);
       var expiryInSeconds = (int)t.TotalSeconds;
       return expiryInSeconds;
     }
 
     /// <summary>
-    /// ISsue the JWT token
+    /// Generate JWT token for anonymous use
     /// </summary>
-    /// <param name="user">User to issue for</param>
+    /// <param name="mapId">map id to query</param>
     /// <returns>AuthenticateResponse</returns>
-    public AuthenticateResponse IssueJWT(Users user)
+    private AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
+    {
+      // get user flagged for anonymous use
+      var serverUser = _context.Users.FirstOrDefault(x => x.Group == "anonymous");
+      if (serverUser == null)
+        throw new Exception($"No user is defined for anonymous map play");
+
+      var map = _context.Maps.FirstOrDefault(x => x.Id == mapId);
+      if (map == null)
+        throw new Exception($"Map {mapId} is not defined.");
+
+      // test for 'open' map
+      if (map.SecurityId != 1)
+        _logger.LogError($"Map {mapId} is not configured for anonymous map play");
+
+      var user = new Users();
+
+      user.Username = serverUser.Username;
+      user.Role = serverUser.Role;
+      user.Nickname = serverUser.Nickname;
+      user.Id = serverUser.Id;
+      var issuedBy = "olab";
+
+      var authenticateResponse = GenerateJwtToken(user, issuedBy);
+
+      return authenticateResponse;
+    }
+
+
+    /// <summary>
+    /// Generate JWT token from external one
+    /// </summary>
+    /// <param name="model">token payload</param>
+    /// <returns>AuthenticateResponse</returns>
+    private AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
+    {
+      var handler = new JwtSecurityTokenHandler();
+      var tokenParameters = GetValidationParameters();
+
+      var readToken = handler.ReadJwtToken(model.ExternalToken);
+
+      _logger.LogDebug($"External JWT Incoming token claims:");
+      foreach (var claim in readToken.Claims)
+        _logger.LogDebug($" {claim}");
+
+      handler.ValidateToken(model.ExternalToken,
+                            tokenParameters,
+                            out var validatedToken);
+
+      var jwtToken = (JwtSecurityToken)validatedToken;
+
+      var user = new Users();
+
+      user.Username = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
+      user.Role = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "role").Value}";
+      user.Nickname = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name").Value}";
+      user.Id = (uint)Convert.ToInt32($"{jwtToken.Claims.FirstOrDefault(x => x.Type == "id").Value}");
+      user.Settings = readToken.Claims.FirstOrDefault(x => x.Type == "course").Value;
+
+      var issuedBy = $"{jwtToken.Claims.FirstOrDefault(x => x.Type == "iss").Value}";
+
+      var authenticateResponse = GenerateJwtToken(user, issuedBy);
+
+      // add (any) course name to the authenticate response
+      authenticateResponse.CourseName = user.Settings;
+
+      return authenticateResponse;
+    }
+
+    /// <summary>
+    /// Generate JWT token
+    /// </summary>
+    /// <param name="user">User record from database</param>
+    /// <returns>AuthenticateResponse</returns>
+    /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
+    private AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab")
     {
       Guard.Argument(user, nameof(user)).NotNull();
 
-      TimeSpan t = DateTime.UtcNow.AddDays(7) - new DateTime(1970, 1, 1);
-      var expiryInSeconds = GenerateTokenExpiry(7);
+      var securityKey =
+        new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..16]));
 
-      Dictionary<string, object> claims = new()
+      var tokenDescriptor = new SecurityTokenDescriptor
       {
-        // JSON representation of the user Reference with ID and display name
-        { "name", user.Username },
-        { "role", user.Role },
-        { "exp", expiryInSeconds },
-        { "iss", _appSettings.Issuer },
-        { "aud", _appSettings.Audience }
+        Subject = new ClaimsIdentity(new Claim[]
+        {
+          new Claim(ClaimTypes.Name, user.Username.ToLower()),
+          new Claim(ClaimTypes.Role, $"{user.Role}"),
+          new Claim("name", user.Nickname),
+          new Claim("sub", user.Username),
+          new Claim("id", $"{user.Id}"),
+          new Claim(ClaimTypes.UserData, $"{user.Settings}")
+        }),
+        Expires = DateTime.UtcNow.AddDays(7),
+        Issuer = issuedBy,
+        Audience = _appSettings.Audience,
+        SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
       };
 
-      string securityToken = _jwtEncoder.Encode(claims, _appSettings.Secret[..16]);
+      var tokenHandler = new JwtSecurityTokenHandler();
+      var token = tokenHandler.CreateToken(tokenDescriptor);
+      var securityToken = tokenHandler.WriteToken(token);
 
       var response = new AuthenticateResponse();
       response.AuthInfo.Token = securityToken;
@@ -269,6 +360,11 @@ namespace OLab.FunctionApp.Api.Services
       return response;
     }
 
+    public void AddUser(Users newUser)
+    {
+      throw new NotImplementedException();
+    }
+
     /// <summary>
     /// validate token/setup up common properties
     /// </summary>
@@ -279,18 +375,14 @@ namespace OLab.FunctionApp.Api.Services
       {
         Guard.Argument(request, nameof(request)).NotNull();
 
-        var bearerToken = AccessTokenUtils.ExtractBearerToken(request);
-
-        // Extract/save token claims
-        _claims = ExtractTokenClaims(bearerToken);
-        var handler = new JwtSecurityTokenHandler();
+        var token = AccessTokenUtils.ExtractAccessToken(request, true);
 
         // Try to validate the token. Throws if the 
         // token cannot be validated.
-        handler.ValidateToken(
-            bearerToken,
-            _tokenParameters,
-            out _); // Discard the output SecurityToken. We don't need it.      
+        var tokenHandler = new JwtSecurityTokenHandler();
+        tokenHandler.ValidateToken(token,
+                                   GetValidationParameters(),
+                                   out var validatedToken);
       }
       catch (Exception ex)
       {
@@ -298,16 +390,6 @@ namespace OLab.FunctionApp.Api.Services
         throw new OLabUnauthorizedException();
       }
 
-    }
-
-    public AuthenticateResponse AuthenticateExternal(ExternalLoginRequest model)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void AddUser(Users newUser)
-    {
-      throw new NotImplementedException();
     }
   }
 }

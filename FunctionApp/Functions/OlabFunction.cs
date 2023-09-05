@@ -1,12 +1,16 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OLab.FunctionApp.Api;
-using OLab.FunctionApp.Api.Services;
+using OLabWebAPI.Data;
+using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
+using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
+using Microsoft.Extensions.Configuration;
 
-namespace OLab.Endpoints.Azure
+namespace OLab.FunctionApp.Functions
 {
   public class OLabFunction
   {
@@ -14,28 +18,38 @@ namespace OLab.Endpoints.Azure
     protected OLabLogger logger;
     protected string token;
     protected readonly IUserService userService;
-    protected OLabWebApiAuthorization auth;
-    protected UserContext userContext;
-    
-    public OLabFunction(ILogger logger, IUserService userService, OLabDBContext context)
-    {
-      Guard.Argument(userService).NotNull(nameof(userService));
-      Guard.Argument(logger).NotNull(nameof(logger));
-      Guard.Argument(context).NotNull(nameof(context));
+    protected IUserContext userContext;
 
-      this.context = context;
-      this.logger = new OLabLogger(logger);
+    protected readonly Configuration _configuration;
+
+    public OLabFunction(
+      ILoggerFactory loggerFactory, 
+      IConfiguration configuration, 
+      IUserService userService, 
+      OLabDBContext dbContext)
+    {
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+      Guard.Argument(configuration).NotNull(nameof(configuration));
+      Guard.Argument(dbContext).NotNull(nameof(dbContext));
+
+      _configuration = new Configuration(configuration);
+
+      context = dbContext;
+      logger = new OLabLogger(loggerFactory.CreateLogger<OLabFunction>());
       this.userService = userService;
     }
 
-    protected void AuthorizeRequest(HttpRequest request)
-    {
-      logger.LogInformation($"Authorizing request");
-      // validate user access token.  throws if not successful
-      userService.ValidateToken(request);
-      auth = new OLabWebApiAuthorization(logger, context, request);
-      userContext = new UserContext(logger, context, request);
-      logger.LogInformation($"Request authorized");
-    }
+    //protected IOLabAuthentication AuthorizeRequest(HttpRequest request)
+    //{
+    //  logger.LogInformation($"Authorizing request");
+
+    //  // validate user access token.  throws if not successful
+    //  userService.ValidateToken(request);
+    //  userContext = new UserContext(logger, context, request);
+
+    //  logger.LogInformation($"Request authorized");
+
+    //  return auth;
+    //}
   }
 }

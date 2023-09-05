@@ -39,7 +39,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
         Data.Interface.IUserContext userContext = auth.GetUserContext();
         _endpoint.SetUserContext(userContext);

@@ -23,15 +23,6 @@ using IUserService = OLabWebAPI.Services.IUserService;
 namespace OLabWebAPI
 {
 
-  //public static class MapsterConfiguration
-  //{
-  //  public static void AddMapster(this IServiceCollection services)
-  //  {
-  //    var config = TypeAdapterConfig.GlobalSettings;
-  //    config.Scan(AppDomain.CurrentDomain.GetAssemblies());
-  //  }
-  //}
-
   public class Startup
   {
     public IConfiguration Configuration { get; }
@@ -79,10 +70,6 @@ namespace OLabWebAPI
 
       });
 
-      //services.AddMapster();
-      //services.AddSingleton(TypeAdapterConfig.GlobalSettings);
-      //services.AddScoped<IMapper, ServiceMapper>();
-
       // Additional code to register the ILogger as a ILogger<T> where T is the Startup class
       services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
 
@@ -95,7 +82,7 @@ namespace OLabWebAPI
               .UseMySql(Configuration.GetConnectionString(Constants.DefaultConnectionStringName), serverVersion)
               // The following three options help with debugging, but should
               // be changed or removed for production.
-              // .LogTo(Console.WriteLine, LogLevel.Information)
+              // .LogTo(Console.WriteLine, LogLevel.Debug)
               // .EnableSensitiveDataLogging()
               .EnableDetailedErrors()
         );
@@ -110,7 +97,6 @@ namespace OLabWebAPI
       // .EnableDetailedErrors()
       // );
 
-      // MoodleJWTService.Setup(Configuration, services);
       OLabJWTService.Setup(_logger, Configuration, services);
 
       services.AddTransient<IUserContext, UserContext>();
@@ -118,7 +104,6 @@ namespace OLabWebAPI
       // define instances of application services
       services.AddScoped<IUserService, OLabUserService>();
       services.AddScoped<IOLabSession, OLabSession>();
-      //services.AddSingleton<Conference>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

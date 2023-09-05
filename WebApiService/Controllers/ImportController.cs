@@ -43,7 +43,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
         // test if user has access to import.
         var userContext = new UserContext(logger, dbContext, HttpContext);
@@ -87,7 +87,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public IActionResult Post(IFormFile file)
     {
-      var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+      var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
       // test if user has access to map.
       Data.Interface.IUserContext userContext = auth.GetUserContext();

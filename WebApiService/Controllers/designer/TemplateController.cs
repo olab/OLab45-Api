@@ -39,7 +39,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         OLabAPIPagedResponse<MapsDto> pagedResponse = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
       }
@@ -62,7 +62,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         MapNodeLinkTemplateDto dto = _endpoint.Links();
         return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
       }
@@ -84,7 +84,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Designer
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         MapNodeTemplateDto dto = _endpoint.Nodes();
         return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
       }
