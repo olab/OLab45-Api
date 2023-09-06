@@ -29,7 +29,7 @@ namespace OLab.FunctionApp.Middleware
       Guard.Argument(configuration).NotNull(nameof(configuration));
 
       Config = new Configuration(configuration);
-      SetupTokenValidation();
+      TokenValidation = BuildTokenValidation();
     }
 
     public abstract Task Invoke(FunctionContext context, FunctionExecutionDelegate next);
@@ -38,7 +38,7 @@ namespace OLab.FunctionApp.Middleware
     /// Builds token validation object
     /// </summary>
     /// <param name="configuration">App configuration</param>
-    private static void SetupTokenValidation()
+    private static TokenValidationParameters BuildTokenValidation()
     { 
       try
       {
@@ -71,10 +71,11 @@ namespace OLab.FunctionApp.Middleware
           IssuerSigningKey = securityKey
         };
 
+        return TokenValidation;
       }
       catch (Exception ex)
       {
-        Logger.LogException(ex);
+        Logger.LogError(ex.Message);
         throw;
       }
 

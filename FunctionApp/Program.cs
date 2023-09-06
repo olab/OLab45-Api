@@ -10,6 +10,7 @@ using OLabWebAPI.Data;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 using Microsoft.Extensions.Logging;
+using OLab.FunctionApp.Services;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>
@@ -22,10 +23,9 @@ var host = new HostBuilder()
 
     .ConfigureServices((context, services) =>
     {
-      services.AddTransient<IUserContext, UserContext>();
+      services.AddTransient<IUserContext, OLab.FunctionApp.Services.UserContext>();
       services.AddScoped<IUserService, OLabUserService>();
       services.AddScoped<IOLabSession, OLabSession>();
-      services.AddSingleton<IClaimsPrincipalAccessor, ClaimsPrincipalAccessor>();
 
       var connectionString = Environment.GetEnvironmentVariable("DefaultDatabase");
       var serverVersion = ServerVersion.AutoDetect(connectionString);

@@ -10,7 +10,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using OLab.FunctionApp.Api;
+using OLab.FunctionApp.Extensions;
 using OLabWebAPI.Model;
 
 namespace OLab.FunctionApp.Functions;
