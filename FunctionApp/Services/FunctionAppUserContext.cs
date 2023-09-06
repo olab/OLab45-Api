@@ -16,79 +16,16 @@ using System.Security.Claims;
 
 namespace OLab.FunctionApp.Services
 {
-  public class FunctionAppUserContext : IUserContext
+  public class FunctionAppUserContext : UserContext
   {
-    public const string WildCardObjectType = "*";
-    public const uint WildCardObjectId = 0;
-    public const string NonAccessAcl = "-";
+    //public const string WildCardObjectType = "*";
+    //public const uint WildCardObjectId = 0;
+    //public const string NonAccessAcl = "-";
     public ClaimsPrincipal Principal;
-    public Users OLabUser;
+    //public Users OLabUser;
 
-    private readonly OLabDBContext _dbContext;
+    //private readonly OLabDBContext _dbContext;
     private readonly FunctionContext _hostContext;
-
-    private IDictionary<string, string> _claims;
-    protected readonly OLabLogger _logger;
-    protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
-    protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
-
-    private IOLabSession _session;
-    private string _role;
-    private IList<string> _roles;
-    private uint _userId;
-    private string _userName;
-    private string _ipAddress;
-    private string _issuer;
-    private string _referringCourse;
-    //private readonly string _courseName;
-    //private string _accessToken;
-
-    public IOLabSession Session
-    {
-      get => _session;
-      set => _session = value;
-    }
-
-    public string ReferringCourse
-    {
-      get => _referringCourse;
-      set => _referringCourse = value;
-    }
-
-    public string Role
-    {
-      get => _role;
-      set => _role = value;
-    }
-
-    public uint UserId
-    {
-      get => _userId;
-      set => _userId = value;
-    }
-
-    public string UserName
-    {
-      get => _userName;
-      set => _userName = value;
-    }
-
-    public string IPAddress
-    {
-      get => _ipAddress;
-      set => _ipAddress = value;
-    }
-
-    public string Issuer
-    {
-      get => _issuer;
-      set => _issuer = value;
-    }
-
-    public string SessionId { get { return Session.GetSessionId(); } }
-
-    //public string CourseName { get { return _courseName; } }
-    public string CourseName { get { return null; } }
 
     // default ctor, needed for services Dependancy Injection
     public FunctionAppUserContext()
@@ -96,10 +33,11 @@ namespace OLab.FunctionApp.Services
 
     }
 
-    public FunctionAppUserContext(OLabLogger logger, OLabDBContext dbContext, FunctionContext hostContext)
+    public FunctionAppUserContext(
+      OLabLogger logger,
+      OLabDBContext dbContext,
+      FunctionContext hostContext) : base(logger, dbContext)
     {
-      _dbContext = dbContext;
-      _logger = logger;
       _hostContext = hostContext;
 
       Session = new OLabSession(_logger.GetLogger(), dbContext, this);
@@ -107,7 +45,7 @@ namespace OLab.FunctionApp.Services
       LoadHostContext();
     }
 
-    protected virtual void LoadHostContext()
+    protected override void LoadHostContext()
     {
       var headers = new Dictionary<string, string>();
       if (!_hostContext.Items.TryGetValue("headers", out var headersObjects))
@@ -186,149 +124,6 @@ namespace OLab.FunctionApp.Services
             });
         }
       }
-    }
-
-    /// <summary>
-    /// Test if have requested access to securable object
-    /// </summary>
-    /// <param name="requestedPerm">Request permissions (RWED)</param>
-    /// <param name="objectType">Securable object type</param>
-    /// <param name="objectId">(optional) securable object id</param>
-    /// <returns>true/false</returns>
-    public bool HasAccess(string requestedPerm, string objectType, uint? objectId)
-    {
-      var grantedCount = 0;
-
-      if (!objectId.HasValue)
-        objectId = WildCardObjectId;
-
-      for (var i = 0; i < requestedPerm.Length; i++)
-        if (HasSingleAccess(requestedPerm[i], objectType, objectId))
-          grantedCount++;
-
-      return grantedCount == requestedPerm.Length;
-    }
-
-    /// <summary>
-    /// Test if have single ACL access
-    /// </summary>
-    /// <param name="requestedPerm">Single-letter ACL to test for</param>
-    /// <param name="objectType">Securable object type</param>
-    /// <param name="objectId">(optional) securable object id</param>
-    /// <returns>true/false</returns>
-    private bool HasSingleAccess(char requestedPerm, string objectType, uint? objectId)
-    {
-      var rc = HasUserLevelAccess(requestedPerm, objectType, objectId);
-      if (!rc)
-        rc = HasRoleLevelAccess(requestedPerm, objectType, objectId);
-
-      return rc;
-    }
-
-    /// <summary>
-    /// Test if have single role-level ACL access
-    /// </summary>
-    /// <param name="requestedPerm">Single-letter ACL to test for</param>
-    /// <param name="objectType">Securable object type</param>
-    /// <param name="objectId">(optional) securable object id</param>
-    /// <returns>true/false</returns>
-    private bool HasRoleLevelAccess(char requestedPerm, string objectType, uint? objectId)
-    {
-      // test for explicit non-access to specific object type and id
-      var acl = _roleAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == objectId.Value &&
-       x.Acl == NonAccessAcl).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      // test for specific object type and id
-      acl = _roleAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == objectId.Value &&
-       x.Acl.Contains(requestedPerm)).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      // test for specific object type and all ids
-      acl = _roleAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == WildCardObjectId &&
-       x.Acl.Contains(requestedPerm)).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      // test for default any object, any id
-      acl = _roleAcls.Where(x =>
-       x.ImageableType == WildCardObjectType &&
-       x.ImageableId == WildCardObjectId &&
-       x.Acl.Contains(requestedPerm)).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      return false;
-    }
-
-    /// <summary>
-    /// Test if have single user-level ACL access
-    /// </summary>
-    /// <param name="requestedPerm">Single-letter ACL to test for</param>
-    /// <param name="objectType">Securable object type</param>
-    /// <param name="objectId">(optional) securable object id</param>
-    /// <returns>true/false</returns>
-    private bool HasUserLevelAccess(char requestedPerm, string objectType, uint? objectId)
-    {
-
-      // test for explicit non-access to specific object type and id
-      var acl = _userAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == objectId.Value &&
-       x.Acl == NonAccessAcl).FirstOrDefault();
-
-      if (acl != null)
-        return false;
-
-      // test for most specific object acl
-      acl = _userAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == objectId.Value &&
-       x.Acl.Contains(requestedPerm)).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      // test for specific object type acl
-      acl = _userAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == WildCardObjectId &&
-       x.Acl.Contains(requestedPerm)).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      // test for all for object type acl
-      acl = _userAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == 0 &&
-       x.Acl.Contains(requestedPerm)).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      // test for generic acl
-      acl = _userAcls.Where(x =>
-       x.ImageableType == WildCardObjectType &&
-       x.ImageableId == 0 &&
-       x.Acl.Contains(requestedPerm)).FirstOrDefault();
-
-      if (acl != null)
-        return true;
-
-      return false;
     }
   }
 }
