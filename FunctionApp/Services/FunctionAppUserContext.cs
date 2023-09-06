@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 #nullable disable
 
-namespace OLab.Api.FunctionApp.Services
+namespace OLab.FunctionApp.Services
 {
   public class FunctionAppUserContext : UserContext
   {

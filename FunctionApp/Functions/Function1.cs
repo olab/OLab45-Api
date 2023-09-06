@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Model;
 using System.Net;
 
-namespace OLab.Api.FunctionApp.Functions;
+namespace OLab.FunctionApp.Functions;
 
 public class Function1 : OLabFunction
 {

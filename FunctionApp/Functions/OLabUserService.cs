@@ -11,7 +11,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OLab.Api.FunctionApp.Functions;
+namespace OLab.FunctionApp.Functions;
 
 public class OLabUserService : IUserService
 {

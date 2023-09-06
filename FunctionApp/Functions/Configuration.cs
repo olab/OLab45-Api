@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using OLab.Api.Utils;
 using System.Reflection;
 
-namespace OLab.Api.FunctionApp.Functions;
+namespace OLab.FunctionApp.Functions;
 
 public class Configuration
 {

@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Utils;
 using System.Text;
-using Configuration = OLab.Api.FunctionApp.Functions.Configuration;
+using Configuration = OLab.FunctionApp.Functions.Configuration;
 
-namespace OLab.Api.FunctionApp.Middleware
+namespace OLab.FunctionApp.Middleware
 {
   public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
   {

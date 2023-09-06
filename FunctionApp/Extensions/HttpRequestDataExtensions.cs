@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using OLab.Api.Common.Exceptions;
 using System.Diagnostics.CodeAnalysis;
 
-namespace OLab.Api.FunctionApp.Extensions;
+namespace OLab.FunctionApp.Extensions;
 
 public static class HttpRequestDataExtensions
 {

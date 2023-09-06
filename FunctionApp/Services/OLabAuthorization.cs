@@ -7,7 +7,7 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
-namespace OLab.Api.FunctionApp.Services
+namespace OLab.FunctionApp.Services
 {
   public class OLabAuthorization : IOLabAuthentication
   {

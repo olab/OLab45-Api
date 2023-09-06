@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using OLab.Api.Model;
 
-namespace OLab.Api.FunctionApp;
+namespace OLab.FunctionApp;
 
 public interface IUserService
 {

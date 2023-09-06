@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using OLab.Api.FunctionApp.Services;
+using OLab.FunctionApp.Services;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -13,7 +13,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 
-namespace OLab.Api.FunctionApp.Middleware;
+namespace OLab.FunctionApp.Middleware;
 
 public class OLabAuthMiddleware : JWTMiddleware
 {
