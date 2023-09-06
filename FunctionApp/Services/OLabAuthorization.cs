@@ -24,7 +24,7 @@ namespace OLab.FunctionApp.Services
           FunctionContext context
         )
         {
-            userContext = new UserContext(logger, dbContext, context);
+            userContext = new FunctionAppUserContext(logger, dbContext, context);
         }
 
         public IUserContext GetUserContext()

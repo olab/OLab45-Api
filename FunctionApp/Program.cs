@@ -23,7 +23,7 @@ var host = new HostBuilder()
 
     .ConfigureServices((context, services) =>
     {
-      services.AddTransient<IUserContext, OLab.FunctionApp.Services.UserContext>();
+      services.AddTransient<IUserContext, OLab.FunctionApp.Services.FunctionAppUserContext>();
       services.AddScoped<IUserService, OLabUserService>();
       services.AddScoped<IOLabSession, OLabSession>();
 

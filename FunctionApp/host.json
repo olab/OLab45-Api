@@ -13,7 +13,8 @@
       "Function": "Error", // Disable logging for the Function catagory
       "Host.Aggregator": "Debug",
       "Function.Function1.User": "Debug",
-      "Function.OLab.FunctionApp.Middleware": "Debug"
+      "Function.OLab.FunctionApp.Middleware": "Debug",
+      "Microsoft": "Warning"
     }
   },
   "extensions": {

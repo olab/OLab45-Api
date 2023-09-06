@@ -16,7 +16,7 @@ using System.Security.Claims;
 
 namespace OLab.FunctionApp.Services
 {
-  public class UserContext : IUserContext
+  public class FunctionAppUserContext : IUserContext
   {
     public const string WildCardObjectType = "*";
     public const uint WildCardObjectId = 0;
@@ -39,6 +39,7 @@ namespace OLab.FunctionApp.Services
     private string _userName;
     private string _ipAddress;
     private string _issuer;
+    private string _referringCourse;
     //private readonly string _courseName;
     //private string _accessToken;
 
@@ -50,8 +51,8 @@ namespace OLab.FunctionApp.Services
 
     public string ReferringCourse
     {
-      get => _role;
-      set => _role = value;
+      get => _referringCourse;
+      set => _referringCourse = value;
     }
 
     public string Role
@@ -90,12 +91,12 @@ namespace OLab.FunctionApp.Services
     public string CourseName { get { return null; } }
 
     // default ctor, needed for services Dependancy Injection
-    public UserContext()
+    public FunctionAppUserContext()
     {
 
     }
 
-    public UserContext(OLabLogger logger, OLabDBContext dbContext, FunctionContext hostContext)
+    public FunctionAppUserContext(OLabLogger logger, OLabDBContext dbContext, FunctionContext hostContext)
     {
       _dbContext = dbContext;
       _logger = logger;
@@ -124,12 +125,6 @@ namespace OLab.FunctionApp.Services
         }
       }
 
-      //var identity = (ClaimsIdentity)_httpContext.User.Identity;
-      //if (identity == null)
-      //  throw new Exception($"Unable to establish identity from token");
-
-      //Principal = _httpContext.User;
-
       if (!_hostContext.Items.TryGetValue("claims", out object claimsObject))
         throw new Exception("unable to retrieve claims from host context");
 
@@ -149,9 +144,9 @@ namespace OLab.FunctionApp.Services
         throw new Exception("unable to retrieve user id from token claims");
       UserId = (uint)Convert.ToInt32(idValue);
 
-      if (!_claims.TryGetValue("id", out var roleValue))
+      if (!_claims.TryGetValue(ClaimTypes.Role, out var roleValue))
         throw new Exception("unable to retrieve role from token claims");
-      var Role = roleValue;
+      Role = roleValue;
 
       // separate out multiple roles, make lower case, remove spaces, and sort
       _roles = Role.Split(',')
@@ -191,8 +186,6 @@ namespace OLab.FunctionApp.Services
             });
         }
       }
-      else
-        throw new Exception($"no user found for {UserName}({UserId})");
     }
 
     /// <summary>
