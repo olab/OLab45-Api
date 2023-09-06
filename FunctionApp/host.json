@@ -6,15 +6,6 @@
         "isEnabled": true,
         "excludedTypes": "Request"
       }
-    },
-    "logLevel": {
-      "default": "None",
-      "Host.Results": "Error", // Host.Results will collect only Error
-      "Function": "Error", // Disable logging for the Function catagory
-      "Host.Aggregator": "Debug",
-      "Function.Function1.User": "Debug",
-      "Function.OLab.FunctionApp.Middleware": "Debug",
-      "Microsoft": "Warning"
     }
   },
   "extensions": {

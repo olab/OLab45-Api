@@ -10,13 +10,7 @@ namespace OLab.FunctionApp.Services
 {
   public class FunctionAppUserContext : UserContext
   {
-    //public const string WildCardObjectType = "*";
-    //public const uint WildCardObjectId = 0;
-    //public const string NonAccessAcl = "-";
     public ClaimsPrincipal Principal;
-    //public Users OLabUser;
-
-    //private readonly OLabDBContext _dbContext;
     private readonly FunctionContext _hostContext;
 
     // default ctor, needed for services Dependancy Injection
