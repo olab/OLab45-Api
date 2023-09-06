@@ -1,21 +1,12 @@
-﻿
-using Azure.Core;
-using Dawn;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Services;
 using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Data;
-using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 using System.IdentityModel.Tokens.Jwt;
@@ -97,7 +88,7 @@ public class OLabAuthMiddleware : JWTMiddleware
     }
     catch (Exception ex)
     {
-      await functionContext.CreateJsonResponse(HttpStatusCode.InternalServerError, ex.Message );
+      await functionContext.CreateJsonResponse(HttpStatusCode.InternalServerError, ex.Message);
       Logger.LogError($"server error: {ex.Message} {ex.StackTrace}");
       return;
     }

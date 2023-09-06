@@ -1,10 +1,5 @@
-using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -21,7 +16,7 @@ public class UserFunction : OLabFunction
     ILoggerFactory loggerFactory,
     IConfiguration configuration,
     IUserService userService,
-    OLabDBContext dbContext) : base( loggerFactory, configuration, userService, dbContext )
+    OLabDBContext dbContext) : base(loggerFactory, configuration, userService, dbContext)
   {
   }
 

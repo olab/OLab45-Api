@@ -1,22 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
-using System.Security.Cryptography;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Dawn;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using OLabWebAPI.Common.Exceptions;
-using JWT.Algorithms;
-using JWT;
-using JWT.Serializers;
+using OLabWebAPI.Model;
+using OLabWebAPI.Utils;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace OLab.FunctionApp.Functions;
 

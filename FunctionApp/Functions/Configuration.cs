@@ -1,14 +1,7 @@
-﻿using Google.Protobuf.Reflection;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using OLabWebAPI.Utils;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions;
 

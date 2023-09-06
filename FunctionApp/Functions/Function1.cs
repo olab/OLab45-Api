@@ -1,12 +1,10 @@
-using System.Net;
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
+using System.Net;
 
 namespace OLab.FunctionApp.Functions;
 

@@ -1,15 +1,7 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using OLabWebAPI.Data;
-using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 
 #nullable disable

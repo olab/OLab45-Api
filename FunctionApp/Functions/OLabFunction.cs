@@ -1,15 +1,12 @@
 using Dawn;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using OLabWebAPI.Data;
+using Microsoft.Extensions.Options;
 using OLabWebAPI.Data.Interface;
 using OLabWebAPI.Model;
 using OLabWebAPI.Utils;
 using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.Azure.Functions.Worker;
 
 namespace OLab.FunctionApp.Functions;
 
@@ -24,9 +21,9 @@ public class OLabFunction
   protected readonly Configuration _configuration;
 
   public OLabFunction(
-    ILoggerFactory loggerFactory, 
-    IConfiguration configuration, 
-    IUserService userService, 
+    ILoggerFactory loggerFactory,
+    IConfiguration configuration,
+    IUserService userService,
     OLabDBContext dbContext)
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));

@@ -1,19 +1,10 @@
 ﻿using Dawn;
-using Humanizer.Configuration;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using OLab.FunctionApp.Functions;
 using OLabWebAPI.Utils;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Configuration = OLab.FunctionApp.Functions.Configuration;
 
 namespace OLab.FunctionApp.Middleware
@@ -39,7 +30,7 @@ namespace OLab.FunctionApp.Middleware
     /// </summary>
     /// <param name="configuration">App configuration</param>
     private static TokenValidationParameters BuildTokenValidation()
-    { 
+    {
       try
       {
 
