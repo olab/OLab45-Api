@@ -5,11 +5,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Utils;
 using System.Text;
-using Configuration = OLab.FunctionApp.Functions.Configuration;
+using Configuration = OLab.FunctionApp.Services.Configuration;
 
 namespace OLab.FunctionApp.Middleware
 {
-  public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
+    public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
   {
     protected static Configuration Config;
     protected static OLabLogger Logger;

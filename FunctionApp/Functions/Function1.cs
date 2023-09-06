@@ -21,16 +21,16 @@ public class Function1 : OLabFunction
 
   [Function("Function1")]
   public HttpResponseData Run(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData httpRequest,
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData request,
     FunctionContext hostContext)
   {
-    Guard.Argument(httpRequest).NotNull(nameof(httpRequest));
+    Guard.Argument(request).NotNull(nameof(request));
 
-    logger.LogInformation("C# HTTP trigger function processed a request.");
+    Logger.LogInformation("C# HTTP trigger function processed a request.");
 
     var auth = GetRequestContext(hostContext);
 
-    var response = httpRequest.CreateResponse(HttpStatusCode.OK);
+    var response = request.CreateResponse(HttpStatusCode.OK);
     response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
 
     response.WriteString("Welcome to Azure Functions!");

@@ -31,8 +31,8 @@ var host = new HostBuilder()
       var serverVersion = ServerVersion.AutoDetect(connectionString);
       services.AddDbContext<OLabDBContext>(options =>
         options.UseMySql(connectionString, serverVersion)
-          .EnableDetailedErrors())
-          .AddLogging(options => options.SetMinimumLevel(LogLevel.Warning));
+          .EnableDetailedErrors());
+          //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
 
       services.AddOptions<AppSettings>()
         .Configure<IConfiguration>((options, c) =>
@@ -48,6 +48,11 @@ var host = new HostBuilder()
     {
       builder.UseMiddleware<OLabAuthMiddleware>();
       //builder.UseMiddleware<ExceptionLoggingMiddleware>();
+    })
+
+    .ConfigureLogging( builder => 
+    {
+      builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
     })
 
     .Build();

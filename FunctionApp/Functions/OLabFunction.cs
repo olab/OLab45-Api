@@ -6,15 +6,16 @@ using Microsoft.Extensions.Options;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.FunctionApp.Services;
 using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Functions;
 
 public class OLabFunction
 {
-  protected readonly OLabDBContext context;
-  protected OLabLogger logger;
-  protected string token;
+  protected readonly OLabDBContext DbContext;
+  protected OLabLogger Logger;
+  protected string Token;
   protected readonly IUserService userService;
   protected IUserContext userContext;
   protected IOptions<AppSettings> appSettings;
@@ -33,8 +34,10 @@ public class OLabFunction
 
     _configuration = new Configuration(configuration);
 
-    context = dbContext;
-    logger = new OLabLogger(loggerFactory.CreateLogger<OLabFunction>());
+    appSettings = Microsoft.Extensions.Options.Options.Create( _configuration.CreateAppSettings() );
+
+    DbContext = dbContext;
+    Logger = new OLabLogger(loggerFactory.CreateLogger<OLabFunction>());
     this.userService = userService;
   }
 
@@ -48,7 +51,7 @@ public class OLabFunction
   {
     // Get the item set by the middleware
     if (hostContext.Items.TryGetValue("auth", out object value) && value is IOLabAuthentication auth)
-      logger.LogInformation("Got auth context");
+      Logger.LogInformation("Got auth context");
     else
       throw new Exception("unable to get authentication context");
 

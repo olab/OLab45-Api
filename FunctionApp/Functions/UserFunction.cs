@@ -27,10 +27,10 @@ public class UserFunction : OLabFunction
   {
     Guard.Argument(request).NotNull(nameof(request));
 
-    logger.LogInformation("C# HTTP trigger function processed a request.");
+    Logger.LogInformation("C# HTTP trigger function processed a request.");
     var body = await request.ParseBodyFromRequestAsync<LoginRequest>();
 
-    logger.LogDebug($"Login(user = '{body.Username}')");
+    Logger.LogDebug($"Login(user = '{body.Username}')");
 
     var response = userService.Authenticate(body);
     if (response == null)
