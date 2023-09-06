@@ -3,15 +3,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OLab.Common.Exceptions;
-using OLab.Model;
-using OLab.Utils;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Model;
+using OLab.Api.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.Api.FunctionApp.Functions;
 
 public class OLabUserService : IUserService
 {

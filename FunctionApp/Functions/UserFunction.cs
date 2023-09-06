@@ -5,10 +5,10 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using OLab.FunctionApp.Extensions;
-using OLab.Model;
+using OLab.Api.FunctionApp.Extensions;
+using OLab.Api.Model;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.Api.FunctionApp.Functions;
 
 public class UserFunction : OLabFunction
 {

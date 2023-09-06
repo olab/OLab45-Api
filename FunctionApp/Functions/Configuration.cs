@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using OLab.Utils;
+using OLab.Api.Utils;
 using System.Reflection;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.Api.FunctionApp.Functions;
 
 public class Configuration
 {

@@ -1,12 +1,12 @@
 using Microsoft.Azure.Functions.Worker;
-using OLab.Data;
-using OLab.Model;
-using OLab.Utils;
+using OLab.Api.Data;
+using OLab.Api.Model;
+using OLab.Api.Utils;
 using System.Security.Claims;
 
 #nullable disable
 
-namespace OLab.FunctionApp.Services
+namespace OLab.Api.FunctionApp.Services
 {
   public class FunctionAppUserContext : UserContext
   {

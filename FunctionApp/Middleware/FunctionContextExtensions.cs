@@ -2,7 +2,7 @@
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Text.Json;
 
-namespace OLab.FunctionApp.Middleware;
+namespace OLab.Api.FunctionApp.Middleware;
 
 /// <summary>
 /// Helper Function for FunctionContext.

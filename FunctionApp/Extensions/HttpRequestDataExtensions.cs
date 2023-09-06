@@ -1,9 +1,9 @@
 using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
-using OLab.Common.Exceptions;
+using OLab.Api.Common.Exceptions;
 using System.Diagnostics.CodeAnalysis;
 
-namespace OLab.FunctionApp.Extensions;
+namespace OLab.Api.FunctionApp.Extensions;
 
 public static class HttpRequestDataExtensions
 {

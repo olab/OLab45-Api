@@ -3,10 +3,10 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using OLab.Model;
+using OLab.Api.Model;
 using System.Net;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.Api.FunctionApp.Functions;
 
 public class Function1 : OLabFunction
 {

@@ -3,14 +3,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OLab.FunctionApp;
-using OLab.FunctionApp.Functions;
-using OLab.FunctionApp.Middleware;
-using OLab.FunctionApp.Services;
-using OLab.Data;
-using OLab.Data.Interface;
-using OLab.Model;
-using OLab.Utils;
+using OLab.Api.FunctionApp;
+using OLab.Api.FunctionApp.Functions;
+using OLab.Api.FunctionApp.Middleware;
+using OLab.Api.FunctionApp.Services;
+using OLab.Api.Data;
+using OLab.Api.Data.Interface;
+using OLab.Api.Model;
+using OLab.Api.Utils;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>

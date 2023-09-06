@@ -3,11 +3,11 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using OLab.Utils;
+using OLab.Api.Utils;
 using System.Text;
-using Configuration = OLab.FunctionApp.Functions.Configuration;
+using Configuration = OLab.Api.FunctionApp.Functions.Configuration;
 
-namespace OLab.FunctionApp.Middleware
+namespace OLab.Api.FunctionApp.Middleware
 {
   public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
   {

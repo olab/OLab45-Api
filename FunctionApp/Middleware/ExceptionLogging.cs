@@ -2,7 +2,7 @@
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
 
-namespace OLab.FunctionApp.Middleware;
+namespace OLab.Api.FunctionApp.Middleware;
 
 public class ExceptionLoggingMiddleware : IFunctionsWorkerMiddleware
 {
