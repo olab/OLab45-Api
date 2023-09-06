@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using OLabWebAPI.Utils;
+using OLab.Utils;
 using System.Reflection;
 
 namespace OLab.FunctionApp.Functions;

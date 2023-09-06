@@ -7,10 +7,10 @@ using OLab.FunctionApp;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
-using OLabWebAPI.Data;
-using OLabWebAPI.Data.Interface;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
+using OLab.Data;
+using OLab.Data.Interface;
+using OLab.Model;
+using OLab.Utils;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>

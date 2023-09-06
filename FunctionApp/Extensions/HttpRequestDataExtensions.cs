@@ -1,6 +1,6 @@
 using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
-using OLabWebAPI.Common.Exceptions;
+using OLab.Common.Exceptions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace OLab.FunctionApp.Extensions;

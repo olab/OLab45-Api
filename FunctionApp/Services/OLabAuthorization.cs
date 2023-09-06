@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using OLabWebAPI.Common;
-using OLabWebAPI.Data.Interface;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
-using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
+using OLab.Common;
+using OLab.Data.Interface;
+using OLab.Dto;
+using OLab.Model;
+using OLab.Utils;
+using IOLabAuthentication = OLab.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Services
 {

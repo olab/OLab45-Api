@@ -3,10 +3,10 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OLabWebAPI.Data.Interface;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
-using IOLabAuthentication = OLabWebAPI.Data.Interface.IOLabAuthentication;
+using OLab.Data.Interface;
+using OLab.Model;
+using OLab.Utils;
+using IOLabAuthentication = OLab.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Functions;
 

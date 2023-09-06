@@ -1,7 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
-using OLabWebAPI.Data;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
+using OLab.Data;
+using OLab.Model;
+using OLab.Utils;
 using System.Security.Claims;
 
 #nullable disable

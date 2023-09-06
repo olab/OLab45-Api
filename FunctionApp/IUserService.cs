@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using OLabWebAPI.Model;
+using OLab.Model;
 
 namespace OLab.FunctionApp;
 

@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Utils;
+using OLab.Utils;
 using System.Text;
 using Configuration = OLab.FunctionApp.Functions.Configuration;
 
