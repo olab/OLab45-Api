@@ -2,27 +2,14 @@ using Dawn;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-
-using Microsoft.Extensions.Logging;
-
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
-using OLab.Api.Endpoints;
 using Microsoft.Azure.Functions.Worker;
-using OLab.Api.Model;
-using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using Newtonsoft.Json;
-using OLab.Api.Endpoints.Player;
-using Microsoft.Extensions.Options;
-using OLab.Api.Utils;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Endpoints.Player;
+using OLab.Api.Model;
 
 namespace OLab.FunctionApp.Functions.Player
 {
@@ -60,7 +47,7 @@ namespace OLab.FunctionApp.Functions.Player
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var pagedResponse = await _endpoint.GetAsync(take, skip);
         return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
@@ -90,7 +77,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
         return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
@@ -119,7 +106,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
         return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);

@@ -3,13 +3,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OLab.FunctionApp;
-using OLab.FunctionApp.Middleware;
-using OLab.FunctionApp.Services;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.FunctionApp;
+using OLab.FunctionApp.Middleware;
+using OLab.FunctionApp.Services;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>
@@ -31,7 +31,7 @@ var host = new HostBuilder()
       services.AddDbContext<OLabDBContext>(options =>
         options.UseMySql(connectionString, serverVersion)
           .EnableDetailedErrors());
-          //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
+      //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
 
       services.AddOptions<AppSettings>()
         .Configure<IConfiguration>((options, c) =>
@@ -49,7 +49,7 @@ var host = new HostBuilder()
       //builder.UseMiddleware<ExceptionLoggingMiddleware>();
     })
 
-    .ConfigureLogging( builder => 
+    .ConfigureLogging(builder =>
     {
       builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
     })

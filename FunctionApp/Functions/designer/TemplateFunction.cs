@@ -2,25 +2,17 @@ using Dawn;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-
-using Microsoft.Extensions.Logging;
-
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
-using OLab.Api.Model;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using OLab.Api.Endpoints.Designer;
-using OLab.Api.Dto.Designer;
-using OLab.Api.Data.Exceptions;
-using OLab.Api.Utils;
-using Microsoft.Extensions.Options;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Exceptions;
+using OLab.Api.Dto;
+using OLab.Api.Dto.Designer;
+using OLab.Api.Endpoints.Designer;
+using OLab.Api.Model;
 
 namespace OLab.FunctionApp.Functions.Designer
 {
@@ -61,7 +53,7 @@ namespace OLab.FunctionApp.Functions.Designer
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         Logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
@@ -92,7 +84,7 @@ namespace OLab.FunctionApp.Functions.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var dto = _endpoint.Links();
         return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
@@ -122,7 +114,7 @@ namespace OLab.FunctionApp.Functions.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var dto = _endpoint.Nodes();
         return OLabObjectResult<MapNodeTemplateDto>.Result(dto);

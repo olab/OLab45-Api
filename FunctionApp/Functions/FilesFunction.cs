@@ -1,33 +1,20 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
+using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
-
-
-using Microsoft.Extensions.Logging;
-
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
-using OLab.Api.Endpoints;
-
-using OLab.Api.Model;
-using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Options;
-using OLab.Api.Utils;
-using OLab.Api.ObjectMapper;
 using Microsoft.AspNetCore.StaticFiles;
-using Azure.Storage.Blobs;
-using OLab.Api.Data.Exceptions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using HttpMultipartParser;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Exceptions;
+using OLab.Api.Dto;
+using OLab.Api.Endpoints;
+using OLab.Api.Model;
+using OLab.Api.ObjectMapper;
+using System.Net;
 
 namespace OLab.FunctionApp.Functions
 {
@@ -50,7 +37,7 @@ namespace OLab.FunctionApp.Functions
 
       var provider = new FileExtensionContentTypeProvider();
 
-      if (!provider.TryGetContentType(filePath, out string contentType))
+      if (!provider.TryGetContentType(filePath, out var contentType))
       {
         contentType = DefaultContentType;
       }
@@ -192,7 +179,7 @@ namespace OLab.FunctionApp.Functions
 
         phys.CreatedAt = DateTime.Now;
 
-        string staticFileName = BuildStaticFileName(dto);
+        var staticFileName = BuildStaticFileName(dto);
 
         // save just the file name to the database
         phys.Path = Path.GetFileName(staticFileName);

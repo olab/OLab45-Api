@@ -1,26 +1,11 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-
-using Microsoft.Extensions.Logging;
-
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Endpoints;
-using Microsoft.Azure.Functions.Worker;
-using OLab.Api.Model;
-using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using Newtonsoft.Json;
-using OLab.Api.Endpoints.Player;
-using OLab.Api.Utils;
-using Microsoft.Azure.Functions.Worker.Http;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player

@@ -11,7 +11,7 @@ namespace OLab.FunctionApp.Services
 {
   public class OLabAuthorization : IOLabAuthentication
   {
-    private IUserContext userContext;
+    private readonly IUserContext userContext;
 
     public OLabAuthorization(
       OLabLogger logger,

@@ -49,7 +49,7 @@ namespace OLab.FunctionApp.Services
         }
       }
 
-      if (!_hostContext.Items.TryGetValue("claims", out object claimsObject))
+      if (!_hostContext.Items.TryGetValue("claims", out var claimsObject))
         throw new Exception("unable to retrieve claims from host context");
 
       _claims = (IDictionary<string, string>)claimsObject;

@@ -4,11 +4,10 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using OLab.FunctionApp.Services;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.FunctionApp.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
@@ -17,8 +16,8 @@ namespace OLab.FunctionApp.Middleware;
 
 public class OLabAuthMiddleware : JWTMiddleware
 {
-  private IUserService _userService;
-  private OLabDBContext _dbContext;
+  private readonly IUserService _userService;
+  private readonly OLabDBContext _dbContext;
   private IReadOnlyDictionary<string, string> _headers;
   private IReadOnlyDictionary<string, object> _bindingData;
   private string _functionName;
@@ -116,7 +115,7 @@ public class OLabAuthMiddleware : JWTMiddleware
       var claimsPrincipal = tokenHandler.ValidateToken(
         token,
         TokenValidation,
-        out SecurityToken validatedToken);
+        out var validatedToken);
 
       return claimsPrincipal;
     }
@@ -138,7 +137,7 @@ public class OLabAuthMiddleware : JWTMiddleware
   {
     Guard.Argument(context).NotNull(nameof(context));
 
-    string token = string.Empty;
+    var token = string.Empty;
 
     if (_headers.TryGetValue("authorization", out var authHeader))
     {

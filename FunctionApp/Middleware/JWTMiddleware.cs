@@ -9,7 +9,7 @@ using Configuration = OLab.FunctionApp.Services.Configuration;
 
 namespace OLab.FunctionApp.Middleware
 {
-    public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
+  public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
   {
     protected static Configuration Config;
     protected static OLabLogger Logger;

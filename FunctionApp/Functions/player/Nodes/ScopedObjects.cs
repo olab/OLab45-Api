@@ -1,14 +1,11 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using System;
-using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.Player
 {
@@ -30,7 +27,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
         return OLabObjectResult<ScopedObjectsDto>.Result(dto);
@@ -60,7 +57,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-       var auth =  GetRequestContext(hostContext);
+        var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
         return OLabObjectResult<ScopedObjectsDto>.Result(dto);

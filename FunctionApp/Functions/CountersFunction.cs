@@ -1,16 +1,16 @@
 using Dawn;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Data.Exceptions;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions
@@ -143,7 +143,7 @@ namespace OLab.FunctionApp.Functions
     [Function("CounterPost")]
     public async Task<IActionResult> CounterPostAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "counters")] HttpRequestData request,
-      FunctionContext hostContext )
+      FunctionContext hostContext)
     {
       try
       {

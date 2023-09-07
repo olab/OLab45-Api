@@ -1,30 +1,15 @@
-using Dawn;
-using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Endpoints;
-using Microsoft.Azure.Functions.Worker;
-using OLab.Api.Model;
-using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using Newtonsoft.Json;
 using OLab.Api.Endpoints.Player;
-using OLab.Api.Utils;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Azure.Functions.Worker.Http;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
-using Microsoft.Extensions.Configuration;
 
 namespace OLab.FunctionApp.Functions.Player
 {
@@ -63,14 +48,14 @@ namespace OLab.FunctionApp.Functions.Player
 
         body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>();
 
-        SystemQuestions question = await DbContext.SystemQuestions
+        var question = await DbContext.SystemQuestions
           .Include(x => x.SystemQuestionResponses)
           .FirstOrDefaultAsync(x => x.Id == body.QuestionId);
 
         if (question == null)
           throw new Exception($"Question {body.QuestionId} not found");
 
-        DynamicScopedObjectsDto result =
+        var result =
           await _endpoint.PostQuestionResponseAsync(question, body);
 
         userContext.Session.OnQuestionResponse(
