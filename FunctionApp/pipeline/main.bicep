@@ -37,6 +37,7 @@ var resourceNameFunctionAppInsights = resourceNameFunctionApp
 var resourceNameFunctionAppStorage = '${resourceNameFunctionApp}az'
 var resourceNameFileStorage = resourceNameFunctionApp
 var resourceNameSignalr = '${resource_prefix}signalr'
+var fileStorageContainerName = '$web'
 
 resource appService 'Microsoft.Web/sites@2021-02-01' = {
   name: resourceNameFunctionApp
@@ -56,6 +57,7 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
     siteConfig: {
       alwaysOn: true
       healthCheckPath: '/api/health'
+      use32BitWorkerProcess : false
     }
   }
 }
@@ -66,14 +68,13 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
     'AppSetting:FileStorageConnectionString': fileStorageConnectionString
-    'AppSetting:FileStorageContainer': "$web"
+    'AppSetting:FileStorageContainer': fileStorageContainerName
     'AppSettings:Audience': 'https://www.olab.ca'
-    'AppSettings:CertificateFile': 'D:\\Documents\\Downloads\\RSA256Cert.crt'
-    'AppSettings:DefaultImportDirectory': '${resourceFileStorage.properties.primaryEndpoints.blob}/$web/import'
+    'AppSettings:ImportFolder': '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/import'
     'AppSettings:Issuer': 'olab,moodle'
     'AppSettings:Secret': AuthTokenKey
     'AppSettings:SignalREndpoint': '/turktalk'
-    'AppSettings:WebsitePublicFilesDirectory': '${resourceFileStorage.properties.primaryEndpoints.blob}/$web/files'
+    'AppSettings:PublicFileFolder': '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/files'
     AzureWebJobsStorage: functionAppStorageConnectionString
     DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
     FUNCTIONS_EXTENSION_VERSION: '~4'
