@@ -8,9 +8,9 @@ using System.Net;
 
 namespace OLab.FunctionApp.Functions;
 
-public class Function1 : OLabFunction
+public class TestFunction : OLabFunction
 {
-  public Function1(
+  public TestFunction(
     ILoggerFactory loggerFactory,
     IConfiguration configuration,
     IUserService userService,

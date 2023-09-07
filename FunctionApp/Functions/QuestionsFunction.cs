@@ -21,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions
 {
@@ -46,7 +47,7 @@ namespace OLab.FunctionApp.Functions
     [Function("QuestionsGet")]
     public async Task<IActionResult> QuestionsGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "questions")] HttpRequestData request,
-        FunctionContext hostContext)
+      FunctionContext hostContext)
     {
       try
       {

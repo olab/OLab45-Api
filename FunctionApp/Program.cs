@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OLab.FunctionApp;
-using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
 using OLab.Api.Data;
@@ -24,7 +23,7 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
       services.AddTransient<IUserContext, FunctionAppUserContext>();
-      services.AddScoped<IUserService, OLabUserService>();
+      services.AddScoped<IUserService, FunctionAppUserService>();
       services.AddScoped<IOLabSession, OLabSession>();
 
       var connectionString = Environment.GetEnvironmentVariable("DefaultDatabase");

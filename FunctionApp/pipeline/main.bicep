@@ -65,6 +65,8 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: appService
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
+    'AppSetting:FileStorageConnectionString': fileStorageConnectionString
+    'AppSetting:FileStorageContainer': "$web"
     'AppSettings:Audience': 'https://www.olab.ca'
     'AppSettings:CertificateFile': 'D:\\Documents\\Downloads\\RSA256Cert.crt'
     'AppSettings:DefaultImportDirectory': '${resourceFileStorage.properties.primaryEndpoints.blob}/$web/import'
@@ -74,7 +76,6 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     'AppSettings:WebsitePublicFilesDirectory': '${resourceFileStorage.properties.primaryEndpoints.blob}/$web/files'
     AzureWebJobsStorage: functionAppStorageConnectionString
     DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
-    FileStorageConnectionString: fileStorageConnectionString
     FUNCTIONS_EXTENSION_VERSION: '~4'
     FUNCTIONS_WORKER_RUNTIME: 'dotnet'
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: functionAppStorageConnectionString

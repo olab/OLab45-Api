@@ -27,6 +27,7 @@ using OLab.Api.Data.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using HttpMultipartParser;
 
 namespace OLab.FunctionApp.Functions
 {
@@ -151,8 +152,8 @@ namespace OLab.FunctionApp.Functions
         var blobName = BuildStaticFileName(dto);
 
         // generate short-lived blob download url
-        var sasGenerator = new AzureStorageBlobOptionsTokenGenerator(appSettings);
-        dto.Url = sasGenerator.GenerateSasToken(appSettings.StaticFilesContainerName, blobName);
+        //var sasGenerator = new AzureStorageBlobOptionsTokenGenerator(appSettings);
+        //dto.Url = sasGenerator.GenerateSasToken(_configuration.GetValue<string>("WebsitePublicFilesDirectory"), blobName);
 
         return OLabObjectResult<FilesFullDto>.Result(dto);
       }
@@ -181,7 +182,10 @@ namespace OLab.FunctionApp.Functions
       try
       {
         Logger.LogDebug($"FilesController.PostAsync()");
-        var dto = new FilesFullDto(request.Form);
+
+        var parser = await MultipartFormDataParser.ParseAsync(request.Body).ConfigureAwait(false);
+
+        var dto = new FilesFullDto(parser);
 
         var builder = new FilesFull(Logger);
         phys = builder.DtoToPhysical(dto);
@@ -203,15 +207,15 @@ namespace OLab.FunctionApp.Functions
         // TODO: successful save to database, copy the file to the
         // final location
         Stream myBlob = new MemoryStream();
-        var file = request.Form.Files["selectedFile"];
-        myBlob = file.OpenReadStream();
+        var file = parser.Files[0];
+        //myBlob = file.OpenReadStream();
 
-        var blobClient = new BlobContainerClient(
-          appSettings.StaticFilesConnectionString,
-          appSettings.StaticFilesContainerName);
+        //var blobClient = new BlobContainerClient(
+        //  appSettings.StaticFilesConnectionString,
+        //  appSettings.StaticFilesContainerName);
 
-        var blob = blobClient.GetBlobClient(staticFileName);
-        await blob.UploadAsync(myBlob);
+        //var blob = blobClient.GetBlobClient(staticFileName);
+        //await blob.UploadAsync(myBlob);
 
         return OLabObjectResult<FilesFullDto>.Result(dto);
 
