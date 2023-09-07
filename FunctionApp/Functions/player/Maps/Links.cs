@@ -22,7 +22,7 @@ namespace OLab.FunctionApp.Functions.Player
     [HttpPut("{mapId}/nodes/{nodeId}/links/{linkId}")]
     public async Task<IActionResult> PutMapNodeLinksAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}/links/{linkId}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
       uint nodeId,
       uint linkId

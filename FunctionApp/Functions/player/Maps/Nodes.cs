@@ -22,7 +22,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("PostNode")]
     public async Task<IActionResult> PostMapNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}/node/{nodeId}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
       uint nodeId)
     {
@@ -56,7 +56,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("DeleteNode")]
     public async Task<IActionResult> DeleteNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
       uint nodeId
     )
@@ -90,7 +90,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("PutNode")]
     public async Task<IActionResult> PutNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
       uint nodeId
     )

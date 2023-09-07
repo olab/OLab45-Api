@@ -69,7 +69,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("MapGetPlayer")]
     public async Task<IActionResult> MapGetPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
     )
     {
@@ -98,7 +98,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("MapAppendTemplatePostPlayer")]
     public async Task<IActionResult> MapAppendTemplatePostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
     )
     {

@@ -70,7 +70,7 @@ namespace OLab.FunctionApp.Functions
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "questions/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try
@@ -100,7 +100,7 @@ namespace OLab.FunctionApp.Functions
     [Function("QuestionPut")]
     public async Task<IActionResult> QuestionPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questions/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try

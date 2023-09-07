@@ -124,7 +124,7 @@ namespace OLab.FunctionApp.Functions
     [Function("FileGet")]
     public async Task<IActionResult> FileGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "files/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
     )
     {
@@ -229,7 +229,7 @@ namespace OLab.FunctionApp.Functions
     [Function("FileDelete")]
     public async Task<IActionResult> DeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "files/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try

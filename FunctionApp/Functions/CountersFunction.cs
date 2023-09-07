@@ -75,7 +75,7 @@ namespace OLab.FunctionApp.Functions
     [Function("CounterGet")]
     public async Task<IActionResult> CounterGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "counters/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
     )
     {
@@ -108,7 +108,7 @@ namespace OLab.FunctionApp.Functions
     [Function("CounterPut")]
     public async Task<IActionResult> CounterPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "counters/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try
@@ -171,7 +171,7 @@ namespace OLab.FunctionApp.Functions
     [Function("CounterDelete")]
     public async Task<IActionResult> CounterDeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "counters/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try

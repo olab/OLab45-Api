@@ -22,7 +22,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("MapNodeDynamicScopedObjectsRaw")]
     public async Task<IActionResult> MapNodeDynamicScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
       uint nodeId
       )
@@ -65,7 +65,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("MapNodeDynamicScopedObjects")]
     public async Task<IActionResult> MapNodeDynamicScopedObjectsAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
       uint nodeId
     )

@@ -19,7 +19,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("MapNodeScopedObjectsRawGet")]
     public async Task<IActionResult> MapScopedObjectsRawGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects/raw")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint nodeId)
     {
       try
@@ -49,7 +49,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("MapNodeScopedObjectsGet")]
     public async Task<IActionResult> MapScopedObjectsGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint nodeId)
     {
       try

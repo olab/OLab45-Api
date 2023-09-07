@@ -35,7 +35,7 @@ namespace OLab.FunctionApp.Functions
     [Function("QuestionResponsePut")]
     public async Task<IActionResult> QuestionResponseGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "response/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
     )
     {
@@ -98,7 +98,7 @@ namespace OLab.FunctionApp.Functions
     [Function("QuestionResponseDelete")]
     public async Task<IActionResult> QuestionResponseDeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "questionresponses/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
     )
     {

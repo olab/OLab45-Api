@@ -76,7 +76,7 @@ namespace OLab.FunctionApp.Functions
     [Function("ConstantGet")]
     public async Task<IActionResult> ConstantGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try
@@ -110,7 +110,7 @@ namespace OLab.FunctionApp.Functions
     [Function("ConstantPut")]
     public async Task<IActionResult> ConstantPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "constants/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try
@@ -177,7 +177,7 @@ namespace OLab.FunctionApp.Functions
     [Function("ConstantDelete")]
     public async Task<IActionResult> ConstantDeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "constants/{id}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
       try

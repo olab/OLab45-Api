@@ -69,7 +69,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("ServerScopedObjectsRawGetPlayer")]
     public async Task<IActionResult> GetScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers/{serverId}/scopedobjects/raw")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint serverId)
     {
       try
@@ -98,7 +98,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("ServerScopedObjectsGetPlayer")]
     public async Task<IActionResult> GetScopedObjectsTranslatedAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers/{serverId}/scopedobjects")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint serverId)
     {
       try

@@ -34,7 +34,7 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("QuestionResponsePostPlayer")]
     public async Task<IActionResult> QuestionResponsePostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "response/{questionId}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint questionId
     )
     {

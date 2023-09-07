@@ -38,10 +38,9 @@ namespace OLab.FunctionApp.Functions.Designer
     [Function("MapNodeGetDesigner")]
     public async Task<IActionResult> MapNodeGetDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/node/{nodeId}")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
-      uint nodeId,
-      CancellationToken cancellationToken)
+      uint nodeId)
     {
       try
       {
@@ -71,7 +70,7 @@ namespace OLab.FunctionApp.Functions.Designer
     [Function("MapNodesGetDesigner")]
     public async Task<IActionResult> MapNodesGetDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/nodes")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
     )
     {
@@ -104,7 +103,7 @@ namespace OLab.FunctionApp.Functions.Designer
     [Function("MapNodeLinkPostDesigner")]
     public async Task<IActionResult> MapNodeLinkPostDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes/{nodeId}/links")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
       uint nodeId
       )
@@ -142,7 +141,7 @@ namespace OLab.FunctionApp.Functions.Designer
     [Function("MapNodePostDesigner")]
     public async Task<IActionResult> MapNodePostDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
     )
     {
@@ -176,7 +175,7 @@ namespace OLab.FunctionApp.Functions.Designer
     [Function("MapScopedObjectsRawDesigner")]
     public async Task<IActionResult> MapScopedObjectsRawDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects/raw")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
     )
     {
@@ -207,7 +206,7 @@ namespace OLab.FunctionApp.Functions.Designer
     [Function("MapScopedObjectsDesigner")]
     public async Task<IActionResult> MapScopedObjectsDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects")] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
     )
     {
