@@ -1,7 +1,9 @@
 ﻿using Dawn;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Utils;
 using System.Text;
@@ -15,9 +17,19 @@ namespace OLab.FunctionApp.Middleware
     protected static OLabLogger Logger;
     protected static TokenValidationParameters TokenValidation;
 
-    public JWTMiddleware(IConfiguration configuration)
+    public JWTMiddleware(
+      IConfiguration configuration,
+      ILoggerFactory loggerFactory)
     {
       Guard.Argument(configuration).NotNull(nameof(configuration));
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+
+      Logger = new OLabLogger(loggerFactory.CreateLogger<JWTMiddleware>());
+
+      Logger.LogInformation("JwtMiddleware created");
+
+      foreach (var item in configuration.AsEnumerable())
+        Logger.LogDebug($"{item.Key} -> {item.Value}");
 
       Config = new Configuration(configuration);
       TokenValidation = BuildTokenValidation();

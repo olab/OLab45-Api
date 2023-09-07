@@ -2,11 +2,14 @@
 using Microsoft.Extensions.Options;
 using OLab.Api.Utils;
 using System.Reflection;
+using static System.Collections.Specialized.BitVector32;
 
 namespace OLab.FunctionApp.Services;
 
 public class Configuration
 {
+  public const string AppSettingPrefix = "AppSettings";
+
   private readonly IConfiguration _configuration;
   public IOptions<AppSettings> appSettings;
 
@@ -37,17 +40,25 @@ public class Configuration
   }
 
 #nullable enable
-  public T? GetValue<T>(string section, string key)
+  public T? GetValue<T>(string section, string key, bool optional = false)
 #nullable disable
   {
-    return _configuration.GetValue<T>($"Values:{section}:{key}");
+    var fullKey = $"{section}:{key}";
+    var value = _configuration.GetValue<T>(fullKey);
+    if ( (value == null) && !optional )
+      throw new ArgumentException($"cannot find '{fullKey}'");
+    return value;
   }
 
 #nullable enable
-  public T? GetValue<T>(string key)
+  public T? GetValue<T>(string key, bool optional = false )
 #nullable disable
   {
-    return _configuration.GetValue<T>($"Values:AppSettings:{key}");
+    var fullKey = $"{AppSettingPrefix}:{key}";
+    var value = _configuration.GetValue<T>(fullKey);
+    if ( (value == null) && !optional )
+      throw new ArgumentException($"cannot find '{fullKey}'");
+    return value;
   }
 
 }

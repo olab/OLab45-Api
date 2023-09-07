@@ -6,7 +6,7 @@ param resource_prefix string = 'olab'
 
 // Note: Array of allowable values not recommended by Microsoft in this case as the list of SKUs can be different per region
 @description('Describes plan\'s pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/')
-param sku string = 'B1'
+param sku string = 'B3'
 
 @description('The location to deploy the service resources')
 param location string = 'canadacentral'
@@ -55,6 +55,7 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
     httpsOnly: true
     hostNamesDisabled: false
     siteConfig: {
+      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
       alwaysOn: true
       healthCheckPath: '/api/health'
       use32BitWorkerProcess : false
@@ -67,14 +68,14 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: appService
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
-    'AppSetting:FileStorageConnectionString': fileStorageConnectionString
-    'AppSetting:FileStorageContainer': fileStorageContainerName
-    'AppSettings:Audience': 'https://www.olab.ca'
-    'AppSettings:ImportFolder': '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/import'
-    'AppSettings:Issuer': 'olab,moodle'
-    'AppSettings:Secret': AuthTokenKey
-    'AppSettings:SignalREndpoint': '/turktalk'
-    'AppSettings:PublicFileFolder': '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/files'
+    AppSettings__FileStorageConnectionString: fileStorageConnectionString
+    AppSettings__FileStorageContainer: fileStorageContainerName
+    AppSettings__Audience: 'https://www.olab.ca'
+    AppSettings__ImportFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/import'
+    AppSettings__Issuer: 'olab,moodle'
+    AppSettings__Secret: AuthTokenKey
+    AppSettings__SignalREndpoint: '/turktalk'
+    AppSettings__PublicFileFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/files'
     AzureWebJobsStorage: functionAppStorageConnectionString
     DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
     FUNCTIONS_EXTENSION_VERSION: '~4'
@@ -101,7 +102,7 @@ resource appCors 'Microsoft.Web/sites/config@2021-02-01' = {
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: resourceNameFunctionAppFarm
   location: location
-  kind: 'app'
+  kind: 'linux'
   sku: {
     name: sku
   }
@@ -114,7 +115,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
     elasticScaleEnabled: false
     maximumElasticWorkerCount: 1
     isSpot: false
-    reserved: false
+    reserved: true
     isXenon: false
     hyperV: false
     targetWorkerCount: 0
@@ -160,9 +161,6 @@ resource resourceFileStorage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
-  }
-  tags: {
-    disposable: 'yes'
   }
 }
 

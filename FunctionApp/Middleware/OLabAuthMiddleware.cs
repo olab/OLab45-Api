@@ -27,12 +27,11 @@ public class OLabAuthMiddleware : JWTMiddleware
     IConfiguration config,
     ILoggerFactory loggerFactory,
     IUserService userService,
-    OLabDBContext dbContext) : base(config)
+    OLabDBContext dbContext) : base(config, loggerFactory)
   {
-    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
     Guard.Argument(userService).NotNull(nameof(userService));
+    Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
-    Logger = new OLabLogger(loggerFactory.CreateLogger<OLabAuthMiddleware>());
     _userService = userService;
     _dbContext = dbContext;
   }
@@ -49,7 +48,7 @@ public class OLabAuthMiddleware : JWTMiddleware
       _functionName = functionContext.FunctionDefinition.Name.ToLower();
       _httpRequestData = functionContext.GetHttpRequestData();
 
-      Logger.LogInformation($"Middleware executing for function '{_functionName}'");
+      Logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
 
       // if not login endpoint, then continue with middleware evaluation
       if (!_functionName.Contains("login"))
