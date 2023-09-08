@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Utils;
+using OLab.Api.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text;

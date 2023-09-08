@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OLabWebAPI.Common;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Dto;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
+using OLab.Api.Endpoints;
 using OLabWebAPI.Services;
 using System;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, linkdto);
       }
       catch (Exception ex)

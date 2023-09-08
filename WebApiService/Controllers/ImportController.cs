@@ -4,16 +4,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OLabWebAPI.Common;
-using OLabWebAPI.Importer;
-using OLabWebAPI.Model;
-using OLabWebAPI.Services;
-using OLabWebAPI.Utils;
+using OLab.Api.Common;
+using OLab.Api.Importer;
+using OLab.Api.Model;
+using OLab.Api.Utils;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using UserContext = OLabWebAPI.Data.UserContext;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -28,12 +27,12 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       _appSettings = appSettings.Value;
       this.logger = new OLabLogger(logger);
-      _importer = new Importer.Importer(_appSettings, this.logger, this.dbContext);
+      _importer = new Importer(_appSettings, this.logger, this.dbContext);
     }
 
     private string GetUploadDirectory()
     {
-      return _appSettings.DefaultImportDirectory;
+      return _appSettings.ImportFolder;
     }
 
     //[HttpPost("upload", Name = "upload")]
@@ -43,7 +42,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
         // test if user has access to import.
         var userContext = new UserContext(logger, dbContext, HttpContext);
@@ -87,10 +86,10 @@ namespace OLabWebAPI.Endpoints.WebApi
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public IActionResult Post(IFormFile file)
     {
-      var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+      var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
       // test if user has access to map.
-      Data.Interface.IUserContext userContext = auth.GetUserContext();
+      var userContext = auth.GetUserContext();
       if (!userContext.HasAccess("X", "Import", 0))
         return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
 

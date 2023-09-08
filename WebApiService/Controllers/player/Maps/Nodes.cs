@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OLabWebAPI.Common;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Dto;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
+using OLab.Api.Endpoints;
 using OLabWebAPI.Services;
 using System;
 using System.Threading.Tasks;
-using UserContext = OLabWebAPI.Data.UserContext;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -29,7 +29,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         var userContext = new UserContext(logger, dbContext, HttpContext);
         _endpoint.SetUserContext(userContext);
 
@@ -63,7 +63,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
         var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
@@ -94,7 +94,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         MapNodesPostResponseDto newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
         return OLabObjectResult<MapNodesPostResponseDto>.Result(newDto);
       }

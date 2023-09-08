@@ -6,16 +6,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using OLabWebAPI.Common;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Data;
-using OLabWebAPI.Model;
-using OLabWebAPI.Services;
-using OLabWebAPI.Utils;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Data;
+using OLab.Api.Model;
+using OLab.Api.Endpoints;
+using OLab.Api.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -131,7 +132,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         var responses = new List<AddUserResponse>();
 
         // test if user has access to add users.
-        var userContext = new UserContext(logger, dbContext, HttpContext);
+        var userContext = new Services.UserContext(logger, dbContext, HttpContext);
         if (!userContext.HasAccess("X", "UserAdmin", 0))
           return OLabUnauthorizedResult.Result();
 
@@ -178,7 +179,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         logger.LogDebug($"AddUser(items count '{items.Count}')");
 
         // test if user has access to add users.
-        var userContext = new UserContext(logger, dbContext, HttpContext);
+        var userContext = new Services.UserContext(logger, dbContext, HttpContext);
         if (!userContext.HasAccess("X", "UserAdmin", 0))
           return OLabUnauthorizedResult.Result();
 

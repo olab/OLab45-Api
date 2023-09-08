@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
-using OLabWebAPI.Utils;
+using OLab.Api.Dto;
+using OLab.Api.Model;
+using OLab.Api.ObjectMapper;
+using OLab.Api.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,7 +72,7 @@ namespace OLabWebAPI.Endpoints.WebApi
       List<MapNodes> physList = await dbContext.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
       logger.LogDebug(string.Format("found {0} mapNodes", physList.Count));
 
-      IList<MapNodesFullDto> dtoList = new ObjectMapper.MapNodesFullMapper(logger, enableWikiTanslation).PhysicalToDto(physList);
+      IList<MapNodesFullDto> dtoList = new MapNodesFullMapper(logger, enableWikiTanslation).PhysicalToDto(physList);
       return dtoList;
     }
 
@@ -94,7 +95,7 @@ namespace OLabWebAPI.Endpoints.WebApi
       // explicitly load the related objects.
       dbContext.Entry(phys).Collection(b => b.MapNodeLinksNodeId1Navigation).Load();
 
-      var builder = new ObjectMapper.MapsNodesFullRelationsMapper(logger, enableWikiTanslation);
+      var builder = new MapsNodesFullRelationsMapper(logger, enableWikiTanslation);
       MapsNodesFullRelationsDto dto = builder.PhysicalToDto(phys);
 
       var linkedIds = phys.MapNodeLinksNodeId1Navigation.Select(x => x.NodeId2).Distinct().ToList();
@@ -201,12 +202,12 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <param name="scopeLevel"></param>
     /// <returns></returns>
     [NonAction]
-    protected async ValueTask<ScopedObjects> GetScopedObjectsDynamicAsync(
+    protected async ValueTask<OLab.Api.Model.ScopedObjects> GetScopedObjectsDynamicAsync(
       uint parentId,
       uint sinceTime,
       string scopeLevel)
     {
-      var phys = new ScopedObjects
+      var phys = new OLab.Api.Model.ScopedObjects
       {
         Counters = await GetScopedCountersAsync(scopeLevel, parentId, sinceTime)
       };
@@ -221,11 +222,11 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <param name="scopeLevel"></param>
     /// <returns></returns>
     [NonAction]
-    protected async ValueTask<ScopedObjects> GetScopedObjectsAllAsync(
+    protected async ValueTask<OLab.Api.Model.ScopedObjects> GetScopedObjectsAllAsync(
       uint parentId,
       string scopeLevel)
     {
-      var phys = new ScopedObjects
+      var phys = new OLab.Api.Model.ScopedObjects
       {
         Constants = await GetScopedConstantsAsync(parentId, scopeLevel),
         Questions = await GetScopedQuestionsAsync(parentId, scopeLevel),
@@ -235,7 +236,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         Counters = await GetScopedCountersAsync(scopeLevel, parentId, 0)
       };
 
-      if (scopeLevel == Constants.ScopeLevelMap)
+      if (scopeLevel == OLab.Api.Utils.Constants.ScopeLevelMap)
       {
         var items = new List<SystemCounterActions>();
         items.AddRange(await dbContext.SystemCounterActions.Where(x =>

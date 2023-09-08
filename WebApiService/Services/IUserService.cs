@@ -1,4 +1,4 @@
-using OLabWebAPI.Model;
+using OLab.Api.Model;
 using System.Collections.Generic;
 
 namespace OLabWebAPI.Services

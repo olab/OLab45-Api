@@ -6,10 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
-using OLabWebAPI.Services;
-using OLabWebAPI.Utils;
+using OLab.Api.Dto;
+using OLab.Api.Model;
+using OLab.Api.Endpoints;
+using OLab.Api.Utils;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -43,7 +44,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetFileContentAccessTokenAsync(uint id)
     {
-      var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+      var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
       SystemFiles phys = await dbContext.SystemFiles.FirstOrDefaultAsync(x => x.Id == id);
       if (phys == null)
         return new NotFoundResult();
@@ -87,7 +88,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> GetFileContentAsync(uint id)
     {
-      var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+      var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
       SystemFiles phys = await dbContext.SystemFiles.FirstOrDefaultAsync(x => x.Id == id);
       if (phys == null)

@@ -357,30 +357,4 @@ public class FunctionAppUserService : IUserService
     throw new NotImplementedException();
   }
 
-  /// <summary>
-  /// validate token/setup up common properties
-  /// </summary>
-  /// <param name="request">HTTP request</param>
-  public void ValidateToken(HttpRequest request)
-  {
-    try
-    {
-      Guard.Argument(request, nameof(request)).NotNull();
-
-      var token = AccessTokenUtils.ExtractAccessToken(request, true);
-
-      // Try to validate the token. Throws if the 
-      // token cannot be validated.
-      var tokenHandler = new JwtSecurityTokenHandler();
-      tokenHandler.ValidateToken(token,
-                                 GetValidationParameters(),
-                                 out var validatedToken);
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError($"ValidateToken error {ex.Message}");
-      throw new OLabUnauthorizedException();
-    }
-
-  }
 }

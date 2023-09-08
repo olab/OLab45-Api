@@ -73,7 +73,7 @@ namespace OLabWebAPI.Services
         if (string.IsNullOrEmpty(role))
         {
           // attach user to DbContext on successful jwt validation
-          Model.Users user = userService.GetByUserName(userName);
+          var user = userService.GetByUserName(userName);
           httpContext.Items["User"] = user.Username;
           httpContext.Items["Role"] = $"{user.Role}";
         }

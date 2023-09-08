@@ -3,15 +3,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OLabWebAPI.Common;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Endpoints.Player;
-using OLabWebAPI.Model;
-using OLabWebAPI.Services;
-using OLabWebAPI.Utils;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
+using OLab.Api.Endpoints.Player;
+using OLab.Api.Model;
+using OLab.Api.Endpoints;
+using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -39,9 +40,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
 
-        Data.Interface.IUserContext userContext = auth.GetUserContext();
+        var userContext = auth.GetUserContext();
         _endpoint.SetUserContext(userContext);
 
         SystemQuestions question = await GetQuestionAsync(body.QuestionId);

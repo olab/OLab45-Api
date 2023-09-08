@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OLabWebAPI.Common;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
-using OLabWebAPI.Services;
-using OLabWebAPI.Utils;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
+using OLab.Api.Model;
+using OLab.Api.Endpoints;
+using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -37,7 +38,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         OLabAPIPagedResponse<ConstantsDto> pagedResult = await _endpoint.GetAsync(auth, take, skip);
         return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
@@ -61,7 +62,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         ConstantsDto dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<ConstantsDto>.Result(dto);
       }
@@ -84,7 +85,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
@@ -108,7 +109,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         dto = await _endpoint.PostAsync(auth, dto);
         return OLabObjectResult<ConstantsDto>.Result(dto);
       }
@@ -131,7 +132,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)

@@ -8,17 +8,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
-using OLabWebAPI.Data;
-using OLabWebAPI.Data.Interface;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Model;
-using OLabWebAPI.Services;
-using OLabWebAPI.Utils;
+using OLab.Api.Data;
+using OLab.Api.Data.Interface;
+using OLab.Api.Dto;
+using OLab.Api.Model;
+using OLab.Api.Endpoints;
+using OLab.Api.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using IOLabSession = OLabWebAPI.Data.Interface.IOLabSession;
+using IOLabSession = OLab.Api.Data.Interface.IOLabSession;
 using IUserService = OLabWebAPI.Services.IUserService;
+using OLabWebAPI.Services;
 
 namespace OLabWebAPI
 {

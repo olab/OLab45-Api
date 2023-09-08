@@ -14,6 +14,4 @@ public interface IUserService
   IEnumerable<Users> GetAll();
   Users GetById(int id);
   Users GetByUserName(string userName);
-
-  void ValidateToken(HttpRequest request);
 }
