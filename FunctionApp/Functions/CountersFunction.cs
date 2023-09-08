@@ -6,8 +6,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
-using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
@@ -56,7 +54,7 @@ namespace OLab.FunctionApp.Functions
         var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         Logger.LogInformation(string.Format("Found {0} counters", pagedResult.Data.Count));
 
-        response = request.CreateResponse( OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining));
+        response = request.CreateResponse(OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
@@ -87,7 +85,7 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
-        response = request.CreateResponse( OLabObjectResult<CountersDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<CountersDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -149,7 +147,7 @@ namespace OLab.FunctionApp.Functions
 
         var dto = await _endpoint.PostAsync(auth, body);
 
-        response = request.CreateResponse( OLabObjectResult<CountersFullDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<CountersFullDto>.Result(dto));
       }
       catch (Exception ex)
       {

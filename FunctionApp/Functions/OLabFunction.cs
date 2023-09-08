@@ -1,6 +1,4 @@
-using Azure.Core;
 using Dawn;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +16,7 @@ public class OLabFunction
 {
   protected readonly OLabDBContext DbContext;
   protected HttpResponseData response;
-  
+
   protected OLabLogger Logger;
   protected string Token;
   protected readonly IUserService userService;

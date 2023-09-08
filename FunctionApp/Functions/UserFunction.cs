@@ -1,16 +1,12 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
-using System.Net;
 
 namespace OLab.FunctionApp.Functions;
 
@@ -26,8 +22,8 @@ public class UserFunction : OLabFunction
 
   [Function("Login")]
   public async Task<HttpResponseData> LoginAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequestData request,
-      CancellationToken cancellationToken)
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequestData request,
+    CancellationToken cancellationToken)
   {
     try
     {

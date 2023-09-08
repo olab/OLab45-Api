@@ -1,10 +1,8 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
@@ -30,7 +28,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
-        response = request.CreateResponse( OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -58,7 +56,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
-        response = request.CreateResponse( OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {

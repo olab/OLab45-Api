@@ -6,7 +6,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
@@ -51,7 +50,7 @@ namespace OLab.FunctionApp.Functions
 
         await _endpoint.PutAsync(auth, id, body);
 
-        response = request.CreateResponse( new NoContentResult() );
+        response = request.CreateResponse(new NoContentResult());
       }
       catch (Exception ex)
       {
@@ -114,7 +113,7 @@ namespace OLab.FunctionApp.Functions
 
         var data = await _endpoint.DeleteAsync(auth, id);
 
-        response = request.CreateResponse( );
+        response = request.CreateResponse();
       }
       catch (Exception ex)
       {

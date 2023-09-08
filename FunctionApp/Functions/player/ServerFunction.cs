@@ -1,13 +1,10 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
@@ -51,7 +48,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var pagedResponse = await _endpoint.GetAsync(take, skip);
-        response = request.CreateResponse( OLabObjectListResult<Servers>.Result(pagedResponse.Data));
+        response = request.CreateResponse(OLabObjectListResult<Servers>.Result(pagedResponse.Data));
       }
       catch (Exception ex)
       {
@@ -81,7 +78,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
-        response = request.CreateResponse( OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -110,7 +107,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-        response = request.CreateResponse( OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {

@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
@@ -50,7 +48,7 @@ namespace OLab.FunctionApp.Functions.Player
         var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         Logger.LogInformation(string.Format("Found {0} maps", pagedResult.Data.Count));
 
-        response = request.CreateResponse( OLabObjectPagedListResult<MapsDto>.Result(pagedResult.Data, pagedResult.Remaining));
+        response = request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
@@ -79,7 +77,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
-        response = request.CreateResponse( OLabObjectResult<MapsFullDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<MapsFullDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -110,7 +108,7 @@ namespace OLab.FunctionApp.Functions.Player
         var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
         var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
 
-        response = request.CreateResponse( OLabObjectResult<ExtendMapResponse>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<ExtendMapResponse>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -140,7 +138,7 @@ namespace OLab.FunctionApp.Functions.Player
         var body = await request.ParseBodyFromRequestAsync<CreateMapRequest>();
         var dto = await _endpoint.PostCreateMapAsync(auth, body);
 
-        response = request.CreateResponse( OLabObjectResult<MapsFullRelationsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
       }
       catch (Exception ex)
       {

@@ -1,11 +1,9 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.FunctionApp.Extensions;
 
@@ -36,7 +34,7 @@ namespace OLab.FunctionApp.Functions.Player
 
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
 
-        response = request.CreateResponse( OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -69,7 +67,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
-        response = request.CreateResponse( OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -105,7 +103,7 @@ namespace OLab.FunctionApp.Functions.Player
         var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
         var dto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, body);
 
-        response = request.CreateResponse( OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
       }
       catch (Exception ex)
       {

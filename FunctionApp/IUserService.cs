@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using OLab.Api.Model;
 
 namespace OLab.FunctionApp;

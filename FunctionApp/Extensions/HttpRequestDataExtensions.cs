@@ -1,6 +1,3 @@
-using Azure.Core;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;

@@ -1,11 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
@@ -64,7 +62,7 @@ namespace OLab.FunctionApp.Functions.Player
           question.Id,
           body.Value);
 
-        response = request.CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
+        response = request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
 
       }
       catch (Exception ex)

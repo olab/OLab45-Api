@@ -1,5 +1,4 @@
 ﻿using Dawn;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Configuration;

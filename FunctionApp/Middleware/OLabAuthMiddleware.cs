@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.FunctionApp.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
