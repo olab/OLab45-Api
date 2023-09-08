@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
+using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
 {
@@ -20,7 +21,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="sinceTime"></param>
     /// <returns></returns>
     [Function("MapNodeDynamicScopedObjectsRaw")]
-    public async Task<IActionResult> MapNodeDynamicScopedObjectsRawAsync(
+    public async Task<HttpResponseData> MapNodeDynamicScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -44,14 +45,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
-        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
 
@@ -63,7 +64,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="sinceTime"></param>
     /// <returns></returns>
     [Function("MapNodeDynamicScopedObjects")]
-    public async Task<IActionResult> MapNodeDynamicScopedObjectsAsync(
+    public async Task<HttpResponseData> MapNodeDynamicScopedObjectsAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -86,14 +87,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
-        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
   }

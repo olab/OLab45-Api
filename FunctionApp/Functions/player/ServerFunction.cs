@@ -10,6 +10,7 @@ using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
+using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
 {
@@ -33,8 +34,8 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="skip">SKip over a number of records</param>
     /// <returns>IActionResult</returns>
     [Function("ServersGetPlayer")]
-    public async Task<IActionResult> ServerGetPlayerAsync(
-     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers")] HttpRequest request,
+    public async Task<HttpResponseData> ServerGetPlayerAsync(
+     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers")] HttpRequestData request,
       FunctionContext hostContext)
     {
       try
@@ -50,14 +51,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var pagedResponse = await _endpoint.GetAsync(take, skip);
-        return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
+        response = request.CreateResponse( OLabObjectListResult<Servers>.Result(pagedResponse.Data));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
 
@@ -67,7 +68,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="serverId"></param>
     /// <returns></returns>
     [Function("ServerScopedObjectsRawGetPlayer")]
-    public async Task<IActionResult> GetScopedObjectsRawAsync(
+    public async Task<HttpResponseData> GetScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers/{serverId}/scopedobjects/raw")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint serverId)
@@ -80,14 +81,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
-        return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -96,7 +97,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="serverId"></param>
     /// <returns></returns>
     [Function("ServerScopedObjectsGetPlayer")]
-    public async Task<IActionResult> GetScopedObjectsTranslatedAsync(
+    public async Task<HttpResponseData> GetScopedObjectsTranslatedAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers/{serverId}/scopedobjects")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint serverId)
@@ -109,14 +110,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-        return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
   }

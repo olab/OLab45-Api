@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
+using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
 {
@@ -17,7 +18,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("MapNodeScopedObjectsRawGet")]
-    public async Task<IActionResult> MapScopedObjectsRawGetAsync(
+    public async Task<HttpResponseData> MapScopedObjectsRawGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects/raw")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint nodeId)
@@ -30,14 +31,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
-        return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
 
@@ -47,7 +48,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("MapNodeScopedObjectsGet")]
-    public async Task<IActionResult> MapScopedObjectsGetAsync(
+    public async Task<HttpResponseData> MapScopedObjectsGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint nodeId)
@@ -60,14 +61,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
-        return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
   }

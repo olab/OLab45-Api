@@ -36,7 +36,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Function("CountersGet")]
-    public async Task<IActionResult> CountersGetAsync(
+    public async Task<HttpResponseData> CountersGetAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "counters")] HttpRequestData request,
         FunctionContext hostContext,
         CancellationToken cancellationToken)
@@ -56,15 +56,14 @@ namespace OLab.FunctionApp.Functions
         var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         Logger.LogInformation(string.Format("Found {0} counters", pagedResult.Data.Count));
 
-        return OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        response = request.CreateResponse( OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -73,7 +72,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id">Counter id</param>
     /// <returns></returns>
     [Function("CounterGet")]
-    public async Task<IActionResult> CounterGetAsync(
+    public async Task<HttpResponseData> CounterGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "counters/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
@@ -88,16 +87,14 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
-        return OLabObjectResult<CountersDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<CountersDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -106,7 +103,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
     [Function("CounterPut")]
-    public async Task<IActionResult> CounterPutAsync(
+    public async Task<HttpResponseData> CounterPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "counters/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
@@ -122,17 +119,16 @@ namespace OLab.FunctionApp.Functions
         var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
 
         await _endpoint.PutAsync(auth, id, body);
+        response = request.CreateResponse(new NoContentResult());
+
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
+
     }
 
     /// <summary>
@@ -141,7 +137,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
     [Function("CounterPost")]
-    public async Task<IActionResult> CounterPostAsync(
+    public async Task<HttpResponseData> CounterPostAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "counters")] HttpRequestData request,
       FunctionContext hostContext)
     {
@@ -153,14 +149,14 @@ namespace OLab.FunctionApp.Functions
 
         var dto = await _endpoint.PostAsync(auth, body);
 
-        return OLabObjectResult<CountersFullDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<CountersFullDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -169,7 +165,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("CounterDelete")]
-    public async Task<IActionResult> CounterDeleteAsync(
+    public async Task<HttpResponseData> CounterDeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "counters/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
@@ -179,17 +175,15 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         await _endpoint.DeleteAsync(auth, id);
+
+        response = request.CreateResponse(new NoContentResult());
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
 
     }
   }

@@ -14,6 +14,7 @@ using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.ObjectMapper;
+using OLab.FunctionApp.Extensions;
 using System.Net;
 
 namespace OLab.FunctionApp.Functions
@@ -85,7 +86,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Function("FilesGet")]
-    public async Task<IActionResult> FilesGetAsync(
+    public async Task<HttpResponseData> FilesGetAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "files")] HttpRequestData request,
         FunctionContext hostContext,
         CancellationToken cancellationToken)
@@ -105,15 +106,16 @@ namespace OLab.FunctionApp.Functions
         var pagedResult = await _endpoint.GetAsync(take, skip);
         Logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
 
-        return OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        response = request.CreateResponse(
+          OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
+
     }
 
     /// <summary>
@@ -122,7 +124,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id">Counter id</param>
     /// <returns></returns>
     [Function("FileGet")]
-    public async Task<IActionResult> FileGetAsync(
+    public async Task<HttpResponseData> FileGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "files/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
@@ -142,16 +144,14 @@ namespace OLab.FunctionApp.Functions
         //var sasGenerator = new AzureStorageBlobOptionsTokenGenerator(appSettings);
         //dto.Url = sasGenerator.GenerateSasToken(_configuration.GetValue<string>("WebsitePublicFilesDirectory"), blobName);
 
-        return OLabObjectResult<FilesFullDto>.Result(dto);
+        response = request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -160,7 +160,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="dto">File data</param>
     /// <returns>IActionResult</returns>
     [Function("FilePost")]
-    public async Task<IActionResult> FilePostAsync(
+    public async Task<HttpResponseData> FilePostAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "files")] HttpRequestData request,
       FunctionContext hostContext)
     {
@@ -204,7 +204,7 @@ namespace OLab.FunctionApp.Functions
         //var blob = blobClient.GetBlobClient(staticFileName);
         //await blob.UploadAsync(myBlob);
 
-        return OLabObjectResult<FilesFullDto>.Result(dto);
+        response = request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
 
       }
       catch (Exception ex)
@@ -213,12 +213,22 @@ namespace OLab.FunctionApp.Functions
         {
           var azureException = ex as global::Azure.RequestFailedException;
           if (azureException.Status == 409)
-            return OLabServerErrorResult.Result($"File '{phys.Path}' already exists", HttpStatusCode.Conflict);
-          return OLabServerErrorResult.Result($"Error creating static file '{phys.Path}'.  {ex.Message}", (HttpStatusCode)azureException.Status);
+            response = request.CreateResponse(
+              OLabServerErrorResult.Result(
+                $"File '{phys.Path}' already exists",
+                HttpStatusCode.Conflict));
+          else
+            response = request.CreateResponse(
+              OLabServerErrorResult.Result(
+                $"Error creating static file '{phys.Path}'.  {ex.Message}",
+                (HttpStatusCode)azureException.Status));
         }
+        else
+          response = request.CreateResponse(ex);
 
-        return OLabServerErrorResult.Result(ex.Message);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -227,7 +237,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("FileDelete")]
-    public async Task<IActionResult> DeleteAsync(
+    public async Task<HttpResponseData> DeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "files/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
@@ -238,17 +248,16 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         await _endpoint.DeleteAsync(auth, id);
+
+        response = request.CreateResponse(new NoContentResult());
+
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
     }
 
   }

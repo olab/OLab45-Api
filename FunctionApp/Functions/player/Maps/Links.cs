@@ -20,7 +20,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="linkId">link id</param>
     /// <returns>IActionResult</returns>
     [HttpPut("{mapId}/nodes/{nodeId}/links/{linkId}")]
-    public async Task<IActionResult> PutMapNodeLinksAsync(
+    public async Task<HttpResponseData> PutMapNodeLinksAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}/links/{linkId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -37,15 +37,14 @@ namespace OLab.FunctionApp.Functions.Player
         var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>();
 
         await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, body);
+        response = request.CreateResponse(new NoContentResult());
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
 
     }
   }

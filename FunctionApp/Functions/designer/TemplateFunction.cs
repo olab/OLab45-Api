@@ -13,6 +13,7 @@ using OLab.Api.Dto;
 using OLab.Api.Dto.Designer;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Model;
+using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Designer
 {
@@ -37,7 +38,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Function("TemplateGetDesigner")]
-    public async Task<IActionResult> TemplateGetDesignerAsync(
+    public async Task<HttpResponseData> TemplateGetDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates")] HttpRequestData request,
       FunctionContext hostContext,
       CancellationToken cancellationToken)
@@ -58,15 +59,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var pagedResult = await _endpoint.GetAsync(take, skip);
         Logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
 
-        return OLabObjectPagedListResult<MapsDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        response = request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -75,8 +75,8 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="id">Constant id</param>
     /// <returns></returns>
     [Function("TemplateLinksGetDesigner")]
-    public IActionResult TemplateLinksGetDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates/links")] HttpRequest request,
+    public HttpResponseData TemplateLinksGetDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates/links")] HttpRequestData request,
       FunctionContext hostContext)
     {
       try
@@ -87,16 +87,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var auth = GetRequestContext(hostContext);
 
         var dto = _endpoint.Links();
-        return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
+        response = request.CreateResponse(OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -105,8 +103,8 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="id">Constant id</param>
     /// <returns></returns>
     [Function("TemplateMapNodeDesigner")]
-    public IActionResult TemplateMapNodeDesignerAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates/nodes")] HttpRequest request,
+    public HttpResponseData TemplateMapNodeDesignerAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates/nodes")] HttpRequestData request,
       FunctionContext hostContext)
     {
       try
@@ -117,16 +115,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var auth = GetRequestContext(hostContext);
 
         var dto = _endpoint.Nodes();
-        return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
+        response = request.CreateResponse(OLabObjectResult<MapNodeTemplateDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
   }

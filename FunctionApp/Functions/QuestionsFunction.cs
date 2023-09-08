@@ -35,10 +35,11 @@ namespace OLab.FunctionApp.Functions
     /// <param name="skip"></param>
     /// <returns></returns>
     [Function("QuestionsGet")]
-    public async Task<IActionResult> QuestionsGetAsync(
+    public async Task<HttpResponseData> QuestionsGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "questions")] HttpRequestData request,
       FunctionContext hostContext)
     {
+
       try
       {
         Guard.Argument(request).NotNull(nameof(request));
@@ -51,14 +52,15 @@ namespace OLab.FunctionApp.Functions
         var pagedResult = await _endpoint.GetAsync(take, skip);
         Logger.LogInformation(string.Format("Found {0} questions", pagedResult.Data.Count));
 
-        return OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        response = request.CreateResponse(
+          OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -68,11 +70,12 @@ namespace OLab.FunctionApp.Functions
     /// <returns></returns>
     [Function("QuestionGet")]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetAsync(
+    public async Task<HttpResponseData> GetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "questions/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
+
       try
       {
         Guard.Argument(request).NotNull(nameof(request));
@@ -82,14 +85,15 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
-        return OLabObjectResult<QuestionsFullDto>.Result(dto);
+
+        response = request.CreateResponse(OLabObjectResult<QuestionsFullDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -98,11 +102,12 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
     [Function("QuestionPut")]
-    public async Task<IActionResult> QuestionPutAsync(
+    public async Task<HttpResponseData> QuestionPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questions/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
     {
+
       try
       {
         Guard.Argument(id, nameof(id)).NotZero();
@@ -113,17 +118,15 @@ namespace OLab.FunctionApp.Functions
         var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
 
         await _endpoint.PutAsync(auth, id, body);
+
+        response = request.CreateResponse(new NoContentResult());
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
     }
 
     /// <summary>
@@ -132,10 +135,11 @@ namespace OLab.FunctionApp.Functions
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
     [Function("QuestionPost")]
-    public async Task<IActionResult> QuestionPostAsync(
+    public async Task<HttpResponseData> QuestionPostAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "questions")] HttpRequestData request,
       FunctionContext hostContext)
     {
+
       try
       {
         // validate token/setup up common properties
@@ -144,14 +148,14 @@ namespace OLab.FunctionApp.Functions
         var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
         var dto = await _endpoint.PostAsync(auth, body);
 
-        return OLabObjectResult<QuestionsFullDto>.Result(dto);
+        response = request.CreateResponse(OLabObjectResult<QuestionsFullDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
   }

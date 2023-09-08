@@ -20,7 +20,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="nodeId">node id</param>
     /// <returns>IActionResult</returns>
     [Function("PostNode")]
-    public async Task<IActionResult> PostMapNodeAsync(
+    public async Task<HttpResponseData> PostMapNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}/node/{nodeId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -36,14 +36,14 @@ namespace OLab.FunctionApp.Functions.Player
 
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
 
-        return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
 
@@ -54,7 +54,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="nodeId">node id</param>
     /// <returns>IActionResult</returns>
     [Function("DeleteNode")]
-    public async Task<IActionResult> DeleteNodeAsync(
+    public async Task<HttpResponseData> DeleteNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -69,14 +69,14 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
-        return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
 
@@ -88,7 +88,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="dto">node data</param>
     /// <returns>IActionResult</returns>
     [Function("PutNode")]
-    public async Task<IActionResult> PutNodeAsync(
+    public async Task<HttpResponseData> PutNodeAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -105,14 +105,14 @@ namespace OLab.FunctionApp.Functions.Player
         var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
         var dto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, body);
 
-        return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
   }

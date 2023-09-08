@@ -33,12 +33,13 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
     [Function("QuestionResponsePut")]
-    public async Task<IActionResult> QuestionResponseGetAsync(
+    public async Task<HttpResponseData> QuestionResponseGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "response/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
     )
     {
+
       try
       {
         Guard.Argument(id, nameof(id)).NotZero();
@@ -49,15 +50,15 @@ namespace OLab.FunctionApp.Functions
         var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
 
         await _endpoint.PutAsync(auth, id, body);
+
+        response = request.CreateResponse( new NoContentResult() );
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
     }
 
     /// <summary>
@@ -66,10 +67,11 @@ namespace OLab.FunctionApp.Functions
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
     [Function("QuestionResponsePost")]
-    public async Task<IActionResult> QuestionResponsePostAsync(
+    public async Task<HttpResponseData> QuestionResponsePostAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "questionresponses")] HttpRequestData request,
       FunctionContext hostContext)
     {
+
       try
       {
         Guard.Argument(request).NotNull(nameof(request));
@@ -80,14 +82,14 @@ namespace OLab.FunctionApp.Functions
         var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
         var dto = await _endpoint.PostAsync(auth, body);
 
-        return OLabObjectResult<QuestionResponsesDto>.Result(dto);
+        response = request.CreateResponse(OLabObjectResult<QuestionResponsesDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -96,19 +98,31 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("QuestionResponseDelete")]
-    public async Task<IActionResult> QuestionResponseDeleteAsync(
+    public async Task<HttpResponseData> QuestionResponseDeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "questionresponses/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id
     )
     {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(id, nameof(id)).NotZero();
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(id, nameof(id)).NotZero();
 
-      // validate token/setup up common properties
-      var auth = GetRequestContext(hostContext);
+        // validate token/setup up common properties
+        var auth = GetRequestContext(hostContext);
 
-      return await _endpoint.DeleteAsync(auth, id);
+        var data = await _endpoint.DeleteAsync(auth, id);
+
+        response = request.CreateResponse( );
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+
     }
 
 

@@ -36,7 +36,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Function("MapNodeGetDesigner")]
-    public async Task<IActionResult> MapNodeGetDesignerAsync(
+    public async Task<HttpResponseData> MapNodeGetDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/node/{nodeId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -50,16 +50,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
-        return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        if (ex is System.ArgumentOutOfRangeException)
-          return OLabBadRequestObjectResult.Result();
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -68,7 +66,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="id">Constant id</param>
     /// <returns></returns>
     [Function("MapNodesGetDesigner")]
-    public async Task<IActionResult> MapNodesGetDesignerAsync(
+    public async Task<HttpResponseData> MapNodesGetDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/nodes")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
@@ -83,16 +81,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var auth = GetRequestContext(hostContext);
 
         var dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
-        return OLabObjectListResult<MapNodesFullDto>.Result(dtoList);
+        response = request.CreateResponse( OLabObjectListResult<MapNodesFullDto>.Result(dtoList));
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -101,7 +97,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
     [Function("MapNodeLinkPostDesigner")]
-    public async Task<IActionResult> MapNodeLinkPostDesignerAsync(
+    public async Task<HttpResponseData> MapNodeLinkPostDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes/{nodeId}/links")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId,
@@ -120,16 +116,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var body = await request.ParseBodyFromRequestAsync<PostNewLinkRequest>();
         var dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
 
-        return OLabObjectResult<PostNewLinkResponse>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<PostNewLinkResponse>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
 
@@ -139,7 +133,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
     [Function("MapNodePostDesigner")]
-    public async Task<IActionResult> MapNodePostDesignerAsync(
+    public async Task<HttpResponseData> MapNodePostDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
@@ -156,15 +150,15 @@ namespace OLab.FunctionApp.Functions.Designer
         var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>();
         var dto = await _endpoint.PostMapNodesAsync(auth, body);
 
-        return OLabObjectResult<PostNewNodeResponse>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<PostNewNodeResponse>.Result(dto));
 
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -173,7 +167,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="mapId">Map Id</param>
     /// <returns></returns>
     [Function("MapScopedObjectsRawDesigner")]
-    public async Task<IActionResult> MapScopedObjectsRawDesignerAsync(
+    public async Task<HttpResponseData> MapScopedObjectsRawDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects/raw")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
@@ -188,14 +182,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, mapId);
-        return OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -204,7 +198,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("MapScopedObjectsDesigner")]
-    public async Task<IActionResult> MapScopedObjectsDesignerAsync(
+    public async Task<HttpResponseData> MapScopedObjectsDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint mapId
@@ -219,14 +213,14 @@ namespace OLab.FunctionApp.Functions.Designer
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(auth, mapId);
-        return OLabObjectResult<Api.Dto.Designer.ScopedObjectsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
 
     }
   }

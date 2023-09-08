@@ -32,7 +32,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="body"></param>
     /// <returns></returns>
     [Function("QuestionResponsePostPlayer")]
-    public async Task<IActionResult> QuestionResponsePostPlayerAsync(
+    public async Task<HttpResponseData> QuestionResponsePostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "response/{questionId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint questionId
@@ -64,16 +64,15 @@ namespace OLab.FunctionApp.Functions.Player
           question.Id,
           body.Value);
 
+        response = request.CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
+
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects);
-
+      return response;
     }
   }
 }

@@ -36,7 +36,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Function("ConstantsGet")]
-    public async Task<IActionResult> ConstantsGetAsync(
+    public async Task<HttpResponseData> ConstantsGetAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants")] HttpRequestData request,
         FunctionContext hostContext,
         CancellationToken cancellationToken)
@@ -57,15 +57,14 @@ namespace OLab.FunctionApp.Functions
         var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         Logger.LogInformation(string.Format("Found {0} constants", pagedResult.Data.Count));
 
-        return OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        response = request.CreateResponse( OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -74,7 +73,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id">Constant id</param>
     /// <returns></returns>
     [Function("ConstantGet")]
-    public async Task<IActionResult> ConstantGetAsync(
+    public async Task<HttpResponseData> ConstantGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
@@ -88,18 +87,14 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
-        return OLabObjectResult<ConstantsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<ConstantsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -108,7 +103,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id">question id</param>
     /// <returns>IActionResult</returns>
     [Function("ConstantPut")]
-    public async Task<IActionResult> ConstantPutAsync(
+    public async Task<HttpResponseData> ConstantPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "constants/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
@@ -124,19 +119,15 @@ namespace OLab.FunctionApp.Functions
         var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
 
         await _endpoint.PutAsync(auth, id, body);
+        response = request.CreateResponse(new NoContentResult());
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
+
     }
 
     /// <summary>
@@ -145,7 +136,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="dto">object data</param>
     /// <returns>IActionResult</returns>
     [Function("ConstantPost")]
-    public async Task<IActionResult> ConstantPostAsync(
+    public async Task<HttpResponseData> ConstantPostAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "constants")] HttpRequestData request,
       FunctionContext hostContext)
     {
@@ -159,14 +150,14 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         var dto = await _endpoint.PostAsync(auth, body);
-        return OLabObjectResult<ConstantsDto>.Result(dto);
+        response = request.CreateResponse( OLabObjectResult<ConstantsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
+
+      return response;
     }
 
     /// <summary>
@@ -175,7 +166,7 @@ namespace OLab.FunctionApp.Functions
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("ConstantDelete")]
-    public async Task<IActionResult> ConstantDeleteAsync(
+    public async Task<HttpResponseData> ConstantDeleteAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "constants/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)
@@ -189,19 +180,15 @@ namespace OLab.FunctionApp.Functions
         var auth = GetRequestContext(hostContext);
 
         await _endpoint.DeleteAsync(auth, id);
+        response = request.CreateResponse(new NoContentResult());
+
       }
       catch (Exception ex)
       {
-        if (ex is OLabObjectNotFoundException)
-          return OLabNotFoundResult<string>.Result(ex.Message);
-
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-
-        return OLabServerErrorResult.Result(ex.Message);
+        response = request.CreateResponse(ex);
       }
 
-      return new NoContentResult();
+      return response;
 
     }
   }
