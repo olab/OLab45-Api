@@ -8,11 +8,10 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
+using OLab.Api.Services;
 using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -40,9 +39,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
 
-        var userContext = auth.GetUserContext();
+        Data.Interface.IUserContext userContext = auth.GetUserContext();
         _endpoint.SetUserContext(userContext);
 
         SystemQuestions question = await GetQuestionAsync(body.QuestionId);

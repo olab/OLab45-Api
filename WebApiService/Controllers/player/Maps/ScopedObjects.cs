@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Endpoints;
-using OLabWebAPI.Services;
+using OLab.Api.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -23,9 +22,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
-        return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
+        return OLabObjectResult<Dto.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
       {
@@ -47,9 +46,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
-        return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
+        return OLabObjectResult<Dto.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
       {

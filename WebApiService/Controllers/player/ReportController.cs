@@ -8,11 +8,10 @@ using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
+using OLab.Api.Services;
 using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -38,7 +37,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         SessionReport response = await _endpoint.GetAsync(auth, sessionId);
         return OLabObjectResult<SessionReport>.Result(response);
       }

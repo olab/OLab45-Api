@@ -12,14 +12,13 @@ using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
+using OLab.Api.Services;
 using OLab.Api.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using IOLabSession = OLab.Api.Data.Interface.IOLabSession;
+using IOLabSession = OLabWebAPI.Data.Interface.IOLabSession;
 using IUserService = OLabWebAPI.Services.IUserService;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI
 {

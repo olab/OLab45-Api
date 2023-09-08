@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Model;
-using OLabWebAPI.Services;
+using OLab.Api.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -27,7 +26,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
@@ -53,7 +52,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
         return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
       }
@@ -75,7 +74,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     /// <returns></returns>
     public async Task<IActionResult> GetDynamicScopedObjectsAsync(
       uint serverId,
-      MapNodes node,
+      Model.MapNodes node,
       uint sinceTime,
       bool enableWikiTranslation)
     {

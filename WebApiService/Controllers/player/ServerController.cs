@@ -7,11 +7,10 @@ using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
+using OLab.Api.Services;
 using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -37,7 +36,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         OLabAPIPagedResponse<Servers> pagedResponse = await _endpoint.GetAsync(take, skip);
         return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
       }
@@ -61,9 +60,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
-        return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        Dto.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
+        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
       {
@@ -84,9 +83,9 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-        return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+        Dto.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
+        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
       }
       catch (Exception ex)
       {

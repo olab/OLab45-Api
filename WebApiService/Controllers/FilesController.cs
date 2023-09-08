@@ -11,14 +11,13 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.ObjectMapper;
-using OLab.Api.Endpoints;
+using OLab.Api.Services;
 using OLab.Api.Utils;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using OLabWebAPI.Services;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -49,22 +48,22 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       _endpoint = new FilesEndpoint(this.logger, appSettings, context);
       _appSettings = appSettings.Value;
 
-      logger.LogDebug($"DefaultImportDirectory: '{_appSettings.ImportFolder}'");
-      logger.LogDebug($".PublicFileFolder: '{_appSettings.PublicFileFolder}'");
+      logger.LogDebug($"DefaultImportDirectory: '{_appSettings.DefaultImportDirectory}'");
+      logger.LogDebug($"WebsitePublicFilesDirectory: '{_appSettings.WebsitePublicFilesDirectory}'");
     }
 
     private string GetUploadDirectory()
     {
-      if (string.IsNullOrEmpty(_appSettings.ImportFolder))
+      if (string.IsNullOrEmpty(_appSettings.DefaultImportDirectory))
         throw new Exception("DefaultImportDirectory not defined.");
-      return _appSettings.ImportFolder;
+      return _appSettings.DefaultImportDirectory;
     }
 
     private string GetStaticFilesDirectory()
     {
-      if (string.IsNullOrEmpty(_appSettings.PublicFileFolder))
-        throw new Exception(".PublicFileFolder not defined.");
-      return _appSettings.PublicFileFolder;
+      if (string.IsNullOrEmpty(_appSettings.WebsitePublicFilesDirectory))
+        throw new Exception("WebsitePublicFilesDirectory not defined.");
+      return _appSettings.WebsitePublicFilesDirectory;
     }
 
     private static string CapitalizeFirstLetter(string str)
@@ -169,7 +168,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         OLabAPIPagedResponse<FilesDto> pagedResult = await _endpoint.GetAsync(take, skip);
         return OLabObjectPagedListResult<FilesDto>.Result(pagedResult.Data, pagedResult.Remaining);
       }
@@ -194,7 +193,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         FilesFullDto dto = await _endpoint.GetAsync(auth, id);
         return OLabObjectResult<FilesFullDto>.Result(dto);
       }
@@ -220,7 +219,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         await _endpoint.PutAsync(auth, id, dto);
       }
       catch (Exception ex)
@@ -246,7 +245,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         var dto = new FilesFullDto(Request.Form);
 
         var builder = new FilesFull(logger);
@@ -288,7 +287,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
         await _endpoint.DeleteAsync(auth, id);
       }
       catch (Exception ex)

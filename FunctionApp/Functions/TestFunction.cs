@@ -37,4 +37,23 @@ public class TestFunction : OLabFunction
 
     return response;
   }
+
+  [Function("Function2")]
+  public HttpResponseData Run2(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData request,
+    FunctionContext hostContext)
+  {
+    Guard.Argument(request).NotNull(nameof(request));
+
+    Logger.LogInformation("C# HTTP trigger function processed a request.");
+
+    var auth = GetRequestContext(hostContext);
+
+    var response = request.CreateResponse(HttpStatusCode.OK);
+    response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+
+    response.WriteString("{\"HelloThere\": 234534 }");
+
+    return response;
+  }
 }

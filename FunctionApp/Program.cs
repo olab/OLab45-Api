@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
@@ -22,6 +25,12 @@ var host = new HostBuilder()
 
     .ConfigureServices((context, services) =>
     {
+      JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+      {
+        Formatting = Formatting.Indented,
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+      };
+
       services.AddTransient<IUserContext, FunctionAppUserContext>();
       services.AddScoped<IUserService, FunctionAppUserService>();
       services.AddScoped<IOLabSession, OLabSession>();
