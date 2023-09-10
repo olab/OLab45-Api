@@ -1,11 +1,15 @@
+using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
@@ -13,14 +17,22 @@ namespace OLab.FunctionApp.Functions.Player
   public partial class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
+    //private readonly IOLabModuleProvider<IFileStorageModule> _fileStorageModule;
 
     public MapsFunction(
       ILoggerFactory loggerFactory,
       IConfiguration configuration,
       IUserService userService,
+      //IOLabModuleProvider<IFileStorageModule> fileStorageModule,
       OLabDBContext dbContext) : base(loggerFactory, configuration, userService, dbContext)
     {
-      _endpoint = new MapsEndpoint(Logger, DbContext);
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+      Guard.Argument(configuration).NotNull(nameof(configuration));
+      Guard.Argument(userService).NotNull(nameof(userService));
+      //Guard.Argument(fileStorageModule).NotNull(nameof(fileStorageModule));
+
+      _endpoint = new MapsEndpoint(Logger, _configuration.appSettings, DbContext);
+      //_fileStorageModule = fileStorageModule;
     }
 
     /// <summary>

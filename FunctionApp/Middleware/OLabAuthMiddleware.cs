@@ -90,8 +90,16 @@ public class OLabAuthMiddleware : JWTMiddleware
       return;
     }
 
-    // run the function
-    await next(functionContext);
+    try
+    {
+      // run the function
+      await next(functionContext);
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError($"function error: {ex.Message} {ex.StackTrace}");
+      throw;
+    }
 
     // This happens after function execution. We can inspect the context after the function
     // was invoked

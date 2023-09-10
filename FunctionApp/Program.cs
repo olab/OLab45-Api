@@ -6,10 +6,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using OLab.Api.Common;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.Data;
+using OLab.Data.Interface;
 using OLab.FunctionApp;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
@@ -31,10 +35,6 @@ var host = new HostBuilder()
         ContractResolver = new CamelCasePropertyNamesContractResolver()
       };
 
-      services.AddTransient<IUserContext, FunctionAppUserContext>();
-      services.AddScoped<IUserService, FunctionAppUserService>();
-      services.AddScoped<IOLabSession, OLabSession>();
-
       var connectionString = Environment.GetEnvironmentVariable("DefaultDatabase");
       var serverVersion = ServerVersion.AutoDetect(connectionString);
       services.AddDbContext<OLabDBContext>(options =>
@@ -50,6 +50,11 @@ var host = new HostBuilder()
 
       services.AddAzureAppConfiguration();
 
+      services.AddScoped<IUserContext, UserContext>();
+
+      services.AddSingleton<IUserService, UserService>();
+      services.AddSingleton<IOLabSession, OLabSession>();
+      services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
     })
 
     .ConfigureFunctionsWorkerDefaults(builder =>

@@ -17,7 +17,8 @@ namespace OLab.FunctionApp.Functions.Player
     [Function("MapScopedObjectsRawGet")]
     public async Task<HttpResponseData> MapScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects/raw")] HttpRequestData request,
-      FunctionContext hostContext, CancellationToken cancellationToken,
+      FunctionContext hostContext, 
+      CancellationToken cancellationToken,
       uint id)
     {
       try

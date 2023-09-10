@@ -11,20 +11,20 @@ using System.Text;
 
 namespace OLab.FunctionApp.Services;
 
-public class FunctionAppUserService : IUserService
+public class UserService : IUserService
 {
   public static int defaultTokenExpiryMinutes = 120;
   private readonly AppSettings _appSettings;
   private readonly OLabDBContext _context;
-  private readonly OLabLogger _logger;
+  private readonly OLabLogger Logger;
   private static TokenValidationParameters _tokenParameters;
 
   public bool IsValid { get; private set; }
   public bool UserName { get; private set; }
   public bool Role { get; private set; }
 
-  public FunctionAppUserService(
-    ILogger<FunctionAppUserService> logger,
+  public UserService(
+    ILogger<UserService> logger,
     IOptions<AppSettings> appSettings,
     OLabDBContext context)
   {
@@ -36,9 +36,10 @@ public class FunctionAppUserService : IUserService
     defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
     _appSettings = appSettings.Value;
     _context = context;
-    _logger = new OLabLogger(logger);
+    Logger = new OLabLogger(logger);
 
-    _logger.LogInformation($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
+    Logger.LogInformation($"UserService ctor");
+    Logger.LogInformation($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
 
     _tokenParameters = SetupValidationParameters(_appSettings);
   }
@@ -46,17 +47,6 @@ public class FunctionAppUserService : IUserService
   public static TokenValidationParameters GetValidationParameters()
   {
     return _tokenParameters;
-  }
-
-  /// <summary>
-  /// Extract claims from token
-  /// </summary>
-  /// <param name="token">Bearer token</param>
-  private static IEnumerable<Claim> ExtractTokenClaims(string token)
-  {
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var securityToken = (JwtSecurityToken)tokenHandler.ReadToken(token);
-    return securityToken.Claims;
   }
 
   /// <summary>
@@ -123,7 +113,7 @@ public class FunctionAppUserService : IUserService
   {
     Guard.Argument(model, nameof(model)).NotNull();
 
-    _logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
+    Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
     var user = _context.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     // return null if user not found
@@ -212,7 +202,7 @@ public class FunctionAppUserService : IUserService
       result = localChecksum == user.Password;
     }
 
-    _logger.LogInformation($"Password validated = {result}");
+    Logger.LogInformation($"Password validated = {result}");
     return result;
   }
 
@@ -248,7 +238,7 @@ public class FunctionAppUserService : IUserService
 
     // test for 'open' map
     if (map.SecurityId != 1)
-      _logger.LogError($"Map {mapId} is not configured for anonymous map play");
+      Logger.LogError($"Map {mapId} is not configured for anonymous map play");
 
     var user = new Users();
 
@@ -276,9 +266,9 @@ public class FunctionAppUserService : IUserService
 
     var readToken = handler.ReadJwtToken(model.ExternalToken);
 
-    _logger.LogDebug($"External JWT Incoming token claims:");
+    Logger.LogDebug($"External JWT Incoming token claims:");
     foreach (var claim in readToken.Claims)
-      _logger.LogDebug($" {claim}");
+      Logger.LogDebug($" {claim}");
 
     handler.ValidateToken(model.ExternalToken,
                           tokenParameters,
