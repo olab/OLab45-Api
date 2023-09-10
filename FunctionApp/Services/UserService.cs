@@ -24,19 +24,20 @@ public class UserService : IUserService
   public bool Role { get; private set; }
 
   public UserService(
-    ILogger<UserService> logger,
+    ILoggerFactory loggerFactory,
     IOptions<AppSettings> appSettings,
     OLabDBContext context)
   {
-    Guard.Argument(logger).NotNull(nameof(logger));
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
     Guard.Argument(appSettings).NotNull(nameof(appSettings));
     Guard.Argument(context).NotNull(nameof(context));
-    Guard.Argument(appSettings).NotNull(nameof(appSettings));
 
     defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
     _appSettings = appSettings.Value;
     _context = context;
-    Logger = new OLabLogger(logger);
+
+    var logger = loggerFactory.CreateLogger<UserService>();
+    Logger = new OLabLogger(loggerFactory, logger);
 
     Logger.LogInformation($"UserService ctor");
     Logger.LogInformation($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");

@@ -1,6 +1,5 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;

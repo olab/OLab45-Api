@@ -8,6 +8,7 @@ using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Designer
@@ -20,8 +21,11 @@ namespace OLab.FunctionApp.Functions.Designer
       ILoggerFactory loggerFactory,
       IConfiguration configuration,
       IUserService userService,
-      OLabDBContext dbContext) : base(loggerFactory, configuration, userService, dbContext)
+      OLabDBContext dbContext) : base(configuration, userService, dbContext)
     {
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+
+      Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<MapsFunction>());
       _endpoint = new MapsEndpoint(Logger, appSettings, dbContext);
     }
 

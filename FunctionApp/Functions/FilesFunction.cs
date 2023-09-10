@@ -12,6 +12,7 @@ using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.ObjectMapper;
+using OLab.Api.Utils;
 using OLab.FunctionApp.Extensions;
 using System.Net;
 
@@ -25,8 +26,11 @@ namespace OLab.FunctionApp.Functions
       ILoggerFactory loggerFactory,
       IConfiguration configuration,
       IUserService userService,
-      OLabDBContext dbContext) : base(loggerFactory, configuration, userService, dbContext)
+      OLabDBContext dbContext) : base(configuration, userService, dbContext)
     {
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+
+      Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<FilesFunction>());
       _endpoint = new FilesEndpoint(Logger, appSettings, dbContext);
     }
 
@@ -166,7 +170,7 @@ namespace OLab.FunctionApp.Functions
 
       try
       {
-        Logger.LogDebug($"FilesController.PostAsync()");
+        Logger.LogDebug($"FilePostAsync");
 
         var parser = await MultipartFormDataParser.ParseAsync(request.Body).ConfigureAwait(false);
 

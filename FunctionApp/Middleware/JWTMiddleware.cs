@@ -14,7 +14,7 @@ namespace OLab.FunctionApp.Middleware
   {
     protected static Configuration Config;
     protected static OLabLogger Logger;
-    protected static ILogger logger;
+    //protected static ILogger logger;
     protected static TokenValidationParameters TokenValidation;
 
     public JWTMiddleware(
@@ -24,8 +24,8 @@ namespace OLab.FunctionApp.Middleware
       Guard.Argument(configuration).NotNull(nameof(configuration));
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      logger = loggerFactory.CreateLogger<JWTMiddleware>();
-      Logger = new OLabLogger(logger);
+      var logger = loggerFactory.CreateLogger<JWTMiddleware>();
+      Logger = new OLabLogger(loggerFactory, logger);
 
       Logger.LogInformation("JwtMiddleware created");
 

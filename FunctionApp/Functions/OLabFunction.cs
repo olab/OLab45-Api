@@ -2,7 +2,6 @@ using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
@@ -17,7 +16,7 @@ public class OLabFunction
   protected readonly OLabDBContext DbContext;
   protected HttpResponseData response;
 
-  protected OLabLogger Logger;
+  protected OLabLogger Logger = null;
   protected string Token;
   protected readonly IUserService userService;
   protected IUserContext userContext;
@@ -25,12 +24,10 @@ public class OLabFunction
   protected readonly Configuration _configuration;
 
   public OLabFunction(
-    ILoggerFactory loggerFactory,
     IConfiguration configuration,
     IUserService userService,
     OLabDBContext dbContext)
   {
-    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
     Guard.Argument(userService).NotNull(nameof(userService));
     Guard.Argument(configuration).NotNull(nameof(configuration));
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
@@ -40,7 +37,6 @@ public class OLabFunction
     appSettings = Microsoft.Extensions.Options.Options.Create(_configuration.CreateAppSettings());
 
     DbContext = dbContext;
-    Logger = new OLabLogger(loggerFactory.CreateLogger<OLabFunction>());
     this.userService = userService;
   }
 

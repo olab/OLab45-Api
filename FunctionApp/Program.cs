@@ -12,8 +12,6 @@ using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data;
-using OLab.Data.Interface;
 using OLab.FunctionApp;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;

@@ -7,7 +7,7 @@
         "excludedTypes": "Request"
       }
     },
-    "logLevel": {"default": "Information" }
+    "logLevel": {"default": "Info" }
   },
   "extensions": {
     "http": {

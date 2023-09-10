@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using System.Net;
 
 namespace OLab.FunctionApp.Functions;
@@ -14,8 +15,11 @@ public class TestFunction : OLabFunction
     ILoggerFactory loggerFactory,
     IConfiguration configuration,
     IUserService userService,
-    OLabDBContext dbContext) : base(loggerFactory, configuration, userService, dbContext)
+    OLabDBContext dbContext) : base(configuration, userService, dbContext)
   {
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+
+    Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<ConstantsFunction>());
     var tmp = _configuration.GetValue<string>("Audience");
   }
 
