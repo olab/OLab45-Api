@@ -8,9 +8,10 @@
       }
     },
     "logLevel": {
-      "default": "Error",
-      "OLab": "Trace",
-      "Function": "Error"
+      "default": "Information",
+      "Host.Results": "Information",
+      "Function": "Information",
+      "Host.Aggregator": "Trace"
     }
   },
   "extensions": {

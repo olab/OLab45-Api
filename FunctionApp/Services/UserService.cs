@@ -305,6 +305,8 @@ public class UserService : IUserService
   {
     Guard.Argument(user, nameof(user)).NotNull();
 
+    Logger.LogDebug($"generatring token");
+
     var securityKey =
       new SymmetricSecurityKey(Encoding.Default.GetBytes(_appSettings.Secret[..40]));
 
