@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace OLab.FunctionApp.Services
 {
-    public class UserContext : IUserContext
+  public class UserContext : IUserContext
   {
     public const string WildCardObjectType = "*";
     public const uint WildCardObjectId = 0;
@@ -89,8 +89,8 @@ namespace OLab.FunctionApp.Services
     }
 
     public UserContext(
-      IOLabLogger logger, 
-      OLabDBContext dbContext, 
+      IOLabLogger logger,
+      OLabDBContext dbContext,
       FunctionContext hostContext)
     {
       Guard.Argument(logger).NotNull(nameof(logger));

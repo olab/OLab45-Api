@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.FunctionApp.Functions.Player;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;

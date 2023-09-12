@@ -2,14 +2,12 @@ using Dawn;
 using FluentValidation;
 using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
 using OLab.Api.Importer;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -18,7 +16,7 @@ using OLab.Import.Interfaces;
 
 namespace OLab.FunctionApp.Functions
 {
-    public class ImportFunction : OLabFunction
+  public class ImportFunction : OLabFunction
   {
     private readonly IImporter _importer;
 

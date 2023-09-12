@@ -10,7 +10,7 @@ using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Services
 {
-    public class OLabAuthorization : IOLabAuthentication
+  public class OLabAuthorization : IOLabAuthentication
   {
     private readonly IUserContext userContext;
 
