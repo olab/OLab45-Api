@@ -5,15 +5,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.FunctionApp.Functions;
 using System.Text;
 using Configuration = OLab.FunctionApp.Services.Configuration;
 
 namespace OLab.FunctionApp.Middleware
 {
-  public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
+    public abstract class JWTMiddleware : IFunctionsWorkerMiddleware
   {
     protected static Configuration Config;
-    protected static OLabLogger Logger;
+    protected static IOLabLogger Logger;
     //protected static ILogger logger;
     protected static TokenValidationParameters TokenValidation;
 
@@ -24,8 +26,7 @@ namespace OLab.FunctionApp.Middleware
       Guard.Argument(configuration).NotNull(nameof(configuration));
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      var logger = loggerFactory.CreateLogger<JWTMiddleware>();
-      Logger = new OLabLogger(loggerFactory, logger);
+      Logger = OLabLogger.CreateNew<JWTMiddleware>(loggerFactory);
 
       Logger.LogInformation("JwtMiddleware created");
 

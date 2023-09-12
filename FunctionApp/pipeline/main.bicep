@@ -36,6 +36,7 @@ var resourceNameFunctionAppFarm = resourceNameFunctionApp
 var resourceNameFunctionAppInsights = resourceNameFunctionApp
 var resourceNameFunctionAppStorage = '${resourceNameFunctionApp}az'
 var resourceNameFileStorage = resourceNameFunctionApp
+var resourceNamePlayer = '${resource_prefix}${environment_code}player'
 var resourceNameSignalr = '${resource_prefix}signalr'
 var fileStorageContainerName = '$web'
 
@@ -68,14 +69,16 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: appService
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
+    AppSettings__Audience: 'https://www.olab.ca'
     AppSettings__FileStorageConnectionString: fileStorageConnectionString
     AppSettings__FileStorageContainer: fileStorageContainerName
-    AppSettings__Audience: 'https://www.olab.ca'
+    AppSettings__FileStorageFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/import'
+    AppSettings__FileStorageType: 'FILESYSTEM'
+    AppSettings__FileStorageUrl: 'https://olabdevapi.blob.core.windows.net/$web/files'
     AppSettings__ImportFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/import'
     AppSettings__Issuer: 'olab,moodle'
     AppSettings__Secret: AuthTokenKey
     AppSettings__SignalREndpoint: '/turktalk'
-    AppSettings__PublicFileFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/files'
     AzureWebJobsStorage: functionAppStorageConnectionString
     DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
     FUNCTIONS_EXTENSION_VERSION: '~4'
@@ -86,13 +89,21 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   }
 }
 
+var resourcePlayerFqdn = resourcePlayer.properties.defaultHostname
+resource resourcePlayer 'Microsoft.Web/staticSites@2022-09-01' existing = {
+  name: resourceNamePlayer
+}
+
 resource appCors 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: appService
   name: 'web'
   properties: {
     cors: {
       allowedOrigins: [
-        '*'        
+        '*'
+        'https://portal.azure.com'
+        'http://localhost:3000'
+        'https://${resourcePlayerFqdn}'
       ]
       supportCredentials: false
     }

@@ -4,13 +4,14 @@ using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
 using System.Security.Claims;
 
 #nullable disable
 
 namespace OLab.FunctionApp.Services
 {
-  public class UserContext : IUserContext
+    public class UserContext : IUserContext
   {
     public const string WildCardObjectType = "*";
     public const uint WildCardObjectId = 0;
@@ -20,7 +21,7 @@ namespace OLab.FunctionApp.Services
 
     protected IDictionary<string, string> _claims;
     protected readonly OLabDBContext _dbContext;
-    protected readonly OLabLogger Logger;
+    protected readonly IOLabLogger Logger;
     protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
     protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
@@ -87,7 +88,10 @@ namespace OLab.FunctionApp.Services
 
     }
 
-    public UserContext(OLabLogger logger, OLabDBContext dbContext, FunctionContext hostContext)
+    public UserContext(
+      IOLabLogger logger, 
+      OLabDBContext dbContext, 
+      FunctionContext hostContext)
     {
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(dbContext).NotNull(nameof(dbContext));

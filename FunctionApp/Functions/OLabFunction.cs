@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
 using OLab.FunctionApp.Services;
 using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
@@ -16,7 +17,7 @@ public class OLabFunction
   protected readonly OLabDBContext DbContext;
   protected HttpResponseData response;
 
-  protected OLabLogger Logger = null;
+  protected IOLabLogger Logger = null;
   protected string Token;
   protected readonly IUserService userService;
   protected IUserContext userContext;

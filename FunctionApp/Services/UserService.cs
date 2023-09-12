@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.FunctionApp.Functions.Player;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -16,7 +18,7 @@ public class UserService : IUserService
   public static int defaultTokenExpiryMinutes = 120;
   private readonly AppSettings _appSettings;
   private readonly OLabDBContext _context;
-  private readonly OLabLogger Logger;
+  private readonly IOLabLogger Logger;
   private static TokenValidationParameters _tokenParameters;
 
   public bool IsValid { get; private set; }
@@ -36,8 +38,7 @@ public class UserService : IUserService
     _appSettings = appSettings.Value;
     _context = context;
 
-    var logger = loggerFactory.CreateLogger<UserService>();
-    Logger = new OLabLogger(loggerFactory, logger);
+    Logger = OLabLogger.CreateNew<UserService>(loggerFactory);
 
     Logger.LogInformation($"UserService ctor");
     Logger.LogInformation($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");

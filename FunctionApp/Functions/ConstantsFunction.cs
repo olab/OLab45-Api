@@ -26,7 +26,7 @@ namespace OLab.FunctionApp.Functions
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<ConstantsFunction>());
+      Logger = OLabLogger.CreateNew<ConstantsFunction>(loggerFactory);
       _endpoint = new ConstantsEndpoint(Logger, appSettings, DbContext);
     }
 

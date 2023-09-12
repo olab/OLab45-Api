@@ -5,16 +5,17 @@ using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
 using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Services
 {
-  public class OLabAuthorization : IOLabAuthentication
+    public class OLabAuthorization : IOLabAuthentication
   {
     private readonly IUserContext userContext;
 
     public OLabAuthorization(
-      OLabLogger logger,
+      IOLabLogger logger,
       OLabDBContext dbContext,
       FunctionContext context
     )

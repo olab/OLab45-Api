@@ -19,7 +19,7 @@ public class TestFunction : OLabFunction
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<ConstantsFunction>());
+    Logger = OLabLogger.CreateNew<ConstantsFunction>(loggerFactory);
     var tmp = _configuration.GetValue<string>("Audience");
   }
 

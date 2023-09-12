@@ -18,7 +18,7 @@ using OLab.Import.Interfaces;
 
 namespace OLab.FunctionApp.Functions
 {
-  public class ImportFunction : OLabFunction
+    public class ImportFunction : OLabFunction
   {
     private readonly IImporter _importer;
 
@@ -30,7 +30,7 @@ namespace OLab.FunctionApp.Functions
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<ImportFunction>(), true);
+      Logger = OLabLogger.CreateNew<FilesFunction>(loggerFactory);
       _importer = new Importer(Logger, appSettings, dbContext);
     }
 

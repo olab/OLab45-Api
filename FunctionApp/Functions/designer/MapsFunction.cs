@@ -25,7 +25,7 @@ namespace OLab.FunctionApp.Functions.Designer
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<MapsFunction>());
+      Logger = OLabLogger.CreateNew<MapsFunction>(loggerFactory);
       _endpoint = new MapsEndpoint(Logger, appSettings, dbContext);
     }
 

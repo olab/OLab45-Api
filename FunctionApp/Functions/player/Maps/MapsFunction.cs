@@ -8,6 +8,8 @@ using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
@@ -15,19 +17,20 @@ namespace OLab.FunctionApp.Functions.Player
   public partial class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
-    //private readonly IOLabModuleProvider<IFileStorageModule> _fileStorageModule;
+    private readonly IOLabModuleProvider<IFileStorageModule> _fileStorageModule;
 
     public MapsFunction(
       ILoggerFactory loggerFactory,
       IConfiguration configuration,
       IUserService userService,
+      IOLabModuleProvider<IFileStorageModule> fileStorageModule,
       OLabDBContext dbContext) : base(configuration, userService, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<MapsFunction>());
+      Logger = OLabLogger.CreateNew<MapsFunction>(loggerFactory);
       _endpoint = new MapsEndpoint(Logger, _configuration.appSettings, DbContext);
-      //_fileStorageModule = fileStorageModule;
+      _fileStorageModule = fileStorageModule;
     }
 
     /// <summary>

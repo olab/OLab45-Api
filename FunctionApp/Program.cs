@@ -50,6 +50,7 @@ var host = new HostBuilder()
 
       services.AddScoped<IUserContext, UserContext>();
 
+      services.AddSingleton<IOLabLogger, OLabLogger>();
       services.AddSingleton<IUserService, UserService>();
       services.AddSingleton<IOLabSession, OLabSession>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));

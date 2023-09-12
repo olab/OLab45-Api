@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Utils;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions;
@@ -21,7 +22,7 @@ public class UserFunction : OLabFunction
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<UserFunction>());
+    Logger = OLabLogger.CreateNew<UserFunction>(loggerFactory);
   }
 
   [Function("Login")]

@@ -46,7 +46,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="id"></param>
     /// <returns></returns>
     [Function("MapScopedObjectsGet")]
-    public async Task<HttpResponseData> MapScopedObjectsPutAsync(
+    public async Task<HttpResponseData> MapScopedObjectsGetAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
       uint id)

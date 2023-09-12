@@ -30,7 +30,7 @@ namespace OLab.FunctionApp.Functions
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = new OLabLogger(loggerFactory, loggerFactory.CreateLogger<FilesFunction>());
+      Logger = OLabLogger.CreateNew<FilesFunction>(loggerFactory);
       _endpoint = new FilesEndpoint(Logger, appSettings, dbContext);
     }
 
