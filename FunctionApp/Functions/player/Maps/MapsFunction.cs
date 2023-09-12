@@ -17,20 +17,17 @@ namespace OLab.FunctionApp.Functions.Player
   public partial class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
-    private readonly IOLabModuleProvider<IFileStorageModule> _fileStorageModule;
 
     public MapsFunction(
       ILoggerFactory loggerFactory,
       IConfiguration configuration,
       IUserService userService,
-      IOLabModuleProvider<IFileStorageModule> fileStorageModule,
       OLabDBContext dbContext) : base(configuration, userService, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<MapsFunction>(loggerFactory);
       _endpoint = new MapsEndpoint(Logger, _configuration.appSettings, DbContext);
-      _fileStorageModule = fileStorageModule;
     }
 
     /// <summary>

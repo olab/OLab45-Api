@@ -163,7 +163,7 @@ namespace OLab.FunctionApp.Functions
     /// <returns>IActionResult</returns>
     [Function("FilePost")]
     public async Task<HttpResponseData> FilePostAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "files")] HttpRequestData request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "file")] HttpRequestData request,
       FunctionContext hostContext)
     {
       SystemFiles phys = null;

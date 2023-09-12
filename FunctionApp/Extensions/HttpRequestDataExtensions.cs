@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
 using NuGet.Protocol;
@@ -12,6 +14,20 @@ namespace OLab.FunctionApp.Extensions;
 
 public static class HttpRequestDataExtensions
 {
+  public static HttpContext AsHttpContext(this HttpRequestData req)
+  {
+    var httpContext = new DefaultHttpContext();
+    httpContext.Request.Method = req.Method;
+    httpContext.Request.Path = PathString.FromUriComponent(req.Url);
+    httpContext.Request.Host = HostString.FromUriComponent(req.Url);
+    httpContext.Request.Scheme = req.Url.Scheme;
+    httpContext.Request.Query = new QueryCollection(QueryHelpers.ParseQuery(req.Query.ToString()));
+    foreach (var header in req.Headers)
+      httpContext.Request.Headers[header.Key] = header.Value.ToArray();
+    httpContext.Request.Body = req.Body;
+    return httpContext;
+  }
+
   /// <summary>
   /// Create an HttpResponseData object from an exception
   /// </summary>

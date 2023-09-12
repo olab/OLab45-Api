@@ -11,6 +11,7 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Importer;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
 using OLab.FunctionApp.Extensions;
 using OLab.Import.Interfaces;
 
@@ -24,12 +25,13 @@ namespace OLab.FunctionApp.Functions
       ILoggerFactory loggerFactory,
       IConfiguration configuration,
       IUserService userService,
-      OLabDBContext dbContext) : base(configuration, userService, dbContext)
+      OLabDBContext dbContext,
+      IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<FilesFunction>(loggerFactory);
-      _importer = new Importer(Logger, appSettings, dbContext);
+      _importer = new Importer(Logger, appSettings, dbContext, wikiTagModules);
     }
 
     private string GetUploadDirectory()
@@ -39,7 +41,7 @@ namespace OLab.FunctionApp.Functions
 
     [Function("Upload")]
     public async Task<IActionResult> UploadAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "upload")] HttpRequestData request,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import/upload")] HttpRequestData request,
         FunctionContext hostContext,
         CancellationToken cancellationToken)
     {
@@ -54,6 +56,13 @@ namespace OLab.FunctionApp.Functions
         var userContext = auth.GetUserContext();
         if (!userContext.HasAccess("X", "Import", 0))
           throw new OLabUnauthorizedException();
+
+        if ( request.Body == null )
+          throw new ArgumentNullException(nameof(request.Body));
+
+        var parser = await MultipartFormDataParser.ParseAsync(request.Body);
+        Stream myBlob = new MemoryStream();
+        var file = parser.Files[0];
 
         //var fileName = await WriteFile(file);
 
@@ -160,11 +169,7 @@ namespace OLab.FunctionApp.Functions
 
     //  var path = Path.Combine(GetUploadDirectory(), fileName);
 
-    //  using (var stream = new FileStream(path, FileMode.Create))
-    //  {
-    //    await file.CopyToAsync(stream);
-    //    logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");
-    //  }
+
 
     //  return path;
     //}
