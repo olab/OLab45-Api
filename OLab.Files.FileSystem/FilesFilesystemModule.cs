@@ -1,23 +1,24 @@
 ﻿using Dawn;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Attributes;
+using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Net.NetworkInformation;
 
 namespace OLab.Files.FileSystem
 {
   [OLabModule("FILESYSTEM")]
-  public class FilesFilesystemModule : IFileStorageModule
+  public class FilesFilesystemModule : OLabModuleProvider<IFileStorageModule>
   {
-    private readonly OLabLogger _logger;
-    private readonly AppSettings _appSettings;
+    private readonly IOLabLogger _logger;
 
-    public FilesFilesystemModule(OLabLogger logger, AppSettings appSettings)
+    public FilesFilesystemModule(IOLabLogger logger, IConfiguration configuration) : base(logger, configuration)
     {
       _logger = logger;
-      _appSettings = appSettings;
     }
 
     public void AttachUrls(IList<SystemFiles> items)
@@ -31,7 +32,7 @@ namespace OLab.Files.FileSystem
         var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
 
         if (File.Exists(physicalPath))
-          item.OriginUrl = $"/{Path.GetFileName(_appSettings.FileStorageFolder)}/{subPath}";
+          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().Value.FileStorageFolder)}/{subPath}";
         else
           item.OriginUrl = null;
       }
@@ -47,7 +48,7 @@ namespace OLab.Files.FileSystem
     {
       var subPath = $"{scopeLevel}/{scopeId}/{filePath}";
       var physicalPath = Path.Combine(
-        _appSettings.FileStorageFolder, 
+        _configuration.GetAppSettings().Value.FileStorageFolder, 
         subPath.Replace('/', Path.DirectorySeparatorChar));
       return physicalPath;
     }
@@ -77,7 +78,7 @@ namespace OLab.Files.FileSystem
       if (string.IsNullOrEmpty(fileName))
         fileName = Path.GetRandomFileName();
 
-      var physicalPath = Path.Combine(_appSettings.ImportFolder, fileName);
+      var physicalPath = Path.Combine(_configuration.GetAppSettings().Value.ImportFolder, fileName);
 
       using (var stream = new FileStream(physicalPath, FileMode.Create))
       {

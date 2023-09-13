@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using System.Text;
-using Configuration = OLab.FunctionApp.Services.Configuration;
+using Configuration = OLab.Common.Utils.Configuration;
 
 namespace OLab.FunctionApp.Middleware
 {

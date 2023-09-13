@@ -1,6 +1,7 @@
 ﻿using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Attributes;
+using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 
 namespace OLab.Files.AzureBlobStorage
@@ -8,10 +9,10 @@ namespace OLab.Files.AzureBlobStorage
   [OLabModule("AZUREBLOBSTORAGE")]
   public class AzureBlobFileSystemModule : IFileStorageModule
   {
-    private readonly OLabLogger _logger;
+    private readonly IOLabLogger _logger;
     private readonly AppSettings _appSettings;
 
-    public AzureBlobFileSystemModule(OLabLogger logger, AppSettings appSettings)
+    public AzureBlobFileSystemModule(IOLabLogger logger, AppSettings appSettings)
     {
       _logger = logger;
       _appSettings = appSettings;

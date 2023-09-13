@@ -79,6 +79,7 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     AppSettings__Issuer: 'olab,moodle'
     AppSettings__Secret: AuthTokenKey
     AppSettings__SignalREndpoint: '/turktalk'
+    AppSettings__TokenExpiryMinutes: 360,
     AzureWebJobsStorage: functionAppStorageConnectionString
     DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
     FUNCTIONS_EXTENSION_VERSION: '~4'

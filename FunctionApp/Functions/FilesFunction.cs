@@ -31,7 +31,7 @@ namespace OLab.FunctionApp.Functions
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<FilesFunction>(loggerFactory);
-      _endpoint = new FilesEndpoint(Logger, appSettings, dbContext);
+      _endpoint = new FilesEndpoint(Logger, configuration, dbContext);
     }
 
     public string GetMimeTypeForFileExtension(string filePath)
@@ -143,7 +143,7 @@ namespace OLab.FunctionApp.Functions
         var blobName = BuildStaticFileName(dto);
 
         // generate short-lived blob download url
-        //var sasGenerator = new AzureStorageBlobOptionsTokenGenerator(appSettings);
+        //var sasGenerator = new AzureStorageBlobOptionsTokenGenerator(_appSettings);
         //dto.Url = sasGenerator.GenerateSasToken(_configuration.GetValue<string>("WebsitePublicFilesDirectory"), blobName);
 
         response = request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
@@ -200,8 +200,8 @@ namespace OLab.FunctionApp.Functions
         //myBlob = file.OpenReadStream();
 
         //var blobClient = new BlobContainerClient(
-        //  appSettings.StaticFilesConnectionString,
-        //  appSettings.StaticFilesContainerName);
+        //  _appSettings.StaticFilesConnectionString,
+        //  _appSettings.StaticFilesContainerName);
 
         //var blob = blobClient.GetBlobClient(staticFileName);
         //await blob.UploadAsync(myBlob);

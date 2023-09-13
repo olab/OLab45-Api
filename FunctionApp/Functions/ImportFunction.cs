@@ -31,12 +31,12 @@ namespace OLab.FunctionApp.Functions
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<FilesFunction>(loggerFactory);
-      _importer = new Importer(Logger, appSettings, dbContext, wikiTagModules);
+      _importer = new Importer(Logger, configuration, dbContext, wikiTagModules);
     }
 
     private string GetUploadDirectory()
     {
-      return appSettings.Value.ImportFolder;
+      return _configuration.GetAppSettings().Value.ImportFolder;
     }
 
     [Function("Upload")]

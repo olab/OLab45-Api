@@ -33,8 +33,9 @@ public class UserService : IUserService
     Guard.Argument(appSettings).NotNull(nameof(appSettings));
     Guard.Argument(context).NotNull(nameof(context));
 
-    defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
     _appSettings = appSettings.Value;
+
+    defaultTokenExpiryMinutes = _appSettings.TokenExpiryMinutes;
     _context = context;
 
     Logger = OLabLogger.CreateNew<UserService>(loggerFactory);

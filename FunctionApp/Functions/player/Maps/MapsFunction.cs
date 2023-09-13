@@ -22,12 +22,13 @@ namespace OLab.FunctionApp.Functions.Player
       ILoggerFactory loggerFactory,
       IConfiguration configuration,
       IUserService userService,
-      OLabDBContext dbContext) : base(configuration, userService, dbContext)
+      OLabDBContext dbContext,
+      IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<MapsFunction>(loggerFactory);
-      _endpoint = new MapsEndpoint(Logger, _configuration.appSettings, DbContext);
+      _endpoint = new MapsEndpoint(Logger, configuration, DbContext, wikiTagModules);
     }
 
     /// <summary>

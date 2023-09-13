@@ -26,7 +26,7 @@ namespace OLab.FunctionApp.Functions.Player
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<NodesFunction>(loggerFactory);
-      _endpoint = new NodesEndpoint(Logger, appSettings, dbContext);
+      _endpoint = new NodesEndpoint(Logger, _appSettings, dbContext);
     }
 
     /// <summary>

@@ -27,7 +27,7 @@ namespace OLab.FunctionApp.Functions.Designer
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<TemplateFunction>(loggerFactory);
-      _endpoint = new TemplateEndpoint(Logger, appSettings, DbContext);
+      _endpoint = new TemplateEndpoint(Logger, configuration, DbContext);
     }
 
     /// <summary>

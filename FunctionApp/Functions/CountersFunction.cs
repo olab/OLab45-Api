@@ -27,7 +27,7 @@ namespace OLab.FunctionApp.Functions
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<CountersFunction>(loggerFactory);
-      _endpoint = new CountersEndpoint(Logger, appSettings, DbContext);
+      _endpoint = new CountersEndpoint(Logger, configuration, DbContext);
     }
 
     /// <summary>

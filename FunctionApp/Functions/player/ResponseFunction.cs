@@ -26,7 +26,7 @@ namespace OLab.FunctionApp.Functions.Player
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<ResponseFunction>(loggerFactory);
-      _endpoint = new ResponseEndpoint(Logger, appSettings, dbContext);
+      _endpoint = new ResponseEndpoint(Logger, _appSettings, dbContext);
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ namespace OLab.FunctionApp.Functions.Player
         var result =
           await _endpoint.PostQuestionResponseAsync(question, body);
 
-        userContext.Session.OnQuestionResponse(
+        auth.GetUserContext().Session.OnQuestionResponse(
           body.MapId,
           body.NodeId,
           question.Id,

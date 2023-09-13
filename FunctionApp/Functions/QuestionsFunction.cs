@@ -29,7 +29,7 @@ namespace OLab.FunctionApp.Functions
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<QuestionsFunction>(loggerFactory);
-      _endpoint = new QuestionsEndpoint(Logger, appSettings, dbContext, wikiTagModules);
+      _endpoint = new QuestionsEndpoint(Logger, _appSettings, dbContext, wikiTagModules);
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.FunctionApp.Services;
+using OLab.Common.Utils;
 using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Functions;
@@ -21,7 +21,6 @@ public class OLabFunction
   protected string Token;
   protected readonly IUserService userService;
   protected IUserContext userContext;
-  protected IOptions<AppSettings> appSettings;
   protected readonly Configuration _configuration;
 
   public OLabFunction(
@@ -34,8 +33,6 @@ public class OLabFunction
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
     _configuration = new Configuration(configuration);
-
-    appSettings = Microsoft.Extensions.Options.Options.Create(_configuration.CreateAppSettings());
 
     DbContext = dbContext;
     this.userService = userService;

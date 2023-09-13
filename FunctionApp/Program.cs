@@ -12,6 +12,7 @@ using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data;
 using OLab.Data.Interface;
 using OLab.Files.FileSystem;
 using OLab.FunctionApp;
@@ -57,6 +58,7 @@ var host = new HostBuilder()
       services.AddSingleton<IOLabSession, OLabSession>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
       services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
+      services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
     })
 
     .ConfigureFunctionsWorkerDefaults(builder =>
