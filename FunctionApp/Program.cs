@@ -12,9 +12,9 @@ using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data;
 using OLab.Data.Interface;
-using OLab.Files.FileSystem;
 using OLab.FunctionApp;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
@@ -54,6 +54,7 @@ var host = new HostBuilder()
       services.AddScoped<IUserContext, UserContext>();
 
       services.AddSingleton<IOLabLogger, OLabLogger>();
+      services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
       services.AddSingleton<IUserService, UserService>();
       services.AddSingleton<IOLabSession, OLabSession>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));

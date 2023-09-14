@@ -2,10 +2,10 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
+using OLab.Common.Interfaces;
 using OLab.FunctionApp.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -23,7 +23,7 @@ public class OLabAuthMiddleware : JWTMiddleware
   private HttpRequestData _httpRequestData;
 
   public OLabAuthMiddleware(
-    IConfiguration config,
+    IOLabConfiguration config,
     ILoggerFactory loggerFactory,
     IUserService userService,
     OLabDBContext dbContext) : base(config, loggerFactory)

@@ -1,13 +1,9 @@
 ﻿using Dawn;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using System.Net.NetworkInformation;
 
 namespace OLab.Files.FileSystem
 {
@@ -16,7 +12,9 @@ namespace OLab.Files.FileSystem
   {
     private readonly IOLabLogger _logger;
 
-    public FilesFilesystemModule(IOLabLogger logger, IConfiguration configuration) : base(logger, configuration)
+    public FilesFilesystemModule(
+      IOLabLogger logger,
+      IOLabConfiguration configuration) : base(logger, configuration)
     {
       _logger = logger;
     }
@@ -48,7 +46,7 @@ namespace OLab.Files.FileSystem
     {
       var subPath = $"{scopeLevel}/{scopeId}/{filePath}";
       var physicalPath = Path.Combine(
-        _configuration.GetAppSettings().Value.FileStorageFolder, 
+        _configuration.GetAppSettings().Value.FileStorageFolder,
         subPath.Replace('/', Path.DirectorySeparatorChar));
       return physicalPath;
     }

@@ -1,13 +1,9 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Common.Utils;
 using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Functions;
@@ -17,14 +13,16 @@ public class OLabFunction
   protected readonly OLabDBContext DbContext;
   protected HttpResponseData response;
 
+  ///  this is set in derived classes
   protected IOLabLogger Logger = null;
+
   protected string Token;
   protected readonly IUserService userService;
   protected IUserContext userContext;
-  protected readonly Configuration _configuration;
+  protected readonly IOLabConfiguration _configuration;
 
   public OLabFunction(
-    IConfiguration configuration,
+    IOLabConfiguration configuration,
     IUserService userService,
     OLabDBContext dbContext)
   {
@@ -32,7 +30,7 @@ public class OLabFunction
     Guard.Argument(configuration).NotNull(nameof(configuration));
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
-    _configuration = new Configuration(configuration);
+    _configuration = configuration;
 
     DbContext = dbContext;
     this.userService = userService;

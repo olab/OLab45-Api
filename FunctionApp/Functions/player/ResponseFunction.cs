@@ -2,13 +2,13 @@ using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
@@ -19,7 +19,7 @@ namespace OLab.FunctionApp.Functions.Player
 
     public ResponseFunction(
       ILoggerFactory loggerFactory,
-      IConfiguration configuration,
+      IOLabConfiguration configuration,
       IUserService userService,
       OLabDBContext dbContext) : base(configuration, userService, dbContext)
     {
@@ -53,10 +53,8 @@ namespace OLab.FunctionApp.Functions.Player
 
         var question = await DbContext.SystemQuestions
           .Include(x => x.SystemQuestionResponses)
-          .FirstOrDefaultAsync(x => x.Id == body.QuestionId);
-
-        if (question == null)
-          throw new Exception($"Question {body.QuestionId} not found");
+          .FirstOrDefaultAsync(x => x.Id == body.QuestionId) 
+          ?? throw new Exception($"Question {body.QuestionId} not found");
 
         var result =
           await _endpoint.PostQuestionResponseAsync(question, body);

@@ -2,7 +2,6 @@ using Dawn;
 using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Dto;
@@ -20,7 +19,7 @@ namespace OLab.FunctionApp.Functions.Designer
 
     public MapsFunction(
       ILoggerFactory loggerFactory,
-      IConfiguration configuration,
+      IOLabConfiguration configuration,
       IUserService userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext)

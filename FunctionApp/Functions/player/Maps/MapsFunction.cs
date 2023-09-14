@@ -1,7 +1,6 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Dto;
@@ -9,7 +8,6 @@ using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
@@ -20,7 +18,7 @@ namespace OLab.FunctionApp.Functions.Player
 
     public MapsFunction(
       ILoggerFactory loggerFactory,
-      IConfiguration configuration,
+      IOLabConfiguration configuration,
       IUserService userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext)

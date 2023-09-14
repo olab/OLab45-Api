@@ -1,10 +1,10 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
 using System.Net;
 
 namespace OLab.FunctionApp.Functions;
@@ -13,7 +13,7 @@ public class TestFunction : OLabFunction
 {
   public TestFunction(
     ILoggerFactory loggerFactory,
-    IConfiguration configuration,
+    IOLabConfiguration configuration,
     IUserService userService,
     OLabDBContext dbContext) : base(configuration, userService, dbContext)
   {
@@ -23,9 +23,18 @@ public class TestFunction : OLabFunction
     var tmp = _configuration.GetValue<string>("Audience");
   }
 
+  [Function("Health")]
+  public HttpResponseData RunHealth(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request,
+    FunctionContext hostContext)
+  {
+    var response = request.CreateResponse(HttpStatusCode.OK);
+    return response;
+  }
+
   [Function("Function1")]
   public HttpResponseData Run(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData request,
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request,
     FunctionContext hostContext)
   {
     Guard.Argument(request).NotNull(nameof(request));
@@ -44,7 +53,7 @@ public class TestFunction : OLabFunction
 
   [Function("Function2")]
   public HttpResponseData Run2(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData request,
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request,
     FunctionContext hostContext)
   {
     Guard.Argument(request).NotNull(nameof(request));

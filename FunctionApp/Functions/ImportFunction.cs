@@ -4,7 +4,6 @@ using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
@@ -23,7 +22,7 @@ namespace OLab.FunctionApp.Functions
 
     public ImportFunction(
       ILoggerFactory loggerFactory,
-      IConfiguration configuration,
+      IOLabConfiguration configuration,
       IUserService userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext)
@@ -57,7 +56,7 @@ namespace OLab.FunctionApp.Functions
         if (!userContext.HasAccess("X", "Import", 0))
           throw new OLabUnauthorizedException();
 
-        if ( request.Body == null )
+        if (request.Body == null)
           throw new ArgumentNullException(nameof(request.Body));
 
         var parser = await MultipartFormDataParser.ParseAsync(request.Body);
