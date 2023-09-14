@@ -1,4 +1,5 @@
-﻿using OLab.Api.Model;
+﻿using Microsoft.Extensions.Configuration;
+using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
@@ -10,12 +11,12 @@ namespace OLab.Files.AzureBlobStorage
   public class AzureBlobFileSystemModule : IFileStorageModule
   {
     private readonly IOLabLogger _logger;
-    private readonly AppSettings _appSettings;
+    private readonly IConfiguration _configuration;
 
-    public AzureBlobFileSystemModule(IOLabLogger logger, AppSettings appSettings)
+    public AzureBlobFileSystemModule(IOLabLogger logger, IConfiguration configuration)
     {
       _logger = logger;
-      _appSettings = appSettings;
+      _configuration = configuration;
     }
 
     public void AttachUrls(IList<SystemFiles> items)
