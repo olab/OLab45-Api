@@ -20,6 +20,7 @@ public class OLabFunction
   protected readonly IUserService userService;
   protected IUserContext userContext;
   protected readonly IOLabConfiguration _configuration;
+  protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagModules;
 
   public OLabFunction(
     IOLabConfiguration configuration,
@@ -31,6 +32,24 @@ public class OLabFunction
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
     _configuration = configuration;
+
+    DbContext = dbContext;
+    this.userService = userService;
+  }
+
+  public OLabFunction(
+    IOLabConfiguration configuration,
+    IUserService userService,
+    OLabDBContext dbContext,
+    IOLabModuleProvider<IWikiTagModule> wikiTagModules)
+  {
+    Guard.Argument(userService).NotNull(nameof(userService));
+    Guard.Argument(configuration).NotNull(nameof(configuration));
+    Guard.Argument(dbContext).NotNull(nameof(dbContext));
+    Guard.Argument(wikiTagModules).NotNull(nameof(wikiTagModules));
+
+    _configuration = configuration;
+    _wikiTagModules = wikiTagModules;
 
     DbContext = dbContext;
     this.userService = userService;

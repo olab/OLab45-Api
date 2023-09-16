@@ -53,7 +53,7 @@ namespace OLab.FunctionApp.Functions.Player
 
         var question = await DbContext.SystemQuestions
           .Include(x => x.SystemQuestionResponses)
-          .FirstOrDefaultAsync(x => x.Id == body.QuestionId) 
+          .FirstOrDefaultAsync(x => x.Id == body.QuestionId)
           ?? throw new Exception($"Question {body.QuestionId} not found");
 
         var result =

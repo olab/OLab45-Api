@@ -21,7 +21,7 @@ namespace OLab.FunctionApp.Functions.Player
       IOLabConfiguration configuration,
       IUserService userService,
       OLabDBContext dbContext,
-      IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext)
+      IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext, wikiTagModules)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 

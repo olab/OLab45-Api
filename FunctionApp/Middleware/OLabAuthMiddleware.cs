@@ -49,8 +49,12 @@ public class OLabAuthMiddleware : JWTMiddleware
 
       Logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
 
+      // skip middleware for non-authenicated endpoints
+      if (_functionName.ToLower().Contains("login") || _functionName.ToLower().Contains("health"))
+        await next(functionContext);
+
       // if not login endpoint, then continue with middleware evaluation
-      if (!_functionName.Contains("login"))
+      else if (!_functionName.Contains("login"))
       {
         // This is added pre-function execution, function will have access to this information
         // in the context.Items dictionary
@@ -72,6 +76,16 @@ public class OLabAuthMiddleware : JWTMiddleware
           var auth = new OLabAuthorization(Logger, _dbContext, functionContext);
           functionContext.Items.Add("auth", auth);
 
+          // run the function
+          await next(functionContext);
+
+          // This happens after function execution. We can inspect the context after the function
+          // was invoked
+          if (functionContext.Items.TryGetValue("functionitem", out var value) && value is string message)
+          {
+            Logger.LogInformation($"From function: {message}");
+          }
+
         }
         catch (OLabUnauthorizedException)
         {
@@ -80,7 +94,11 @@ public class OLabAuthMiddleware : JWTMiddleware
           Logger.LogInformation("token not provided in request");
           return;
         }
-
+        catch (Exception ex)
+        {
+          Logger.LogError($"function error: {ex.Message} {ex.StackTrace}");
+          return;
+        }
       }
     }
     catch (Exception ex)
@@ -90,23 +108,6 @@ public class OLabAuthMiddleware : JWTMiddleware
       return;
     }
 
-    try
-    {
-      // run the function
-      await next(functionContext);
-    }
-    catch (Exception ex)
-    {
-      Logger.LogError($"function error: {ex.Message} {ex.StackTrace}");
-      throw;
-    }
-
-    // This happens after function execution. We can inspect the context after the function
-    // was invoked
-    if (functionContext.Items.TryGetValue("functionitem", out var value) && value is string message)
-    {
-      Logger.LogInformation($"From function: {message}");
-    }
   }
 
   private ClaimsPrincipal ValidateToken(FunctionContext context, string token)
