@@ -42,7 +42,7 @@ namespace OLab.FunctionApp.Functions
 
     private string GetUploadDirectory()
     {
-      return _configuration.GetAppSettings().Value.ImportFolder;
+      return _configuration.GetAppSettings().ImportFolder;
     }
 
     [Function("Upload")]

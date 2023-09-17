@@ -36,7 +36,7 @@ namespace OLab.Files.FileSystem
         var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
 
         if (FileExists(physicalPath))
-          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().Value.FileStorageFolder)}/{subPath}";
+          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}/{subPath}";
         else
           item.OriginUrl = null;
       }
@@ -82,7 +82,7 @@ namespace OLab.Files.FileSystem
       if (string.IsNullOrEmpty(fileName))
         fileName = Path.GetRandomFileName();
 
-      var physicalPath = Path.Combine(_configuration.GetAppSettings().Value.ImportFolder, fileName);
+      var physicalPath = Path.Combine(_configuration.GetAppSettings().ImportFolder, fileName);
 
       using (var stream = new FileStream(physicalPath, FileMode.Create))
       {
@@ -104,7 +104,7 @@ namespace OLab.Files.FileSystem
       var subPath = GetBasePath(scopeLevel, scopeId, filePath);
 
       var physicalPath = Path.Combine(
-        _configuration.GetAppSettings().Value.FileStorageFolder,
+        _configuration.GetAppSettings().FileStorageFolder,
         subPath.Replace('/', Path.DirectorySeparatorChar));
       return physicalPath;
     }

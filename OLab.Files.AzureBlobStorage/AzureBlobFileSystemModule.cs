@@ -1,7 +1,11 @@
-﻿using OLab.Api.Model;
+﻿using System.Linq;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using System.Configuration;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -10,6 +14,8 @@ namespace OLab.Files.AzureBlobStorage
   {
     private readonly IOLabLogger _logger;
     private readonly IOLabConfiguration _configuration;
+    private readonly BlobServiceClient _blobServiceClient;
+    private readonly string _containerName;
 
     public AzureBlobFileSystemModule(
       IOLabLogger logger,
@@ -17,6 +23,16 @@ namespace OLab.Files.AzureBlobStorage
     {
       _logger = logger;
       _configuration = configuration;
+
+      var connectionString = _configuration.GetAppSettings().FileStorageConnectionString;
+      if (string.IsNullOrEmpty(connectionString))
+        throw new ConfigurationErrorsException("missing FileStorageConnectionString parameter");
+
+      _blobServiceClient = new BlobServiceClient(connectionString);
+      _containerName = _configuration.GetAppSettings().FileStorageContainer;
+      if (string.IsNullOrEmpty(_containerName))
+        throw new ConfigurationErrorsException("missing FileStorageContainer parameter");
+
     }
 
     public void AttachUrls(IList<SystemFiles> items)
@@ -30,7 +46,7 @@ namespace OLab.Files.AzureBlobStorage
         var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
 
         if (FileExists(physicalPath))
-          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().Value.FileStorageUrl)}/{subPath}";
+          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageUrl)}/{subPath}";
         else
           item.OriginUrl = null;
       }
@@ -38,7 +54,14 @@ namespace OLab.Files.AzureBlobStorage
 
     public bool FileExists(string physicalPath)
     {
-      throw new NotImplementedException();
+      var physicalFolder = Path.GetDirectoryName(physicalPath);
+      var physicalFileName = Path.GetFileName(physicalPath);
+
+      var blobs = _blobServiceClient
+        .GetBlobContainerClient(_containerName)
+        .GetBlobs(prefix: physicalFolder );
+
+      return blobs.Any(x => x.Name == physicalFileName);
     }
 
     public void MoveFile(
@@ -67,7 +90,7 @@ namespace OLab.Files.AzureBlobStorage
       var subPath = GetBasePath(scopeLevel, scopeId, filePath);
 
       var physicalPath = Path.Combine(
-        _configuration.GetAppSettings().Value.FileStorageFolder,
+        _configuration.GetAppSettings().FileStorageFolder,
         subPath.Replace('/', Path.DirectorySeparatorChar));
       return physicalPath;
     }
