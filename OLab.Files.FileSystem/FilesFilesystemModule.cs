@@ -8,17 +8,23 @@ using OLab.Data.Interface;
 namespace OLab.Files.FileSystem
 {
   [OLabModule("FILESYSTEM")]
-  public class FilesFilesystemModule : OLabModuleProvider<IFileStorageModule>
+  public class FilesFilesystemModule : IFileStorageModule
   {
     private readonly IOLabLogger _logger;
+    private readonly IOLabConfiguration _configuration;
 
     public FilesFilesystemModule(
       IOLabLogger logger,
-      IOLabConfiguration configuration) : base(logger, configuration)
+      IOLabConfiguration configuration)
     {
       _logger = logger;
+      _configuration = configuration;
     }
 
+    /// <summary>
+    /// Attach URLs to access files
+    /// </summary>
+    /// <param name="items">SystemFiles records</param>
     public void AttachUrls(IList<SystemFiles> items)
     {
       foreach (var item in items)
@@ -29,28 +35,18 @@ namespace OLab.Files.FileSystem
         var subPath = GetBasePath(scopeLevel, scopeId, item.Path);
         var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
 
-        if (File.Exists(physicalPath))
+        if (FileExists(physicalPath))
           item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().Value.FileStorageFolder)}/{subPath}";
         else
           item.OriginUrl = null;
       }
     }
 
-    private string GetBasePath(string scopeLevel, uint scopeId, string filePath)
-    {
-      var subPath = $"{scopeLevel}/{scopeId}/{filePath}";
-      return subPath;
-    }
-
-    private string GetPhysicalPath(string scopeLevel, uint scopeId, string filePath)
-    {
-      var subPath = $"{scopeLevel}/{scopeId}/{filePath}";
-      var physicalPath = Path.Combine(
-        _configuration.GetAppSettings().Value.FileStorageFolder,
-        subPath.Replace('/', Path.DirectorySeparatorChar));
-      return physicalPath;
-    }
-
+    /// <summary>
+    /// Move file from one location to another
+    /// </summary>
+    /// <param name="sourcePath">Source path</param>
+    /// <param name="destinationPath">Destination path</param>
     public void MoveFile(string sourcePath, string destinationPath)
     {
       Guard.Argument(sourcePath).NotEmpty(nameof(sourcePath));
@@ -59,6 +55,16 @@ namespace OLab.Files.FileSystem
       File.Move(sourcePath, destinationPath);
 
       _logger.LogInformation($"moved file from '{sourcePath}' to {destinationPath}");
+    }
+
+    /// <summary>
+    /// Test if file exists in storage
+    /// </summary>
+    /// <param name="physicalPath">Path to look for file</param>
+    /// <returns>true/false</returns>
+    public bool FileExists(string physicalPath)
+    {
+      return File.Exists(physicalPath);
     }
 
     /// <summary>
@@ -84,6 +90,22 @@ namespace OLab.Files.FileSystem
         _logger.LogInformation($"uploaded file to '{physicalPath}'. Size: {file.Length}");
       }
 
+      return physicalPath;
+    }
+
+    private string GetBasePath(string scopeLevel, uint scopeId, string filePath)
+    {
+      var subPath = $"{scopeLevel}/{scopeId}/{filePath}";
+      return subPath;
+    }
+
+    private string GetPhysicalPath(string scopeLevel, uint scopeId, string filePath)
+    {
+      var subPath = GetBasePath(scopeLevel, scopeId, filePath);
+
+      var physicalPath = Path.Combine(
+        _configuration.GetAppSettings().Value.FileStorageFolder,
+        subPath.Replace('/', Path.DirectorySeparatorChar));
       return physicalPath;
     }
 

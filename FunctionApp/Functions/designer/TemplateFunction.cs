@@ -10,6 +10,7 @@ using OLab.Api.Endpoints.Designer;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Designer
@@ -23,13 +24,24 @@ namespace OLab.FunctionApp.Functions.Designer
       IOLabConfiguration configuration,
       IUserService userService,
       OLabDBContext dbContext,
-      IOLabModuleProvider<IWikiTagModule> wikiTagProvider) : base(configuration, userService, dbContext)
+      IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+        configuration, 
+        userService, 
+        dbContext, 
+        wikiTagProvider, 
+        fileStorageProvider)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
       Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
 
       Logger = OLabLogger.CreateNew<TemplateFunction>(loggerFactory);
-      _endpoint = new TemplateEndpoint(Logger, configuration, DbContext, wikiTagProvider);
+      _endpoint = new TemplateEndpoint(
+        Logger,
+        configuration,
+        DbContext,
+        wikiTagProvider,
+        fileStorageProvider);
     }
 
     /// <summary>

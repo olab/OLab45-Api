@@ -19,8 +19,24 @@ namespace OLab.Files.AzureBlobStorage
       _configuration = configuration;
     }
 
-    public void AttachUrls(
-      IList<SystemFiles> items)
+    public void AttachUrls(IList<SystemFiles> items)
+    {
+      foreach (var item in items)
+      {
+        var scopeLevel = item.ImageableType;
+        var scopeId = item.ImageableId;
+
+        var subPath = GetBasePath(scopeLevel, scopeId, item.Path);
+        var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
+
+        if (FileExists(physicalPath))
+          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().Value.FileStorageUrl)}/{subPath}";
+        else
+          item.OriginUrl = null;
+      }
+    }
+
+    public bool FileExists(string physicalPath)
     {
       throw new NotImplementedException();
     }
@@ -38,6 +54,22 @@ namespace OLab.Files.AzureBlobStorage
       CancellationToken token)
     {
       throw new NotImplementedException();
+    }
+
+    private string GetBasePath(string scopeLevel, uint scopeId, string filePath)
+    {
+      var subPath = $"{scopeLevel}/{scopeId}/{filePath}";
+      return subPath;
+    }
+
+    private string GetPhysicalPath(string scopeLevel, uint scopeId, string filePath)
+    {
+      var subPath = GetBasePath(scopeLevel, scopeId, filePath);
+
+      var physicalPath = Path.Combine(
+        _configuration.GetAppSettings().Value.FileStorageFolder,
+        subPath.Replace('/', Path.DirectorySeparatorChar));
+      return physicalPath;
     }
   }
 }

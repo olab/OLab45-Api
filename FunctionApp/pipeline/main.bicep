@@ -39,6 +39,8 @@ var resourceNameFileStorage = resourceNameFunctionApp
 var resourceNamePlayer = '${resource_prefix}${environment_code}player'
 var resourceNameSignalr = '${resource_prefix}signalr'
 var fileStorageContainerName = '$web'
+var fileStorageFilesFolder = 'files'
+var fileStorageImportFolder = 'import'
 
 resource appService 'Microsoft.Web/sites@2021-02-01' = {
   name: resourceNameFunctionApp
@@ -72,10 +74,10 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     AppSettings__Audience: 'https://www.olab.ca'
     AppSettings__FileStorageConnectionString: fileStorageConnectionString
     AppSettings__FileStorageContainer: fileStorageContainerName
-    AppSettings__FileStorageFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/import'
+    AppSettings__FileStorageFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/${fileStorageFilesFolder}'
     AppSettings__FileStorageType: 'FILESYSTEM'
     AppSettings__FileStorageUrl: 'https://olabdevapi.blob.core.windows.net/${fileStorageContainerName}/files'
-    AppSettings__ImportFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/import'
+    AppSettings__ImportFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/${fileStorageImportFolder}'
     AppSettings__Issuer: 'olab,moodle'
     AppSettings__Secret: AuthTokenKey
     AppSettings__SignalREndpoint: '/turktalk'

@@ -8,6 +8,7 @@ using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
@@ -21,12 +22,24 @@ namespace OLab.FunctionApp.Functions.Player
       IOLabConfiguration configuration,
       IUserService userService,
       OLabDBContext dbContext,
-      IOLabModuleProvider<IWikiTagModule> wikiTagModules) : base(configuration, userService, dbContext, wikiTagModules)
+      IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+        configuration, 
+        userService, 
+        dbContext, 
+        wikiTagProvider, 
+        fileStorageProvider)
+
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<MapsFunction>(loggerFactory);
-      _endpoint = new MapsEndpoint(Logger, configuration, DbContext, wikiTagModules);
+      _endpoint = new MapsEndpoint(
+        Logger, 
+        configuration, 
+        DbContext, 
+        wikiTagProvider, fileStorageProvider);
+
     }
 
     /// <summary>

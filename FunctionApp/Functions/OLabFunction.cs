@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Functions;
@@ -20,7 +21,8 @@ public class OLabFunction
   protected readonly IUserService userService;
   protected IUserContext userContext;
   protected readonly IOLabConfiguration _configuration;
-  protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagModules;
+  protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
+  protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 
   public OLabFunction(
     IOLabConfiguration configuration,
@@ -41,18 +43,15 @@ public class OLabFunction
     IOLabConfiguration configuration,
     IUserService userService,
     OLabDBContext dbContext,
-    IOLabModuleProvider<IWikiTagModule> wikiTagModules)
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this( configuration, userService, dbContext )
   {
-    Guard.Argument(userService).NotNull(nameof(userService));
-    Guard.Argument(configuration).NotNull(nameof(configuration));
-    Guard.Argument(dbContext).NotNull(nameof(dbContext));
-    Guard.Argument(wikiTagModules).NotNull(nameof(wikiTagModules));
+    Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
+    Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
 
-    _configuration = configuration;
-    _wikiTagModules = wikiTagModules;
+    _wikiTagProvider = wikiTagProvider;
+    _fileStorageProvider = fileStorageProvider;
 
-    DbContext = dbContext;
-    this.userService = userService;
   }
 
   /// <summary>
