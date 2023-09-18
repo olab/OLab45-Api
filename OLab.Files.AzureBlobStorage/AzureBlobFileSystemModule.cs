@@ -42,24 +42,20 @@ namespace OLab.Files.AzureBlobStorage
         var scopeLevel = item.ImageableType;
         var scopeId = item.ImageableId;
 
-        var subPath = GetBasePath(scopeLevel, scopeId, item.Path);
-        var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
+        var baseFolder = GetBasePath(scopeLevel, scopeId);
 
-        if (FileExists(physicalPath))
-          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageUrl)}/{subPath}";
+        if (FileExists(baseFolder, item.Path))
+          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageUrl)}/{baseFolder}";
         else
           item.OriginUrl = null;
       }
     }
 
-    public bool FileExists(string physicalPath)
+    public bool FileExists(string baseFolder, string physicalFileName)
     {
-      var physicalFolder = Path.GetDirectoryName(physicalPath);
-      var physicalFileName = Path.GetFileName(physicalPath);
-
       var blobs = _blobServiceClient
         .GetBlobContainerClient(_containerName)
-        .GetBlobs(prefix: physicalFolder );
+        .GetBlobs(prefix: baseFolder).ToList();
 
       return blobs.Any(x => x.Name == physicalFileName);
     }
@@ -79,20 +75,17 @@ namespace OLab.Files.AzureBlobStorage
       throw new NotImplementedException();
     }
 
-    private string GetBasePath(string scopeLevel, uint scopeId, string filePath)
+    private string GetBasePath(string scopeLevel, uint scopeId)
     {
-      var subPath = $"{scopeLevel}/{scopeId}/{filePath}";
+      var subPath = $"{scopeLevel}/{scopeId}";
       return subPath;
     }
 
-    private string GetPhysicalPath(string scopeLevel, uint scopeId, string filePath)
+    private string GetPhysicalPath(string scopeLevel, uint scopeId, string fileName)
     {
-      var subPath = GetBasePath(scopeLevel, scopeId, filePath);
-
-      var physicalPath = Path.Combine(
-        _configuration.GetAppSettings().FileStorageFolder,
-        subPath.Replace('/', Path.DirectorySeparatorChar));
-      return physicalPath;
+      var subPath = GetBasePath(scopeLevel, scopeId);
+      subPath += $"{subPath}/{fileName}";
+      return subPath;
     }
   }
 }
