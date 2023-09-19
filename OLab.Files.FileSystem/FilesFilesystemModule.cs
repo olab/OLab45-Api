@@ -11,23 +11,30 @@ namespace OLab.Files.FileSystem
   [OLabModule("FILESYSTEM")]
   public class FilesFilesystemModule : IFileStorageModule
   {
-    private readonly IOLabLogger _logger;
     private readonly IOLabConfiguration _configuration;
 
     public FilesFilesystemModule(
       IOLabLogger logger,
       IOLabConfiguration configuration)
     {
-      _logger = OLabLogger.CreateNew<FilesFilesystemModule>(logger);
       _configuration = configuration;
+
+      logger.LogInformation($"Initializing FilesFilesystemModule");
+
+      logger.LogInformation( $"FileStorageFolder: {_configuration.GetAppSettings().FileStorageFolder}" );
+      logger.LogInformation( $"FileStorageContainer: {_configuration.GetAppSettings().FileStorageContainer}" );
+      logger.LogInformation( $"FileStorageUrl: {_configuration.GetAppSettings().FileStorageUrl}" );
+
     }
 
     /// <summary>
     /// Attach URLs to access files
     /// </summary>
     /// <param name="items">SystemFiles records</param>
-    public void AttachUrls(IList<SystemFiles> items)
+    public void AttachUrls(IOLabLogger logger, IList<SystemFiles> items)
     {
+      logger.LogInformation($"Attaching file storage URLs for {items.Count} file records");
+
       foreach (var item in items)
       {
         var scopeLevel = item.ImageableType;
@@ -36,8 +43,11 @@ namespace OLab.Files.FileSystem
         var subPath = GetBasePath(scopeLevel, scopeId, item.Path);
         var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
 
-        if (FileExists(physicalPath, item.Path))
+        if (FileExists(logger, physicalPath, item.Path))
+        {
           item.OriginUrl = $"{Path.DirectorySeparatorChar}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{Path.DirectorySeparatorChar}{subPath}";
+          logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
+        }
         else
           item.OriginUrl = null;
       }
@@ -48,14 +58,14 @@ namespace OLab.Files.FileSystem
     /// </summary>
     /// <param name="sourcePath">Source path</param>
     /// <param name="destinationPath">Destination path</param>
-    public void MoveFile(string sourcePath, string destinationPath)
+    public void MoveFile(IOLabLogger logger, string sourcePath, string destinationPath)
     {
       Guard.Argument(sourcePath).NotEmpty(nameof(sourcePath));
       Guard.Argument(destinationPath).NotEmpty(nameof(destinationPath));
 
       File.Move(sourcePath, destinationPath);
 
-      _logger.LogInformation($"moved file from '{sourcePath}' to {destinationPath}");
+      logger.LogInformation($"moved file from '{sourcePath}' to {destinationPath}");
     }
 
     /// <summary>
@@ -63,9 +73,15 @@ namespace OLab.Files.FileSystem
     /// </summary>
     /// <param name="physicalPath">Path to look for file</param>
     /// <returns>true/false</returns>
-    public bool FileExists(string baseFolder, string physicalFileName)
+    public bool FileExists(IOLabLogger logger, string baseFolder, string physicalFileName)
     {
-      return File.Exists($"{baseFolder}{Path.DirectorySeparatorChar}{physicalFileName}");
+      logger.LogInformation($"reading '{baseFolder}' for files");
+
+      var result = File.Exists($"{baseFolder}{Path.DirectorySeparatorChar}{physicalFileName}");
+      if ( !result )
+        logger.LogWarning($"  '{baseFolder}/{physicalFileName}' physical file not found");
+
+      return result;
     }
 
     /// <summary>
@@ -76,6 +92,7 @@ namespace OLab.Files.FileSystem
     /// <param name="token">Cancellation token</param>
     /// <returns>Physical file path</returns>
     public async Task<string> UploadFile(
+      IOLabLogger logger,
       Stream file,
       string fileName,
       CancellationToken token)
@@ -88,7 +105,7 @@ namespace OLab.Files.FileSystem
       using (var stream = new FileStream(physicalPath, FileMode.Create))
       {
         await file.CopyToAsync(stream);
-        _logger.LogInformation($"uploaded file to '{physicalPath}'. Size: {file.Length}");
+        logger.LogInformation($"uploaded file to '{physicalPath}'. Size: {file.Length}");
       }
 
       return physicalPath;

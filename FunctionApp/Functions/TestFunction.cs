@@ -30,16 +30,9 @@ public class TestFunction : OLabFunction
 
   [Function("Bootstrap")]
   public HttpResponseData RunBootstrap(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request,
-    FunctionContext hostContext,
-    ILoggerFactory loggerFactory,
-    IOLabConfiguration configuration,
-    IUserService userService,
-    OLabDBContext dbContext,
-    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-    IOLabModuleProvider<IFileStorageModule> fileStorageProvider)
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request)
   {
-    var maps = dbContext.Maps.FirstOrDefault(x => x.Id == 0);
+    var maps = DbContext.Maps.FirstOrDefault(x => x.Id == 0);
 
     var response = request.CreateResponse(HttpStatusCode.OK);
     return response;

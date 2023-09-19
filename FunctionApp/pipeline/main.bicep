@@ -73,15 +73,15 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
     AppSettings__Audience: 'https://www.olab.ca'
     AppSettings__FileStorageConnectionString: fileStorageConnectionString
-    AppSettings__FileStorageContainer: fileStorageContainerName
-    AppSettings__FileStorageFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/${fileStorageFilesFolder}'
-    AppSettings__FileStorageType: 'FILESYSTEM'
-    AppSettings__FileStorageUrl: 'https://olabdevapi.blob.core.windows.net/${fileStorageContainerName}/files'
-    AppSettings__ImportFolder: '${resourceFileStorage.properties.primaryEndpoints.blob}/${fileStorageContainerName}/${fileStorageImportFolder}'
+    AppSettings__FileStorageContainer: '$web'
+    AppSettings__FileStorageFolder: fileStorageFilesFolder
+    AppSettings__FileStorageType: 'AZUREBLOBSTORAGE'
+    AppSettings__FileStorageUrl: '${resourceFileStorage.properties.primaryEndpoints.blob}${fileStorageContainerName}'
+    AppSettings__ImportFolder: fileStorageImportFolder
     AppSettings__Issuer: 'olab,moodle'
     AppSettings__Secret: AuthTokenKey
     AppSettings__SignalREndpoint: '/turktalk'
-    AppSettings__TokenExpiryMinutes: 360
+    AppSettings__TokenExpiryMinutes: '360'
     AzureWebJobsStorage: functionAppStorageConnectionString
     DefaultDatabase: 'server=${MySqlHostName}.mysql.database.azure.com;uid=${MySqlUserId};pwd=${MySqlPassword};database=${MySqlDatabaseId};ConvertZeroDateTime=True'
     FUNCTIONS_EXTENSION_VERSION: '~4'
@@ -247,4 +247,3 @@ resource resourceSignalr 'Microsoft.SignalRService/SignalR@2022-02-01' = {
     disableAadAuth: false
   }
 }
-
