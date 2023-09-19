@@ -1,6 +1,7 @@
 ﻿using Dawn;
 using OLab.Api.Common;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -17,7 +18,7 @@ namespace OLab.Files.FileSystem
       IOLabLogger logger,
       IOLabConfiguration configuration)
     {
-      _logger = logger;
+      _logger = OLabLogger.CreateNew<FilesFilesystemModule>(logger);
       _configuration = configuration;
     }
 
@@ -35,8 +36,8 @@ namespace OLab.Files.FileSystem
         var subPath = GetBasePath(scopeLevel, scopeId, item.Path);
         var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
 
-        if (FileExists(physicalPath))
-          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}/{subPath}";
+        if (FileExists(physicalPath, item.Path))
+          item.OriginUrl = $"{Path.DirectorySeparatorChar}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{Path.DirectorySeparatorChar}{subPath}";
         else
           item.OriginUrl = null;
       }
@@ -62,9 +63,9 @@ namespace OLab.Files.FileSystem
     /// </summary>
     /// <param name="physicalPath">Path to look for file</param>
     /// <returns>true/false</returns>
-    public bool FileExists(string physicalPath)
+    public bool FileExists(string baseFolder, string physicalFileName)
     {
-      return File.Exists(physicalPath);
+      return File.Exists($"{baseFolder}{Path.DirectorySeparatorChar}{physicalFileName}");
     }
 
     /// <summary>

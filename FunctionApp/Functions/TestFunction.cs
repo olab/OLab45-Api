@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using System.Net;
 
 namespace OLab.FunctionApp.Functions;
@@ -19,8 +20,29 @@ public class TestFunction : OLabFunction
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    Logger = OLabLogger.CreateNew<ConstantsFunction>(loggerFactory);
-    var tmp = _configuration.GetValue<string>("Audience");
+    Logger = OLabLogger.CreateNew<TestFunction>(loggerFactory);
+
+    Logger.LogInformation("LogInformation set");
+    Logger.LogWarning("LogWarning set");
+    Logger.LogError("LogError set");
+    Logger.LogFatal("LogFatal set");
+  }
+
+  [Function("Bootstrap")]
+  public HttpResponseData RunBootstrap(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request,
+    FunctionContext hostContext,
+    ILoggerFactory loggerFactory,
+    IOLabConfiguration configuration,
+    IUserService userService,
+    OLabDBContext dbContext,
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider)
+  {
+    var maps = dbContext.Maps.FirstOrDefault(x => x.Id == 0);
+
+    var response = request.CreateResponse(HttpStatusCode.OK);
+    return response;
   }
 
   [Function("Health")]

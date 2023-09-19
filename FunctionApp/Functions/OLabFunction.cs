@@ -64,9 +64,9 @@ public class OLabFunction
   {
     // Get the item set by the middleware
     if (hostContext.Items.TryGetValue("auth", out var value) && value is IOLabAuthentication auth)
-      Logger.LogInformation("Got auth context");
+      Logger.LogInformation("Got auth RequestContext");
     else
-      throw new Exception("unable to get authentication context");
+      throw new Exception("unable to get auth RequestContext");
 
     return auth;
   }

@@ -6,6 +6,8 @@ using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Configuration;
+using OLab.Api.Utils;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -17,12 +19,17 @@ namespace OLab.Files.AzureBlobStorage
     private readonly BlobServiceClient _blobServiceClient;
     private readonly string _containerName;
 
+    private readonly Dictionary<string, IList<BlobItem>>
+      _folderContentCache = new();
+
     public AzureBlobFileSystemModule(
       IOLabLogger logger,
       IOLabConfiguration configuration)
     {
-      _logger = logger;
+      _logger = OLabLogger.CreateNew<AzureBlobFileSystemModule>(logger);
       _configuration = configuration;
+
+      _logger.LogInformation($"Initializing AzureBlobFileSystemModule");
 
       var connectionString = _configuration.GetAppSettings().FileStorageConnectionString;
       if (string.IsNullOrEmpty(connectionString))
@@ -32,11 +39,12 @@ namespace OLab.Files.AzureBlobStorage
       _containerName = _configuration.GetAppSettings().FileStorageContainer;
       if (string.IsNullOrEmpty(_containerName))
         throw new ConfigurationErrorsException("missing FileStorageContainer parameter");
-
     }
 
     public void AttachUrls(IList<SystemFiles> items)
     {
+      _logger.LogInformation($"Attaching Azure Blob URLs for {items.Count} file records");
+
       foreach (var item in items)
       {
         var scopeLevel = item.ImageableType;
@@ -45,19 +53,41 @@ namespace OLab.Files.AzureBlobStorage
         var baseFolder = GetBasePath(scopeLevel, scopeId);
 
         if (FileExists(baseFolder, item.Path))
-          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageUrl)}/{baseFolder}";
+        {
+          var fileUrl = $"{_configuration.GetAppSettings().FileStorageUrl}/{baseFolder}/{item.Path}";
+          item.OriginUrl = fileUrl;
+          _logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
+        }
         else
           item.OriginUrl = null;
+
       }
     }
 
     public bool FileExists(string baseFolder, string physicalFileName)
     {
-      var blobs = _blobServiceClient
-        .GetBlobContainerClient(_containerName)
-        .GetBlobs(prefix: baseFolder).ToList();
+      IList<BlobItem> blobs;
 
-      return blobs.Any(x => x.Name == physicalFileName);
+      // if we do not have this folder already in cache
+      // then hit the blob storage and cache the results
+      if (!_folderContentCache.ContainsKey(baseFolder))
+      {
+        _logger.LogInformation($"reading '{baseFolder}' for files");
+
+        blobs = _blobServiceClient
+          .GetBlobContainerClient(_containerName)
+          .GetBlobs(prefix: baseFolder).ToList();
+        _folderContentCache[baseFolder] = blobs;
+      }
+      else
+        blobs = _folderContentCache[baseFolder];
+
+      var result = blobs.Any(x => x.Name.Contains(physicalFileName));
+
+      if (!result)
+        _logger.LogWarning($"  '{baseFolder}/{physicalFileName}' physical file not found");
+
+      return result;
     }
 
     public void MoveFile(
@@ -77,7 +107,7 @@ namespace OLab.Files.AzureBlobStorage
 
     private string GetBasePath(string scopeLevel, uint scopeId)
     {
-      var subPath = $"{scopeLevel}/{scopeId}";
+      var subPath = $"{_configuration.GetAppSettings().FileStorageFolder}/{scopeLevel}/{scopeId}";
       return subPath;
     }
 

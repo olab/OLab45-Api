@@ -24,20 +24,21 @@ namespace OLab.FunctionApp.Functions.Player
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
-        configuration, 
-        userService, 
-        dbContext, 
-        wikiTagProvider, 
+        configuration,
+        userService,
+        dbContext,
+        wikiTagProvider,
         fileStorageProvider)
 
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<MapsFunction>(loggerFactory);
+
       _endpoint = new MapsEndpoint(
-        Logger, 
-        configuration, 
-        DbContext, 
+        Logger,
+        configuration,
+        DbContext,
         wikiTagProvider, fileStorageProvider);
 
     }
