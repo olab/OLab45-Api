@@ -49,7 +49,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="take">Max number of records to return</param>
     /// <param name="skip">SKip over a number of records</param>
     /// <returns>IActionResult</returns>
-    [Function("ServersGetPlayer")]
+    [Function("ServersPlayerGet")]
     public async Task<HttpResponseData> ServerGetPlayerAsync(
      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers")] HttpRequestData request,
       FunctionContext hostContext)
@@ -83,7 +83,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
-    [Function("ServerScopedObjectsRawGetPlayer")]
+    [Function("ServerScopedObjectsRawPlayerGet")]
     public async Task<HttpResponseData> GetScopedObjectsRawAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers/{serverId}/scopedobjects/raw")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
@@ -112,7 +112,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
-    [Function("ServerScopedObjectsGetPlayer")]
+    [Function("ServerScopedObjectsPlayerGet")]
     public async Task<HttpResponseData> GetScopedObjectsTranslatedAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "servers/{serverId}/scopedobjects")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,

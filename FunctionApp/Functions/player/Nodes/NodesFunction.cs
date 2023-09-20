@@ -47,7 +47,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// </summary>
     /// <param name="nodeId">Node id (0, if root node)</param>
     /// <returns>MapsNodesFullRelationsDto response</returns>
-    [Function("MapNodeGetPlayer")]
+    [Function("MapNodePlayerGet")]
     public async Task<HttpResponseData> MapNodeGetPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
@@ -75,7 +75,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="id"></param>
     /// <param name="dto"></param>
     /// <returns></returns>
-    [Function("MapNodePutPlayer")]
+    [Function("MapNodePlayerPut")]
     public async Task<HttpResponseData> MapNodePutPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "nodes/{id}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
@@ -106,7 +106,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="nodeId"></param>
     /// <param name="data"></param>
     /// <returns></returns>
-    [Function("MapNodeLinkPostPlayer")]
+    [Function("MapNodeLinkPlayerPost")]
     public async Task<HttpResponseData> MapNodeLinkPostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "nodes/{nodeId}/links")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
@@ -138,7 +138,7 @@ namespace OLab.FunctionApp.Functions.Player
     /// <param name="mapId"></param>
     /// <param name="data"></param>
     /// <returns></returns>
-    [Function("MapNodePostPlayer")]
+    [Function("MapNodePlayerPost")]
     public async Task<HttpResponseData> MapNodePostPlayerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "nodes/{mapId}")] HttpRequestData request,
       FunctionContext hostContext, CancellationToken cancellationToken,
