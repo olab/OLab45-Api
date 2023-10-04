@@ -39,7 +39,8 @@ namespace OLab.FunctionApp.Functions.Player
         Logger,
         configuration,
         DbContext,
-        wikiTagProvider, fileStorageProvider);
+        wikiTagProvider, 
+        fileStorageProvider);
 
     }
 

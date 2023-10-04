@@ -41,6 +41,7 @@ namespace OLab.Files.AzureBlobStorage
         throw new ConfigurationErrorsException("missing FileStorageContainer parameter");
 
       logger.LogInformation($"FileStorageFolder: {_configuration.GetAppSettings().FileStorageFolder}");
+      logger.LogInformation($"FileImportFolder: {_configuration.GetAppSettings().FileImportFolder}");
       logger.LogInformation($"FileStorageContainer: {_configuration.GetAppSettings().FileStorageContainer}");
       logger.LogInformation($"FileStorageUrl: {_configuration.GetAppSettings().FileStorageUrl}");
     }
@@ -54,8 +55,8 @@ namespace OLab.Files.AzureBlobStorage
         var scopeLevel = item.ImageableType;
         var scopeId = item.ImageableId;
 
-        var baseFolder = GetBasePath(scopeLevel, scopeId);
-        logger.LogInformation($"  baseFolder = '{baseFolder}");
+        var baseFolder = GetFileFolderName(scopeLevel, scopeId);
+        logger.LogInformation($"  folderName = '{baseFolder}");
 
         if (FileExists(logger, baseFolder, item.Path))
         {
@@ -69,13 +70,13 @@ namespace OLab.Files.AzureBlobStorage
       }
     }
 
-    private string GetBasePath(string scopeLevel, uint scopeId)
+    private string GetFileFolderName(string scopeLevel, uint scopeId)
     {
       var subPath = $"{_configuration.GetAppSettings().FileStorageFolder}/{scopeLevel}/{scopeId}";
       return subPath;
     }
 
-    public bool FileExists(IOLabLogger logger, string baseFolder, string physicalFileName)
+    public bool FileExists(IOLabLogger logger, string folderName, string physicalFileName)
     {
       bool result = false;
 
@@ -85,22 +86,22 @@ namespace OLab.Files.AzureBlobStorage
 
         // if we do not have this folder already in cache
         // then hit the blob storage and cache the results
-        if (!_folderContentCache.ContainsKey(baseFolder))
+        if (!_folderContentCache.ContainsKey(folderName))
         {
-          logger.LogInformation($"reading '{baseFolder}' for files");
+          logger.LogInformation($"reading '{folderName}' for files");
 
           blobs = _blobServiceClient
             .GetBlobContainerClient(_containerName)
-            .GetBlobs(prefix: baseFolder).ToList();
-          _folderContentCache[baseFolder] = blobs;
+            .GetBlobs(prefix: folderName).ToList();
+          _folderContentCache[folderName] = blobs;
         }
         else
-          blobs = _folderContentCache[baseFolder];
+          blobs = _folderContentCache[folderName];
 
         result = blobs.Any(x => x.Name.Contains(physicalFileName));
 
         if (!result)
-          logger.LogWarning($"  '{baseFolder}/{physicalFileName}' physical file not found");
+          logger.LogWarning($"  '{folderName}/{physicalFileName}' physical file not found");
 
       }
       catch (Exception ex)
@@ -121,18 +122,37 @@ namespace OLab.Files.AzureBlobStorage
       throw new NotImplementedException();
     }
 
-    public Task<string> UploadFile(
+    public async Task<string> UploadFile(
       IOLabLogger logger,
       Stream file,
-      string fileName,
+      string uploadedFileName,
       CancellationToken token)
     {
-      throw new NotImplementedException();
+      try
+      {
+        var fileName = Path.GetRandomFileName();
+        fileName += Path.GetExtension(uploadedFileName);
+
+        logger.LogInformation($"Uploading file '{uploadedFileName}' ({fileName}) to '{_containerName}'");
+
+        await _blobServiceClient
+              .GetBlobContainerClient(_containerName)
+              .UploadBlobAsync($"{_configuration.GetAppSettings().FileImportFolder}/{fileName}", file, token);
+
+        return $"{fileName}";
+
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "UploadFile error");
+        throw;
+      }
+
     }
 
     private string GetPhysicalPath(string scopeLevel, uint scopeId, string fileName)
     {
-      var subPath = GetBasePath(scopeLevel, scopeId);
+      var subPath = GetFileFolderName(scopeLevel, scopeId);
       subPath += $"{subPath}/{fileName}";
       return subPath;
     }

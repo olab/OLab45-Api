@@ -58,7 +58,7 @@ public class OLabAuthMiddleware : JWTMiddleware
       {
         // This is added pre-function execution, function will have access to this information
         // in the context.Items dictionary
-        functionContext.Items.Add("middlewareitem", "Hello, from middleware");
+        //functionContext.Items.Add("middlewareitem", "Hello, from middleware");
 
         try
         {
