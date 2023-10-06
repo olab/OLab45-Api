@@ -103,8 +103,8 @@ namespace OLab.FunctionApp.Functions
 
         //Logger.LogInformation($"Loading archive: '{fileName}'");
 
-        //if (_importer.LoadAll(fileName))
-        //  _importer.SaveAll();
+        //if (_importer.ProcessImportFileAsync(fileName))
+        //  _importer.WriteImportToDatabase();
 
       }
       catch (Exception ex)
@@ -160,8 +160,8 @@ namespace OLab.FunctionApp.Functions
         //  {
         //    Logger.LogInformation($"Loading archive: '{Path.GetFileName(fullFileName)}'");
 
-        //    if (_importer.LoadAll(fullFileName))
-        //      _importer.SaveAll();
+        //    if (_importer.ProcessImportFileAsync(fullFileName))
+        //      _importer.WriteImportToDatabase();
         //  }
       }
 
@@ -203,7 +203,7 @@ namespace OLab.FunctionApp.Functions
     //  using (var stream = new FileStream(path, FileMode.Create))
     //  {
     //    await file.CopyToAsync(stream);
-    //    logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");
+    //    Logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");
     //  }
 
     //  return path;

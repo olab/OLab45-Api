@@ -23,14 +23,17 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Import", "..\Common\Import\OLab.Import.csproj", "{243188ED-7879-4D27-B13C-86F725003CBB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Endpoints", "..\Common\Endpoints\OLab.Endpoints.csproj", "{8D95089B-B382-438F-A851-C6F8F981FC1B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{243188ED-7879-4D27-B13C-86F725003CBB} = {243188ED-7879-4D27-B13C-86F725003CBB}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OLab.Files.FileSystem", "OLab.Files.FileSystem\OLab.Files.FileSystem.csproj", "{592189A1-6279-4725-99DC-D0EB33E58729}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.FileSystem", "OLab.Files.FileSystem\OLab.Files.FileSystem.csproj", "{592189A1-6279-4725-99DC-D0EB33E58729}"
 	ProjectSection(ProjectDependencies) = postProject
 		{28CA65E1-85F6-4256-8AC8-5C7E48E0F286} = {28CA65E1-85F6-4256-8AC8-5C7E48E0F286}
 		{36DCE73E-BE45-43FD-BCEA-A66BCFF000AF} = {36DCE73E-BE45-43FD-BCEA-A66BCFF000AF}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OLab.Files.AzureBlobStorage", "OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj", "{D0A50016-EDC3-403E-97AA-30EE77AB5B94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.AzureBlobStorage", "OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj", "{D0A50016-EDC3-403E-97AA-30EE77AB5B94}"
 	ProjectSection(ProjectDependencies) = postProject
 		{28CA65E1-85F6-4256-8AC8-5C7E48E0F286} = {28CA65E1-85F6-4256-8AC8-5C7E48E0F286}
 		{36DCE73E-BE45-43FD-BCEA-A66BCFF000AF} = {36DCE73E-BE45-43FD-BCEA-A66BCFF000AF}

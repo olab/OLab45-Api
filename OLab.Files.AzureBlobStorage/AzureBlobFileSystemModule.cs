@@ -6,10 +6,7 @@ using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Configuration;
-using OLab.Api.Utils;
-using Microsoft.AspNetCore.Http.Metadata;
-using static System.Formats.Asn1.AsnWriter;
-using System.Net.NetworkInformation;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -20,9 +17,17 @@ namespace OLab.Files.AzureBlobStorage
     private readonly BlobServiceClient _blobServiceClient;
     private readonly string _containerName;
 
+    private readonly string _importBaseFolder;
+
     private readonly Dictionary<string, IList<BlobItem>>
       _folderContentCache = new();
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="logger">OlabLogger</param>
+    /// <param name="configuration">Application configuration</param>
+    /// <exception cref="ConfigurationErrorsException"></exception>
     public AzureBlobFileSystemModule(
       IOLabLogger logger,
       IOLabConfiguration configuration)
@@ -40,49 +45,78 @@ namespace OLab.Files.AzureBlobStorage
       if (string.IsNullOrEmpty(_containerName))
         throw new ConfigurationErrorsException("missing FileStorageContainer parameter");
 
+      _importBaseFolder = $"{_configuration.GetAppSettings().FileImportFolder}{GetFolderSeparator()}";
+
       logger.LogInformation($"FileStorageFolder: {_configuration.GetAppSettings().FileStorageFolder}");
-      logger.LogInformation($"FileImportFolder: {_configuration.GetAppSettings().FileImportFolder}");
+      logger.LogInformation($"FileImportFolder: {_importBaseFolder}");
       logger.LogInformation($"FileStorageContainer: {_configuration.GetAppSettings().FileStorageContainer}");
       logger.LogInformation($"FileStorageUrl: {_configuration.GetAppSettings().FileStorageUrl}");
     }
 
+    public char GetFolderSeparator() { return '/'; }
+
+    /// <summary>
+    /// Attach browseable URLS for system files
+    /// </summary>
+    /// <param name="logger">OLabLogger</param>
+    /// <param name="items">List of system files to enhance</param>
     public void AttachUrls(IOLabLogger logger, IList<SystemFiles> items)
     {
-      logger.LogInformation($"Attaching Azure Blob URLs for {items.Count} file records");
+      logger.LogInformation($"Attaching Azure Blob URLs for {items.Count} stream records");
 
       foreach (var item in items)
       {
-        var scopeLevel = item.ImageableType;
-        var scopeId = item.ImageableId;
-
-        var baseFolder = GetFileFolderName(scopeLevel, scopeId);
-        logger.LogInformation($"  folderName = '{baseFolder}");
-
-        if (FileExists(logger, baseFolder, item.Path))
+        try
         {
-          var fileUrl = $"{_configuration.GetAppSettings().FileStorageUrl}/{baseFolder}/{item.Path}";
-          item.OriginUrl = fileUrl;
-          logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
+          var scopeLevel = item.ImageableType;
+          var scopeId = item.ImageableId;
+
+          var baseFolder = GetFileFolderName(scopeLevel, scopeId);
+          logger.LogInformation($"  files baseFolder = '{baseFolder}");
+
+          if (FileExists(logger, baseFolder, item.Path))
+          {
+            var fileUrl = $"{_configuration.GetAppSettings().FileStorageUrl}{GetFolderSeparator()}{baseFolder}{GetFolderSeparator()}{item.Path}";
+            item.OriginUrl = fileUrl;
+            logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
+          }
+          else
+            item.OriginUrl = null;
+
         }
-        else
-          item.OriginUrl = null;
+        catch (Exception ex)
+        {
+          logger.LogError(ex, $"AttachUrls error on '{item.Path}'");
+        }
 
       }
     }
 
     private string GetFileFolderName(string scopeLevel, uint scopeId)
     {
-      var subPath = $"{_configuration.GetAppSettings().FileStorageFolder}/{scopeLevel}/{scopeId}";
+      var subPath = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{scopeLevel}{GetFolderSeparator()}{scopeId}";
       return subPath;
     }
 
-    public bool FileExists(IOLabLogger logger, string folderName, string physicalFileName)
+    /// <summary>
+    /// Test if a file exists
+    /// </summary>
+    /// <param name="logger">OLabLogger</param>
+    /// <param name="folderName">File folder</param>
+    /// <param name="physicalFileName">file name</param>
+    /// <returns>true/false</returns>
+    public bool FileExists(
+      IOLabLogger logger,
+      string folderName,
+      string physicalFileName)
     {
       bool result = false;
 
       try
       {
         IList<BlobItem> blobs;
+
+        folderName = $"{_importBaseFolder}{folderName}";
 
         // if we do not have this folder already in cache
         // then hit the blob storage and cache the results
@@ -93,6 +127,7 @@ namespace OLab.Files.AzureBlobStorage
           blobs = _blobServiceClient
             .GetBlobContainerClient(_containerName)
             .GetBlobs(prefix: folderName).ToList();
+
           _folderContentCache[folderName] = blobs;
         }
         else
@@ -101,7 +136,7 @@ namespace OLab.Files.AzureBlobStorage
         result = blobs.Any(x => x.Name.Contains(physicalFileName));
 
         if (!result)
-          logger.LogWarning($"  '{folderName}/{physicalFileName}' physical file not found");
+          logger.LogWarning($"  '{folderName}{GetFolderSeparator()}{physicalFileName}' physical stream not found");
 
       }
       catch (Exception ex)
@@ -114,47 +149,163 @@ namespace OLab.Files.AzureBlobStorage
       return result;
     }
 
+    /// <summary>
+    /// Move file 
+    /// </summary>
+    /// <param name="logger">OLabLogger </param>
+    /// <param name="fileName">File name</param>
+    /// <param name="sourcePath">Source folder</param>
+    /// <param name="destinationPath">Destination folder</param>
+    /// <exception cref="NotImplementedException"></exception>
     public void MoveFile(
       IOLabLogger logger,
+      string fileName,
       string sourcePath,
       string destinationPath)
     {
       throw new NotImplementedException();
     }
 
-    public async Task<string> UploadFile(
+    /// <summary>
+    /// Upload a file to storage
+    /// </summary>
+    /// <param name="logger">OLabLogger</param>
+    /// <param name="stream">File contents stream</param>
+    /// <param name="uploadedFileName">Source file name</param>
+    /// <param name="token">Cancellation token</param>
+    /// <returns>Fully qualified file name</returns>
+    public async Task<string> UploadFileAsync(
       IOLabLogger logger,
-      Stream file,
+      Stream stream,
       string uploadedFileName,
       CancellationToken token)
     {
       try
       {
-        var fileName = Path.GetRandomFileName();
-        fileName += Path.GetExtension(uploadedFileName);
+        // build an offuscated random.zip file name to upload
+        // import file to, with target import folder
+        var tempFileName = Path.GetRandomFileName().Replace(".", "");
+        var fileName = $"{tempFileName}{Path.GetExtension(uploadedFileName)}";
+        var filePath = $"{_importBaseFolder}{fileName}";
 
-        logger.LogInformation($"Uploading file '{uploadedFileName}' ({fileName}) to '{_containerName}'");
+        logger.LogInformation($"Uploading stream '{uploadedFileName}' ({filePath}) to '{_containerName}'");
 
         await _blobServiceClient
               .GetBlobContainerClient(_containerName)
-              .UploadBlobAsync($"{_configuration.GetAppSettings().FileImportFolder}/{fileName}", file, token);
+              .UploadBlobAsync(filePath, stream, token);
 
-        return $"{fileName}";
+        return fileName;
 
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "UploadFile error");
+        logger.LogError(ex, "UploadFileAsync error");
         throw;
       }
 
     }
 
-    private string GetPhysicalPath(string scopeLevel, uint scopeId, string fileName)
+    /// <summary>
+    /// Read file from storage
+    /// </summary>
+    /// <param name="logger">OLabLogger</param>
+    /// <param name="folderName">Source folder name</param>
+    /// <param name="fileName">File name</param>
+    /// <returns>File contents stream</returns>
+    public async Task<Stream> ReadFileAsync(
+      IOLabLogger logger,
+      string folderName,
+      string fileName)
     {
-      var subPath = GetFileFolderName(scopeLevel, scopeId);
-      subPath += $"{subPath}/{fileName}";
-      return subPath;
+      var stream = new MemoryStream();
+
+      try
+      {
+        var filePath = string.IsNullOrEmpty(folderName) ?
+          $"{_importBaseFolder}{fileName}" :
+          $"{_importBaseFolder}{folderName}{GetFolderSeparator()}{fileName}";
+
+        logger.LogInformation($"ReadFileAsync reading '{filePath}'");
+
+        await _blobServiceClient
+             .GetBlobContainerClient(_containerName)
+             .GetBlobClient(filePath)
+             .DownloadToAsync(stream);
+
+        stream.Position = 0;
+
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "ReadFileAsync Excpetion");
+      }
+
+      return stream;
+
     }
+
+    /// <summary>
+    /// Delete file from blob storage
+    /// </summary>
+    /// <param name="logger">OLabLogger</param>
+    /// <param name="filePath">File to delete</param>
+    /// <returns></returns>
+    public async Task<bool> DeleteFileAsync(IOLabLogger logger, string filePath)
+    {
+      try
+      {
+        await _blobServiceClient
+          .GetBlobContainerClient(_containerName)
+          .DeleteBlobAsync(filePath);
+
+        return true;
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "DeleteFileAsync Excpetion");
+      }
+
+      return false;
+    }
+
+    /// <summary>
+    /// Extract a file to blob storage
+    /// </summary>
+    /// <param name="logger">OLabLogger</param>
+    /// <param name="archiveFileName">Source file name</param>
+    /// <param name="extractDirectory">TTarget extreaction folder</param>
+    /// <param name="token">Cancellation token</param>
+    /// <returns></returns>
+    public async Task<bool> ExtractFileAsync(
+      IOLabLogger logger,
+      string folderName,
+      string fileName,
+      string extractDirectory,
+      CancellationToken token)
+    {
+      try
+      {
+        var stream = await ReadFileAsync(logger, folderName, fileName);
+
+        var fileProcessor = new ZipFileProcessor(
+          _blobServiceClient.GetBlobContainerClient(_containerName),
+          logger,
+          _configuration);
+
+        var extractPath = string.IsNullOrEmpty(folderName) ?
+          $"{_importBaseFolder}{extractDirectory}" :
+          $"{_importBaseFolder}{folderName}{GetFolderSeparator()}{extractDirectory}";
+
+        await fileProcessor.ProcessFileAsync($"{_importBaseFolder}{fileName}", extractPath, stream, token);
+
+        return true;
+      }
+      catch (Exception)
+      {
+
+        throw;
+      }
+    }
+
   }
 }
