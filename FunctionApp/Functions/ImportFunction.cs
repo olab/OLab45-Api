@@ -87,25 +87,7 @@ namespace OLab.FunctionApp.Functions
 
         var file = files.FirstOrDefault();
 
-        await _endpoint.Import(file, cancellationToken);
-        
-        //var parserdFormBody = await MultipartFormDataParser.ParseAsync(request.Body);
-        //Stream myBlob = new MemoryStream();
-        //var file = parserdFormBody.Files[0];
-
-        //var fileName = await WriteFile(file);
-
-        //if (!CheckIfValidFile(fileName))
-        //{
-        //  File.Delete(fileName);
-        //  throw new Exception("Invalid file");
-        //}
-
-        //Logger.LogInformation($"Loading archive: '{fileName}'");
-
-        //if (_importer.ProcessImportFileAsync(fileName))
-        //  _importer.WriteImportToDatabase();
-
+        await _endpoint.Import(file, cancellationToken);      
       }
       catch (Exception ex)
       {

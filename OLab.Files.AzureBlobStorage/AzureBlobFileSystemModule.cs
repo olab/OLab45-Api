@@ -7,6 +7,8 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Configuration;
 using static System.Reflection.Metadata.BlobBuilder;
+using NuGet.Common;
+using System.IO;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -137,6 +139,8 @@ namespace OLab.Files.AzureBlobStorage
 
         if (!result)
           logger.LogWarning($"  '{folderName}{GetFolderSeparator()}{physicalFileName}' physical stream not found");
+        else
+          logger.LogInformation($"  '{folderName}{GetFolderSeparator()}{physicalFileName}' found");
 
       }
       catch (Exception ex)
@@ -157,13 +161,28 @@ namespace OLab.Files.AzureBlobStorage
     /// <param name="sourcePath">Source folder</param>
     /// <param name="destinationPath">Destination folder</param>
     /// <exception cref="NotImplementedException"></exception>
-    public void MoveFile(
+    public async Task MoveFileAsync(
       IOLabLogger logger,
       string fileName,
       string sourcePath,
-      string destinationPath)
+      string destinationPath,
+      CancellationToken token = default)
     {
-      throw new NotImplementedException();
+      try
+      {
+        logger.LogInformation($"MoveFileAsync '{fileName}' {sourcePath} -> {destinationPath}");
+
+        var stream = await ReadFileAsync(logger, sourcePath, fileName);
+
+        var destinationfilePath = $"{destinationPath}{GetFolderSeparator()}{fileName}";
+        await WriteFileAsync(logger, stream, destinationfilePath, token);
+        await DeleteFileAsync(logger, $"{sourcePath}{GetFolderSeparator()}{fileName}");
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "MoveFileAsync error");
+        throw;
+      }
     }
 
     /// <summary>
@@ -188,21 +207,30 @@ namespace OLab.Files.AzureBlobStorage
         var fileName = $"{tempFileName}{Path.GetExtension(uploadedFileName)}";
         var filePath = $"{_importBaseFolder}{fileName}";
 
-        logger.LogInformation($"Uploading stream '{uploadedFileName}' ({filePath}) to '{_containerName}'");
+        logger.LogInformation($"UploadFileAsync '{uploadedFileName}' ({filePath}) to '{_containerName}'");
 
-        await _blobServiceClient
-              .GetBlobContainerClient(_containerName)
-              .UploadBlobAsync(filePath, stream, token);
+        await WriteFileAsync(logger, stream, filePath, token);
 
         return fileName;
 
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "UploadFileAsync error");
+        logger.LogError(ex, "UploadFileAsync Exception");
         throw;
       }
 
+    }
+
+    private async Task WriteFileAsync(
+      IOLabLogger logger,
+      Stream stream,
+      string filePath,
+      CancellationToken token)
+    {
+      await _blobServiceClient
+            .GetBlobContainerClient(_containerName)
+            .UploadBlobAsync(filePath, stream, token);
     }
 
     /// <summary>
@@ -233,14 +261,14 @@ namespace OLab.Files.AzureBlobStorage
              .DownloadToAsync(stream);
 
         stream.Position = 0;
+        return stream;
 
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "ReadFileAsync Excpetion");
+        logger.LogError(ex, "ReadFileAsync Exception");
+        throw;
       }
-
-      return stream;
 
     }
 
@@ -254,6 +282,9 @@ namespace OLab.Files.AzureBlobStorage
     {
       try
       {
+        filePath = $"{_importBaseFolder}{filePath}";
+        logger.LogInformation($"DeleteFileAsync '{filePath}'");
+
         await _blobServiceClient
           .GetBlobContainerClient(_containerName)
           .DeleteBlobAsync(filePath);
@@ -262,10 +293,10 @@ namespace OLab.Files.AzureBlobStorage
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "DeleteFileAsync Excpetion");
+        logger.LogError(ex, "DeleteFileAsync Exception");
+        throw;
       }
 
-      return false;
     }
 
     /// <summary>
@@ -285,6 +316,8 @@ namespace OLab.Files.AzureBlobStorage
     {
       try
       {
+        logger.LogInformation($"ExtractFileAsync '{folderName}' {fileName} -> {extractDirectory}");
+
         var stream = await ReadFileAsync(logger, folderName, fileName);
 
         var fileProcessor = new ZipFileProcessor(
@@ -300,11 +333,12 @@ namespace OLab.Files.AzureBlobStorage
 
         return true;
       }
-      catch (Exception)
+      catch (Exception ex)
       {
-
+        logger.LogError(ex, "ExtractFileAsync Exception");
         throw;
       }
+
     }
 
   }

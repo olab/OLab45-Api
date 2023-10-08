@@ -63,10 +63,11 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="fileName">File name</param>
   /// <param name="sourcePath">Source path</param>
   /// <param name="destinationPath">Destination path</param>
-  public void MoveFile(IOLabLogger logger,
-    string fileName,
-    string sourcePath,
-    string destinationPath)
+  public async Task MoveFileAsync(IOLabLogger logger,
+      string fileName,
+      string sourcePath,
+      string destinationPath,
+      CancellationToken token = default)
   {
     Guard.Argument(sourcePath).NotEmpty(nameof(sourcePath));
     Guard.Argument(destinationPath).NotEmpty(nameof(destinationPath));
