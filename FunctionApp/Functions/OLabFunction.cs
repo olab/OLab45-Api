@@ -3,9 +3,9 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
+using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using IOLabAuthentication = OLab.Api.Data.Interface.IOLabAuthentication;
 
 namespace OLab.FunctionApp.Functions;
 
@@ -55,15 +55,15 @@ public class OLabFunction
   }
 
   /// <summary>
-  /// Get the authentication context from the host context
+  /// Get the _authentication context from the host context
   /// </summary>
   /// <param name="hostContext">Function context</param>
   /// <returns>IOLabAuthentication</returns>
   /// <exception cref="Exception"></exception>
-  protected IOLabAuthentication GetRequestContext(FunctionContext hostContext)
+  protected IOLabAuthorization GetRequestContext(FunctionContext hostContext)
   {
     // Get the item set by the middleware
-    if (hostContext.Items.TryGetValue("auth", out var value) && value is IOLabAuthentication auth)
+    if (hostContext.Items.TryGetValue("auth", out var value) && value is IOLabAuthorization auth)
       Logger.LogInformation("Got auth RequestContext");
     else
       throw new Exception("unable to get auth RequestContext");

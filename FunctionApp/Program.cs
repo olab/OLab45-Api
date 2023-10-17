@@ -11,6 +11,8 @@ using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Access;
+using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data;
@@ -18,6 +20,7 @@ using OLab.Data.Interface;
 using OLab.FunctionApp;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
+using System.Net;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>
@@ -55,8 +58,9 @@ var host = new HostBuilder()
 
       services.AddSingleton<IOLabLogger, OLabLogger>();
       services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
-      services.AddSingleton<IUserService, UserService>();
       services.AddSingleton<IOLabSession, OLabSession>();
+      services.AddSingleton<IOLabAuthentication, OLabAuthentication>();
+      services.AddSingleton<IUserService, UserService>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
       services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
       services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();

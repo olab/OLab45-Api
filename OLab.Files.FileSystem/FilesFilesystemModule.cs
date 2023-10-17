@@ -110,7 +110,7 @@ public class FilesFilesystemModule : IFileStorageModule
     if (string.IsNullOrEmpty(fileName))
       fileName = Path.GetRandomFileName();
 
-    var physicalPath = Path.Combine(_configuration.GetAppSettings().ImportFolder, fileName);
+    var physicalPath = Path.Combine(_configuration.GetAppSettings().FileImportFolder, fileName);
 
     using (var stream = new FileStream(physicalPath, FileMode.Create))
     {
@@ -155,7 +155,9 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="logger">OLabLogger</param>
   /// <param name="filePath">File to delete</param>
   /// <returns></returns>
-  public async Task<bool> DeleteFileAsync(IOLabLogger logger, string filePath)
+  public async Task<bool> DeleteFileAsync(IOLabLogger logger, 
+      string folderName,
+      string fileName)
   {
     throw new NotImplementedException();
   }

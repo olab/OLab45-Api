@@ -176,7 +176,7 @@ namespace OLab.Files.AzureBlobStorage
 
         var destinationfilePath = $"{destinationPath}{GetFolderSeparator()}{fileName}";
         await WriteFileAsync(logger, stream, destinationfilePath, token);
-        await DeleteFileAsync(logger, $"{sourcePath}{GetFolderSeparator()}{fileName}");
+        await DeleteFileAsync(logger, sourcePath, fileName);
       }
       catch (Exception ex)
       {
@@ -276,13 +276,20 @@ namespace OLab.Files.AzureBlobStorage
     /// Delete file from blob storage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
-    /// <param name="filePath">File to delete</param>
+    /// <param name="folderName">File folder</param>
+    /// <param name="fileName">File to delete</param>
     /// <returns></returns>
-    public async Task<bool> DeleteFileAsync(IOLabLogger logger, string filePath)
+    public async Task<bool> DeleteFileAsync(
+      IOLabLogger logger, 
+      string folderName,
+      string fileName)
     {
       try
       {
-        filePath = $"{_importBaseFolder}{filePath}";
+        var filePath = string.IsNullOrEmpty(folderName) ?
+          $"{_importBaseFolder}{fileName}" :
+          $"{_importBaseFolder}{folderName}{GetFolderSeparator()}{fileName}";
+
         logger.LogInformation($"DeleteFileAsync '{filePath}'");
 
         await _blobServiceClient
@@ -294,8 +301,9 @@ namespace OLab.Files.AzureBlobStorage
       catch (Exception ex)
       {
         logger.LogError(ex, "DeleteFileAsync Exception");
-        throw;
       }
+
+      return false;
 
     }
 

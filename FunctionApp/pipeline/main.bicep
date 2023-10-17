@@ -60,7 +60,7 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
     siteConfig: {
       linuxFxVersion: 'DOTNET-ISOLATED|7.0'
       alwaysOn: true
-      healthCheckPath: '/api/health'
+      healthCheckPath: '/api/api/v3/health'
       use32BitWorkerProcess : false
     }
   }
@@ -77,7 +77,7 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     AppSettings__FileStorageFolder: fileStorageFilesFolder
     AppSettings__FileStorageType: 'AZUREBLOBSTORAGE'
     AppSettings__FileStorageUrl: '${resourceFileStorage.properties.primaryEndpoints.blob}${fileStorageContainerName}'
-    AppSettings__ImportFolder: fileStorageImportFolder
+    AppSettings__FileImportFolder: fileStorageImportFolder
     AppSettings__Issuer: 'olab,moodle'
     AppSettings__Secret: AuthTokenKey
     AppSettings__SignalREndpoint: '/turktalk'
@@ -107,6 +107,7 @@ resource appCors 'Microsoft.Web/sites/config@2021-02-01' = {
         'https://portal.azure.com'
         'http://localhost:3000'
         'https://${resourcePlayerFqdn}'
+        'https://cloud.olab.ca'
       ]
       supportCredentials: false
     }

@@ -1,175 +1,62 @@
-using Dawn;
-using Microsoft.Azure.Functions.Worker;
-using OLab.Api.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OLab.Api.Common;
 using OLab.Api.Data.Interface;
+using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using System.Security.Claims;
-
-#nullable disable
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Reflection.PortableExecutable;
 
 namespace OLab.FunctionApp.Services
 {
-  public class UserContext : IUserContext
+  public class OLabAuthorization : IOLabAuthorization
   {
+    private readonly IOLabLogger _logger;
+    private readonly OLabDBContext _dbContext;
+    private readonly IUserContext _userContext;
+    protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
+    protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
+    public Users OLabUser;
+
     public const string WildCardObjectType = "*";
     public const uint WildCardObjectId = 0;
     public const string NonAccessAcl = "-";
-    public ClaimsPrincipal User;
-    public Users OLabUser;
 
-    protected IDictionary<string, string> _claims;
-    protected readonly OLabDBContext _dbContext;
-    protected readonly IOLabLogger _logger;
-    protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
-    protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
-
-    protected IOLabSession _session;
-    protected string _role;
-    public IList<string> UserRoles { get; set; }
-    protected uint _userId;
-    protected string _userName;
-    protected string _ipAddress;
-    protected string _issuer;
-    protected string _referringCourse;
-    protected string _accessToken;
-
-    public IOLabSession Session
-    {
-      get => _session;
-      set => _session = value;
-    }
-
-    public string ReferringCourse
-    {
-      get => _referringCourse;
-      set => _referringCourse = value;
-    }
-
-    public string Role
-    {
-      get => _role;
-      set => _role = value;
-    }
-
-    public uint UserId
-    {
-      get => _userId;
-      set => _userId = value;
-    }
-
-    public string UserName
-    {
-      get => _userName;
-      set => _userName = value;
-    }
-
-    public string IPAddress
-    {
-      get => _ipAddress;
-      set => _ipAddress = value;
-    }
-
-    public string Issuer
-    {
-      get => _issuer;
-      set => _issuer = value;
-    }
-
-    public string SessionId { get { return Session.GetSessionId(); } }
-
-    //public string CourseName { get { return _courseName; } }
-    public string CourseName { get { return null; } }
-
-    // default ctor, needed for services Dependancy Injection
-    public UserContext()
-    {
-
-    }
-
-    public UserContext(
+    public OLabAuthorization(
       IOLabLogger logger,
       OLabDBContext dbContext,
-      FunctionContext hostContext)
+      IUserContext userContext
+    )
     {
-      Guard.Argument(logger).NotNull(nameof(logger));
-      Guard.Argument(dbContext).NotNull(nameof(dbContext));
-      Guard.Argument(hostContext).NotNull(nameof(hostContext));
-
-      _dbContext = dbContext;
       _logger = logger;
+      _dbContext = dbContext;
+      _userContext = userContext;
 
-      Session = new OLabSession(_logger.GetLogger(), dbContext, this);
-
-      _logger.LogInformation($"UserContext ctor");
-
-      LoadHostContext(hostContext);
+      LoadUserAuthorization(_userContext.UserRoles, _userContext.UserName, _userContext.UserId);
     }
 
-    protected void LoadHostContext(FunctionContext hostContext)
+    public IUserContext GetUserContext()
     {
-      if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
-        throw new Exception("unable to retrieve headers from host context");
+      return _userContext;
+    }
 
-      var headers = (Dictionary<string, string>)headersObjects;
-
-      if (headers.TryGetValue("OLabSessionId", out var sessionId))
-      {
-        if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
-        {
-          Session.SetSessionId(sessionId);
-          if (!string.IsNullOrWhiteSpace(Session.GetSessionId()))
-            _logger.LogInformation($"Found sessionId {Session.GetSessionId()}.");
-        }
-      }
-
-      if (!hostContext.Items.TryGetValue("claims", out var claimsObject))
-        throw new Exception("unable to retrieve claims from host context");
-
-      _claims = (IDictionary<string, string>)claimsObject;
-
-      if (!_claims.TryGetValue(ClaimTypes.Name, out var nameValue))
-        throw new Exception("unable to retrieve user name from token claims");
-      UserName = nameValue;
-
-      ReferringCourse = _claims[ClaimTypes.UserData];
-
-      if (!_claims.TryGetValue("iss", out var issValue))
-        throw new Exception("unable to retrieve iss from token claims");
-      Issuer = issValue;
-
-      if (!_claims.TryGetValue("id", out var idValue))
-        throw new Exception("unable to retrieve user id from token claims");
-      UserId = (uint)Convert.ToInt32(idValue);
-
-      if (!_claims.TryGetValue(ClaimTypes.Role, out var roleValue))
-        throw new Exception("unable to retrieve role from token claims");
-      Role = roleValue;
-
-      // separate out multiple roles, make lower case, remove spaces, and sort
-      UserRoles = Role.Split(',')
-        .Select(x => x.Trim())
-        .Select(x => x.ToLower())
-        .OrderBy(x => x)
-        .ToList();
-
-      _roleAcls = _dbContext.SecurityRoles.Where(x => UserRoles.Contains(x.Name.ToLower())).ToList();
-
-      if (headers.TryGetValue("x-forwarded-for", out _ipAddress))
-        _logger.LogInformation($"ipaddress: {_ipAddress}");
-      else
-        _logger.LogWarning($"no ipaddress detected");
+    public void LoadUserAuthorization(IList<string> roles, string userName, uint userId)
+    {
+      _roleAcls = _dbContext.SecurityRoles.Where(x => roles.Contains(x.Name.ToLower())).ToList();
 
       // test for a local user
-      var user = _dbContext.Users.FirstOrDefault(x => x.Username == UserName && x.Id == UserId);
+      var user = _dbContext.Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
       if (user != null)
       {
-        _logger.LogInformation($"Local user '{UserName}' found");
+        _logger.LogInformation($"Local user '{userName}' found");
 
         OLabUser = user;
-        UserId = user.Id;
-        _userAcls = _dbContext.SecurityUsers.Where(x => x.UserId == UserId).ToList();
+        userId = user.Id;
+        _userAcls = _dbContext.SecurityUsers.Where(x => x.UserId == userId).ToList();
 
         // if user is anonymous user, add user access to anon-flagged maps
         if (OLabUser.Group == "anonymous")
@@ -185,6 +72,22 @@ namespace OLab.FunctionApp.Services
             });
         }
       }
+    }
+
+    public IActionResult HasAccess(string acl, ScopedObjectDto dto)
+    {
+      // test if user has access to write to parent.
+      if (dto.ImageableType == Constants.ScopeLevelMap)
+        if (!HasAccess("W", Constants.ScopeLevelMap, dto.ImageableId))
+          return OLabUnauthorizedResult.Result();
+      if (dto.ImageableType == Constants.ScopeLevelServer)
+        if (!HasAccess("W", Constants.ScopeLevelServer, dto.ImageableId))
+          return OLabUnauthorizedResult.Result();
+      if (dto.ImageableType == Constants.ScopeLevelNode)
+        if (!HasAccess("W", Constants.ScopeLevelNode, dto.ImageableId))
+          return OLabUnauthorizedResult.Result();
+
+      return new NoContentResult();
     }
 
     /// <summary>
@@ -331,4 +234,3 @@ namespace OLab.FunctionApp.Services
     }
   }
 }
-

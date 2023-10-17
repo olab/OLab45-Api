@@ -39,6 +39,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.AzureBlobStorage
 		{36DCE73E-BE45-43FD-BCEA-A66BCFF000AF} = {36DCE73E-BE45-43FD-BCEA-A66BCFF000AF}
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Access", "OLab.Access\OLab.Access.csproj", "{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{D0A50016-EDC3-403E-97AA-30EE77AB5B94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0A50016-EDC3-403E-97AA-30EE77AB5B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0A50016-EDC3-403E-97AA-30EE77AB5B94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

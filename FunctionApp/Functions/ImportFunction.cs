@@ -49,13 +49,8 @@ namespace OLab.FunctionApp.Functions
         Logger,
         configuration,
         DbContext,
-        wikiTagProvider, 
+        wikiTagProvider,
         fileStorageProvider);
-    }
-
-    private string GetUploadDirectory()
-    {
-      return _configuration.GetAppSettings().ImportFolder;
     }
 
     [Function("Upload")]
@@ -71,9 +66,7 @@ namespace OLab.FunctionApp.Functions
         // validate token/setup up common properties
         var auth = GetRequestContext(hostContext);
 
-        // test if user has access to import.
-        var userContext = auth.GetUserContext();
-        if (!userContext.HasAccess("X", "Import", 0))
+        if (!auth.HasAccess("X", "Import", 0))
           throw new OLabUnauthorizedException();
 
         if (request.Body == null)
@@ -82,12 +75,12 @@ namespace OLab.FunctionApp.Functions
         var httpContext = request.AsHttpContext();
         var files = httpContext.Request.Form.Files.ToList();
 
-        if ( files == null || files.Count == 0)
+        if (files == null || files.Count == 0)
           throw new Exception("unable to get request file");
 
         var file = files.FirstOrDefault();
 
-        await _endpoint.Import(file, cancellationToken);      
+        await _endpoint.Import(file, cancellationToken);
       }
       catch (Exception ex)
       {
@@ -117,9 +110,7 @@ namespace OLab.FunctionApp.Functions
       // validate token/setup up common properties
       var auth = GetRequestContext(hostContext);
 
-      // test if user has access to map.
-      var userContext = auth.GetUserContext();
-      if (!userContext.HasAccess("X", "Import", 0))
+      if (!auth.HasAccess("X", "Import", 0))
         throw new OLabUnauthorizedException();
 
       if (request.Body == null)
@@ -137,10 +128,10 @@ namespace OLab.FunctionApp.Functions
         //  var fullFileName = Path.Combine(GetUploadDirectory(), file.FileName);
 
         //  if (!File.Exists(fullFileName))
-        //    Logger.LogError("Unable to load file");
+        //    _logger.LogError("Unable to load file");
         //  else
         //  {
-        //    Logger.LogInformation($"Loading archive: '{Path.GetFileName(fullFileName)}'");
+        //    _logger.LogInformation($"Loading archive: '{Path.GetFileName(fullFileName)}'");
 
         //    if (_importer.ProcessImportFileAsync(fullFileName))
         //      _importer.WriteImportToDatabase();
@@ -185,7 +176,7 @@ namespace OLab.FunctionApp.Functions
     //  using (var stream = new FileStream(path, FileMode.Create))
     //  {
     //    await file.CopyToAsync(stream);
-    //    Logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");
+    //    _logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");
     //  }
 
     //  return path;
