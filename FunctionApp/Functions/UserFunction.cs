@@ -7,6 +7,7 @@ using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions;

@@ -10,257 +10,111 @@ using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Data;
 using OLab.Api.Model;
-using OLab.Api.Services;
+using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using OLab.Data.Interface;
+using OLab.Common.Interfaces;
+using Dawn;
 
-namespace OLabWebAPI.Endpoints.WebApi
+namespace OLabWebAPI.Endpoints.WebApi;
+
+/// <summary>
+/// 
+/// </summary>
+[Route("olab/api/v3/[controller]/[action]")]
+[ApiController]
+public class AuthController : OLabController
 {
-  /// <summary>
-  /// 
-  /// </summary>
-  [Route("olab/api/v3/[controller]/[action]")]
-  [ApiController]
-  public class AuthController : OlabController
+  public AuthController(
+    ILoggerFactory loggerFactory,
+    IOLabConfiguration configuration,
+    IUserService userService,
+    OLabDBContext dbContext) : base(configuration, userService, dbContext)
   {
-    private readonly IUserService _userService;
-    protected readonly OLabDBContext _context;
-    private readonly AppSettings _appSettings;
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    public AuthController(IUserService userService, ILogger<AuthController> logger, IOptions<AppSettings> appSettings, OLabDBContext context)
-      : base(logger, appSettings, context)
+    Logger = OLabLogger.CreateNew<AuthController>(loggerFactory);
+  }
+
+  /// <summary>
+  /// Interactive login
+  /// </summary>
+  /// <param name="model"></param>
+  /// <returns></returns>
+  [AllowAnonymous]
+  [HttpPost]
+  public IActionResult Login(LoginRequest model)
+  {
+    var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
+
+    if (string.IsNullOrEmpty(ipAddress))
+      ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
+
+    model.Username = model.Username.ToLower();
+
+    Logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
+
+    var response = userService.Authenticate(model);
+    if (response == null)
+      return OLabUnauthorizedObjectResult.Result("Username or password is incorrect");
+
+    return OLabObjectResult<AuthenticateResponse>.Result(response);
+  }
+
+  /// <summary>
+  /// Interactive login
+  /// </summary>
+  /// <param name="mapId">map id to run</param>
+  /// <returns>AuthenticateResponse</returns>
+  [AllowAnonymous]
+  [HttpGet("{mapId}")]
+  public IActionResult LoginAnonymous(uint mapId)
+  {
+    Logger.LogDebug($"LoginAnonymous(mapId = '{mapId}')");
+
+    try
     {
-      _userService = userService;
-      _context = context;
-      _appSettings = appSettings.Value;
-    }
-
-    /// <summary>
-    /// Interactive login
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpPost]
-    public IActionResult Login(LoginRequest model)
-    {
-      var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
-
-      if (string.IsNullOrEmpty(ipAddress))
-        ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
-
-      model.Username = model.Username.ToLower();
-
-      logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
-
-      AuthenticateResponse response = _userService.Authenticate(model);
+      AuthenticateResponse response = userService.AuthenticateAnonymously(mapId);
       if (response == null)
-        return OLabUnauthorizedObjectResult<string>.Result("Username or password is incorrect");
+        return OLabUnauthorizedObjectResult.Result("Must be Logged on to Play Map");
 
       return OLabObjectResult<AuthenticateResponse>.Result(response);
-    }
-
-    /// <summary>
-    /// Interactive login
-    /// </summary>
-    /// <param name="mapId">map id to run</param>
-    /// <returns>AuthenticateResponse</returns>
-    [AllowAnonymous]
-    [HttpGet("{mapId}")]
-    public IActionResult LoginAnonymous(uint mapId)
-    {
-      logger.LogDebug($"LoginAnonymous(mapId = '{mapId}')");
-
-      try
-      {
-        AuthenticateResponse response = _userService.AuthenticateAnonymously(mapId);
-        if (response == null)
-          return OLabUnauthorizedObjectResult<string>.Result("Must be Logged on to Play Map");
-
-        return OLabObjectResult<AuthenticateResponse>.Result(response);
-
-      }
-      catch (Exception ex)
-      {
-        return BadRequest(new { statusCode = 401, message = ex.Message });
-      }
-    }
-
-    /// <summary>
-    /// Interactive login
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns>AuthenticateResponse</returns>
-    [AllowAnonymous]
-    [HttpPost]
-    public IActionResult LoginExternal(ExternalLoginRequest model)
-    {
-      logger.LogDebug($"LoginExternal(user = '{model.ExternalToken}')");
-
-      try
-      {
-        AuthenticateResponse response = _userService.AuthenticateExternal(model);
-        if (response == null)
-          return BadRequest(new { statusCode = 401, message = "Invalid external token" });
-
-        return OLabObjectResult<AuthenticateResponse>.Result(response);
-
-      }
-      catch (Exception ex)
-      {
-        return BadRequest(new { statusCode = 401, message = ex.Message });
-      }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> AddUsers(IFormFile file)
-    {
-      logger.LogDebug($"AddUsers()");
-
-      try
-      {
-
-        var responses = new List<AddUserResponse>();
-
-        // test if user has access to add users.
-        var userContext = new UserContext(logger, dbContext, HttpContext);
-        if (!userContext.HasAccess("X", "UserAdmin", 0))
-          return OLabUnauthorizedResult.Result();
-
-        var result = new List<string>();
-        using (var reader = new StreamReader(file.OpenReadStream()))
-        {
-          while (reader.Peek() >= 0)
-          {
-            var userRequestText = reader.ReadLine();
-            var userRequest = new AddUserRequest(userRequestText);
-
-            AddUserResponse response = await ProcessUserRequest(userRequest);
-            responses.Add(response);
-          }
-        }
-
-
-        return OLabObjectListResult<AddUserResponse>.Result(responses);
-
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> AddUser([FromBody] JArray jsonStringData)
-    {
-      try
-      {
-        var responses = new List<AddUserResponse>();
-
-        List<AddUserRequest> items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
-
-        logger.LogDebug($"AddUser(items count '{items.Count}')");
-
-        // test if user has access to add users.
-        var userContext = new UserContext(logger, dbContext, HttpContext);
-        if (!userContext.HasAccess("X", "UserAdmin", 0))
-          return OLabUnauthorizedResult.Result();
-
-        foreach (AddUserRequest item in items)
-        {
-          AddUserResponse response = await ProcessUserRequest(item);
-          responses.Add(response);
-        }
-
-        return OLabObjectListResult<AddUserResponse>.Result(responses);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
 
     }
-
-    /// <summary>
-    /// User change password
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult ChangePassword(ChangePasswordRequest model)
+    catch (Exception ex)
     {
-      logger.LogDebug($"ChangePassword(user = '{model.Username}')");
+      return BadRequest(new { statusCode = 401, message = ex.Message });
+    }
+  }
 
-      model.Username = model.Username.ToLower();
+  /// <summary>
+  /// Interactive login
+  /// </summary>
+  /// <param name="model"></param>
+  /// <returns>AuthenticateResponse</returns>
+  [AllowAnonymous]
+  [HttpPost]
+  public IActionResult LoginExternal(ExternalLoginRequest model)
+  {
+    Logger.LogDebug($"LoginExternal(user = '{model.ExternalToken}')");
 
-      // authenticate target user with their password
-      AuthenticateResponse response = _userService.Authenticate(
-        new LoginRequest
-        {
-          Username = model.Username,
-          Password = model.Password
-        });
-
+    try
+    {
+      AuthenticateResponse response = userService.AuthenticateExternal(model);
       if (response == null)
-        return BadRequest(new { message = "Username or password is incorrect" });
+        return BadRequest(new { statusCode = 401, message = "Invalid external token" });
 
-      Users user = _userService.GetByUserName(model.Username);
-      _userService.ChangePassword(user, model);
+      return OLabObjectResult<AuthenticateResponse>.Result(response);
 
-      dbContext.Users.Update(user);
-
-      return Ok();
     }
-
-    private async Task<AddUserResponse> ProcessUserRequest(AddUserRequest userRequest)
+    catch (Exception ex)
     {
-      Users user = _userService.GetByUserName(userRequest.Username);
-      if (user != null)
-        return new AddUserResponse
-        {
-          Username = userRequest.Username.ToLower(),
-          Message = $"Already exists"
-        };
-
-      var newUser = Users.CreateDefault(userRequest);
-      var newPassword = newUser.Password;
-
-      _userService.ChangePassword(newUser, new ChangePasswordRequest
-      {
-        NewPassword = newUser.Password
-      });
-
-      await _context.Users.AddAsync(newUser);
-      await _context.SaveChangesAsync();
-
-      var response = new AddUserResponse
-      {
-        Username = newUser.Username,
-        Password = newPassword
-      };
-
-      return response;
+      return BadRequest(new { statusCode = 401, message = ex.Message });
     }
-
   }
 
 }

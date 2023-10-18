@@ -8,65 +8,84 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Services;
+using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
+using OLab.Data.Interface;
+using OLab.Common.Interfaces;
+using Dawn;
+using Microsoft.EntityFrameworkCore;
 
-namespace OLabWebAPI.Endpoints.WebApi.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player;
+
+[Route("olab/api/v3/response")]
+[ApiController]
+public partial class QuestionResponseController : OLabController
 {
-  [Route("olab/api/v3/response")]
-  [ApiController]
-  public partial class QuestionResponseController : OlabController
+  private readonly ResponseEndpoint _endpoint;
+
+  public QuestionResponseController(
+  ILoggerFactory loggerFactory,
+  IOLabConfiguration configuration,
+  IUserService userService,
+  OLabDBContext dbContext,
+  IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+  IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+    configuration,
+    userService,
+    dbContext,
+    wikiTagProvider,
+    fileStorageProvider)
   {
-    private readonly ResponseEndpoint _endpoint;
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    public QuestionResponseController(ILogger<QuestionResponseController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
+    Logger = OLabLogger.CreateNew<QuestionResponseController>(loggerFactory);
+
+    _endpoint = new ResponseEndpoint(
+      Logger,
+      configuration,
+      DbContext);
+  }
+
+  /// <summary>
+  /// A question response was posted
+  /// </summary>
+  /// <param name="body"></param>
+  /// <returns></returns>
+  [HttpPost("{questionId}")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> PostQuestionResponseAsync(
+    [FromBody] QuestionResponsePostDataDto body)
+  {
+
+    try
     {
-      _endpoint = new ResponseEndpoint(this.logger, appSettings, context);
-    }
+      // validate token/setup up common properties
+      var auth = GetRequestContext(HttpContext);
 
-    /// <summary>
-    /// A question response was posted
-    /// </summary>
-    /// <param name="body"></param>
-    /// <returns></returns>
-    [HttpPost("{questionId}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> PostQuestionResponseAsync(
-      [FromBody] QuestionResponsePostDataDto body)
-    {
+      var question = await GetQuestionAsync(body.QuestionId);
+      if (question == null)
+        throw new Exception($"Question {body.QuestionId} not found");
 
-      try
-      {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
+      var result =
+        await _endpoint.PostQuestionResponseAsync(question, body);
 
-        Data.Interface.IUserContext userContext = auth.GetUserContext();
-        _endpoint.SetUserContext(userContext);
-
-        SystemQuestions question = await GetQuestionAsync(body.QuestionId);
-        if (question == null)
-          throw new Exception($"Question {body.QuestionId} not found");
-
-        DynamicScopedObjectsDto result =
-          await _endpoint.PostQuestionResponseAsync(question, body);
-
-        userContext.Session.OnQuestionResponse(
-          body.MapId,
-          body.NodeId,
-          question.Id,
-          body.Value);
-
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
-
-      return OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects);
+      userContext.Session.OnQuestionResponse(
+        body.MapId,
+        body.NodeId,
+        question.Id,
+        body.Value);
 
     }
+    catch (Exception ex)
+    {
+      if (ex is OLabUnauthorizedException)
+        return OLabUnauthorizedObjectResult.Result(ex.Message);
+      return OLabServerErrorResult.Result(ex.Message);
+    }
+
+    return OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects);
+
   }
 }

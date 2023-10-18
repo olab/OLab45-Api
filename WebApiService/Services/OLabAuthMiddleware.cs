@@ -1,33 +1,39 @@
-﻿using Dawn;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.Functions.Worker.Middleware;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Dawn;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Tokens;
+using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Api.Utils;
-using OLab.Access;
-using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Services;
-using System.Configuration;
+using OLabWebAPI.Extensions;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using OLab.Data.Interface;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace OLab.FunctionApp.Middleware;
+namespace OLabWebAPI.Services;
 
-public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
+public class OLabAuthMiddleware
 {
   private readonly IUserService _userService;
   private readonly OLabDBContext _dbContext;
-  private HttpRequestData _httpRequestData;
+  private readonly RequestDelegate _next;
+  private HttpRequest _httpRequest;
 
   private IReadOnlyDictionary<string, string> _headers;
-  private IReadOnlyDictionary<string, object> _bindingData;
+  //private IReadOnlyDictionary<string, object> _bindingData;
   private string _functionName;
   public IOLabAuthentication _authentication { get; private set; }
   private readonly IOLabConfiguration _config;
@@ -38,7 +44,8 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     ILoggerFactory loggerFactory,
     IUserService userService,
     OLabDBContext dbContext,
-    IOLabAuthentication authentication)
+    IOLabAuthentication authentication,
+    RequestDelegate next)
   {
     Guard.Argument(userService).NotNull(nameof(userService));
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
@@ -47,41 +54,36 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     Guard.Argument(authentication).NotNull(nameof(authentication));
 
     _logger = OLabLogger.CreateNew<OLabAuthMiddleware>(loggerFactory);
-    _logger.LogInformation("JwtMiddleware created");
+    _logger.LogInformation("OLabAuthMiddleware created");
 
     _config = configuration;
     _userService = userService;
     _dbContext = dbContext;
     _authentication = authentication; // new OLabAuthentication(loggerFactory, _config);
-
+    _next = next;
   }
 
-  public async Task Invoke(FunctionContext hostContext, FunctionExecutionDelegate next)
+  public async Task InvokeAsync(HttpContext hostContext)
   {
     Guard.Argument(hostContext).NotNull(nameof(hostContext));
-    Guard.Argument(next).NotNull(nameof(next));
 
     try
     {
       _headers = hostContext.GetHttpRequestHeaders();
-      _bindingData = hostContext.BindingContext.BindingData;
-      _functionName = hostContext.FunctionDefinition.Name.ToLower();
-      _httpRequestData = hostContext.GetHttpRequestData();
+      _functionName = hostContext.Request.Method.ToLower();
+      _httpRequest = hostContext.GetHttpRequest();
 
       _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
 
-      // skip middleware for non-authenicated endpoints
       if (_functionName.ToLower().Contains("login") || _functionName.ToLower().Contains("health"))
-        await next(hostContext);
+        await _next(hostContext);
 
       // if not login endpoint, then continue with middleware evaluation
       else if (!_functionName.Contains("login"))
       {
         try
         {
-          var token = _authentication.ExtractAccessToken(_headers, _bindingData);
-
-          if (string.IsNullOrEmpty(token))
+          if (!_headers.TryGetValue("authorization", out string token))
             throw new OLabUnauthorizedException();
 
           _authentication.ValidateToken(token);
@@ -95,7 +97,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
           hostContext.Items.Add("auth", auth);
 
           // run the function
-          await next(hostContext);
+          await _next(hostContext);
 
           // This happens after function execution. We can inspect the context after the function
           // was invoked
@@ -127,5 +129,4 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     }
 
   }
-
 }

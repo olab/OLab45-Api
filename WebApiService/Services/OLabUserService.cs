@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Utils;
+using OLab.Data.Interface;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,15 +20,15 @@ namespace OLabWebAPI.Services
   {
     public static int defaultTokenExpiryMinutes = 120;
     private readonly AppSettings _appSettings;
-    private readonly OLabDBContext _context;
+    private readonly OLabDBContext _dbContext;
     private readonly ILogger _logger;
     private static TokenValidationParameters _tokenParameters;
 
-    public OLabUserService(ILogger logger, IOptions<AppSettings> appSettings, OLabDBContext context)
+    public OLabUserService(ILogger logger, IOptions<AppSettings> appSettings, OLabDBContext dbContext)
     {
-      defaultTokenExpiryMinutes = OLabConfiguration.DefaultTokenExpiryMins;
+      defaultTokenExpiryMinutes = 120;
       _appSettings = appSettings.Value;
-      _context = context;
+      _dbContext = dbContext;
       _logger = logger;
 
       _logger.LogDebug($"appSetting aud: '{_appSettings.Audience}', secret: '{_appSettings.Secret[..4]}...'");
@@ -106,7 +108,7 @@ namespace OLabWebAPI.Services
     {
       Guard.Argument(model, nameof(model)).NotNull();
 
-      Users user = _context.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+      Users user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
       // return null if user not found
       if (user != null)
@@ -148,7 +150,7 @@ namespace OLabWebAPI.Services
     /// <returns>Enumerable list of users</returns>
     public IEnumerable<Users> GetAll()
     {
-      return _context.Users.ToList();
+      return _dbContext.Users.ToList();
     }
 
     /// <summary>
@@ -158,7 +160,7 @@ namespace OLabWebAPI.Services
     /// <returns>User record</returns>
     public Users GetById(int id)
     {
-      return _context.Users.FirstOrDefault(x => x.Id == id);
+      return _dbContext.Users.FirstOrDefault(x => x.Id == id);
     }
 
     /// <summary>
@@ -168,7 +170,7 @@ namespace OLabWebAPI.Services
     /// <returns>User record</returns>
     public Users GetByUserName(string userName)
     {
-      return _context.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
+      return _dbContext.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
     }
 
     /// <summary>
@@ -208,11 +210,11 @@ namespace OLabWebAPI.Services
     private AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
     {
       // get user flagged for anonymous use
-      Users serverUser = _context.Users.FirstOrDefault(x => x.Group == "anonymous");
+      Users serverUser = _dbContext.Users.FirstOrDefault(x => x.Group == "anonymous");
       if (serverUser == null)
         throw new Exception($"No user is defined for anonymous map play");
 
-      Maps map = _context.Maps.FirstOrDefault(x => x.Id == mapId);
+      Maps map = _dbContext.Maps.FirstOrDefault(x => x.Id == mapId);
       if (map == null)
         throw new Exception($"Map {mapId} is not defined.");
 

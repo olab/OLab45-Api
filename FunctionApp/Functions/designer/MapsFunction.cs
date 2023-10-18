@@ -61,6 +61,7 @@ namespace OLab.FunctionApp.Functions.Designer
       {
         Guard.Argument(mapId, nameof(mapId)).NotZero();
         Guard.Argument(request).NotNull(nameof(request));
+
         // validate token/setup up common properties
         var auth = GetRequestContext(hostContext);
 

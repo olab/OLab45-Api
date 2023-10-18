@@ -75,7 +75,9 @@ public static class HttpRequestDataExtensions
     return response;
   }
 
-  public static HttpResponseData CreateResponse<T>(this HttpRequestData request, ObjectResult objectResult)
+  public static HttpResponseData CreateResponse<T>(
+    this HttpRequestData request, 
+    ObjectResult objectResult)
   {
     var olabResponse = objectResult as OLabAPIResponse<T>;
 
@@ -89,7 +91,9 @@ public static class HttpRequestDataExtensions
     return response;
   }
 
-  public static HttpResponseData CreateResponse<T>(this HttpRequestData request, OLabAPIResponse<T> apiResponse)
+  public static HttpResponseData CreateResponse<T>(
+    this HttpRequestData request, 
+    OLabAPIResponse<T> apiResponse)
   {
     var response = request.CreateResponse(apiResponse.ErrorCode);
     response.Headers.Add("Content-Type", "application/json; charset=utf-8");
@@ -100,7 +104,8 @@ public static class HttpRequestDataExtensions
     return response;
   }
 
-  public static async Task<T> ParseBodyFromRequestAsync<T>([NotNull] this HttpRequestData request)
+  public static async Task<T> ParseBodyFromRequestAsync<T>(
+    [NotNull] this HttpRequestData request)
       where T : class
   {
     var (isSuccess, body, exception) = await request.TryReadBodyAsAsync<T>();
@@ -110,7 +115,10 @@ public static class HttpRequestDataExtensions
     return body;
   }
 
-  public static async Task<(bool IsSuccess, T Value, Exception Exception)> TryReadBodyAsAsync<T>(
+  public static async Task<(
+    bool IsSuccess, 
+    T Value, 
+    Exception Exception)> TryReadBodyAsAsync<T>(
       [NotNull] this HttpRequestData request)
       where T : class
   {

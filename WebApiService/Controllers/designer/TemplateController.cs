@@ -9,91 +9,119 @@ using OLab.Api.Dto;
 using OLab.Api.Dto.Designer;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Model;
-using OLab.Api.Services;
+using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
+using Dawn;
 
-namespace OLabWebAPI.Endpoints.WebApi.Designer
+namespace OLabWebAPI.Endpoints.WebApi.Designer;
+
+[Route("olab/api/v3/templates")]
+[ApiController]
+public partial class TemplatesController : OLabController
 {
-  [Route("olab/api/v3/templates")]
-  [ApiController]
-  public partial class TemplatesController : OlabController
+  private readonly TemplateEndpoint _endpoint;
+
+  public TemplatesController(
+    ILoggerFactory loggerFactory,
+    IOLabConfiguration configuration,
+    IUserService userService,
+    OLabDBContext dbContext,
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+      configuration,
+      userService,
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider)
   {
-    private readonly TemplateEndpoint _endpoint;
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    public TemplatesController(ILogger<TemplatesController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
+    Logger = OLabLogger.CreateNew<TemplatesController>(loggerFactory);
+
+    _endpoint = new TemplateEndpoint(
+      Logger,
+      configuration,
+      DbContext,
+      wikiTagProvider,
+      fileStorageProvider);
+  }
+
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="take"></param>
+  /// <param name="skip"></param>
+  /// <returns></returns>
+  [HttpGet]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
+  {
+    try
     {
-      _endpoint = new TemplateEndpoint(this.logger, appSettings, context);
+      // validate token/setup up common properties
+      var auth = GetRequestContext(HttpContext);
+      
+      var pagedResponse = await _endpoint.GetAsync(take, skip);
+      return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
+    }
+    catch (Exception ex)
+    {
+      if (ex is OLabUnauthorizedException)
+        return OLabUnauthorizedObjectResult.Result(ex.Message);
+      return OLabServerErrorResult.Result(ex.Message);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="take"></param>
-    /// <param name="skip"></param>
-    /// <returns></returns>
-    [HttpGet]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
-    {
-      try
-      {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
-        OLabAPIPagedResponse<MapsDto> pagedResponse = await _endpoint.GetAsync(take, skip);
-        return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
+  }
 
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <returns></returns>
+  [HttpGet("links")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public ActionResult Links()
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetRequestContext(HttpContext);
+      
+      var dto = _endpoint.Links();
+      return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("links")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public ActionResult Links()
+    catch (Exception ex)
     {
-      try
-      {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
-        MapNodeLinkTemplateDto dto = _endpoint.Links();
-        return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
+      if (ex is OLabUnauthorizedException)
+        return OLabUnauthorizedObjectResult.Result(ex.Message);
+      return OLabServerErrorResult.Result(ex.Message);
     }
+  }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("nodes")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public ActionResult Nodes()
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <returns></returns>
+  [HttpGet("nodes")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public ActionResult Nodes()
+  {
+    try
     {
-      try
-      {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
-        MapNodeTemplateDto dto = _endpoint.Nodes();
-        return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
+      // validate token/setup up common properties
+      var auth = GetRequestContext(HttpContext);
+      
+      var dto = _endpoint.Nodes();
+      return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
+    }
+    catch (Exception ex)
+    {
+      if (ex is OLabUnauthorizedException)
+        return OLabUnauthorizedObjectResult.Result(ex.Message);
+      return OLabServerErrorResult.Result(ex.Message);
     }
   }
 }

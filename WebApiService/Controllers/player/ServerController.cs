@@ -7,92 +7,122 @@ using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Services;
+using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using System;
 using System.Threading.Tasks;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
+using Dawn;
+using Humanizer;
 
-namespace OLabWebAPI.Endpoints.WebApi.Player
+namespace OLabWebAPI.Endpoints.WebApi.Player;
+
+[Route("olab/api/v3/servers")]
+public partial class ServerController : OLabController
 {
-  [Route("olab/api/v3/servers")]
-  public partial class ServerController : OlabController
+  private readonly ServerEndpoint _endpoint;
+
+  public ServerController(
+    ILoggerFactory loggerFactory,
+    IOLabConfiguration configuration,
+    IUserService userService,
+    OLabDBContext dbContext,
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+      configuration,
+      userService,
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider)
   {
-    private readonly ServerEndpoint _endpoint;
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+    Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
+    Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
 
-    public ServerController(ILogger<ServerController> logger, IOptions<AppSettings> appSettings, OLabDBContext context) : base(logger, appSettings, context)
+    Logger = OLabLogger.CreateNew<ServerEndpoint>(loggerFactory);
+    _endpoint = new ServerEndpoint(
+      Logger,
+      configuration,
+      DbContext,
+      _wikiTagProvider,
+      _fileStorageProvider);
+  }
+
+  /// <summary>
+  /// Get a list of servers
+  /// </summary>
+  /// <param name="take">Max number of records to return</param>
+  /// <param name="skip">SKip over a number of records</param>
+  /// <returns>IActionResult</returns>
+  [HttpGet]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
+  {
+    try
     {
-      _endpoint = new ServerEndpoint(this.logger, appSettings, context);
+      // validate token/setup up common properties
+      var auth = GetRequestContext(HttpContext);
+      
+      var pagedResponse = await _endpoint.GetAsync(take, skip);
+      return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
+    }
+    catch (Exception ex)
+    {
+      if (ex is OLabUnauthorizedException)
+        return OLabUnauthorizedObjectResult.Result(ex.Message);
+      return OLabServerErrorResult.Result(ex.Message);
     }
 
-    /// <summary>
-    /// Get a list of servers
-    /// </summary>
-    /// <param name="take">Max number of records to return</param>
-    /// <param name="skip">SKip over a number of records</param>
-    /// <returns>IActionResult</returns>
-    [HttpGet]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
-    {
-      try
-      {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
-        OLabAPIPagedResponse<Servers> pagedResponse = await _endpoint.GetAsync(take, skip);
-        return OLabObjectListResult<Servers>.Result(pagedResponse.Data);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
+  }
 
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="serverId"></param>
+  /// <returns></returns>
+  [HttpGet("{serverId}/scopedobjects/raw")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetScopedObjectsRawAsync(uint serverId)
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetRequestContext(HttpContext);
+      
+      var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
+      return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="serverId"></param>
-    /// <returns></returns>
-    [HttpGet("{serverId}/scopedobjects/raw")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetScopedObjectsRawAsync(uint serverId)
+    catch (Exception ex)
     {
-      try
-      {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
-        Dto.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
-        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
+      if (ex is OLabUnauthorizedException)
+        return OLabUnauthorizedObjectResult.Result(ex.Message);
+      return OLabServerErrorResult.Result(ex.Message);
     }
+  }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="serverId"></param>
-    /// <returns></returns>
-    [HttpGet("{serverId}/scopedobjects")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> GetScopedObjectsTranslatedAsync(uint serverId)
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="serverId"></param>
+  /// <returns></returns>
+  [HttpGet("{serverId}/scopedobjects")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetScopedObjectsTranslatedAsync(uint serverId)
+  {
+    try
     {
-      try
-      {
-        var auth = new OLabAuthorization(logger, dbContext, HttpContext);
-        Dto.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-        return OLabObjectResult<OLabWebAPI.Dto.ScopedObjectsDto>.Result(dto);
-      }
-      catch (Exception ex)
-      {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
-      }
+      // validate token/setup up common properties
+      var auth = GetRequestContext(HttpContext);
+      
+      var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
+      return OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto);
+    }
+    catch (Exception ex)
+    {
+      if (ex is OLabUnauthorizedException)
+        return OLabUnauthorizedObjectResult.Result(ex.Message);
+      return OLabServerErrorResult.Result(ex.Message);
     }
   }
 }

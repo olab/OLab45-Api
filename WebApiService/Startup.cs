@@ -12,13 +12,15 @@ using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Services;
+using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using IOLabSession = OLabWebAPI.Data.Interface.IOLabSession;
-using IUserService = OLabWebAPI.Services.IUserService;
+using OLabWebAPI.Services;
+using OLab.Data.Interface;
+using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 
 namespace OLabWebAPI
 {
@@ -97,11 +99,14 @@ namespace OLabWebAPI
       // .EnableDetailedErrors()
       // );
 
-      OLabJWTService.Setup(_logger, Configuration, services);
+      //OLabAuthMiddleware.Setup(_logger, Configuration, services);
 
       services.AddTransient<IUserContext, UserContext>();
 
       // define instances of application services
+      services.AddSingleton<IOLabLogger, OLabLogger>();
+      services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
+      services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
       services.AddScoped<IUserService, OLabUserService>();
       services.AddScoped<IOLabSession, OLabSession>();
     }
@@ -121,7 +126,7 @@ namespace OLabWebAPI
       app.UseAuthorization();
 
       // custom jwt auth middleware
-      app.UseMiddleware<OLabJWTService>();
+      app.UseMiddleware<OLabAuthMiddleware>();
 
       app.UseEndpoints(x =>
       {

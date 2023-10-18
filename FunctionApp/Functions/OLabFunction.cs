@@ -14,7 +14,7 @@ public class OLabFunction
   protected readonly OLabDBContext DbContext;
   protected HttpResponseData response;
 
-  ///  this is set in derived classes
+  //  this is set in derived classes
   protected IOLabLogger Logger = null;
 
   protected string Token;

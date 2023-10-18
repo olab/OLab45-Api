@@ -53,48 +53,6 @@ namespace OLab.FunctionApp.Functions
         fileStorageProvider);
     }
 
-    [Function("Upload")]
-    public async Task<IActionResult> UploadAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import/upload")] HttpRequestData request,
-        FunctionContext hostContext,
-        CancellationToken cancellationToken)
-    {
-      Guard.Argument(request).NotNull(nameof(request));
-
-      try
-      {
-        // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
-
-        if (!auth.HasAccess("X", "Import", 0))
-          throw new OLabUnauthorizedException();
-
-        if (request.Body == null)
-          throw new ArgumentNullException(nameof(request.Body));
-
-        var httpContext = request.AsHttpContext();
-        var files = httpContext.Request.Form.Files.ToList();
-
-        if (files == null || files.Count == 0)
-          throw new Exception("unable to get request file");
-
-        var file = files.FirstOrDefault();
-
-        await _endpoint.Import(file, cancellationToken);
-      }
-      catch (Exception ex)
-      {
-        response = request.CreateResponse(ex);
-      }
-
-      var dto = new ImportResponse
-      {
-        Messages = Logger.GetMessages()
-      };
-
-      return OLabObjectResult<ImportResponse>.Result(dto);
-    }
-
     /// <summary>
     /// Runs an import
     /// </summary>
@@ -117,7 +75,6 @@ namespace OLab.FunctionApp.Functions
         throw new ArgumentNullException(nameof(request.Body));
 
       var parser = await MultipartFormDataParser.ParseAsync(request.Body);
-      Stream myBlob = new MemoryStream();
       var file = parser.Files[0];
 
       // test for bad file name (including any directory characters)
@@ -144,27 +101,6 @@ namespace OLab.FunctionApp.Functions
       };
       response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
       return response;
-    }
-
-    private bool CheckIfValidFile(string path)
-    {
-      var rc = true;
-
-      try
-      {
-        using (var zipFile = ZipFile.OpenRead(path))
-        {
-          var entries = zipFile.Entries;
-        }
-      }
-      catch (InvalidDataException)
-      {
-        rc = false;
-      }
-
-      Logger.LogInformation($"Export file '{path}' valid? {rc}");
-
-      return rc;
     }
 
     //private string WriteFile(IFormFile file)
