@@ -118,7 +118,7 @@ namespace OLab.Files.AzureBlobStorage
       {
         IList<BlobItem> blobs;
 
-        folderName = $"{_importBaseFolder}{folderName}";
+        var fullFileName = $"{folderName}{GetFolderSeparator()}{physicalFileName}"; 
 
         // if we do not have this folder already in cache
         // then hit the blob storage and cache the results
@@ -135,7 +135,7 @@ namespace OLab.Files.AzureBlobStorage
         else
           blobs = _folderContentCache[folderName];
 
-        result = blobs.Any(x => x.Name.Contains(physicalFileName));
+        result = blobs.Any(x => x.Name.Contains(fullFileName));
 
         if (!result)
           logger.LogWarning($"  '{folderName}{GetFolderSeparator()}{physicalFileName}' physical stream not found");
