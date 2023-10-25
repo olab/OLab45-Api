@@ -54,8 +54,10 @@ namespace OLabWebAPI
       //services.AddSignalR();
       JsonConvert.DefaultSettings = () => new JsonSerializerSettings
       {
+#if DEBUG
         Formatting = Formatting.Indented,
         ContractResolver = new CamelCasePropertyNamesContractResolver()
+#endif
       };
 
       services.AddCors(options =>

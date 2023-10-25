@@ -1,10 +1,12 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Configuration;
+using System.Reflection;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -33,6 +35,10 @@ namespace OLab.Files.AzureBlobStorage
       _configuration = configuration;
 
       logger.LogInformation($"Initializing AzureBlobFileSystemModule");
+
+      // if not set to use this module, then don't proceed further
+      if (GetModuleName().ToLower() != _configuration.GetAppSettings().FileStorageType.ToLower())
+        return;
 
       var connectionString = _configuration.GetAppSettings().FileStorageConnectionString;
       if (string.IsNullOrEmpty(connectionString))
@@ -345,5 +351,10 @@ namespace OLab.Files.AzureBlobStorage
 
     }
 
+    public string GetModuleName()
+    {
+      var attrib = this.GetType().GetCustomAttributes(typeof(OLabModuleAttribute), true).FirstOrDefault() as OLabModuleAttribute;
+      return attrib == null ? "" : attrib.Name;
+    }
   }
 }

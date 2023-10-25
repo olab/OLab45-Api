@@ -35,7 +35,9 @@ var host = new HostBuilder()
     {
       JsonConvert.DefaultSettings = () => new JsonSerializerSettings
       {
+#if DEBUG
         Formatting = Formatting.Indented,
+#endif
         ContractResolver = new CamelCasePropertyNamesContractResolver()
       };
 

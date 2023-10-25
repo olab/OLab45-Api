@@ -19,6 +19,10 @@ public class FilesFilesystemModule : IFileStorageModule
   {
     _configuration = configuration;
 
+    // if not set to use this module, then don't proceed further
+    if (GetModuleName().ToLower() != _configuration.GetAppSettings().FileStorageType.ToLower())
+      return;
+
     logger.LogInformation($"Initializing FilesFilesystemModule");
 
     logger.LogInformation($"FileStorageFolder: {_configuration.GetAppSettings().FileStorageFolder}");
@@ -168,6 +172,12 @@ public class FilesFilesystemModule : IFileStorageModule
     CancellationToken token)
   {
     throw new NotImplementedException();
+  }
+
+  public string GetModuleName()
+  {
+    var attrib = this.GetType().GetCustomAttributes(typeof(OLabModuleAttribute), true).FirstOrDefault() as OLabModuleAttribute;
+    return attrib == null ? "" : attrib.Name;
   }
 }
 
