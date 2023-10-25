@@ -1,3 +1,4 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -5,22 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Model;
-using OLab.Api.ObjectMapper;
 using OLab.Api.Endpoints;
-using OLab.Api.Utils;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
+using OLab.Api.Model;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using Dawn;
+using OLabWebAPI.Extensions;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
@@ -29,7 +24,7 @@ public class DisableFormValueModelBindingAttribute : Attribute, IResourceFilter
 {
   public void OnResourceExecuting(ResourceExecutingContext context)
   {
-    System.Collections.Generic.IList<IValueProviderFactory> factories = context.ValueProviderFactories;
+    var factories = context.ValueProviderFactories;
     factories.RemoveType<FormValueProviderFactory>();
     factories.RemoveType<JQueryFormValueProviderFactory>();
   }
@@ -47,12 +42,10 @@ public partial class FilesController : OLabController
 
   public FilesController(ILoggerFactory loggerFactory,
   IOLabConfiguration configuration,
-  IUserService userService,
   OLabDBContext dbContext,
   IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
   IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
     configuration,
-    userService,
     dbContext,
     wikiTagProvider,
     fileStorageProvider)
@@ -98,8 +91,8 @@ public partial class FilesController : OLabController
       Logger.LogError(ex, "FilesController.GetAsync error");
 
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -121,7 +114,7 @@ public partial class FilesController : OLabController
     catch (Exception ex)
     {
       Logger.LogError(ex, "FilesController.PostAsync error");
-      return OLabServerErrorResult.Result(ex.Message);
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -145,8 +138,8 @@ public partial class FilesController : OLabController
       Logger.LogError(ex, "FilesController.GetAsync error");
 
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
   }
@@ -171,11 +164,10 @@ public partial class FilesController : OLabController
       Logger.LogError(ex, "FilesController.PutAsync error");
 
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
-    return NoContent();
   }
 
   /// <summary>
@@ -197,8 +189,8 @@ public partial class FilesController : OLabController
     {
       Logger.LogError(ex, "FilesController.DeleteAsync error");
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 }

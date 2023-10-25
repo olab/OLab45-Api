@@ -1,5 +1,6 @@
+using Dawn;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
@@ -8,16 +9,14 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Reflection.PortableExecutable;
 
-namespace OLab.FunctionApp.Services
+namespace OLab.Access
 {
   public class OLabAuthorization : IOLabAuthorization
   {
     private readonly IOLabLogger _logger;
     private readonly OLabDBContext _dbContext;
-    private readonly IUserContext _userContext;
+    public IUserContext UserContext { get; set; }
     protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
     protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
     public Users OLabUser;
@@ -28,24 +27,26 @@ namespace OLab.FunctionApp.Services
 
     public OLabAuthorization(
       IOLabLogger logger,
-      OLabDBContext dbContext,
-      IUserContext userContext
+      OLabDBContext dbContext
     )
     {
+      Guard.Argument(logger).NotNull(nameof(logger));
+      Guard.Argument(dbContext).NotNull(nameof(dbContext));
+
       _logger = logger;
       _dbContext = dbContext;
-      _userContext = userContext;
 
-      LoadUserAuthorization(_userContext.UserRoles, _userContext.UserName, _userContext.UserId);
+      //SetUserContext(_userContext.UserRoles, _userContext.UserName, _userContext.UserId);
     }
 
-    public IUserContext GetUserContext()
+    public void SetUserContext(IUserContext userContext)
     {
-      return _userContext;
-    }
+      UserContext = userContext;
 
-    public void LoadUserAuthorization(IList<string> roles, string userName, uint userId)
-    {
+      var roles = UserContext.UserRoles;
+      string userName = UserContext.UserName;
+      uint userId = UserContext.UserId;
+
       _roleAcls = _dbContext.SecurityRoles.Where(x => roles.Contains(x.Name.ToLower())).ToList();
 
       // test for a local user

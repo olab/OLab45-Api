@@ -15,7 +15,7 @@ namespace OLab.FunctionApp.Services;
 public class UserService : IUserService
 {
   public static int defaultTokenExpiryMinutes = 120;
-  private readonly OLabDBContext _context;
+  private readonly OLabDBContext _dbContext;
   private readonly IOLabAuthentication _authentication;
   private readonly OLabAuthentication _externalAuth;
   private readonly IOLabLogger Logger;
@@ -35,7 +35,7 @@ public class UserService : IUserService
     Guard.Argument(authentication).NotNull(nameof(authentication));
     Guard.Argument(config).NotNull(nameof(config));
 
-    _context = context;
+    _dbContext = context;
     _authentication = authentication;
     _externalAuth = new OLabAuthentication(loggerFactory, config);
     
@@ -78,7 +78,7 @@ public class UserService : IUserService
     Guard.Argument(model, nameof(model)).NotNull();
 
     Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
-    var user = _context.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+    var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     // return null if user not found
     if (user != null)
@@ -119,7 +119,7 @@ public class UserService : IUserService
   /// <returns>Enumerable list of users</returns>
   public IEnumerable<Users> GetAll()
   {
-    return _context.Users.ToList();
+    return _dbContext.Users.ToList();
   }
 
   /// <summary>
@@ -129,7 +129,7 @@ public class UserService : IUserService
   /// <returns>User record</returns>
   public Users GetById(int id)
   {
-    return _context.Users.FirstOrDefault(x => x.Id == id);
+    return _dbContext.Users.FirstOrDefault(x => x.Id == id);
   }
 
   /// <summary>
@@ -139,7 +139,7 @@ public class UserService : IUserService
   /// <returns>User record</returns>
   public Users GetByUserName(string userName)
   {
-    return _context.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
+    return _dbContext.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
   }
 
   /// <summary>
@@ -178,11 +178,11 @@ public class UserService : IUserService
   private AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
   {
     // get user flagged for anonymous use
-    var serverUser = _context.Users.FirstOrDefault(x => x.Group == "anonymous");
+    var serverUser = _dbContext.Users.FirstOrDefault(x => x.Group == "anonymous");
     if (serverUser == null)
       throw new Exception($"No user is defined for anonymous map play");
 
-    var map = _context.Maps.FirstOrDefault(x => x.Id == mapId);
+    var map = _dbContext.Maps.FirstOrDefault(x => x.Id == mapId);
     if (map == null)
       throw new Exception($"Map {mapId} is not defined.");
 

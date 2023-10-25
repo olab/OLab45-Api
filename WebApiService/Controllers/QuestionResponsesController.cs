@@ -1,20 +1,19 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Model;
 using OLab.Api.Endpoints;
+using OLab.Api.Model;
 using OLab.Api.Utils;
-using System;
-using System.Threading.Tasks;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using Dawn;
-using OLab.Api.ObjectMapper;
+using OLabWebAPI.Extensions;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
@@ -27,12 +26,10 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     public QuestionResponsesController(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
-    IUserService userService,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
       configuration,
-      userService,
       dbContext,
       wikiTagProvider,
       fileStorageProvider)
@@ -67,8 +64,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+          return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+        return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
       }
 
       return NoContent();
@@ -89,13 +86,13 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         var auth = GetRequestContext(HttpContext);
 
         dto = await _endpoint.PostAsync(auth, dto);
-        return OLabObjectResult<QuestionResponsesDto>.Result(dto);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<QuestionResponsesDto>.Result(dto));
       }
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+          return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+        return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
       }
     }
 

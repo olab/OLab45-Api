@@ -1,20 +1,19 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Model;
 using OLab.Api.Endpoints;
+using OLab.Api.Model;
 using OLab.Api.Utils;
-using System;
-using System.Threading.Tasks;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using Dawn;
-using OLab.Api.ObjectMapper;
+using OLabWebAPI.Extensions;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
@@ -27,12 +26,10 @@ public partial class QuestionsController : OLabController
   public QuestionsController(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
-    IUserService userService,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
       configuration,
-      userService,
       dbContext,
       wikiTagProvider,
       fileStorageProvider)
@@ -65,13 +62,13 @@ public partial class QuestionsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       var pagedResult = await _endpoint.GetAsync(take, skip);
-      return OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining);
+      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -92,13 +89,13 @@ public partial class QuestionsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       var dto = await _endpoint.GetAsync(auth, id);
-      return OLabObjectResult<QuestionsFullDto>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<QuestionsFullDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -123,8 +120,8 @@ public partial class QuestionsController : OLabController
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
     return NoContent();
@@ -147,13 +144,13 @@ public partial class QuestionsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       dto = await _endpoint.PostAsync(auth, dto);
-      return OLabObjectResult<QuestionsFullDto>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<QuestionsFullDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 }

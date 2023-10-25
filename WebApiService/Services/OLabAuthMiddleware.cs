@@ -1,34 +1,31 @@
 using Dawn;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging.Abstractions;
+using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Interface;
-using OLab.FunctionApp.Services;
+using OLab.Common.Utils;
 using OLabWebAPI.Extensions;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+using System.IO;
 using System.Net;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services;
 
 public class OLabAuthMiddleware
 {
-  private readonly IUserService _userService;
-  private readonly OLabDBContext _dbContext;
+  //private readonly IUserService _userService;
+  //private readonly OLabDBContext _dbContext;
   private readonly RequestDelegate _next;
   private HttpRequest _httpRequest;
 
@@ -40,37 +37,99 @@ public class OLabAuthMiddleware
   private readonly IOLabLogger _logger;
 
   public OLabAuthMiddleware(
+    IServiceProvider serviceProvider,
     IOLabConfiguration configuration,
     ILoggerFactory loggerFactory,
-    IUserService userService,
-    OLabDBContext dbContext,
-    IOLabAuthentication authentication,
     RequestDelegate next)
   {
-    Guard.Argument(userService).NotNull(nameof(userService));
-    Guard.Argument(dbContext).NotNull(nameof(dbContext));
     Guard.Argument(configuration).NotNull(nameof(configuration));
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
-    Guard.Argument(authentication).NotNull(nameof(authentication));
 
     _logger = OLabLogger.CreateNew<OLabAuthMiddleware>(loggerFactory);
     _logger.LogInformation("OLabAuthMiddleware created");
 
     _config = configuration;
-    _userService = userService;
-    _dbContext = dbContext;
-    _authentication = authentication; // new OLabAuthentication(loggerFactory, _config);
+    //using (var scope = serviceProvider.CreateScope())
+    //{
+    //  _userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+    //  _dbContext = scope.ServiceProvider.GetRequiredService<OLabDBContext>();
+    //}
+
     _next = next;
   }
 
-  public async Task InvokeAsync(HttpContext hostContext)
+  public static void SetupServices(
+    IConfiguration configuration, 
+    IServiceCollection services,
+    OLabDBContext dbContext)
+  {
+    var logger = new OLabLogger(NullLoggerFactory.Instance);
+    // since IOLabconfiguration and OLabAuthentication can't be
+    // injected into this method, we need to spin up temporary ones
+    // so we can extract the centralized TokenValidationParameters
+    // from IOLabAuthentication
+    var config = new OLabConfiguration(NullLoggerFactory.Instance, configuration);
+    var authentication = new OLabAuthentication(
+      logger, 
+      config, 
+      dbContext);
+
+    services.AddAuthentication(x =>
+    {
+      x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+      x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+      options.RequireHttpsMetadata = true;
+      options.SaveToken = true;
+      options.TokenValidationParameters = authentication.GetValidationParameters();
+      options.Events = new JwtBearerEvents
+      {
+        // this event fires on every failed token validation
+        OnAuthenticationFailed = context =>
+        {
+          return Task.CompletedTask;
+        },
+
+        // this event fires on every incoming message
+        OnMessageReceived = context =>
+        {
+          // If the request is for our SignalR hub based on
+          // the URL requested then don't bother adding olab issued token.
+          // SignalR has it's own
+          PathString path = context.HttpContext.Request.Path;
+
+          var accessToken = authentication.ExtractAccessToken(
+            context.Request,
+            path.Value.Contains("/login"));
+
+          context.Token = accessToken;
+
+          return Task.CompletedTask;
+        }
+      };
+    });
+  }
+
+  public async Task InvokeAsync(
+    HttpContext hostContext, 
+    OLabDBContext dbContext, 
+    IOLabAuthentication authentication,
+    IOLabAuthorization authorization)
   {
     Guard.Argument(hostContext).NotNull(nameof(hostContext));
+    Guard.Argument(dbContext).NotNull(nameof(dbContext));
+    Guard.Argument(authorization).NotNull(nameof(authorization));
+    Guard.Argument(authentication).NotNull(nameof(authentication));
 
     try
     {
       _headers = hostContext.GetHttpRequestHeaders();
-      _functionName = hostContext.Request.Method.ToLower();
+      _functionName = hostContext.Request.Path.HasValue ?
+          Path.GetFileName(hostContext.Request.Path.Value) :
+          string.Empty;
+
       _httpRequest = hostContext.GetHttpRequest();
 
       _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
@@ -83,18 +142,19 @@ public class OLabAuthMiddleware
       {
         try
         {
-          if (!_headers.TryGetValue("authorization", out string token))
+          if (!_headers.TryGetValue("authorization", out var token))
             throw new OLabUnauthorizedException();
 
-          _authentication.ValidateToken(token);
+          authentication.ValidateToken(token);
 
           // This is added pre-function execution, function will have access to this information
           hostContext.Items.Add("headers", _headers);
-          hostContext.Items.Add("claims", _authentication.Claims);
+          hostContext.Items.Add("claims", authentication.Claims);
+          hostContext.Items.Add("auth", authorization);
 
-          var userContext = new UserContext(_logger, _dbContext, hostContext);
-          var auth = new OLabAuthorization(_logger, _dbContext, userContext);
-          hostContext.Items.Add("auth", auth);
+          // build and inject the host context into the authorixation object
+          var userContext = new UserContext(_logger, dbContext, hostContext);
+          authorization.SetUserContext( userContext );
 
           // run the function
           await _next(hostContext);

@@ -1,5 +1,6 @@
 //using Mapster;
 //using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -8,19 +9,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using OLab.Access;
+using OLab.Access.Interfaces;
+using OLab.Api.Common;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
-using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
 using OLab.Api.Utils;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using OLabWebAPI.Services;
-using OLab.Data.Interface;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
+using OLab.Data;
+using OLab.Data.Interface;
+using OLabWebAPI.Services;
+using System.Configuration;
 
 namespace OLabWebAPI
 {
@@ -42,10 +45,18 @@ namespace OLabWebAPI
       _logger = loggerFactory.CreateLogger<Startup>();
     }
 
-    // This method gets called by the runtime. Use this method to add services to the container.
+    /// <summary>
+    /// This method gets called by the runtime. Use this method to add services to the container.
+    /// </summary>
+    /// <param name="services">Services collection</param>
     public void ConfigureServices(IServiceCollection services)
     {
       //services.AddSignalR();
+      JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+      {
+        Formatting = Formatting.Indented,
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+      };
 
       services.AddCors(options =>
       {
@@ -62,7 +73,7 @@ namespace OLabWebAPI
       services.AddControllers().AddNewtonsoftJson();
       services.AddLogging(builder =>
       {
-        IConfigurationSection config = Configuration.GetSection("Logging");
+        var config = Configuration.GetSection("Logging");
         builder.ClearProviders();
         builder.AddConsole(configure =>
         {
@@ -78,15 +89,15 @@ namespace OLabWebAPI
       // configure strongly typed settings object
       services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-      var serverVersion = ServerVersion.AutoDetect(Configuration.GetConnectionString(Constants.DefaultConnectionStringName));
-      services.AddDbContext<OLabDBContext>(
-          dbContextOptions => dbContextOptions
-              .UseMySql(Configuration.GetConnectionString(Constants.DefaultConnectionStringName), serverVersion)
-              // The following three options help with debugging, but should
-              // be changed or removed for production.
-              // .LogTo(Console.WriteLine, LogLevel.Debug)
-              // .EnableSensitiveDataLogging()
-              .EnableDetailedErrors()
+      var connectionString = Configuration.GetConnectionString(Constants.DefaultConnectionStringName);
+      var serverVersion = ServerVersion.AutoDetect(connectionString);
+      services.AddDbContext<OLabDBContext>(options =>
+        options.UseMySql(connectionString, serverVersion)
+          // The following three options help with debugging, but should
+          // be changed or removed for production.
+          // .LogTo(Console.WriteLine, LogLevel.Information)
+          // .EnableSensitiveDataLogging()
+          .EnableDetailedErrors()
         );
 
       // Everything from this point on is optional but helps with debugging.
@@ -99,25 +110,33 @@ namespace OLabWebAPI
       // .EnableDetailedErrors()
       // );
 
-      //OLabAuthMiddleware.Setup(_logger, Configuration, services);
+      // set up JWT authenticatio services
+      // Build the intermediate service provider
+#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
+      var sp = services.BuildServiceProvider();
+#pragma warning restore ASP0000 
+      var dbContext = sp.GetService<OLabDBContext>();
+      OLabAuthMiddleware.SetupServices(Configuration, services, dbContext);
 
-      services.AddTransient<IUserContext, UserContext>();
+      //services.AddScoped<IOLabSession, OLabSession>();
+      services.AddScoped<IUserService, UserService>();
+      services.AddScoped<IOLabAuthorization, OLabAuthorization>();
+      services.AddScoped<IOLabAuthentication, OLabAuthentication>();
 
       // define instances of application services
       services.AddSingleton<IOLabLogger, OLabLogger>();
       services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
-      services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
-      services.AddScoped<IUserService, OLabUserService>();
-      services.AddScoped<IOLabSession, OLabSession>();
+
+      services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
+      services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
+      services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
       if (env.IsDevelopment())
-      {
         app.UseDeveloperExceptionPage();
-      }
 
       // app.UseHttpsRedirection();
       // global cors policy

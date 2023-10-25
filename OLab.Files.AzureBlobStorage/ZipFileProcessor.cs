@@ -1,13 +1,9 @@
 ﻿using Azure.Storage.Blobs;
-using Microsoft.Extensions.Logging;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace OLab.Files.AzureBlobStorage;
 
@@ -21,7 +17,7 @@ public class ZipFileProcessor : FileProcessorBase
   }
 
   public override async Task ProcessFileAsync(
-    string archiveFileName, 
+    string archiveFileName,
     string extractDirectory,
     Stream blobStream,
     CancellationToken token)

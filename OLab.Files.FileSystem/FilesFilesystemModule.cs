@@ -1,7 +1,5 @@
 ﻿using Dawn;
-using OLab.Api.Common;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -85,7 +83,7 @@ public class FilesFilesystemModule : IFileStorageModule
   public bool FileExists(
     IOLabLogger logger,
     string folderName,
-    string physicalFileName )
+    string physicalFileName)
   {
     var result = File.Exists($"{folderName}{GetFolderSeparator()}{physicalFileName}");
     if (!result)
@@ -142,7 +140,7 @@ public class FilesFilesystemModule : IFileStorageModule
     throw new NotImplementedException();
   }
 
-  public async Task<Stream> ReadFileAsync(IOLabLogger logger, 
+  public async Task<Stream> ReadFileAsync(IOLabLogger logger,
       string folderName,
       string fileName)
   {
@@ -155,7 +153,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="logger">OLabLogger</param>
   /// <param name="filePath">File to delete</param>
   /// <returns></returns>
-  public async Task<bool> DeleteFileAsync(IOLabLogger logger, 
+  public async Task<bool> DeleteFileAsync(IOLabLogger logger,
       string folderName,
       string fileName)
   {

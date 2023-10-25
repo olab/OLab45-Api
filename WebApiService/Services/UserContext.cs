@@ -1,14 +1,13 @@
+using Dawn;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 
 #nullable disable
@@ -36,7 +35,7 @@ namespace OLabWebAPI.Services
     private string _ipAddress;
     private string _issuer;
     private readonly string _courseName;
-    private string _accessToken;
+    private readonly string _accessToken;
 
     public IOLabSession Session
     {
@@ -85,16 +84,20 @@ namespace OLabWebAPI.Services
     public string CourseName { get { return _courseName; } }
 
     // default ctor, needed for services Dependancy Injection
-    public UserContext()
-    {
-
-    }
+    //public UserContext()
+    //{
+    //  throw new Exception("defualt");
+    //}
 
     public UserContext(
-      IOLabLogger logger, 
-      OLabDBContext dbContext, 
+      IOLabLogger logger,
+      OLabDBContext dbContext,
       HttpContext httpContext)
     {
+      Guard.Argument(logger).NotNull(nameof(logger));
+      Guard.Argument(dbContext).NotNull(nameof(dbContext));
+      Guard.Argument(httpContext).NotNull(nameof(httpContext));
+
       _dbContext = dbContext;
       _logger = logger;
       Session = new OLabSession(_logger.GetLogger(), dbContext, this);

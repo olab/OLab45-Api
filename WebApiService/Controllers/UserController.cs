@@ -1,24 +1,16 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Dawn;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
-using OLab.Api.Data;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
 using OLab.Api.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using OLab.Data.Interface;
 using OLab.Common.Interfaces;
-using Dawn;
+using OLab.Data.Interface;
+using OLabWebAPI.Extensions;
+using System;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
@@ -29,15 +21,22 @@ namespace OLabWebAPI.Endpoints.WebApi;
 [ApiController]
 public class AuthController : OLabController
 {
+  protected readonly IUserService _userService;
+  private readonly IOLabAuthentication _authentication;
+
   public AuthController(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     IUserService userService,
-    OLabDBContext dbContext) : base(configuration, userService, dbContext)
+    IOLabAuthentication authentication,
+    OLabDBContext dbContext) : base(configuration, dbContext)
   {
+    Guard.Argument(userService).NotNull(nameof(userService));
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
     Logger = OLabLogger.CreateNew<AuthController>(loggerFactory);
+    _authentication = authentication;
+    _userService = userService;
   }
 
   /// <summary>
@@ -58,11 +57,12 @@ public class AuthController : OLabController
 
     Logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
-    var response = userService.Authenticate(model);
-    if (response == null)
-      return OLabUnauthorizedObjectResult.Result("Username or password is incorrect");
+    var user = _userService.Authenticate(model);
+    if (user == null)
+      return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 
-    return OLabObjectResult<AuthenticateResponse>.Result(response);
+    var response = _authentication.GenerateJwtToken(user);
+    return HttpContext.Request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
   }
 
   /// <summary>
@@ -78,11 +78,11 @@ public class AuthController : OLabController
 
     try
     {
-      AuthenticateResponse response = userService.AuthenticateAnonymously(mapId);
+      var response = _authentication.GenerateAnonymousJwtToken(mapId);
       if (response == null)
-        return OLabUnauthorizedObjectResult.Result("Must be Logged on to Play Map");
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Must be Logged on to Play Map"));
 
-      return OLabObjectResult<AuthenticateResponse>.Result(response);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
 
     }
     catch (Exception ex)
@@ -104,11 +104,11 @@ public class AuthController : OLabController
 
     try
     {
-      AuthenticateResponse response = userService.AuthenticateExternal(model);
+      var response = _authentication.GenerateExternalJwtToken(model);
       if (response == null)
         return BadRequest(new { statusCode = 401, message = "Invalid external token" });
 
-      return OLabObjectResult<AuthenticateResponse>.Result(response);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
 
     }
     catch (Exception ex)

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using OLabWebAPI.Extensions;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Extensions;
@@ -46,7 +44,7 @@ public static class HostContextExtentions
   /// <param name="data"></param>
   /// <returns>return task.</returns>
   public static async Task CreateJsonResponse<T>(
-    this HttpContext hostContext, 
+    this HttpContext hostContext,
     System.Net.HttpStatusCode statusCode, T data)
   {
     var request = hostContext.GetHttpRequest();

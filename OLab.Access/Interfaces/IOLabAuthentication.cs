@@ -1,7 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Model;
 using System.Collections.Generic;
-using System.Security.Claims;
 
 namespace OLab.Access.Interfaces;
 
@@ -14,5 +13,7 @@ public interface IOLabAuthentication
   IDictionary<string, string> Claims { get; }
   TokenValidationParameters GetValidationParameters();
   AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab");
+  AuthenticateResponse GenerateAnonymousJwtToken(uint mapId);
+  AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model);
 
 }

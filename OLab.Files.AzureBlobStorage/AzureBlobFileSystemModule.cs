@@ -1,14 +1,10 @@
-﻿using System.Linq;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Configuration;
-using static System.Reflection.Metadata.BlobBuilder;
-using NuGet.Common;
-using System.IO;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -112,13 +108,13 @@ namespace OLab.Files.AzureBlobStorage
       string folderName,
       string physicalFileName)
     {
-      bool result = false;
+      var result = false;
 
       try
       {
         IList<BlobItem> blobs;
 
-        var fullFileName = $"{folderName}{GetFolderSeparator()}{physicalFileName}"; 
+        var fullFileName = $"{folderName}{GetFolderSeparator()}{physicalFileName}";
 
         // if we do not have this folder already in cache
         // then hit the blob storage and cache the results
@@ -280,7 +276,7 @@ namespace OLab.Files.AzureBlobStorage
     /// <param name="fileName">File to delete</param>
     /// <returns></returns>
     public async Task<bool> DeleteFileAsync(
-      IOLabLogger logger, 
+      IOLabLogger logger,
       string folderName,
       string fileName)
     {

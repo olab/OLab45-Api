@@ -1,21 +1,20 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Dto.Designer;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
 using OLab.Api.Utils;
-using System;
-using System.Threading.Tasks;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using Dawn;
+using OLabWebAPI.Extensions;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer;
 
@@ -28,12 +27,10 @@ public partial class TemplatesController : OLabController
   public TemplatesController(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
-    IUserService userService,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
       configuration,
-      userService,
       dbContext,
       wikiTagProvider,
       fileStorageProvider)
@@ -64,15 +61,15 @@ public partial class TemplatesController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetRequestContext(HttpContext);
-      
+
       var pagedResponse = await _endpoint.GetAsync(take, skip);
-      return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
+      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
   }
@@ -89,15 +86,15 @@ public partial class TemplatesController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetRequestContext(HttpContext);
-      
+
       var dto = _endpoint.Links();
-      return OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -113,15 +110,15 @@ public partial class TemplatesController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetRequestContext(HttpContext);
-      
+
       var dto = _endpoint.Nodes();
-      return OLabObjectResult<MapNodeTemplateDto>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodeTemplateDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 }

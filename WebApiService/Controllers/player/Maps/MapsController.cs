@@ -1,23 +1,20 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
 using OLab.Api.Utils;
-using System;
-using System.Threading.Tasks;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using Dawn;
-using System.Configuration;
-using OLabWebAPI.Services;
+using OLabWebAPI.Extensions;
+using System;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
@@ -30,12 +27,10 @@ public partial class MapsController : OLabController
   public MapsController(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
-    IUserService userService,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
       configuration,
-      userService,
       dbContext,
       wikiTagProvider,
       fileStorageProvider)
@@ -63,7 +58,7 @@ public partial class MapsController : OLabController
   {
     try
     {
-      Maps map = await _endpoint.GetSimpleAnonymousAsync(id);
+      var map = await _endpoint.GetSimpleAnonymousAsync(id);
       var dto = new MapsTestAccessDto
       {
         Id = map.Id,
@@ -74,11 +69,11 @@ public partial class MapsController : OLabController
     }
     catch (OLabObjectNotFoundException)
     {
-      return OLabObjectResult<MapsTestAccessDto>.Result(new MapsTestAccessDto());
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapsTestAccessDto>.Result(new MapsTestAccessDto()));
     }
     catch (Exception ex)
     {
-      return OLabServerErrorResult.Result(ex.Message);
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -98,13 +93,13 @@ public partial class MapsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
-      return OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining);
+      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
   }
@@ -115,7 +110,8 @@ public partial class MapsController : OLabController
   /// <param name="id"></param>
   /// <returns></returns>
   [HttpGet("{id}")]
-  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [AllowAnonymous]
+  //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> GetMapPlayerAsync(uint id)
   {
     try
@@ -124,13 +120,13 @@ public partial class MapsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       var dto = await _endpoint.GetAsync(auth, id);
-      return OLabObjectResult<MapsFullDto>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -150,13 +146,13 @@ public partial class MapsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
-      return OLabObjectResult<ExtendMapResponse>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ExtendMapResponse>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
   }
@@ -176,13 +172,13 @@ public partial class MapsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       var dto = await _endpoint.PostCreateMapAsync(auth, body);
-      return OLabObjectResult<MapsFullRelationsDto>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -206,8 +202,8 @@ public partial class MapsController : OLabController
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
     return NoContent();
@@ -232,8 +228,8 @@ public partial class MapsController : OLabController
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
     return NoContent();
@@ -254,13 +250,13 @@ public partial class MapsController : OLabController
       var auth = GetRequestContext(HttpContext);
 
       var dtoList = await _endpoint.GetLinksAsync(auth, mapId);
-      return OLabObjectListResult<MapNodeLinksFullDto>.Result(dtoList);
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapNodeLinksFullDto>.Result(dtoList));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
   }
@@ -284,15 +280,15 @@ public partial class MapsController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetRequestContext(HttpContext);
-      
+
       var dtoList = await _endpoint.GetSessionsAsync(auth, mapId);
-      return OLabObjectListResult<SessionInfo>.Result(dtoList);
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<SessionInfo>.Result(dtoList));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
   }

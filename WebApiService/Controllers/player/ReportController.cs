@@ -1,20 +1,19 @@
 using Data.Contracts;
+using Dawn;
 using Endpoints.player.ReportEndpoint;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
+using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
-using OLab.Data.Interface;
-using OLab.Common.Interfaces;
-using Dawn;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
@@ -26,12 +25,10 @@ public partial class ReportController : OLabController
   public ReportController(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
-    IUserService userService,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
       configuration,
-      userService,
       dbContext,
       wikiTagProvider,
       fileStorageProvider)
@@ -57,15 +54,15 @@ public partial class ReportController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetRequestContext(HttpContext);
-      
-      SessionReport response = await _endpoint.GetAsync(auth, sessionId);
-      return OLabObjectResult<SessionReport>.Result(response);
+
+      var response = await _endpoint.GetAsync(auth, sessionId);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<SessionReport>.Result(response));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
   }

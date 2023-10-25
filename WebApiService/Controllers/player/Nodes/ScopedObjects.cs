@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Endpoints;
+using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -21,14 +21,14 @@ public partial class NodesController : OLabController
       // validate token/setup up common properties
       var auth = GetRequestContext(HttpContext);
 
-      ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+      var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -41,14 +41,14 @@ public partial class NodesController : OLabController
       // validate token/setup up common properties
       var auth = GetRequestContext(HttpContext);
 
-      ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+      var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 
@@ -58,14 +58,14 @@ public partial class NodesController : OLabController
   {
     try
     {
-      ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
-      return OLabObjectResult<ScopedObjectsDto>.Result(dto);
+      var dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
   }
 }

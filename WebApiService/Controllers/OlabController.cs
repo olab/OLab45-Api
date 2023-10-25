@@ -2,19 +2,17 @@ using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.ObjectMapper;
-using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
 using System;
 using System.Collections.Generic;
-using OLab.Common.Interfaces;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using OLab.Data.Interface;
-using OLab.Api.Data.Interface;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -26,7 +24,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     protected IOLabLogger Logger = null;
 
     protected string Token;
-    protected readonly IUserService userService;
+    //protected readonly IUserService _userService;
     protected IUserContext userContext;
     protected readonly IOLabConfiguration _configuration;
     protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
@@ -37,31 +35,39 @@ namespace OLabWebAPI.Endpoints.WebApi
 
     public OLabController(
       IOLabConfiguration configuration,
-      IUserService userService,
+      //IUserService _userService,
       OLabDBContext dbContext)
     {
-      Guard.Argument(userService).NotNull(nameof(userService));
+      //Guard.Argument(_userService).NotNull(nameof(_userService));
       Guard.Argument(configuration).NotNull(nameof(configuration));
       Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
       _configuration = configuration;
 
       DbContext = dbContext;
-      this.userService = userService;
     }
 
     public OLabController(
       IOLabConfiguration configuration,
-      IUserService userService,
+      //IUserService _userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this(configuration, userService, dbContext)
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this(configuration, dbContext)
     {
       Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
       Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
 
       _wikiTagProvider = wikiTagProvider;
       _fileStorageProvider = fileStorageProvider;
+    }
+
+    [NonAction]
+    protected ContentResult Result(IActionResult actionResult)
+    {
+      var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(actionResult);
+      var content = Content(jsonString, "application/json", Encoding.UTF8);
+      content.StatusCode = 500;
+      return content;
     }
 
     /// <summary>
@@ -85,7 +91,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async ValueTask<Maps> GetMapAsync(uint id)
     {
-      Maps phys = await DbContext.Maps.FirstOrDefaultAsync(x => x.Id == id);
+      var phys = await DbContext.Maps.FirstOrDefaultAsync(x => x.Id == id);
       DbContext.Entry(phys).Collection(b => b.MapNodes).Load();
       return phys;
     }
@@ -98,7 +104,7 @@ namespace OLabWebAPI.Endpoints.WebApi
           .Where(x => x.MapId == mapId && x.Id == nodeId)
           .FirstOrDefaultAsync(x => x.Id == nodeId);
 
-      MapNodes item = await DbContext.MapNodes
+      var item = await DbContext.MapNodes
           .Where(x => x.MapId == mapId && x.TypeId == 1)
           .FirstOrDefaultAsync(x => x.Id == nodeId);
 
@@ -120,10 +126,10 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async Task<IList<MapNodesFullDto>> GetNodesAsync(Maps map, bool enableWikiTanslation = true)
     {
-      List<MapNodes> physList = await DbContext.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
+      var physList = await DbContext.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
       Logger.LogDebug(string.Format("found {0} mapNodes", physList.Count));
 
-      IList<MapNodesFullDto> dtoList = new MapNodesFullMapper(Logger, enableWikiTanslation).PhysicalToDto(physList);
+      var dtoList = new MapNodesFullMapper(Logger, enableWikiTanslation).PhysicalToDto(physList);
       return dtoList;
     }
 
@@ -171,7 +177,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     public async ValueTask<MapNodes> GetMapNodeAsync(uint nodeId)
     {
-      MapNodes item = await DbContext.MapNodes
+      var item = await DbContext.MapNodes
           .FirstOrDefaultAsync(x => x.Id == nodeId);
 
       // explicitly load the related objects.
@@ -188,7 +194,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async ValueTask<SystemQuestionResponses> GetQuestionResponseAsync(uint id)
     {
-      SystemQuestionResponses item = await DbContext.SystemQuestionResponses.FirstOrDefaultAsync(x => x.Id == id);
+      var item = await DbContext.SystemQuestionResponses.FirstOrDefaultAsync(x => x.Id == id);
       return item;
     }
 
@@ -200,7 +206,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async ValueTask<SystemConstants> GetConstantAsync(uint id)
     {
-      SystemConstants item = await DbContext.SystemConstants
+      var item = await DbContext.SystemConstants
           .FirstOrDefaultAsync(x => x.Id == id);
       return item;
     }
@@ -213,7 +219,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async ValueTask<SystemFiles> GetFileAsync(uint id)
     {
-      SystemFiles item = await DbContext.SystemFiles
+      var item = await DbContext.SystemFiles
           .FirstOrDefaultAsync(x => x.Id == id);
       return item;
     }
@@ -226,7 +232,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async ValueTask<SystemQuestions> GetQuestionSimpleAsync(uint id)
     {
-      SystemQuestions item = await DbContext.SystemQuestions
+      var item = await DbContext.SystemQuestions
           .FirstOrDefaultAsync(x => x.Id == id);
       return item;
     }
@@ -239,7 +245,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async ValueTask<SystemQuestions> GetQuestionAsync(uint id)
     {
-      SystemQuestions item = await DbContext.SystemQuestions
+      var item = await DbContext.SystemQuestions
           .Include(x => x.SystemQuestionResponses)
           .FirstOrDefaultAsync(x => x.Id == id);
       return item;
@@ -350,7 +356,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         .ToListAsync());
 
       // order the responses by Order field
-      foreach (SystemQuestions item in items)
+      foreach (var item in items)
         item.SystemQuestionResponses = item.SystemQuestionResponses.OrderBy(x => x.Order).ToList();
 
       return items;
@@ -398,7 +404,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected async Task<SystemCounters> GetCounterAsync(uint id)
     {
-      SystemCounters phys = await DbContext.SystemCounters.SingleOrDefaultAsync(x => x.Id == id);
+      var phys = await DbContext.SystemCounters.SingleOrDefaultAsync(x => x.Id == id);
       if (phys.Value == null)
         phys.Value = new List<byte>().ToArray();
       if (phys.StartValue == null)

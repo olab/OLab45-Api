@@ -1,21 +1,19 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
 using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
+using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
-using OLab.Data.Interface;
-using OLab.Common.Interfaces;
-using Dawn;
-using Microsoft.EntityFrameworkCore;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
@@ -28,12 +26,10 @@ public partial class QuestionResponseController : OLabController
   public QuestionResponseController(
   ILoggerFactory loggerFactory,
   IOLabConfiguration configuration,
-  IUserService userService,
   OLabDBContext dbContext,
   IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
   IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
     configuration,
-    userService,
     dbContext,
     wikiTagProvider,
     fileStorageProvider)
@@ -81,11 +77,11 @@ public partial class QuestionResponseController : OLabController
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
-    return OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects);
+    return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
 
   }
 }

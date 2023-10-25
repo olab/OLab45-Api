@@ -1,25 +1,21 @@
+using Dawn;
+using HttpMultipartParser;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
-using OLab.Api.Importer;
+using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
-using OLab.Api.Endpoints;
 using OLab.Api.Utils;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Threading.Tasks;
-using OLab.Import.Interfaces;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using Dawn;
 using OLab.Endpoints;
-using OLab.Api.Common.Exceptions;
-using HttpMultipartParser;
+using OLabWebAPI.Extensions;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -32,12 +28,10 @@ namespace OLabWebAPI.Endpoints.WebApi
     public ImportController(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
         configuration,
-        userService,
         dbContext,
         wikiTagProvider,
         fileStorageProvider)
@@ -98,7 +92,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
       };
 
-      return OLabObjectResult<ImportResponse>.Result(dto);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
     }
 
   }

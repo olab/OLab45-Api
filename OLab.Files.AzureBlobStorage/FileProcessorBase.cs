@@ -1,6 +1,4 @@
 ﻿using Azure.Storage.Blobs;
-using Microsoft.Extensions.Logging;
-using NuGet.Common;
 using OLab.Common.Interfaces;
 using SharpCompress.Archives;
 
@@ -23,7 +21,7 @@ public abstract class FileProcessorBase : IFileProcessor
   }
 
   public abstract Task ProcessFileAsync(
-    string archiveFileName, 
+    string archiveFileName,
     string extractDirectory,
     Stream blobStream,
     CancellationToken token);

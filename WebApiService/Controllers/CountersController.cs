@@ -3,16 +3,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.ObjectMapper;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -27,12 +26,10 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     public CountersController(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
         configuration,
-        userService,
         dbContext,
         wikiTagProvider,
         fileStorageProvider)
@@ -62,14 +59,14 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         // validate token/setup up common properties
         var auth = GetRequestContext(HttpContext);
 
-        OLabAPIPagedResponse<CountersDto> pagedResult = await _endpoint.GetAsync(auth, take, skip);
-        return OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining);
+        var pagedResult = await _endpoint.GetAsync(auth, take, skip);
+        return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<CountersDto>.Result(pagedResult.Data, pagedResult.Remaining));
       }
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+          return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+        return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
       }
     }
 
@@ -89,14 +86,14 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         // validate token/setup up common properties
         var auth = GetRequestContext(HttpContext);
 
-        CountersDto dto = await _endpoint.GetAsync(auth, id);
-        return OLabObjectResult<CountersDto>.Result(dto);
+        var dto = await _endpoint.GetAsync(auth, id);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<CountersDto>.Result(dto));
       }
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+          return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+        return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
       }
     }
 
@@ -122,8 +119,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+          return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+        return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
       }
 
       return NoContent();
@@ -146,13 +143,13 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         var auth = GetRequestContext(HttpContext);
 
         dto = await _endpoint.PostAsync(auth, dto);
-        return OLabObjectResult<CountersFullDto>.Result(dto);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<CountersFullDto>.Result(dto));
       }
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+          return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+        return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
       }
     }
 
@@ -177,8 +174,8 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       catch (Exception ex)
       {
         if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+          return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+        return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
       }
 
       return NoContent();

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLab.Api.Endpoints;
+using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -33,8 +33,8 @@ public partial class MapsController : OLabController
     catch (Exception ex)
     {
       if (ex is OLabUnauthorizedException)
-        return OLabUnauthorizedObjectResult.Result(ex.Message);
-      return OLabServerErrorResult.Result(ex.Message);
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
     return new NoContentResult();
