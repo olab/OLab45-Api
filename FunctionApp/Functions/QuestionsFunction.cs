@@ -22,10 +22,9 @@ namespace OLab.FunctionApp.Functions
     public QuestionsFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(configuration, userService, dbContext)
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(configuration, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 

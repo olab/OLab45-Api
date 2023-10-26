@@ -21,8 +21,7 @@ namespace OLab.FunctionApp.Functions.Player
     public ResponseFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
-      OLabDBContext dbContext) : base(configuration, userService, dbContext)
+      OLabDBContext dbContext) : base(configuration, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
@@ -60,7 +59,7 @@ namespace OLab.FunctionApp.Functions.Player
         var result =
           await _endpoint.PostQuestionResponseAsync(question, body);
 
-        auth.GetUserContext().Session.OnQuestionResponse(
+        userContext.Session.OnQuestionResponse(
           body.MapId,
           body.NodeId,
           question.Id,

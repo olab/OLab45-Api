@@ -22,9 +22,8 @@ namespace OLab.FunctionApp.Functions
     public QuestionRepsonsesFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
       OLabDBContext dbContext,
-      IOLabModuleProvider<IWikiTagModule> wikiTagProvider) : base(configuration, userService, dbContext)
+      IOLabModuleProvider<IWikiTagModule> wikiTagProvider) : base(configuration, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
       Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));

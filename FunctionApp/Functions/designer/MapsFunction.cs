@@ -26,7 +26,6 @@ namespace OLab.FunctionApp.Functions.Designer
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
         configuration, 
-        userService, 
         dbContext, 
         wikiTagProvider, 
         fileStorageProvider)

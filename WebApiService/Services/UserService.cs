@@ -57,14 +57,6 @@ public class UserService : IUserService
     var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     return user;
-
-    // return null if user not found
-    //if (user != null)
-    //  if (ValidatePassword(model.Password, user))
-    //    // _authentication successful so generate jwt token
-    //    return _authentication.GenerateJwtToken(user);
-
-    //return null;
   }
 
   /// <summary>

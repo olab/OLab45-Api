@@ -17,13 +17,14 @@ using System.Net;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using OLab.Data.Interface;
+using OLab.Api.Data.Interface;
 
 namespace OLab.FunctionApp.Middleware;
 
 public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 {
-  private readonly IUserService _userService;
   private readonly OLabDBContext _dbContext;
+  private readonly IOLabAuthorization _authorization;
   private HttpRequestData _httpRequestData;
 
   private IReadOnlyDictionary<string, string> _headers;
@@ -36,27 +37,28 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
   public OLabAuthMiddleware(
     IOLabConfiguration configuration,
     ILoggerFactory loggerFactory,
-    IUserService userService,
     OLabDBContext dbContext,
-    IOLabAuthentication authentication)
+    IOLabAuthentication authentication,
+    IOLabAuthorization authorization)
   {
-    Guard.Argument(userService).NotNull(nameof(userService));
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
     Guard.Argument(configuration).NotNull(nameof(configuration));
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
     Guard.Argument(authentication).NotNull(nameof(authentication));
+    Guard.Argument(authorization).NotNull(nameof(authorization));
 
     _logger = OLabLogger.CreateNew<OLabAuthMiddleware>(loggerFactory);
     _logger.LogInformation("JwtMiddleware created");
 
     _config = configuration;
-    _userService = userService;
     _dbContext = dbContext;
     _authentication = authentication; // new OLabAuthentication(loggerFactory, _config);
-
+    _authorization = authorization;
   }
 
-  public async Task Invoke(FunctionContext hostContext, FunctionExecutionDelegate next)
+  public async Task Invoke(
+    FunctionContext hostContext, 
+    FunctionExecutionDelegate next)
   {
     Guard.Argument(hostContext).NotNull(nameof(hostContext));
     Guard.Argument(next).NotNull(nameof(next));
@@ -91,8 +93,8 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
           hostContext.Items.Add("claims", _authentication.Claims);
 
           var userContext = new UserContext(_logger, _dbContext, hostContext);
-          var auth = new OLabAuthorization(_logger, _dbContext, userContext);
-          hostContext.Items.Add("auth", auth);
+          _authorization.SetUserContext( userContext );
+          hostContext.Items.Add("auth", _authorization);
 
           // run the function
           await next(hostContext);

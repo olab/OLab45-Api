@@ -3,26 +3,35 @@ using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using OLab.Access.Interfaces;
 using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
+using OLab.FunctionApp.Services;
+using System.Net;
 
 namespace OLab.FunctionApp.Functions;
 
 public class UserFunction : OLabFunction
 {
+  protected readonly IUserService _userService;
+  private readonly IOLabAuthentication _authentication;
+
   public UserFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       IUserService userService,
-      OLabDBContext dbContext) : base(configuration, userService, dbContext)
+      IOLabAuthentication authentication,
+      OLabDBContext dbContext) : base(configuration, dbContext)
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
     Logger = OLabLogger.CreateNew<UserFunction>(loggerFactory);
+    _authentication = authentication;
+    _userService = userService;
   }
 
   [Function("Login")]
@@ -34,18 +43,16 @@ public class UserFunction : OLabFunction
     {
       Guard.Argument(request).NotNull(nameof(request));
 
+      var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
 
-      var body = await request.ParseBodyFromRequestAsync<LoginRequest>();
+      Logger.LogDebug($"Login(user = '{model.Username}' ip: ???)");
 
-      Logger.LogDebug($"Login(user = '{body.Username}')");
+      var user = _userService.Authenticate(model);
+      if (user == null)
+        return request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 
-      var data = userService.Authenticate(body);
-
-      if (data == null)
-        response = request.CreateResponse(
-          OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
-      else
-        response = request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(data));
+      var response = _authentication.GenerateJwtToken(user);
+      return request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
 
     }
     catch (Exception ex)

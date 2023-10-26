@@ -22,8 +22,7 @@ namespace OLab.FunctionApp.Functions
     public CountersFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
-      OLabDBContext dbContext) : base(configuration, userService, dbContext)
+      OLabDBContext dbContext) : base(configuration, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 

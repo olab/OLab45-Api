@@ -21,12 +21,10 @@ namespace OLab.FunctionApp.Functions.Player
     public NodesFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
         configuration, 
-        userService, 
         dbContext, 
         wikiTagProvider, 
         fileStorageProvider)

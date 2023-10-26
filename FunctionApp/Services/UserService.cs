@@ -16,6 +16,7 @@ public class UserService : IUserService
 {
   public static int defaultTokenExpiryMinutes = 120;
   private readonly OLabDBContext _dbContext;
+  private IOLabConfiguration _config;
   private readonly IOLabAuthentication _authentication;
   private readonly OLabAuthentication _externalAuth;
   private readonly IOLabLogger Logger;
@@ -27,17 +28,14 @@ public class UserService : IUserService
   public UserService(
     ILoggerFactory loggerFactory,
     OLabDBContext context,
-    IOLabAuthentication authentication,
     IOLabConfiguration config)
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
     Guard.Argument(context).NotNull(nameof(context));
-    Guard.Argument(authentication).NotNull(nameof(authentication));
     Guard.Argument(config).NotNull(nameof(config));
 
     _dbContext = context;
-    _authentication = authentication;
-    _externalAuth = new OLabAuthentication(loggerFactory, config);
+    _config = config;
     
     defaultTokenExpiryMinutes = config.GetAppSettings().TokenExpiryMinutes;
 
@@ -49,44 +47,18 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// Authenticate anonymously
-  /// </summary>
-  /// <param name="model">Login model</param>
-  /// <returns>Authenticate response, or null</returns>
-  public AuthenticateResponse AuthenticateAnonymously(uint mapId)
-  {
-    return GenerateAnonymousJwtToken(mapId);
-  }
-
-  /// <summary>
-  /// Authenticate external-issued token
-  /// </summary>
-  /// <param name="model">Login model</param>
-  /// <returns>Authenticate response, or null</returns>
-  public AuthenticateResponse AuthenticateExternal(ExternalLoginRequest model)
-  {
-    return GenerateExternalJwtToken(model);
-  }
-
-  /// <summary>
   /// Authenticate user
   /// </summary>
   /// <param name="model">Login model</param>
   /// <returns>Authenticate response, or null</returns>
-  public AuthenticateResponse Authenticate(LoginRequest model)
+  public Users Authenticate(LoginRequest model)
   {
     Guard.Argument(model, nameof(model)).NotNull();
 
     Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
     var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
-    // return null if user not found
-    if (user != null)
-      if (ValidatePassword(model.Password, user))
-        // _authentication successful so generate jwt token
-        return _authentication.GenerateJwtToken(user);
-
-    return null;
+    return user;
   }
 
   /// <summary>
@@ -113,7 +85,7 @@ public class UserService : IUserService
     user.Password = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
   }
 
-  /// <summary>
+    /// <summary>
   /// Get all defined users
   /// </summary>
   /// <returns>Enumerable list of users</returns>

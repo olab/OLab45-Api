@@ -18,7 +18,7 @@ public class OLabFunction
   protected IOLabLogger Logger = null;
 
   protected string Token;
-  protected readonly IUserService userService;
+  //protected readonly IUserService userService;
   protected IUserContext userContext;
   protected readonly IOLabConfiguration _configuration;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
@@ -26,25 +26,21 @@ public class OLabFunction
 
   public OLabFunction(
     IOLabConfiguration configuration,
-    IUserService userService,
     OLabDBContext dbContext)
   {
-    Guard.Argument(userService).NotNull(nameof(userService));
     Guard.Argument(configuration).NotNull(nameof(configuration));
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
     _configuration = configuration;
 
     DbContext = dbContext;
-    this.userService = userService;
   }
 
   public OLabFunction(
     IOLabConfiguration configuration,
-    IUserService userService,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this( configuration, userService, dbContext )
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this( configuration, dbContext )
   {
     Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
     Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
