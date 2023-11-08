@@ -103,7 +103,7 @@ namespace OLab.FunctionApp.Functions
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         Logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
@@ -137,7 +137,7 @@ namespace OLab.FunctionApp.Functions
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
         var blobName = BuildStaticFileName(dto);
@@ -189,7 +189,7 @@ namespace OLab.FunctionApp.Functions
         phys.Mime = GetMimeTypeForFileExtension(phys.Name);
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         dto = await _endpoint.PostAsync(auth, phys);
 
@@ -247,7 +247,7 @@ namespace OLab.FunctionApp.Functions
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         await _endpoint.DeleteAsync(auth, id);
 

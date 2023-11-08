@@ -58,7 +58,7 @@ public partial class QuestionResponseController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var question = await GetQuestionAsync(body.QuestionId);
       if (question == null)

@@ -30,7 +30,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
 
@@ -38,6 +38,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -64,13 +65,14 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
         response = request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -98,7 +100,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
         var dto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, body);
@@ -107,6 +109,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 

@@ -17,8 +17,6 @@ public class UserService : IUserService
   public static int defaultTokenExpiryMinutes = 120;
   private readonly OLabDBContext _dbContext;
   private IOLabConfiguration _config;
-  private readonly IOLabAuthentication _authentication;
-  private readonly OLabAuthentication _externalAuth;
   private readonly IOLabLogger Logger;
 
   public bool IsValid { get; private set; }
@@ -140,80 +138,6 @@ public class UserService : IUserService
 
     Logger.LogInformation($"Password validated = {result}");
     return result;
-  }
-
-  /// <summary>
-  /// Generate JWT token for anonymous use
-  /// </summary>
-  /// <param name="mapId">map id to query</param>
-  /// <returns>AuthenticateResponse</returns>
-  private AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
-  {
-    // get user flagged for anonymous use
-    var serverUser = _dbContext.Users.FirstOrDefault(x => x.Group == "anonymous");
-    if (serverUser == null)
-      throw new Exception($"No user is defined for anonymous map play");
-
-    var map = _dbContext.Maps.FirstOrDefault(x => x.Id == mapId);
-    if (map == null)
-      throw new Exception($"Map {mapId} is not defined.");
-
-    // test for 'open' map
-    if (map.SecurityId != 1)
-      Logger.LogError($"Map {mapId} is not configured for anonymous map play");
-
-    var user = new Users();
-
-    user.Username = serverUser.Username;
-    user.Role = serverUser.Role;
-    user.Nickname = serverUser.Nickname;
-    user.Id = serverUser.Id;
-    var issuedBy = "olab";
-
-    var authenticateResponse = _authentication.GenerateJwtToken(user, issuedBy);
-
-    return authenticateResponse;
-  }
-
-
-  /// <summary>
-  /// Generate JWT token from external one
-  /// </summary>
-  /// <param name="model">token payload</param>
-  /// <returns>AuthenticateResponse</returns>
-  private AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
-  {
-    _externalAuth.ValidateToken( model.ExternalToken );
-
-    Logger.LogDebug($"External JWT Incoming token claims:");
-    foreach (var claim in _externalAuth.Claims)
-      Logger.LogDebug($" {claim.Key} = {claim.Value}");
-
-    var user = new Users();
-
-    if (_externalAuth.Claims.TryGetValue("unique_name", out string value))
-    {
-      user.Username = value;
-      user.Nickname = value;
-    }
-
-    if (_externalAuth.Claims.TryGetValue("role", out value))
-      user.Role = value;
-
-    if (_externalAuth.Claims.TryGetValue("id", out value))
-      user.Id = (uint)Convert.ToInt32(value);
-
-    if (_externalAuth.Claims.TryGetValue("course", out value))
-      user.Settings = value;
-
-    var issuedBy = _externalAuth.Claims["iss"];
-
-    var authenticateResponse = _authentication.GenerateJwtToken(user, issuedBy);
-
-    // add (any) course name to the authenticate response
-    authenticateResponse.CourseName = user.Settings;
-
-    return authenticateResponse;
   }
 
   public void AddUser(Users newUser)

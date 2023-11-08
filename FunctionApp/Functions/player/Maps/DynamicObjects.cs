@@ -40,13 +40,14 @@ namespace OLab.FunctionApp.Functions.Player
           sinceTime = (uint)Convert.ToInt32(sinceTimeQueryString);
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
         response = request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -82,13 +83,14 @@ namespace OLab.FunctionApp.Functions.Player
           sinceTime = (uint)Convert.ToInt32(sinceTimeQueryString);
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
         response = request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 

@@ -57,7 +57,7 @@ public partial class NodesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetNodeTranslatedAsync(auth, nodeId);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
@@ -84,7 +84,7 @@ public partial class NodesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       await _endpoint.PutNodeAsync(auth, id, dto);
     }
@@ -115,7 +115,7 @@ public partial class NodesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.PostLinkAsync(auth, nodeId, data);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodeLinksPostResponseDto>.Result(dto));
@@ -145,7 +145,7 @@ public partial class NodesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.PostNodeAsync(auth, mapId, data);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));

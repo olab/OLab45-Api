@@ -54,7 +54,7 @@ namespace OLab.FunctionApp.Functions
         int? take = queryTake > 0 ? queryTake : null;
         int? skip = querySkip > 0 ? querySkip : null;
 
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         Logger.LogInformation(string.Format("Found {0} constants", pagedResult.Data.Count));
@@ -86,7 +86,7 @@ namespace OLab.FunctionApp.Functions
         Guard.Argument(hostContext).NotNull(nameof(hostContext));
         Guard.Argument(id, nameof(id)).NotZero();
 
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
         response = request.CreateResponse(OLabObjectResult<ConstantsDto>.Result(dto));
@@ -116,7 +116,7 @@ namespace OLab.FunctionApp.Functions
         Guard.Argument(hostContext).NotNull(nameof(hostContext));
         Guard.Argument(id, nameof(id)).NotZero();
 
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
 
@@ -149,7 +149,7 @@ namespace OLab.FunctionApp.Functions
 
         var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
 
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.PostAsync(auth, body);
         response = request.CreateResponse(OLabObjectResult<ConstantsDto>.Result(dto));
@@ -179,7 +179,7 @@ namespace OLab.FunctionApp.Functions
         Guard.Argument(hostContext).NotNull(nameof(hostContext));
         Guard.Argument(id, nameof(id)).NotZero();
 
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         await _endpoint.DeleteAsync(auth, id);
         response = request.CreateResponse(new NoContentResult());

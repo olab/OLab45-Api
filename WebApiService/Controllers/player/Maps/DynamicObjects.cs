@@ -32,7 +32,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
         return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
@@ -63,7 +63,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
         return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
@@ -96,7 +96,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         Guard.Argument(node).NotNull(nameof(node));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         var dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation); ;
         return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));

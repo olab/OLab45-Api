@@ -58,7 +58,7 @@ public partial class ServerController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var pagedResponse = await _endpoint.GetAsync(take, skip);
       return HttpContext.Request.CreateResponse(OLabObjectListResult<Servers>.Result(pagedResponse.Data));
@@ -84,7 +84,7 @@ public partial class ServerController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
       return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
@@ -109,7 +109,7 @@ public partial class ServerController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
       return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));

@@ -2,6 +2,7 @@ using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OLab.Access;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
@@ -77,15 +78,21 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <returns>IOLabAuthentication</returns>
     /// <exception cref="Exception"></exception>
     [NonAction]
-    protected IOLabAuthorization GetRequestContext(HttpContext hostContext)
+    protected IOLabAuthorization GetAuthorization(HttpContext hostContext)
     {
       // Get the item set by the middleware
-      if (hostContext.Items.TryGetValue("auth", out var value) && value is IOLabAuthorization auth)
-        Logger.LogInformation("Got auth RequestContext");
-      else
-        throw new Exception("unable to get auth RequestContext");
+      if (hostContext.Items.TryGetValue("usercontext", out var value) && value is IUserContext userContext)
+      {
+        Logger.LogInformation($"User context: {userContext}");
 
-      return auth;
+        var auth = new OLabAuthorization(Logger, DbContext);
+        auth.ApplyUserContext(userContext);
+
+        return auth;
+      }
+
+      throw new Exception("unable to get auth RequestContext");
+
     }
 
     [NonAction]

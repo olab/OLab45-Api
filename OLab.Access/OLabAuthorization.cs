@@ -1,5 +1,6 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
@@ -35,12 +36,12 @@ namespace OLab.Access
 
       _logger = logger;
       _dbContext = dbContext;
-
-      //SetUserContext(_userContext.UserRoles, _userContext.UserName, _userContext.UserId);
     }
 
-    public void SetUserContext(IUserContext userContext)
+    public void ApplyUserContext(IUserContext userContext)
     {
+      Guard.Argument(userContext).NotNull(nameof(userContext));
+
       UserContext = userContext;
 
       var roles = UserContext.UserRoles;

@@ -26,7 +26,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
         response = request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
@@ -56,7 +56,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
         response = request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));

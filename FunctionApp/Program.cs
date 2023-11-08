@@ -45,7 +45,7 @@ var host = new HostBuilder()
       var serverVersion = ServerVersion.AutoDetect(connectionString);
       services.AddDbContext<OLabDBContext>(options =>
         options.UseMySql(connectionString, serverVersion)
-          .EnableDetailedErrors());
+          .EnableDetailedErrors(), ServiceLifetime.Scoped);
       //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
 
       services.AddOptions<AppSettings>()
@@ -56,12 +56,12 @@ var host = new HostBuilder()
 
       services.AddAzureAppConfiguration();
 
-      services.AddScoped<IUserContext, UserContext>();
+      services.AddScoped<IUserContext, UserContextService>();
 
       services.AddSingleton<IOLabLogger, OLabLogger>();
       services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
       services.AddSingleton<IOLabSession, OLabSession>();
-      services.AddScoped<IOLabAuthorization, OLabAuthorization>();
+      //services.AddScoped<IOLabAuthorization, OLabAuthorization>();
       services.AddScoped<IOLabAuthentication, OLabAuthentication>();
       services.AddSingleton<IUserService, UserService>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
@@ -72,7 +72,6 @@ var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults(builder =>
     {
       builder.UseMiddleware<OLabAuthMiddleware>();
-      //builder.UseMiddleware<ExceptionLoggingMiddleware>();
     })
 
     .ConfigureLogging(builder =>

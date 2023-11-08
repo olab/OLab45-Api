@@ -66,7 +66,7 @@ namespace OLab.FunctionApp.Functions.Designer
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var pagedResult = await _endpoint.GetAsync(take, skip);
         Logger.LogInformation(string.Format("Found {0} files", pagedResult.Data.Count));
@@ -75,6 +75,7 @@ namespace OLab.FunctionApp.Functions.Designer
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -96,13 +97,14 @@ namespace OLab.FunctionApp.Functions.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = _endpoint.Links();
         response = request.CreateResponse(OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto));
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -114,7 +116,7 @@ namespace OLab.FunctionApp.Functions.Designer
     /// </summary>
     /// <param name="id">Constant id</param>
     /// <returns></returns>
-    [Function("TemplateMapNodeDesigner")]
+    [Function("TemplateMapNodeGetDesigner")]
     public HttpResponseData TemplateMapNodeDesignerAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "templates/nodes")] HttpRequestData request,
       FunctionContext hostContext)
@@ -124,13 +126,14 @@ namespace OLab.FunctionApp.Functions.Designer
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = _endpoint.Nodes();
         response = request.CreateResponse(OLabObjectResult<MapNodeTemplateDto>.Result(dto));
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 

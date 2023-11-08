@@ -68,7 +68,7 @@ public partial class MapsController : OLabController
       Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
@@ -95,7 +95,7 @@ public partial class MapsController : OLabController
       Guard.Argument(mapId, nameof(mapId)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dtoList = await _endpoint.GetMapNodesAsync(auth, mapId);
       return HttpContext.Request.CreateResponse(OLabObjectListResult<MapNodesFullDto>.Result(dtoList));
@@ -125,7 +125,7 @@ public partial class MapsController : OLabController
       Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.PostMapNodeLinkAsync(auth, mapId, nodeId, body);
       return HttpContext.Request.CreateResponse(OLabObjectResult<PostNewLinkResponse>.Result(dto));
@@ -154,7 +154,7 @@ public partial class MapsController : OLabController
       Guard.Argument(linkId, nameof(linkId)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var deleted = await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, linkId);
       return HttpContext.Request.CreateResponse(OLabObjectResult<bool>.Result(deleted));
@@ -180,7 +180,7 @@ public partial class MapsController : OLabController
       Guard.Argument(body).NotNull(nameof(body));
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.PostMapNodesAsync(auth, body);
       return HttpContext.Request.CreateResponse(OLabObjectResult<PostNewNodeResponse>.Result(dto));
@@ -209,7 +209,7 @@ public partial class MapsController : OLabController
       Guard.Argument(body).NotNull(nameof(body));
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.PutMapNodegridAsync(auth, mapId, body);
       return HttpContext.Request.CreateResponse(OLabObjectResult<bool>.Result(dto));
@@ -236,7 +236,7 @@ public partial class MapsController : OLabController
       Guard.Argument(id, nameof(id)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
       return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
@@ -263,7 +263,7 @@ public partial class MapsController : OLabController
       Guard.Argument(id, nameof(id)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
       return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
@@ -325,7 +325,7 @@ public partial class MapsController : OLabController
         throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list olab users users from this endpoint
       if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
@@ -373,7 +373,7 @@ public partial class MapsController : OLabController
         throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list olab users users from this endpoint
       if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
@@ -410,7 +410,7 @@ public partial class MapsController : OLabController
         throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
       if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
@@ -466,7 +466,7 @@ public partial class MapsController : OLabController
         throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
       if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
@@ -502,7 +502,7 @@ public partial class MapsController : OLabController
         throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
       if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))

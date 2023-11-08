@@ -60,7 +60,7 @@ public partial class TemplatesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var pagedResponse = await _endpoint.GetAsync(take, skip);
       return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
@@ -85,7 +85,7 @@ public partial class TemplatesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = _endpoint.Links();
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodeLinkTemplateDto>.Result(dto));
@@ -109,7 +109,7 @@ public partial class TemplatesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = _endpoint.Nodes();
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodeTemplateDto>.Result(dto));

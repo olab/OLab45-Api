@@ -26,7 +26,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, linkdto);
     }

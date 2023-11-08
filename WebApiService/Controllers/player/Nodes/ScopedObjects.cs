@@ -19,7 +19,7 @@ public partial class NodesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
       return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
@@ -39,7 +39,7 @@ public partial class NodesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
       return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));

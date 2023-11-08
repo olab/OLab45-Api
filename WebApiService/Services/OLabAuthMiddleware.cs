@@ -49,12 +49,6 @@ public class OLabAuthMiddleware
     _logger.LogInformation("OLabAuthMiddleware created");
 
     _config = configuration;
-    //using (var scope = serviceProvider.CreateScope())
-    //{
-    //  _userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-    //  _dbContext = scope.ServiceProvider.GetRequiredService<OLabDBContext>();
-    //}
-
     _next = next;
   }
 
@@ -115,12 +109,10 @@ public class OLabAuthMiddleware
   public async Task InvokeAsync(
     HttpContext hostContext, 
     OLabDBContext dbContext, 
-    IOLabAuthentication authentication,
-    IOLabAuthorization authorization)
+    IOLabAuthentication authentication)
   {
     Guard.Argument(hostContext).NotNull(nameof(hostContext));
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
-    Guard.Argument(authorization).NotNull(nameof(authorization));
     Guard.Argument(authentication).NotNull(nameof(authentication));
 
     try
@@ -142,19 +134,17 @@ public class OLabAuthMiddleware
       {
         try
         {
-          if (!_headers.TryGetValue("authorization", out var token))
-            throw new OLabUnauthorizedException();
+          var token = _authentication.ExtractAccessToken(_headers);
 
           authentication.ValidateToken(token);
 
           // This is added pre-function execution, function will have access to this information
           hostContext.Items.Add("headers", _headers);
           hostContext.Items.Add("claims", authentication.Claims);
-          hostContext.Items.Add("auth", authorization);
 
           // build and inject the host context into the authorixation object
-          var userContext = new UserContext(_logger, dbContext, hostContext);
-          authorization.SetUserContext( userContext );
+          var userContext = new UserContextService(_logger, dbContext, hostContext);
+          hostContext.Items.Add("usercontext", userContext);
 
           // run the function
           await _next(hostContext);

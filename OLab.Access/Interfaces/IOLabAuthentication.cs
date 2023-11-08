@@ -8,7 +8,7 @@ public interface IOLabAuthentication
 {
   string ExtractAccessToken(
     IReadOnlyDictionary<string, string> headers,
-    IReadOnlyDictionary<string, object> bindingData);
+    IReadOnlyDictionary<string, object> bindingData = null);
   bool ValidateToken(string token);
   IDictionary<string, string> Claims { get; }
   TokenValidationParameters GetValidationParameters();

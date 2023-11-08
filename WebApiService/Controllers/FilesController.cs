@@ -83,7 +83,7 @@ public partial class FilesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
       return NoContent();
     }
     catch (Exception ex)
@@ -108,7 +108,7 @@ public partial class FilesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
       return NoContent();
     }
     catch (Exception ex)
@@ -130,7 +130,7 @@ public partial class FilesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
       return NoContent();
     }
     catch (Exception ex)
@@ -156,7 +156,7 @@ public partial class FilesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
       return NoContent();
     }
     catch (Exception ex)
@@ -182,7 +182,7 @@ public partial class FilesController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
       return NoContent();
     }
     catch (Exception ex)

@@ -62,7 +62,7 @@ namespace OLab.FunctionApp.Functions.Player
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var pagedResponse = await _endpoint.GetAsync(take, skip);
         response = request.CreateResponse(OLabObjectListResult<Servers>.Result(pagedResponse.Data));
@@ -92,7 +92,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
         response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
@@ -121,7 +121,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
         response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));

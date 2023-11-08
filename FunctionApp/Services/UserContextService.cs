@@ -1,41 +1,38 @@
 using Dawn;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Functions.Worker;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 
 #nullable disable
 
-namespace OLabWebAPI.Services
+namespace OLab.FunctionApp.Services
 {
-  public class UserContext : IUserContext
+  public class UserContextService : IUserContext
   {
     public const string WildCardObjectType = "*";
     public const uint WildCardObjectId = 0;
     public const string NonAccessAcl = "-";
+    public ClaimsPrincipal User;
     public Users OLabUser;
 
     protected IDictionary<string, string> _claims;
-    private readonly OLabDBContext _dbContext;
-    private readonly IOLabLogger _logger;
+    protected readonly IOLabLogger _logger;
     protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
     protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
-    private IOLabSession _session;
-    private string _role;
+    protected IOLabSession _session;
+    protected string _role;
     public IList<string> UserRoles { get; set; }
-    private uint _userId;
-    private string _userName;
-    private string _ipAddress;
-    private string _issuer;
-    private readonly string _courseName;
-    private readonly string _accessToken;
+    protected uint _userId;
+    protected string _userName;
+    protected string _ipAddress;
+    protected string _issuer;
+    protected string _referringCourse;
+    protected string _accessToken;
 
     public IOLabSession Session
     {
@@ -45,8 +42,8 @@ namespace OLabWebAPI.Services
 
     public string ReferringCourse
     {
-      get => _role;
-      set => _role = value;
+      get => _referringCourse;
+      set => _referringCourse = value;
     }
 
     public string Role
@@ -80,32 +77,32 @@ namespace OLabWebAPI.Services
     }
 
     public string SessionId { get { return Session.GetSessionId(); } }
-
-    public string CourseName { get { return _courseName; } }
+    public string CourseName { get { return null; } }
 
     // default ctor, needed for services Dependancy Injection
-    //public UserContext()
-    //{
-    //  throw new Exception("defualt");
-    //}
+    public UserContextService()
+    {
 
-    public UserContext(
+    }
+
+    public UserContextService(
       IOLabLogger logger,
       OLabDBContext dbContext,
-      HttpContext httpContext)
+      FunctionContext hostContext)
     {
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(dbContext).NotNull(nameof(dbContext));
-      Guard.Argument(httpContext).NotNull(nameof(httpContext));
+      Guard.Argument(hostContext).NotNull(nameof(hostContext));
 
-      _dbContext = dbContext;
       _logger = logger;
+      _logger.LogInformation($"UserContext ctor");
+
       Session = new OLabSession(_logger.GetLogger(), dbContext, this);
 
-      LoadHttpContext(httpContext);
+      LoadHostContext(hostContext);
     }
 
-    protected virtual void LoadHttpContext(HttpContext hostContext)
+    protected void LoadHostContext(FunctionContext hostContext)
     {
       if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
         throw new Exception("unable to retrieve headers from host context");
@@ -130,9 +127,6 @@ namespace OLabWebAPI.Services
       if (!_claims.TryGetValue(ClaimTypes.Name, out var nameValue))
         throw new Exception("unable to retrieve user name from token claims");
 
-
-      IPAddress = hostContext.Connection.RemoteIpAddress.ToString();
-
       UserName = nameValue;
 
       ReferringCourse = _claims[ClaimTypes.UserData];
@@ -155,8 +149,13 @@ namespace OLabWebAPI.Services
         .Select(x => x.ToLower())
         .OrderBy(x => x)
         .ToList();
-
     }
+
+    public override string ToString()
+    {
+      return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
+    }
+
   }
 }
 

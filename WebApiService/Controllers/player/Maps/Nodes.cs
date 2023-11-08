@@ -29,7 +29,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
 
@@ -62,7 +62,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
         return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
@@ -94,7 +94,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         var newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
         return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(newDto));

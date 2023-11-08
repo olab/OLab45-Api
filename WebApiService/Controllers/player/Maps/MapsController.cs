@@ -90,7 +90,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
       return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
@@ -117,7 +117,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetAsync(auth, id);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullDto>.Result(dto));
@@ -143,7 +143,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
       return HttpContext.Request.CreateResponse(OLabObjectResult<ExtendMapResponse>.Result(dto));
@@ -169,7 +169,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.PostCreateMapAsync(auth, body);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
@@ -195,7 +195,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       await _endpoint.PutAsync(auth, id, mapdto);
     }
@@ -221,7 +221,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       await _endpoint.DeleteAsync(auth, id);
     }
@@ -247,7 +247,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dtoList = await _endpoint.GetLinksAsync(auth, mapId);
       return HttpContext.Request.CreateResponse(OLabObjectListResult<MapNodeLinksFullDto>.Result(dtoList));
@@ -279,7 +279,7 @@ public partial class MapsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dtoList = await _endpoint.GetSessionsAsync(auth, mapId);
       return HttpContext.Request.CreateResponse(OLabObjectListResult<SessionInfo>.Result(dtoList));

@@ -1,4 +1,5 @@
 using Dawn;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -62,7 +63,7 @@ namespace OLab.FunctionApp.Functions.Player
         int? skip = querySkip > 0 ? querySkip : null;
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var pagedResult = await _endpoint.GetAsync(auth, take, skip);
         Logger.LogInformation(string.Format("Found {0} maps", pagedResult.Data.Count));
@@ -72,6 +73,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -94,13 +96,14 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetAsync(auth, id);
         response = request.CreateResponse(OLabObjectResult<MapsFullDto>.Result(dto));
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -123,7 +126,7 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
         var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
@@ -132,6 +135,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 
@@ -153,7 +157,7 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var body = await request.ParseBodyFromRequestAsync<CreateMapRequest>();
         var dto = await _endpoint.PostCreateMapAsync(auth, body);
@@ -162,6 +166,38 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+    }
+
+    /// <summary>
+    /// Gets the links for a map
+    /// </summary>
+    /// <param name="mapId"></param>
+    /// <returns>MapNodeLinks dto</returns>
+    [Function("MapLinksGetPlayer")]
+    public async Task<HttpResponseData> MapLinksGetPlayerAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/links")] HttpRequestData request,
+      FunctionContext hostContext, CancellationToken cancellationToken,
+      uint id
+    )
+    {
+      try
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization(hostContext);
+
+        var dtoList = await _endpoint.GetLinksAsync(auth, id);
+        Logger.LogInformation(string.Format("Found {0} map links", dtoList.Count));
+
+        response = request.CreateResponse(OLabObjectListResult<MapNodeLinksFullDto>.Result(dtoList));
+      }
+      catch (Exception ex)
+      {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 

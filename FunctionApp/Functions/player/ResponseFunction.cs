@@ -47,7 +47,7 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>();
 

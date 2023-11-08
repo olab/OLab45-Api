@@ -122,7 +122,7 @@ namespace OLabWebAPI
 
       //services.AddScoped<IOLabSession, OLabSession>();
       services.AddScoped<IUserService, UserService>();
-      services.AddScoped<IOLabAuthorization, OLabAuthorization>();
+      //services.AddScoped<IOLabAuthorization, OLabAuthorization>();
       services.AddScoped<IOLabAuthentication, OLabAuthentication>();
 
       // define instances of application services

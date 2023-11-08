@@ -6,6 +6,8 @@ using OLab.Api.Model;
 using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using OLab.Access;
+using System.Net;
 
 namespace OLab.FunctionApp.Functions;
 
@@ -51,19 +53,25 @@ public class OLabFunction
   }
 
   /// <summary>
-  /// Get the _authentication context from the host context
+  /// Builds the authentication context from the host context
   /// </summary>
   /// <param name="hostContext">Function context</param>
   /// <returns>IOLabAuthentication</returns>
   /// <exception cref="Exception"></exception>
-  protected IOLabAuthorization GetRequestContext(FunctionContext hostContext)
+  protected IOLabAuthorization GetAuthorization(FunctionContext hostContext)
   {
-    // Get the item set by the middleware
-    if (hostContext.Items.TryGetValue("auth", out var value) && value is IOLabAuthorization auth)
-      Logger.LogInformation("Got auth RequestContext");
-    else
-      throw new Exception("unable to get auth RequestContext");
+    // Get the user context set by the middleware
+    if (hostContext.Items.TryGetValue("usercontext", out var value) && value is IUserContext userContext)
+    {
+      Logger.LogInformation($"User context: {userContext}");
 
-    return auth;
+      var auth = new OLabAuthorization(Logger, DbContext);
+      auth.ApplyUserContext( userContext );
+
+      return auth;
+    }
+
+    throw new Exception("unable to get auth RequestContext");
+
   }
 }

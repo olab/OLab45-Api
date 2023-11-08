@@ -51,7 +51,7 @@ namespace OLab.FunctionApp.Functions
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
         var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
 
         await _endpoint.PutAsync(auth, id, body);
@@ -82,7 +82,7 @@ namespace OLab.FunctionApp.Functions
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
         var dto = await _endpoint.PostAsync(auth, body);
@@ -115,7 +115,7 @@ namespace OLab.FunctionApp.Functions
         Guard.Argument(id, nameof(id)).NotZero();
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var data = await _endpoint.DeleteAsync(auth, id);
 

@@ -18,13 +18,7 @@ public class TestFunction : OLabFunction
     OLabDBContext dbContext) : base(configuration, dbContext)
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
-
     Logger = OLabLogger.CreateNew<TestFunction>(loggerFactory);
-
-    Logger.LogInformation("LogInformation set");
-    Logger.LogWarning("LogWarning set");
-    Logger.LogError("LogError set");
-    Logger.LogFatal("LogFatal set");
   }
 
   [Function("Bootstrap")]
@@ -42,6 +36,11 @@ public class TestFunction : OLabFunction
     [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request,
     FunctionContext hostContext)
   {
+    //Logger.LogInformation("LogInformation set");
+    //Logger.LogWarning("LogWarning set");
+    //Logger.LogError("LogError set");
+    //Logger.LogFatal("LogFatal set");
+
     var response = request.CreateResponse(HttpStatusCode.OK);
     return response;
   }

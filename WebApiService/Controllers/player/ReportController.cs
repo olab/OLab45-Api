@@ -53,7 +53,7 @@ public partial class ReportController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var response = await _endpoint.GetAsync(auth, sessionId);
       return HttpContext.Request.CreateResponse(OLabObjectResult<SessionReport>.Result(response));

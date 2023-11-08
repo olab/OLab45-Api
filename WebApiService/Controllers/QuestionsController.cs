@@ -59,7 +59,7 @@ public partial class QuestionsController : OLabController
     try
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var pagedResult = await _endpoint.GetAsync(take, skip);
       return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<QuestionsDto>.Result(pagedResult.Data, pagedResult.Remaining));
@@ -86,7 +86,7 @@ public partial class QuestionsController : OLabController
       Guard.Argument(id, nameof(id)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetAsync(auth, id);
       return HttpContext.Request.CreateResponse(OLabObjectResult<QuestionsFullDto>.Result(dto));
@@ -113,7 +113,7 @@ public partial class QuestionsController : OLabController
       Guard.Argument(id, nameof(id)).NotZero();
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       await _endpoint.PutAsync(auth, id, dto);
     }
@@ -141,7 +141,7 @@ public partial class QuestionsController : OLabController
       Guard.Argument(dto).NotNull(nameof(dto));
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       dto = await _endpoint.PostAsync(auth, dto);
       return HttpContext.Request.CreateResponse(OLabObjectResult<QuestionsFullDto>.Result(dto));

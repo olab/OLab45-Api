@@ -54,7 +54,7 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
         var dto = await _endpoint.GetNodeTranslatedAsync(auth, nodeId);
 
         response = request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
@@ -82,7 +82,7 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
         var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
 
         await _endpoint.PutNodeAsync(auth, id, body);
@@ -114,7 +114,7 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var body = await request.ParseBodyFromRequestAsync<MapNodeLinksPostDataDto>();
         var dto = await _endpoint.PostLinkAsync(auth, nodeId, body);
@@ -146,7 +146,7 @@ namespace OLab.FunctionApp.Functions.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
 
         var body = await request.ParseBodyFromRequestAsync<MapNodesPostDataDto>();
         var dto = await _endpoint.PostNodeAsync(auth, mapId, body);

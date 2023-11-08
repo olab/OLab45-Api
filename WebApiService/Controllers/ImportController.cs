@@ -58,7 +58,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     public async Task<IActionResult> Post()
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       if (!auth.HasAccess("X", "Import", 0))
         throw new OLabUnauthorizedException();

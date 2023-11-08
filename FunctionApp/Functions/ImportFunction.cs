@@ -64,7 +64,7 @@ namespace OLab.FunctionApp.Functions
       Logger.LogDebug($"FilePostAsync");
 
       // validate token/setup up common properties
-      var auth = GetRequestContext(hostContext);
+      var auth = GetAuthorization(hostContext);
 
       if (!auth.HasAccess("X", "Import", 0))
         throw new OLabUnauthorizedException();

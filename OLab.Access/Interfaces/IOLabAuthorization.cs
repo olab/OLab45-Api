@@ -8,7 +8,7 @@ namespace OLab.Api.Data.Interface
     IActionResult HasAccess(string acl, ScopedObjectDto dto);
     bool HasAccess(string acl, string objectType, uint? objectId);
     IUserContext UserContext { get; set; }
-    void SetUserContext(IUserContext userContext);
+    void ApplyUserContext(IUserContext userContext);
 
   }
 }

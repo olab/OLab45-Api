@@ -1,39 +1,41 @@
 using Dawn;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 
 #nullable disable
 
-namespace OLab.FunctionApp.Services
+namespace OLabWebAPI.Services
 {
-  public class UserContext : IUserContext
+  public class UserContextService : IUserContext
   {
     public const string WildCardObjectType = "*";
     public const uint WildCardObjectId = 0;
     public const string NonAccessAcl = "-";
-    public ClaimsPrincipal User;
     public Users OLabUser;
 
     protected IDictionary<string, string> _claims;
-    protected readonly OLabDBContext _dbContext;
-    protected readonly IOLabLogger _logger;
+    private readonly OLabDBContext _dbContext;
+    private readonly IOLabLogger _logger;
     protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
     protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
-    protected IOLabSession _session;
-    protected string _role;
+    private IOLabSession _session;
+    private string _role;
     public IList<string> UserRoles { get; set; }
-    protected uint _userId;
-    protected string _userName;
-    protected string _ipAddress;
-    protected string _issuer;
-    protected string _referringCourse;
-    protected string _accessToken;
+    private uint _userId;
+    private string _userName;
+    private string _ipAddress;
+    private string _issuer;
+    private readonly string _courseName;
+    private readonly string _accessToken;
 
     public IOLabSession Session
     {
@@ -43,8 +45,8 @@ namespace OLab.FunctionApp.Services
 
     public string ReferringCourse
     {
-      get => _referringCourse;
-      set => _referringCourse = value;
+      get => _role;
+      set => _role = value;
     }
 
     public string Role
@@ -79,35 +81,25 @@ namespace OLab.FunctionApp.Services
 
     public string SessionId { get { return Session.GetSessionId(); } }
 
-    //public string CourseName { get { return _courseName; } }
-    public string CourseName { get { return null; } }
+    public string CourseName { get { return _courseName; } }
 
-    // default ctor, needed for services Dependancy Injection
-    public UserContext()
-    {
-
-    }
-
-    public UserContext(
+    public UserContextService(
       IOLabLogger logger,
       OLabDBContext dbContext,
-      FunctionContext hostContext)
+      HttpContext httpContext)
     {
       Guard.Argument(logger).NotNull(nameof(logger));
       Guard.Argument(dbContext).NotNull(nameof(dbContext));
-      Guard.Argument(hostContext).NotNull(nameof(hostContext));
+      Guard.Argument(httpContext).NotNull(nameof(httpContext));
 
       _dbContext = dbContext;
       _logger = logger;
-
       Session = new OLabSession(_logger.GetLogger(), dbContext, this);
 
-      _logger.LogInformation($"UserContext ctor");
-
-      LoadHostContext(hostContext);
+      LoadHttpContext(httpContext);
     }
 
-    protected void LoadHostContext(FunctionContext hostContext)
+    protected virtual void LoadHttpContext(HttpContext hostContext)
     {
       if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
         throw new Exception("unable to retrieve headers from host context");
@@ -132,6 +124,9 @@ namespace OLab.FunctionApp.Services
       if (!_claims.TryGetValue(ClaimTypes.Name, out var nameValue))
         throw new Exception("unable to retrieve user name from token claims");
 
+
+      IPAddress = hostContext.Connection.RemoteIpAddress.ToString();
+
       UserName = nameValue;
 
       ReferringCourse = _claims[ClaimTypes.UserData];
@@ -154,8 +149,12 @@ namespace OLab.FunctionApp.Services
         .Select(x => x.ToLower())
         .OrderBy(x => x)
         .ToList();
-    }
 
+    }
+    public override string ToString()
+    {
+      return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
+    }
   }
 }
 

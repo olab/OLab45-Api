@@ -31,7 +31,7 @@ namespace OLab.FunctionApp.Functions.Player
         Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(hostContext);
+        var auth = GetAuthorization(hostContext);
         var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>();
 
         await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, body);
@@ -39,6 +39,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
         response = request.CreateResponse(ex);
       }
 

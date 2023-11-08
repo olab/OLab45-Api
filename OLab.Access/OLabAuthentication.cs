@@ -127,7 +127,10 @@ public class OLabAuthentication : IOLabAuthentication
       token = request.Query["access_token"];
 
     if (string.IsNullOrEmpty(token) && !allowAnonymous)
+    {
+      Logger.LogError("Unable to extract authorization token");
       throw new OLabUnauthorizedException();
+    }
 
     return token;
   }
@@ -136,39 +139,45 @@ public class OLabAuthentication : IOLabAuthentication
   /// Gets the access token from request headers and binding Data
   /// </summary>
   /// <param name="headers">Request headers dictionary</param>
-  /// <param name="bindingData">Binding data</param>
+  /// <param name="bindingData">Binding data (optional)</param>
   /// <returns>Bearer token</returns>
   /// <exception cref="OLabUnauthorizedException"></exception>
   public virtual string ExtractAccessToken(
     IReadOnlyDictionary<string, string> headers,
-    IReadOnlyDictionary<string, object> bindingData)
+    IReadOnlyDictionary<string, object> bindingData = null)
   {
     Guard.Argument(headers).NotNull(nameof(headers));
 
+    Logger.LogInformation("Validating token");
+
     var token = string.Empty;
 
+
     // handler for external logins
-    if (bindingData.TryGetValue("token", out var externalToken))
+    if ( ( bindingData != null ) && bindingData.TryGetValue("token", out var externalToken))
     {
       token = externalToken as string;
       Logger.LogInformation("Binding data token provided");
     }
 
     // handler for signalR logins 
-    else if (bindingData.TryGetValue("access_token", out var signalRToken))
+    else if (( bindingData != null ) && bindingData.TryGetValue("access_token", out var signalRToken))
     {
       token = signalRToken as string;
       Logger.LogInformation("Signalr token provided");
     }
 
-
+    // handle Authorization header token
     else if (headers.TryGetValue("authorization", out var authHeader))
     {
-      if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-      {
-        token = authHeader.Substring("Bearer ".Length).Trim();
-        Logger.LogInformation("Authorization header bearer token provided");
-      }
+      token = authHeader.Replace("Bearer ", "");
+      Logger.LogInformation("Authorization header bearer token provided");
+    }
+
+    if ( string.IsNullOrEmpty( token ) )
+    {
+      Logger.LogError("No auth token provided");
+      throw new OLabUnauthorizedException();
     }
 
     return token;
@@ -186,7 +195,6 @@ public class OLabAuthentication : IOLabAuthentication
 
     try
     {
-      // clean out extra stuff, if needed
       token = token.Replace("Bearer ", "");
 
       // Try to validate the token. Throws if the 
@@ -199,16 +207,19 @@ public class OLabAuthentication : IOLabAuthentication
 
       Claims = new Dictionary<string, string>();
       foreach (var claim in claimsPrincipal.Claims)
+      {
+        Logger.LogInformation($" claim: {claim.Type} = {claim.Value}");
         Claims.Add(claim.Type, claim.Value);
+      }
 
-      Logger.LogInformation("valid bearer token provided");
+      Logger.LogInformation("bearer token validated");
 
       return true;
     }
     catch (Exception ex)
     {
       Logger.LogError(ex.Message);
-      throw new OLabUnauthorizedException();
+      throw;
     }
   }
 
@@ -219,7 +230,7 @@ public class OLabAuthentication : IOLabAuthentication
   /// <returns>AuthenticateResponse</returns>
   /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
   public AuthenticateResponse GenerateJwtToken(
-    Users user, 
+    Users user,
     string issuedBy = "olab")
   {
     Guard.Argument(user, nameof(user)).NotNull();

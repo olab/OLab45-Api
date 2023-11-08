@@ -57,7 +57,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
         Guard.Argument(dto).NotNull(nameof(dto));
 
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         await _endpoint.PutAsync(auth, id, dto);
       }
@@ -83,7 +83,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       try
       {
         // validate token/setup up common properties
-        var auth = GetRequestContext(HttpContext);
+        var auth = GetAuthorization(HttpContext);
 
         dto = await _endpoint.PostAsync(auth, dto);
         return HttpContext.Request.CreateResponse(OLabObjectResult<QuestionResponsesDto>.Result(dto));
@@ -106,7 +106,7 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     public async Task<IActionResult> DeleteAsync(uint id)
     {
       // validate token/setup up common properties
-      var auth = GetRequestContext(HttpContext);
+      var auth = GetAuthorization(HttpContext);
 
       return await _endpoint.DeleteAsync(auth, id);
     }
