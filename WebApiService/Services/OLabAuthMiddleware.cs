@@ -143,7 +143,7 @@ public class OLabAuthMiddleware
           hostContext.Items.Add("claims", authentication.Claims);
 
           // build and inject the host context into the authorixation object
-          var userContext = new UserContextService(_logger, dbContext, hostContext);
+          var userContext = new UserContextService(_logger, hostContext);
           hostContext.Items.Add("usercontext", userContext);
 
           // run the function

@@ -76,7 +76,6 @@ namespace OLab.FunctionApp.Services
       set => _issuer = value;
     }
 
-    //public string SessionId { get { return Session.GetSessionId(); } }
     public string CourseName { get { return null; } }
 
     // default ctor, needed for services Dependancy Injection
@@ -87,17 +86,13 @@ namespace OLab.FunctionApp.Services
 
     public UserContextService(
       IOLabLogger logger,
-      OLabDBContext dbContext,
       FunctionContext hostContext)
     {
       Guard.Argument(logger).NotNull(nameof(logger));
-      Guard.Argument(dbContext).NotNull(nameof(dbContext));
       Guard.Argument(hostContext).NotNull(nameof(hostContext));
 
       _logger = logger;
       _logger.LogInformation($"UserContext ctor");
-
-      //Session = new OLabSession(_logger.GetLogger(), dbContext, this);
 
       LoadHostContext(hostContext);
     }

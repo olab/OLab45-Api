@@ -90,7 +90,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
           hostContext.Items.Add("claims", _authentication.Claims);
 
           // This is added pre-function execution, function will have access to this information
-          var userContext = new UserContextService(_logger, _dbContext, hostContext);
+          var userContext = new UserContextService(_logger, hostContext);
           hostContext.Items.Add("usercontext", userContext);
 
           // run the function

@@ -15,18 +15,18 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
 {
-  public partial class ResponseFunction : OLabFunction
+  public partial class QuestionResponsesFunction : OLabFunction
   {
     private readonly ResponseEndpoint _endpoint;
 
-    public ResponseFunction(
+    public QuestionResponsesFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       OLabDBContext dbContext) : base(configuration, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = OLabLogger.CreateNew<ResponseFunction>(loggerFactory);
+      Logger = OLabLogger.CreateNew<QuestionResponsesFunction>(loggerFactory);
       _endpoint = new ResponseEndpoint(Logger, configuration, dbContext);
     }
 

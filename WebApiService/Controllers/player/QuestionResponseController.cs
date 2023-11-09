@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Data;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
@@ -59,6 +60,7 @@ public partial class QuestionResponseController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
+      var session = new OLabSession(Logger, DbContext, auth.UserContext);
 
       var question = await GetQuestionAsync(body.QuestionId);
       if (question == null)
@@ -67,7 +69,7 @@ public partial class QuestionResponseController : OLabController
       var result =
         await _endpoint.PostQuestionResponseAsync(question, body);
 
-      userContext.Session.OnQuestionResponse(
+      session.OnQuestionResponse(
         body.MapId,
         body.NodeId,
         question.Id,

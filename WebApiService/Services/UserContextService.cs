@@ -22,12 +22,11 @@ namespace OLabWebAPI.Services
     public Users OLabUser;
 
     protected IDictionary<string, string> _claims;
-    private readonly OLabDBContext _dbContext;
     private readonly IOLabLogger _logger;
     protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
     protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
-    private IOLabSession _session;
+    protected string _sessionId;
     private string _role;
     public IList<string> UserRoles { get; set; }
     private uint _userId;
@@ -35,12 +34,11 @@ namespace OLabWebAPI.Services
     private string _ipAddress;
     private string _issuer;
     private readonly string _courseName;
-    private readonly string _accessToken;
 
-    public IOLabSession Session
+    public string SessionId
     {
-      get => _session;
-      set => _session = value;
+      get => _sessionId;
+      set => _sessionId = value;
     }
 
     public string ReferringCourse
@@ -79,22 +77,18 @@ namespace OLabWebAPI.Services
       set => _issuer = value;
     }
 
-    public string SessionId { get { return Session.GetSessionId(); } }
-
     public string CourseName { get { return _courseName; } }
+
+    string IUserContext.SessionId { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
     public UserContextService(
       IOLabLogger logger,
-      OLabDBContext dbContext,
       HttpContext httpContext)
     {
       Guard.Argument(logger).NotNull(nameof(logger));
-      Guard.Argument(dbContext).NotNull(nameof(dbContext));
       Guard.Argument(httpContext).NotNull(nameof(httpContext));
 
-      _dbContext = dbContext;
       _logger = logger;
-      Session = new OLabSession(_logger.GetLogger(), dbContext, this);
 
       LoadHttpContext(httpContext);
     }
@@ -110,9 +104,9 @@ namespace OLabWebAPI.Services
       {
         if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
         {
-          Session.SetSessionId(sessionId);
-          if (!string.IsNullOrWhiteSpace(Session.GetSessionId()))
-            _logger.LogInformation($"Found sessionId {Session.GetSessionId()}.");
+          SessionId = sessionId;
+          if (!string.IsNullOrWhiteSpace(SessionId))
+            _logger.LogInformation($"Found sessionId {SessionId}.");
         }
       }
 
