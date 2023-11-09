@@ -206,10 +206,11 @@ public class OLabAuthentication : IOLabAuthentication
         out var validatedToken);
 
       Claims = new Dictionary<string, string>();
+
       foreach (var claim in claimsPrincipal.Claims)
       {
-        Logger.LogInformation($" claim: {claim.Type} = {claim.Value}");
-        Claims.Add(claim.Type, claim.Value);
+        var added = Claims.TryAdd(claim.Type, claim.Value);
+        Logger.LogInformation($" claim: {claim.Type} = {claim.Value}. added: {added}");        
       }
 
       Logger.LogInformation("bearer token validated");

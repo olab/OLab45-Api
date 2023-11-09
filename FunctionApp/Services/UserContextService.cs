@@ -24,7 +24,7 @@ namespace OLab.FunctionApp.Services
     protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
     protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
-    protected IOLabSession _session;
+    protected string _sessionId;
     protected string _role;
     public IList<string> UserRoles { get; set; }
     protected uint _userId;
@@ -34,10 +34,10 @@ namespace OLab.FunctionApp.Services
     protected string _referringCourse;
     protected string _accessToken;
 
-    public IOLabSession Session
+    public string SessionId
     {
-      get => _session;
-      set => _session = value;
+      get => _sessionId;
+      set => _sessionId = value;
     }
 
     public string ReferringCourse
@@ -76,7 +76,7 @@ namespace OLab.FunctionApp.Services
       set => _issuer = value;
     }
 
-    public string SessionId { get { return Session.GetSessionId(); } }
+    //public string SessionId { get { return Session.GetSessionId(); } }
     public string CourseName { get { return null; } }
 
     // default ctor, needed for services Dependancy Injection
@@ -97,7 +97,7 @@ namespace OLab.FunctionApp.Services
       _logger = logger;
       _logger.LogInformation($"UserContext ctor");
 
-      Session = new OLabSession(_logger.GetLogger(), dbContext, this);
+      //Session = new OLabSession(_logger.GetLogger(), dbContext, this);
 
       LoadHostContext(hostContext);
     }
@@ -113,9 +113,9 @@ namespace OLab.FunctionApp.Services
       {
         if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
         {
-          Session.SetSessionId(sessionId);
-          if (!string.IsNullOrWhiteSpace(Session.GetSessionId()))
-            _logger.LogInformation($"Found sessionId {Session.GetSessionId()}.");
+          SessionId = sessionId;
+          if (!string.IsNullOrWhiteSpace(SessionId))
+            _logger.LogInformation($"Found sessionId {SessionId}.");
         }
       }
 

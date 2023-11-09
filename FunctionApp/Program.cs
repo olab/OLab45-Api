@@ -60,8 +60,6 @@ var host = new HostBuilder()
 
       services.AddSingleton<IOLabLogger, OLabLogger>();
       services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
-      services.AddSingleton<IOLabSession, OLabSession>();
-      //services.AddScoped<IOLabAuthorization, OLabAuthorization>();
       services.AddScoped<IOLabAuthentication, OLabAuthentication>();
       services.AddSingleton<IUserService, UserService>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));

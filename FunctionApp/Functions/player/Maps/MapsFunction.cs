@@ -1,9 +1,18 @@
 using Dawn;
+using Humanizer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
@@ -140,6 +149,39 @@ namespace OLab.FunctionApp.Functions.Player
       }
 
       return response;
+
+    }
+
+    /// <summary>
+    /// Append template to an existing map
+    /// </summary>
+    /// <param name="mapId">Map to add template to</param>
+    /// <param name="CreateMapRequest.templateId">Template to add to map</param>
+    /// <returns>IActionResult</returns>
+    [Function("MapPutPlayer")]
+    public async Task<HttpResponseData> MapPutPlayerAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}")] HttpRequestData request,
+      FunctionContext hostContext, 
+      CancellationToken cancellationToken,
+      uint mapId
+    )
+    {
+      try
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization(hostContext);
+
+        var body = await request.ParseBodyFromRequestAsync<MapsFullDto>();
+        await _endpoint.PutAsync(auth, mapId, body);
+
+        return request.CreateResponse(OLabObjectResult<MapsFullDto>.Result(body));
+
+      }
+      catch (Exception ex)
+      {
+        Logger.LogError($"{ex.Message} {ex.StackTrace}");
+        return request.CreateResponse(ex);
+      }
 
     }
 

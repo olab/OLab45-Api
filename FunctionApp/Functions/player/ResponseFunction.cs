@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Data;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
@@ -48,6 +49,7 @@ namespace OLab.FunctionApp.Functions.Player
       {
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
+        var session = new OLabSession(Logger, DbContext, auth.UserContext);
 
         body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>();
 
@@ -59,7 +61,7 @@ namespace OLab.FunctionApp.Functions.Player
         var result =
           await _endpoint.PostQuestionResponseAsync(question, body);
 
-        userContext.Session.OnQuestionResponse(
+        session.OnQuestionResponse(
           body.MapId,
           body.NodeId,
           question.Id,
