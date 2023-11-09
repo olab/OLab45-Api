@@ -32,7 +32,6 @@ public class OLabAuthMiddleware
   private IReadOnlyDictionary<string, string> _headers;
   //private IReadOnlyDictionary<string, object> _bindingData;
   private string _functionName;
-  public IOLabAuthentication _authentication { get; private set; }
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger _logger;
 
@@ -134,7 +133,7 @@ public class OLabAuthMiddleware
       {
         try
         {
-          var token = _authentication.ExtractAccessToken(_headers);
+          var token = authentication.ExtractAccessToken(_headers);
 
           authentication.ValidateToken(token);
 
