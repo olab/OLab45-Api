@@ -154,7 +154,7 @@ namespace OLab.FunctionApp.Functions.Player
 
     /// <summary>
     /// Append template to an existing map
-    /// </summary>
+    /// </summary  
     /// <param name="mapId">Map to add template to</param>
     /// <param name="CreateMapRequest.templateId">Template to add to map</param>
     /// <returns>IActionResult</returns>
