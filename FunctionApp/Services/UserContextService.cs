@@ -110,7 +110,7 @@ namespace OLab.FunctionApp.Services
         {
           SessionId = sessionId;
           if (!string.IsNullOrWhiteSpace(SessionId))
-            _logger.LogInformation($"Found sessionId {SessionId}.");
+            _logger.LogInformation($"Found sessionId '{SessionId}'.");
         }
       }
 

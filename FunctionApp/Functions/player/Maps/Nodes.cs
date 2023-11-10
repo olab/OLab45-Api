@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 using OLab.Api.Common;
 using OLab.Api.Dto;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.Player
@@ -32,7 +33,8 @@ namespace OLab.FunctionApp.Functions.Player
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
-        var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId);
+        var body = await request.ParseBodyFromRequestAsync<DynamicScopedObjectsDto>();
+        var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
 
         response = request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
       }

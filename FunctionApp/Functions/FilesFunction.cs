@@ -176,38 +176,12 @@ namespace OLab.FunctionApp.Functions
 
         var dto = new FilesFullDto(parser);
 
-        var builder = new FilesFull(Logger);
-        phys = builder.DtoToPhysical(dto);
-
-        phys.CreatedAt = DateTime.Now;
-
-        var staticFileName = BuildStaticFileName(dto);
-
-        // save just the file name to the database
-        phys.Path = Path.GetFileName(staticFileName);
-        // infer the mimetype from the file name
-        phys.Mime = GetMimeTypeForFileExtension(phys.Name);
-
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
-        dto = await _endpoint.PostAsync(auth, phys);
-
-        // TODO: successful save to database, copy the file to the
-        // final location
-        Stream myBlob = new MemoryStream();
-        var file = parser.Files[0];
-        //myBlob = file.OpenReadStream();
-
-        //var blobClient = new BlobContainerClient(
-        //  _appSettings.StaticFilesConnectionString,
-        //  _appSettings.StaticFilesContainerName);
-
-        //var blob = blobClient.GetBlobClient(staticFileName);
-        //await blob.UploadAsync(myBlob);
+        dto = await _endpoint.PostAsync(auth, dto);
 
         response = request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
-
       }
       catch (Exception ex)
       {
