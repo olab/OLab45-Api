@@ -104,7 +104,7 @@ namespace OLab.FunctionApp.Services
 
       var headers = (Dictionary<string, string>)headersObjects;
 
-      if (headers.TryGetValue("OLabSessionId", out var sessionId))
+      if (headers.TryGetValue("OLabSessionId".ToLower(), out var sessionId))
       {
         if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
         {

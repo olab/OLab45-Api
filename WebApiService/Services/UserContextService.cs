@@ -76,10 +76,13 @@ namespace OLabWebAPI.Services
       get => _issuer;
       set => _issuer = value;
     }
+    string IUserContext.SessionId 
+    { 
+      get => _sessionId; 
+      set => _sessionId = value; 
+    }
 
     public string CourseName { get { return _courseName; } }
-
-    string IUserContext.SessionId { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
     public UserContextService(
       IOLabLogger logger,
@@ -100,7 +103,7 @@ namespace OLabWebAPI.Services
 
       var headers = (Dictionary<string, string>)headersObjects;
 
-      if (headers.TryGetValue("OLabSessionId", out var sessionId))
+      if (headers.TryGetValue("OLabSessionId".ToLower(), out var sessionId))
       {
         if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
         {
