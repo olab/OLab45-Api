@@ -11,6 +11,8 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
+using OLab.Api.ObjectMapper;
+using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
@@ -52,30 +54,20 @@ public partial class FilesController : OLabController
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
+    Logger = OLabLogger.CreateNew<FilesController>(loggerFactory);
+
     _endpoint = new FilesEndpoint(
       Logger,
       configuration,
       DbContext);
   }
 
-  private static string CapitalizeFirstLetter(string str)
-  {
-
-    if (str.Length == 0)
-      return str;
-
-    if (str.Length == 1)
-      return char.ToUpper(str[0]).ToString();
-    else
-      return char.ToUpper(str[0]) + str[1..];
-  }
-
   /// <summary>
-  /// 
+  /// Retrieve all files objects
   /// </summary>
-  /// <param name="take"></param>
-  /// <param name="skip"></param>
-  /// <returns></returns>
+  /// <param name="take">Pages max # records to retrieve</param>
+  /// <param name="skip"># records to skip</param>
+  /// <returns>Array of file records</returns>
   [HttpGet]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> GetAsync([FromQuery] int? take, [FromQuery] int? skip)
@@ -84,7 +76,9 @@ public partial class FilesController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
-      return NoContent();
+
+      var pagedResponse = await _endpoint.GetAsync(take, skip);
+      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<FilesDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
     }
     catch (Exception ex)
     {
@@ -103,13 +97,16 @@ public partial class FilesController : OLabController
   /// <returns>IActionResult</returns>
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> PostAsync()
+  public async Task<IActionResult> PostAsync([FromBody] FilesFullDto body)
   {
     try
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
-      return NoContent();
+
+      var dto = await _endpoint.PostAsync(auth, body);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
+
     }
     catch (Exception ex)
     {
@@ -131,7 +128,9 @@ public partial class FilesController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
-      return NoContent();
+
+      var dto = await _endpoint.GetAsync(auth, id);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -157,6 +156,8 @@ public partial class FilesController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
+
+      await _endpoint.PutAsync(auth, id, dto);
       return NoContent();
     }
     catch (Exception ex)
@@ -183,6 +184,8 @@ public partial class FilesController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
+
+      await _endpoint.DeleteAsync(auth, id);
       return NoContent();
     }
     catch (Exception ex)
