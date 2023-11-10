@@ -1,10 +1,14 @@
 using Dawn;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.FunctionApp.Middleware;
+using System.Net;
 using System.Security.Claims;
 
 #nullable disable
@@ -97,6 +101,32 @@ namespace OLab.FunctionApp.Services
       LoadHostContext(hostContext);
     }
 
+    private string GetRequestIpAddress(HttpRequestData req)
+    {
+      try
+      {
+        var headerDictionary = req.Headers.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
+        var key = "x-forwarded-for";
+
+        if (headerDictionary.ContainsKey(key))
+        {
+          var headerValues = headerDictionary[key];
+          var ipn = headerValues?.FirstOrDefault()?.Split(new char[] { ',' }).FirstOrDefault()?.Split(new char[] { ':' }).FirstOrDefault();
+
+          _logger.LogInformation($"found ip address: {ipn}");
+
+          return ipn;
+        }
+
+      }
+      catch (Exception)
+      {
+        // eat all exceptions
+      }
+
+      return "<unknown>";
+    }
+
     protected void LoadHostContext(FunctionContext hostContext)
     {
       if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
@@ -121,6 +151,9 @@ namespace OLab.FunctionApp.Services
 
       if (!_claims.TryGetValue(ClaimTypes.Name, out var nameValue))
         throw new Exception("unable to retrieve user name from token claims");
+
+      var req = hostContext.GetHttpRequestData();
+      IPAddress = GetRequestIpAddress(req);
 
       UserName = nameValue;
 

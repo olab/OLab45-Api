@@ -82,11 +82,7 @@ public partial class FilesController : OLabController
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex, "FilesController.GetAsync error");
-
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 
@@ -110,8 +106,7 @@ public partial class FilesController : OLabController
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex, "FilesController.PostAsync error");
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 
@@ -134,11 +129,7 @@ public partial class FilesController : OLabController
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex, "FilesController.GetAsync error");
-
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
 
   }
@@ -162,11 +153,7 @@ public partial class FilesController : OLabController
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex, "FilesController.PutAsync error");
-
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
 
   }
@@ -190,10 +177,7 @@ public partial class FilesController : OLabController
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex, "FilesController.DeleteAsync error");
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 }

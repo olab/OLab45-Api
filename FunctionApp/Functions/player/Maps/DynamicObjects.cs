@@ -47,7 +47,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        Logger.LogError($"{ex.Message} {ex.StackTrace}");
+        ProcessException(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -90,7 +90,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        Logger.LogError($"{ex.Message} {ex.StackTrace}");
+        ProcessException(ex);
         response = request.CreateResponse(ex);
       }
 

@@ -87,7 +87,7 @@ public class AuthController : OLabController
     }
     catch (Exception ex)
     {
-      return BadRequest(new { statusCode = 401, message = ex.Message });
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 
@@ -113,7 +113,7 @@ public class AuthController : OLabController
     }
     catch (Exception ex)
     {
-      return BadRequest(new { statusCode = 401, message = ex.Message });
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 

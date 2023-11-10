@@ -8,6 +8,8 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.Access;
 using System.Net;
+using OLab.FunctionApp.Middleware;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace OLab.FunctionApp.Functions;
 
@@ -42,13 +44,33 @@ public class OLabFunction
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this( configuration, dbContext )
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this(configuration, dbContext)
   {
     Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
     Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
 
     _wikiTagProvider = wikiTagProvider;
     _fileStorageProvider = fileStorageProvider;
+
+  }
+
+  /// <summary>
+  /// Centralized processing of exceptions
+  /// </summary>
+  /// <param name="ex"></param>
+  /// <exception cref="NotImplementedException"></exception>
+  protected void ProcessException(Exception ex)
+  {
+    Logger.LogError($"{ex.Message}");
+
+    var inner = ex.InnerException;
+    while (inner != null)
+    {
+      Logger.LogError($"  {inner.Message}");
+      inner = inner.InnerException;
+    }
+
+    Logger.LogError($"{ex.StackTrace}");
 
   }
 
@@ -66,7 +88,7 @@ public class OLabFunction
       Logger.LogInformation($"User context: {userContext}");
 
       var auth = new OLabAuthorization(Logger, DbContext);
-      auth.ApplyUserContext( userContext );
+      auth.ApplyUserContext(userContext);
 
       return auth;
     }

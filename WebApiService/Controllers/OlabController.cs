@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OLab.Access;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.ObjectMapper;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using OLabWebAPI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +39,6 @@ namespace OLabWebAPI.Endpoints.WebApi
 
     public OLabController(
       IOLabConfiguration configuration,
-      //IUserService _userService,
       OLabDBContext dbContext)
     {
       //Guard.Argument(_userService).NotNull(nameof(_userService));
@@ -50,7 +52,6 @@ namespace OLabWebAPI.Endpoints.WebApi
 
     public OLabController(
       IOLabConfiguration configuration,
-      //IUserService _userService,
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this(configuration, dbContext)
@@ -60,6 +61,30 @@ namespace OLabWebAPI.Endpoints.WebApi
 
       _wikiTagProvider = wikiTagProvider;
       _fileStorageProvider = fileStorageProvider;
+    }
+
+    /// <summary>
+    /// Centralized processing of exceptions
+    /// </summary>
+    /// <param name="ex"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    [NonAction]
+    protected IActionResult ProcessException(Exception ex, HttpRequest request)
+    {
+      Logger.LogError($"{ex.Message}");
+
+      var inner = ex.InnerException;
+      while (inner != null)
+      {
+        Logger.LogError($"  {inner.Message}");
+        inner = inner.InnerException;
+      }
+
+      Logger.LogError($"{ex.StackTrace}");
+
+      if (ex is OLabUnauthorizedException)
+        return request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+      return request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
     [NonAction]

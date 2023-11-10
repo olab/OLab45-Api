@@ -66,9 +66,7 @@ public partial class QuestionsController : OLabController
     }
     catch (Exception ex)
     {
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 
@@ -93,9 +91,7 @@ public partial class QuestionsController : OLabController
     }
     catch (Exception ex)
     {
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 
@@ -119,9 +115,7 @@ public partial class QuestionsController : OLabController
     }
     catch (Exception ex)
     {
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
 
     return NoContent();
@@ -148,9 +142,7 @@ public partial class QuestionsController : OLabController
     }
     catch (Exception ex)
     {
-      if (ex is OLabUnauthorizedException)
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-      return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+      return ProcessException(ex, HttpContext.Request);
     }
   }
 }

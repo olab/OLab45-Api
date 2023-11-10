@@ -2,7 +2,7 @@ using Dawn;
 using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-
+using Microsoft.VisualStudio.Web.CodeGeneration.Templating;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Model;
@@ -40,7 +40,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        Logger.LogError($"{ex.Message} {ex.StackTrace}");
+        ProcessException(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -74,7 +74,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        Logger.LogError($"{ex.Message} {ex.StackTrace}");
+        ProcessException(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -111,7 +111,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        Logger.LogError($"{ex.Message} {ex.StackTrace}");
+        ProcessException(ex);
         response = request.CreateResponse(ex);
       }
 
