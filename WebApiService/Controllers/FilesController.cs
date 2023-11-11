@@ -17,24 +17,10 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
-
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class DisableFormValueModelBindingAttribute : Attribute, IResourceFilter
-{
-  public void OnResourceExecuting(ResourceExecutingContext context)
-  {
-    var factories = context.ValueProviderFactories;
-    factories.RemoveType<FormValueProviderFactory>();
-    factories.RemoveType<JQueryFormValueProviderFactory>();
-  }
-
-  public void OnResourceExecuted(ResourceExecutedContext context)
-  {
-  }
-}
 
 [Route("olab/api/v3/files")]
 [ApiController]
@@ -48,9 +34,7 @@ public partial class FilesController : OLabController
   IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
   IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
     configuration,
-    dbContext,
-    wikiTagProvider,
-    fileStorageProvider)
+    dbContext)
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
@@ -59,7 +43,9 @@ public partial class FilesController : OLabController
     _endpoint = new FilesEndpoint(
       Logger,
       configuration,
-      DbContext);
+      DbContext,
+      wikiTagProvider,
+      fileStorageProvider);
   }
 
   /// <summary>
@@ -93,15 +79,17 @@ public partial class FilesController : OLabController
   /// <returns>IActionResult</returns>
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> PostAsync([FromBody] FilesFullDto body)
+  public async Task<IActionResult> PostAsync(CancellationToken cancel)
   {
     try
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var dto = await _endpoint.PostAsync(auth, body);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
+      var dto = new FilesFullDto(Request.Form);      
+      dto = await _endpoint.PostAsync(auth, dto, cancel);
+
+      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result((FilesFullDto)dto));
 
     }
     catch (Exception ex)

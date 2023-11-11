@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
@@ -13,6 +14,7 @@ namespace OLab.Files.AzureBlobStorage
   [OLabModule("AZUREBLOBSTORAGE")]
   public class AzureBlobFileSystemModule : IFileStorageModule
   {
+    private readonly IOLabLogger logger;
     private readonly IOLabConfiguration _configuration;
     private readonly BlobServiceClient _blobServiceClient;
     private readonly string _containerName;
@@ -32,6 +34,7 @@ namespace OLab.Files.AzureBlobStorage
       IOLabLogger logger,
       IOLabConfiguration configuration)
     {
+      this.logger = logger;
       _configuration = configuration;
 
       logger.LogInformation($"Initializing AzureBlobFileSystemModule");
@@ -64,7 +67,7 @@ namespace OLab.Files.AzureBlobStorage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
     /// <param name="items">List of system files to enhance</param>
-    public void AttachUrls(IOLabLogger logger, IList<SystemFiles> items)
+    public void AttachUrls(IList<SystemFiles> items)
     {
       logger.LogInformation($"Attaching Azure Blob URLs for {items.Count} stream records");
 
@@ -78,7 +81,7 @@ namespace OLab.Files.AzureBlobStorage
           var baseFolder = GetFileFolderName(scopeLevel, scopeId);
           logger.LogInformation($"  files baseFolder = '{baseFolder}");
 
-          if (FileExists(logger, baseFolder, item.Path))
+          if (FileExists(baseFolder, item.Path))
           {
             var fileUrl = $"{_configuration.GetAppSettings().FileStorageUrl}{GetFolderSeparator()}{baseFolder}{GetFolderSeparator()}{item.Path}";
             item.OriginUrl = fileUrl;
@@ -110,7 +113,6 @@ namespace OLab.Files.AzureBlobStorage
     /// <param name="physicalFileName">file name</param>
     /// <returns>true/false</returns>
     public bool FileExists(
-      IOLabLogger logger,
       string folderName,
       string physicalFileName)
     {
@@ -164,7 +166,6 @@ namespace OLab.Files.AzureBlobStorage
     /// <param name="destinationPath">Destination folder</param>
     /// <exception cref="NotImplementedException"></exception>
     public async Task MoveFileAsync(
-      IOLabLogger logger,
       string fileName,
       string sourcePath,
       string destinationPath,
@@ -174,11 +175,11 @@ namespace OLab.Files.AzureBlobStorage
       {
         logger.LogInformation($"MoveFileAsync '{fileName}' {sourcePath} -> {destinationPath}");
 
-        var stream = await ReadFileAsync(logger, sourcePath, fileName);
+        var stream = await ReadFileAsync(sourcePath, fileName);
 
         var destinationfilePath = $"{destinationPath}{GetFolderSeparator()}{fileName}";
-        await WriteFileAsync(logger, stream, destinationfilePath, token);
-        await DeleteFileAsync(logger, sourcePath, fileName);
+        await WriteFileAsync(stream, destinationfilePath, token);
+        await DeleteFileAsync(sourcePath, fileName);
       }
       catch (Exception ex)
       {
@@ -188,15 +189,14 @@ namespace OLab.Files.AzureBlobStorage
     }
 
     /// <summary>
-    /// Upload a file to storage
+    /// Upload an import file to storage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
     /// <param name="stream">File contents stream</param>
     /// <param name="uploadedFileName">Source file name</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>Fully qualified file name</returns>
-    public async Task<string> UploadFileAsync(
-      IOLabLogger logger,
+    public async Task<string> UploadImportFileAsync(
       Stream stream,
       string uploadedFileName,
       CancellationToken token)
@@ -211,7 +211,7 @@ namespace OLab.Files.AzureBlobStorage
 
         logger.LogInformation($"UploadFileAsync '{uploadedFileName}' ({filePath}) to '{_containerName}'");
 
-        await WriteFileAsync(logger, stream, filePath, token);
+        await WriteFileAsync(stream, filePath, token);
 
         return fileName;
 
@@ -224,8 +224,26 @@ namespace OLab.Files.AzureBlobStorage
 
     }
 
+    /// <summary>
+    /// Upload a map file to storage
+    /// </summary>
+    /// <param name="logger">OLabLogger</param>
+    /// <param name="stream">File contents stream</param>
+    /// <param name="uploadedFileName">Source file name</param>
+    /// <param name="token">Cancellation token</param>
+    /// <param name="mapId"></param>
+    /// <param name="nodeId"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public Task<string> UploadMapFileAsync(
+      Stream stream, 
+      FilesFullDto dto, 
+      CancellationToken token)
+    {
+      throw new NotImplementedException();
+    }
+
     private async Task WriteFileAsync(
-      IOLabLogger logger,
       Stream stream,
       string filePath,
       CancellationToken token)
@@ -243,7 +261,6 @@ namespace OLab.Files.AzureBlobStorage
     /// <param name="fileName">File name</param>
     /// <returns>File contents stream</returns>
     public async Task<Stream> ReadFileAsync(
-      IOLabLogger logger,
       string folderName,
       string fileName)
     {
@@ -282,7 +299,6 @@ namespace OLab.Files.AzureBlobStorage
     /// <param name="fileName">File to delete</param>
     /// <returns></returns>
     public async Task<bool> DeleteFileAsync(
-      IOLabLogger logger,
       string folderName,
       string fileName)
     {
@@ -318,7 +334,6 @@ namespace OLab.Files.AzureBlobStorage
     /// <param name="token">Cancellation token</param>
     /// <returns></returns>
     public async Task<bool> ExtractFileAsync(
-      IOLabLogger logger,
       string folderName,
       string fileName,
       string extractDirectory,
@@ -328,7 +343,7 @@ namespace OLab.Files.AzureBlobStorage
       {
         logger.LogInformation($"ExtractFileAsync '{folderName}' {fileName} -> {extractDirectory}");
 
-        var stream = await ReadFileAsync(logger, folderName, fileName);
+        var stream = await ReadFileAsync(folderName, fileName);
 
         var fileProcessor = new ZipFileProcessor(
           _blobServiceClient.GetBlobContainerClient(_containerName),
@@ -356,5 +371,6 @@ namespace OLab.Files.AzureBlobStorage
       var attrib = this.GetType().GetCustomAttributes(typeof(OLabModuleAttribute), true).FirstOrDefault() as OLabModuleAttribute;
       return attrib == null ? "" : attrib.Name;
     }
+
   }
 }

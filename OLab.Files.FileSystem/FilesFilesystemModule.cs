@@ -1,5 +1,7 @@
 ﻿using Dawn;
+using OLab.Api.Dto;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -11,12 +13,14 @@ namespace OLab.Files.FileSystem;
 [OLabModule("FILESYSTEM")]
 public class FilesFilesystemModule : IFileStorageModule
 {
+  private readonly IOLabLogger logger;
   private readonly IOLabConfiguration _configuration;
 
   public FilesFilesystemModule(
     IOLabLogger logger,
     IOLabConfiguration configuration)
   {
+    this.logger = logger;
     _configuration = configuration;
 
     // if not set to use this module, then don't proceed further
@@ -37,7 +41,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// Attach URLs to access files
   /// </summary>
   /// <param name="items">SystemFiles records</param>
-  public void AttachUrls(IOLabLogger logger, IList<SystemFiles> items)
+  public void AttachUrls(IList<SystemFiles> items)
   {
     logger.LogInformation($"Attaching file storage URLs for {items.Count} file records");
 
@@ -49,7 +53,7 @@ public class FilesFilesystemModule : IFileStorageModule
       var subPath = GetBasePath(scopeLevel, scopeId, item.Path);
       var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
 
-      if (FileExists(logger, physicalPath, item.Path))
+      if (FileExists(physicalPath, item.Path))
       {
         item.OriginUrl = $"{GetFolderSeparator()}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{GetFolderSeparator()}{subPath}";
         logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
@@ -65,7 +69,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="fileName">File name</param>
   /// <param name="sourcePath">Source path</param>
   /// <param name="destinationPath">Destination path</param>
-  public async Task MoveFileAsync(IOLabLogger logger,
+  public async Task MoveFileAsync(
       string fileName,
       string sourcePath,
       string destinationPath,
@@ -85,7 +89,6 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="physicalPath">Path to look for file</param>
   /// <returns>true/false</returns>
   public bool FileExists(
-    IOLabLogger logger,
     string folderName,
     string physicalFileName)
   {
@@ -97,14 +100,13 @@ public class FilesFilesystemModule : IFileStorageModule
   }
 
   /// <summary>
-  /// Uploads a file to upload directory
+  /// Uploads an import file to upload directory
   /// </summary>
   /// <param name="file">File contents stream</param>
   /// <param name="fileName">(Optional) file name (temp name generated, if null)</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
-  public async Task<string> UploadFileAsync(
-    IOLabLogger logger,
+  public async Task<string> UploadImportFileAsync(
     Stream file,
     string fileName,
     CancellationToken token)
@@ -123,6 +125,33 @@ public class FilesFilesystemModule : IFileStorageModule
     return physicalPath;
   }
 
+  /// <summary>
+  /// Uploads an import file to upload directory
+  /// </summary>
+  /// <param name="file">File contents stream</param>
+  /// <param name="fileName">(Optional) file name (temp name generated, if null)</param>
+  /// <param name="token">Cancellation token</param>
+  /// <returns>Physical file path</returns>
+  public async Task<string> UploadMapFileAsync(
+    Stream file,
+    FilesFullDto dto,
+    CancellationToken token)
+  {
+    var fullFileName = GetPhysicalPath(dto.ImageableType, dto.ImageableId, dto.FileName);
+
+    var physicalPath = Path.GetDirectoryName(fullFileName);
+    if ( physicalPath != null )
+      Directory.CreateDirectory(physicalPath);
+
+    using (var stream = new FileStream(fullFileName, FileMode.Create))
+    {
+      await file.CopyToAsync(stream);
+      logger.LogInformation($"uploaded file to '{fullFileName}'. Size: {file.Length}");
+    }
+
+    return fullFileName;
+  }
+
   private string GetBasePath(string scopeLevel, uint scopeId, string filePath)
   {
     var subPath = $"{scopeLevel}{GetFolderSeparator()}{scopeId}{GetFolderSeparator()}{filePath}";
@@ -139,12 +168,12 @@ public class FilesFilesystemModule : IFileStorageModule
     return physicalPath;
   }
 
-  public Task<string> SaveFile(IOLabLogger logger, string fileName, Stream stream, CancellationToken token)
+  public Task<string> SaveFile(string fileName, Stream stream, CancellationToken token)
   {
     throw new NotImplementedException();
   }
 
-  public async Task<Stream> ReadFileAsync(IOLabLogger logger,
+  public async Task<Stream> ReadFileAsync(
       string folderName,
       string fileName)
   {
@@ -157,7 +186,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="logger">OLabLogger</param>
   /// <param name="filePath">File to delete</param>
   /// <returns></returns>
-  public async Task<bool> DeleteFileAsync(IOLabLogger logger,
+  public async Task<bool> DeleteFileAsync(
       string folderName,
       string fileName)
   {
@@ -165,7 +194,6 @@ public class FilesFilesystemModule : IFileStorageModule
   }
 
   public async Task<bool> ExtractFileAsync(
-    IOLabLogger logger,
     string folderName,
     string fileName,
     string extractPath,
