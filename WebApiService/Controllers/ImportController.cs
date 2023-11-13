@@ -40,7 +40,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = OLabLogger.CreateNew<ImportController>(loggerFactory);
+      Logger = OLabLogger.CreateNew<ImportController>(loggerFactory, true);
 
       _endpoint = new ImportEndpoint(
         Logger,
@@ -57,7 +57,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <returns>IActionResult</returns>
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> Post()
+    public async Task<IActionResult> Upload(CancellationToken token)
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
@@ -68,25 +68,20 @@ namespace OLabWebAPI.Endpoints.WebApi
       if (Request.Body == null)
         throw new ArgumentNullException(nameof(Request.Body));
 
-      var parser = await MultipartFormDataParser.ParseAsync(Request.Body);
-      var file = parser.Files[0];
-
-      // test for bad file name (including any directory characters)
-      if (file.FileName.Contains(Path.DirectorySeparatorChar))
-        Logger.LogError("Invalid file name");
-      else
+      using (var archiveFileStream = Request.Form.Files[0].OpenReadStream())
       {
-        //  var fullFileName = Path.Combine(GetUploadDirectory(), file.FileName);
+        Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {archiveFileStream.Length}");
 
-        //  if (!File.Exists(fullFileName))
-        //    _logger.LogError("Unable to load file");
-        //  else
-        //  {
-        //    _logger.LogInformation($"Loading archive: '{Path.GetFileName(fullFileName)}'");
+        archiveFileStream.Position = 0;
 
-        //    if (_importer.ProcessImportFileAsync(fullFileName))
-        //      _importer.WriteImportToDatabase();
-        //  }
+        // test for bad file name (including any directory characters)
+        if (Request.Form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
+          Logger.LogError("Invalid file name");
+        else
+          await _endpoint.ImportAsync(
+            archiveFileStream, 
+            Request.Form.Files[0].FileName, 
+            token);
       }
 
       var dto = new ImportResponse

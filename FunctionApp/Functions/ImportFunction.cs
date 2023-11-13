@@ -19,6 +19,7 @@ using OLab.Data.Interface;
 using OLab.Endpoints;
 using OLab.FunctionApp.Extensions;
 using OLab.Import.Interfaces;
+using SharpCompress.Compressors.Xz;
 using System.IO;
 using System.IO.Compression;
 
@@ -59,7 +60,8 @@ namespace OLab.FunctionApp.Functions
     [Function("Import")]
     public async Task<HttpResponseData> ImportAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import")] HttpRequestData request,
-      FunctionContext hostContext)
+      FunctionContext hostContext,
+      CancellationToken cancel)
     {
       Logger.LogDebug($"FilePostAsync");
 
@@ -73,25 +75,14 @@ namespace OLab.FunctionApp.Functions
         throw new ArgumentNullException(nameof(request.Body));
 
       var parser = await MultipartFormDataParser.ParseAsync(request.Body);
-      var file = parser.Files[0];
+      if (parser.Files.Count == 0)
+        throw new Exception("No files were uploaded");
 
-      // test for bad file name (including any directory characters)
-      if (file.FileName.Contains(Path.DirectorySeparatorChar))
-        Logger.LogError("Invalid file name");
-      else
-      {
-        //  var fullFileName = Path.Combine(GetUploadDirectory(), file.FileName);
+      var stream = parser.Files[0].Data;
 
-        //  if (!File.Exists(fullFileName))
-        //    _logger.LogError("Unable to load file");
-        //  else
-        //  {
-        //    _logger.LogInformation($"Loading archive: '{Path.GetFileName(fullFileName)}'");
+      Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
 
-        //    if (_importer.ProcessImportFileAsync(fullFileName))
-        //      _importer.WriteImportToDatabase();
-        //  }
-      }
+      _endpoint.Import(stream, cancel);
 
       var dto = new ImportResponse
       {
@@ -99,23 +90,8 @@ namespace OLab.FunctionApp.Functions
       };
       response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
       return response;
+
     }
-
-    //private string WriteFile(IFormFile file)
-    //{
-    //  // strip off any directory
-    //  var fileName = Path.GetRandomFileName();
-    //  fileName += Path.GetExtension(file.FileName);
-
-    //  using (var stream = new FileStream(path, FileMode.Create))
-    //  {
-    //    await file.CopyToAsync(stream);
-    //    _logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");
-    //  }
-
-    //  return path;
-    //}
-
   }
-
 }
+

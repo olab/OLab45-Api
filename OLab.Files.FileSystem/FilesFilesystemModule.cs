@@ -1,10 +1,13 @@
 ﻿using Dawn;
+using HttpMultipartParser;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using System.IO;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace OLab.Files.FileSystem;
 
@@ -50,12 +53,11 @@ public class FilesFilesystemModule : IFileStorageModule
       var scopeLevel = item.ImageableType;
       var scopeId = item.ImageableId;
 
-      var subPath = GetBasePath(scopeLevel, scopeId, item.Path);
-      var physicalPath = GetPhysicalPath(scopeLevel, scopeId, item.Path);
+      var physicalPath = GetPhysicalPath(item.Path);
 
       if (FileExists(physicalPath, item.Path))
       {
-        item.OriginUrl = $"{GetFolderSeparator()}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{GetFolderSeparator()}{subPath}";
+        item.OriginUrl = $"{GetFolderSeparator()}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{GetFolderSeparator()}{scopeLevel}{GetFolderSeparator()}{scopeId}{item.Path}";
         logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
       }
       else
@@ -106,65 +108,33 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="fileName">(Optional) file name (temp name generated, if null)</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
-  public async Task<string> UploadImportFileAsync(
-    Stream file,
-    string fileName,
+  public async Task<string> WriteFileAsync(
+    Stream stream,
+    string targetFilePath,
     CancellationToken token)
   {
-    if (string.IsNullOrEmpty(fileName))
-      fileName = Path.GetRandomFileName();
+    var fullFileName = GetPhysicalPath(targetFilePath); 
 
-    var physicalPath = Path.Combine(_configuration.GetAppSettings().FileImportFolder, fileName);
-
-    using (var stream = new FileStream(physicalPath, FileMode.Create))
-    {
-      await file.CopyToAsync(stream);
-      logger.LogInformation($"uploaded file to '{physicalPath}'. Size: {file.Length}");
-    }
-
-    return physicalPath;
-  }
-
-  /// <summary>
-  /// Uploads an import file to upload directory
-  /// </summary>
-  /// <param name="file">File contents stream</param>
-  /// <param name="fileName">(Optional) file name (temp name generated, if null)</param>
-  /// <param name="token">Cancellation token</param>
-  /// <returns>Physical file path</returns>
-  public async Task<string> UploadMapFileAsync(
-    Stream file,
-    FilesFullDto dto,
-    CancellationToken token)
-  {
-    var fullFileName = GetPhysicalPath(dto.ImageableType, dto.ImageableId, dto.FileName);
+    logger.LogInformation($"Write physical file: {fullFileName}");
 
     var physicalPath = Path.GetDirectoryName(fullFileName);
-    if ( physicalPath != null )
+    if (physicalPath != null)
       Directory.CreateDirectory(physicalPath);
 
-    using (var stream = new FileStream(fullFileName, FileMode.Create))
+    using (var file = new FileStream(fullFileName, FileMode.Create))
     {
-      await file.CopyToAsync(stream);
-      logger.LogInformation($"uploaded file to '{fullFileName}'. Size: {file.Length}");
+      await stream.CopyToAsync(file);
+      logger.LogInformation($"write file to '{fullFileName}'. Size: {file.Length}");
     }
 
     return fullFileName;
   }
 
-  private string GetBasePath(string scopeLevel, uint scopeId, string filePath)
+  private string GetPhysicalPath(string filePath)
   {
-    var subPath = $"{scopeLevel}{GetFolderSeparator()}{scopeId}{GetFolderSeparator()}{filePath}";
-    return subPath;
-  }
-
-  private string GetPhysicalPath(string scopeLevel, uint scopeId, string filePath)
-  {
-    var subPath = GetBasePath(scopeLevel, scopeId, filePath);
-
     var physicalPath = Path.Combine(
       _configuration.GetAppSettings().FileStorageFolder,
-      subPath.Replace('/', Path.DirectorySeparatorChar));
+      filePath.Replace('/', Path.DirectorySeparatorChar));
     return physicalPath;
   }
 
@@ -173,11 +143,31 @@ public class FilesFilesystemModule : IFileStorageModule
     throw new NotImplementedException();
   }
 
-  public async Task<Stream> ReadFileAsync(
-      string folderName,
-      string fileName)
+  public async Task ReadFileAsync(
+      Stream stream,
+      string folder,
+      string fileName,
+      CancellationToken token)
   {
-    throw new NotImplementedException();
+    try
+    {
+      var filePath = $"{folder}{GetFolderSeparator()}{fileName}";
+
+      logger.LogInformation($"ReadFileAsync reading '{filePath}'");
+
+      using (var inputStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+      {
+        inputStream.CopyTo(stream);
+        stream.Position = 0;
+        logger.LogInformation($"  read '{inputStream.Length}'");
+      }
+
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "ReadFileAsync Exception");
+      throw;
+    }
   }
 
   /// <summary>
@@ -187,19 +177,40 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="filePath">File to delete</param>
   /// <returns></returns>
   public async Task<bool> DeleteFileAsync(
-      string folderName,
-      string fileName)
+  string folder,
+  string fileName)
   {
-    throw new NotImplementedException();
+    try
+    {
+      var filePath = $"{folder}{GetFolderSeparator()}{fileName}";
+      logger.LogInformation($"DeleteFileAsync deleting '{filePath}'");
+
+      File.Delete(filePath);
+      return true;
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "ReadFileAsync Exception");
+      throw;
+    }
   }
 
   public async Task<bool> ExtractFileAsync(
     string folderName,
     string fileName,
-    string extractPath,
+    string extractDirectoryName,
     CancellationToken token)
   {
-    throw new NotImplementedException();
+    logger.LogInformation($"extracting '{folderName}' {fileName} -> {extractDirectoryName}");
+
+    var archiveFilePath = $"{folderName}{GetFolderSeparator()}{fileName}";
+    var extractPath  = $"{folderName}{GetFolderSeparator()}{extractDirectoryName}";
+
+    if ( Directory.Exists(extractPath) )
+      Directory.Delete(extractPath, true);
+
+    System.IO.Compression.ZipFile.ExtractToDirectory(archiveFilePath, extractPath);
+    return true;
   }
 
   public string GetModuleName()

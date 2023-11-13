@@ -3,8 +3,7 @@
 public interface IFileProcessor
 {
   Task ProcessFileAsync(
-    string archiveFileName,
+    Stream stream,
     string extractDirectory,
-    Stream blobStream,
     CancellationToken token);
 }

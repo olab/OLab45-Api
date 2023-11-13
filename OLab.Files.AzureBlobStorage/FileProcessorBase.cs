@@ -21,9 +21,8 @@ public abstract class FileProcessorBase : IFileProcessor
   }
 
   public abstract Task ProcessFileAsync(
-    string archiveFileName,
+    Stream stream,
     string extractDirectory,
-    Stream blobStream,
     CancellationToken token);
 
   protected async Task ExtractArchiveFiles(

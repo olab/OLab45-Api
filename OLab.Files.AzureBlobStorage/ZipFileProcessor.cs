@@ -17,12 +17,11 @@ public class ZipFileProcessor : FileProcessorBase
   }
 
   public override async Task ProcessFileAsync(
-    string archiveFileName,
+    Stream stream,
     string extractDirectory,
-    Stream blobStream,
     CancellationToken token)
   {
-    if (ZipArchive.IsZipFile(blobStream))
+    if (ZipArchive.IsZipFile(stream))
     {
       var zipReaderOptions = new ReaderOptions()
       {
@@ -31,9 +30,9 @@ public class ZipFileProcessor : FileProcessorBase
       };
 
       Logger.LogInformation("Blob is a zip file; beginning extraction....");
-      blobStream.Position = 0;
+      stream.Position = 0;
 
-      using var reader = ZipArchive.Open(blobStream, zipReaderOptions);
+      using var reader = ZipArchive.Open(stream, zipReaderOptions);
       await ExtractArchiveFiles(extractDirectory, reader.Entries, token);
     }
   }
