@@ -26,12 +26,14 @@ namespace OLab.FunctionApp.Functions
     public FilesFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      OLabDBContext dbContext) : base(configuration, dbContext)
+      OLabDBContext dbContext,
+      IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(configuration, dbContext)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<FilesFunction>(loggerFactory);
-      _endpoint = new FilesEndpoint(Logger, configuration, dbContext);
+      _endpoint = new FilesEndpoint(Logger, configuration, dbContext, wikiTagProvider, fileStorageProvider);
     }
 
     public string GetMimeTypeForFileExtension(string filePath)
@@ -164,7 +166,8 @@ namespace OLab.FunctionApp.Functions
     [Function("FilePost")]
     public async Task<HttpResponseData> FilePostAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "file")] HttpRequestData request,
-      FunctionContext hostContext)
+      FunctionContext hostContext,
+      CancellationToken token)
     {
       SystemFiles phys = null;
 
@@ -179,7 +182,7 @@ namespace OLab.FunctionApp.Functions
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
-        dto = await _endpoint.PostAsync(auth, dto);
+        dto = await _endpoint.PostAsync(auth, dto, token);
 
         response = request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
       }

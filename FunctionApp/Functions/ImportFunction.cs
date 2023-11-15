@@ -82,7 +82,7 @@ namespace OLab.FunctionApp.Functions
 
       Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
 
-      _endpoint.Import(stream, cancel);
+      await _endpoint.ImportAsync(stream, parser.Files[0].FileName, cancel);
 
       var dto = new ImportResponse
       {
