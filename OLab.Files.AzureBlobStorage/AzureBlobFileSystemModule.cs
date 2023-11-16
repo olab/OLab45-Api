@@ -66,15 +66,6 @@ namespace OLab.Files.AzureBlobStorage
       return attrib == null ? "" : attrib.Name;
     }
 
-    private string GetPhysicalPath(string folderName, string fileName)
-    {
-      var physicalPath = Path.Combine(
-        _configuration.GetAppSettings().FileStorageFolder,
-        folderName,
-        fileName);
-      return physicalPath;
-    }
-
     private string GetPhysicalPath(string folderName)
     {
       var physicalPath = Path.Combine(
@@ -217,6 +208,13 @@ namespace OLab.Files.AzureBlobStorage
       }
     }
 
+    /// <summary>
+    /// Copy file presented by stream to file store
+    /// </summary>
+    /// <param name="stream">File stream</param>
+    /// <param name="folderName">Target folder</param>
+    /// <param name="fileName">Target file name</param>
+    /// <param name="token"></param>
     public async Task<string> CopyFiletoStreamAsync(
       Stream stream,
       string targetFolder,
@@ -361,6 +359,13 @@ namespace OLab.Files.AzureBlobStorage
 
     }
 
+    /// <summary>
+    /// Create archvie file from a folder
+    /// </summary>
+    /// <param name="archive">Archive file stream</param>
+    /// <param name="folderName">Source file folder</param>
+    /// <param name="appendToStream">Append or replace stream contents</param>
+    /// <param name="token"></param>
     public async Task<bool> CopyFoldertoArchiveAsync(
       ZipArchive archive,
       string folderName,
