@@ -25,6 +25,8 @@ namespace OLabWebAPI.Endpoints.WebApi
   [ApiController]
   public class SessionController : OLabController
   {
+    private readonly SessionEndpoint _endpoint;
+
     public SessionController(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
@@ -39,26 +41,59 @@ namespace OLabWebAPI.Endpoints.WebApi
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
       Logger = OLabLogger.CreateNew<SessionController>(loggerFactory);
+
+      _endpoint = new SessionEndpoint(
+        Logger,
+        configuration,
+        dbContext);
     }
 
     // POST: api/sessions
     /// <summary>
-    /// Create new counter
+    /// Retrieve session
     /// </summary>
-    /// <param name="dto">Counter data</param>
+    /// <param name="sessionId">SessionId</param>
     /// <returns>IActionResult</returns>
-    [HttpPost]
+    [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult PostSessionRequestAsync([FromBody] SessionRequest dto)
+    public IActionResult GetAsync(string id)
     {
       try
       {
-        Guard.Argument(dto).NotNull(nameof(dto));
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
+
+        var dto = _endpoint.GetAsync(auth, id);
+
+        var sessionTraces = DbContext.UserSessionTraces.Where(x => x.SessionId == 163370).ToList();
+        FileStreamResult fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
+
+        return fr;
+      }
+      catch (Exception ex)
+      {
+        return ProcessException(ex, HttpContext.Request);
+      }
+    }
+
+    // POST: api/sessions
+    /// <summary>
+    /// Retrieve session(s)
+    /// </summary>
+    /// <param name="request">Request object</param>
+    /// <returns>IActionResult</returns>
+    [HttpPost]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult PostAsync([FromBody] SessionRequest request)
+    {
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
 
         // validate token/setup up common properties
         var auth = GetAuthorization(HttpContext);
 
-        var sessionTraces = DbContext.UserSessionTraces.Where( x =>x.SessionId == 163370 ).ToList();
+        var sessionTraces = DbContext.UserSessionTraces.Where(x => x.SessionId == 163370).ToList();
         FileStreamResult fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
 
         return fr;

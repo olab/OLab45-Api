@@ -1,12 +1,16 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Dawn;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using SharpCompress.Common;
 using System.Configuration;
+using System.IO.Compression;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using static NuGet.Packaging.PackagingConstants;
 
@@ -56,12 +60,35 @@ namespace OLab.Files.AzureBlobStorage
       logger.LogInformation($"FileStorageUrl: {_configuration.GetAppSettings().FileStorageUrl}");
     }
 
+    public string GetModuleName()
+    {
+      var attrib = this.GetType().GetCustomAttributes(typeof(OLabModuleAttribute), true).FirstOrDefault() as OLabModuleAttribute;
+      return attrib == null ? "" : attrib.Name;
+    }
+
+    private string GetPhysicalPath(string folderName, string fileName)
+    {
+      var physicalPath = Path.Combine(
+        _configuration.GetAppSettings().FileStorageFolder,
+        folderName,
+        fileName);
+      return physicalPath;
+    }
+
+    private string GetPhysicalPath(string folderName)
+    {
+      var physicalPath = Path.Combine(
+        _configuration.GetAppSettings().FileStorageFolder,
+        folderName);
+      return physicalPath;
+    }
+
     public char GetFolderSeparator() { return '/'; }
 
-    private string GetScopedFileFolderName(string scopeLevel, uint scopeId)
+    private string GetScopedFolderName(string scopeLevel, uint scopeId)
     {
-      var subPath = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{scopeLevel}{GetFolderSeparator()}{scopeId}";
-      return subPath;
+      var scopeFolder = $"{scopeLevel}{GetFolderSeparator()}{scopeId}";
+      return scopeFolder;
     }
 
     /// <summary>
@@ -76,13 +103,12 @@ namespace OLab.Files.AzureBlobStorage
       {
         try
         {
-          var fileFolder = GetScopedFileFolderName(item.ImageableType, item.ImageableId);
-          logger.LogInformation($"  file folder = '{fileFolder}");
+          var scopeFolder = GetScopedFolderName(item.ImageableType, item.ImageableId);
+          logger.LogInformation($"  file scope folder name = '{scopeFolder}");
 
-          if (FileExists(fileFolder, item.Path))
+          if (FileExists(scopeFolder, item.Path))
           {
-            var fileUrl = $"{_configuration.GetAppSettings().FileStorageUrl}{GetFolderSeparator()}{fileFolder}{GetFolderSeparator()}{item.Path}";
-            item.OriginUrl = fileUrl;
+            item.OriginUrl = $"{GetFolderSeparator()}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{GetFolderSeparator()}{item.ImageableType}{GetFolderSeparator()}{item.ImageableId}{GetFolderSeparator()}{item.Path}";
             logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
           }
           else
@@ -100,22 +126,25 @@ namespace OLab.Files.AzureBlobStorage
     /// <summary>
     /// Test if a file exists
     /// </summary>
-    /// <param name="folderName">File folder</param>
+    /// <param name="folderName">File folderName</param>
     /// <param name="fileName">file name</param>
     /// <returns>true/false</returns>
     public bool FileExists(
       string folderName,
       string fileName)
     {
+      Guard.Argument(folderName).NotEmpty(nameof(folderName));
+      Guard.Argument(fileName).NotEmpty(nameof(fileName));
+
       var result = false;
 
       try
       {
         IList<BlobItem> blobs;
 
-        var fullFileName = $"{folderName}{GetFolderSeparator()}{fileName}";
+        var physicalPath = GetPhysicalPath(folderName);
 
-        // if we do not have this folder already in cache
+        // if we do not have this folderName already in cache
         // then hit the blob storage and cache the results
         if (!_folderContentCache.ContainsKey(folderName))
         {
@@ -125,12 +154,12 @@ namespace OLab.Files.AzureBlobStorage
             .GetBlobContainerClient(_containerName)
             .GetBlobs(prefix: folderName).ToList();
 
-          _folderContentCache[folderName] = blobs;
+          _folderContentCache[physicalPath] = blobs;
         }
         else
           blobs = _folderContentCache[folderName];
 
-        result = blobs.Any(x => x.Name.Contains(fullFileName));
+        result = blobs.Any(x => x.Name.Contains(fileName));
 
         if (!result)
           logger.LogWarning($"  '{folderName}{GetFolderSeparator()}{fileName}' physical sourceFileStream not found");
@@ -153,8 +182,8 @@ namespace OLab.Files.AzureBlobStorage
     /// </summary>
     /// <param name="logger">OLabLogger </param>
     /// <param name="fileName">File name</param>
-    /// <param name="sourceFolder">Source folder</param>
-    /// <param name="destinationFolder">Destination folder</param>
+    /// <param name="sourceFolder">Source folderName</param>
+    /// <param name="destinationFolder">Destination folderName</param>
     /// <exception cref="NotImplementedException"></exception>
     public async Task MoveFileAsync(
       string fileName,
@@ -162,6 +191,9 @@ namespace OLab.Files.AzureBlobStorage
       string destinationFolder,
       CancellationToken token = default)
     {
+      Guard.Argument(sourceFolder).NotEmpty(nameof(sourceFolder));
+      Guard.Argument(destinationFolder).NotEmpty(nameof(destinationFolder));
+
       try
       {
         logger.LogInformation($"MoveFileAsync '{fileName}' {sourceFolder} -> {destinationFolder}");
@@ -169,10 +201,10 @@ namespace OLab.Files.AzureBlobStorage
         using (var sourceFileStream = new MemoryStream())
         {
           var sourceFilePath = $"{sourceFolder}{GetFolderSeparator()}{fileName}";
-          await ReadFileAsync(sourceFileStream, sourceFolder, fileName, token);
+          await CopyStreamToFileAsync(sourceFileStream, sourceFolder, fileName, token);
 
           var destinationFilePath = $"{destinationFolder}{GetFolderSeparator()}{fileName}";
-          await WriteFileAsync(sourceFileStream, destinationFolder, token);
+          await CopyFiletoStreamAsync(sourceFileStream, destinationFolder, token);
 
           await DeleteFileAsync(sourceFolder, fileName);
         }
@@ -185,49 +217,65 @@ namespace OLab.Files.AzureBlobStorage
       }
     }
 
-    public async Task<string> WriteFileAsync(
+    public async Task<string> CopyFiletoStreamAsync(
       Stream stream,
-      string moduleFileName,
+      string targetFolder,
       CancellationToken token)
     {
-      logger.LogInformation($"Write physical file: container {_containerName}, {moduleFileName}");
+      Guard.Argument(stream).NotNull(nameof(stream));
+      Guard.Argument(targetFolder).NotEmpty(nameof(targetFolder));
 
-      await _blobServiceClient
-            .GetBlobContainerClient(_containerName)
-            .UploadBlobAsync(moduleFileName, stream, token);
+      try
+      {
+        logger.LogInformation($"Write physical file: container {_containerName}, {targetFolder}");
 
-      return moduleFileName;
+        await _blobServiceClient
+              .GetBlobContainerClient(_containerName)
+              .UploadBlobAsync(targetFolder, stream, token);
+
+        return targetFolder;
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "CopyFiletoStreamAsync Exception");
+        throw;
+      }
+
     }
 
     /// <summary>
     /// Read file from storage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
-    /// <param name="folderName">Source folder name</param>
+    /// <param name="folderName">Source folderName name</param>
     /// <param name="fileName">File name</param>
     /// <returns>File contents sourceFileStream</returns>
-    public async Task ReadFileAsync(
+    public async Task CopyStreamToFileAsync(
       Stream stream,
-      string folder,
+      string folderName,
       string fileName,
       CancellationToken token)
     {
+      Guard.Argument(stream).NotNull(nameof(stream));
+      Guard.Argument(folderName).NotEmpty(nameof(folderName));
+      Guard.Argument(fileName).NotEmpty(nameof(fileName));
+
       try
       {
-        logger.LogInformation($"ReadFileAsync reading '{fileName}'");
+        logger.LogInformation($"CopyStreamToFileAsync reading '{fileName}'");
 
-        var sourceFolder = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folder}";
+        var filePath = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}";
 
         await _blobServiceClient
              .GetBlobContainerClient(_containerName)
-             .GetBlobClient(sourceFolder)
+             .GetBlobClient(filePath)
              .DownloadToAsync(stream);
 
         stream.Position = 0;
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "ReadFileAsync Exception");
+        logger.LogError(ex, "CopyStreamToFileAsync Exception");
         throw;
       }
 
@@ -237,16 +285,19 @@ namespace OLab.Files.AzureBlobStorage
     /// Delete file from blob storage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
-    /// <param name="folderName">File folder</param>
+    /// <param name="folderName">File folderName</param>
     /// <param name="fileName">File to delete</param>
     /// <returns></returns>
     public async Task<bool> DeleteFileAsync(
-      string folder,
+      string folderName,
       string fileName)
     {
+      Guard.Argument(folderName).NotEmpty(nameof(folderName));
+      Guard.Argument(fileName).NotEmpty(nameof(fileName));
+
       try
       {
-        var sourceFolder = $"{folder}{GetFolderSeparator()}{fileName}";
+        var sourceFolder = $"{folderName}{GetFolderSeparator()}{fileName}";
 
         logger.LogInformation($"DeleteFileAsync '{sourceFolder}'");
 
@@ -259,9 +310,8 @@ namespace OLab.Files.AzureBlobStorage
       catch (Exception ex)
       {
         logger.LogError(ex, "DeleteFileAsync Exception");
+        throw;
       }
-
-      return false;
 
     }
 
@@ -270,22 +320,26 @@ namespace OLab.Files.AzureBlobStorage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
     /// <param name="archiveFileName">Source file name</param>
-    /// <param name="extractDirectory">TTarget extreaction folder</param>
+    /// <param name="extractDirectory">TTarget extreaction folderName</param>
     /// <param name="token">Cancellation token</param>
     /// <returns></returns>
-    public async Task<bool> ExtractFileAsync(
+    public async Task<bool> ExtractFileToStorageAsync(
       string folderName,
       string fileName,
       string extractDirectoryName,
       CancellationToken token)
     {
+      Guard.Argument(folderName).NotEmpty(nameof(folderName));
+      Guard.Argument(fileName).NotEmpty(nameof(fileName));
+      Guard.Argument(extractDirectoryName).NotEmpty(nameof(extractDirectoryName));
+
       try
       {
         logger.LogInformation($"extracting '{folderName}' {fileName} -> {extractDirectoryName}");
 
         using (var stream = new MemoryStream())
         {
-          await ReadFileAsync(stream, folderName, fileName, token);
+          await CopyStreamToFileAsync(stream, folderName, fileName, token);
 
           var fileProcessor = new ZipFileProcessor(
             _blobServiceClient.GetBlobContainerClient(_containerName),
@@ -301,17 +355,62 @@ namespace OLab.Files.AzureBlobStorage
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "ExtractFileAsync Exception");
+        logger.LogError(ex, "ExtractFileToStorageAsync Exception");
         throw;
       }
 
     }
 
-    public string GetModuleName()
+    public async Task<bool> CopyFoldertoArchiveAsync(
+      ZipArchive archive,
+      string folderName,
+      bool appendToStream,
+      CancellationToken token)
     {
-      var attrib = this.GetType().GetCustomAttributes(typeof(OLabModuleAttribute), true).FirstOrDefault() as OLabModuleAttribute;
-      return attrib == null ? "" : attrib.Name;
-    }
+      Guard.Argument(archive).NotNull(nameof(archive));
+      Guard.Argument(folderName).NotEmpty(nameof(folderName));
 
+      var result = false;
+
+      try
+      {
+        IList<BlobItem> blobs;
+
+        logger.LogInformation($"reading '{folderName}' for files to add to stream");
+
+        blobs = _blobServiceClient
+          .GetBlobContainerClient(_containerName)
+          .GetBlobs(prefix: folderName).ToList();
+
+        foreach (var blob in blobs)
+        {
+          var blobStream = new MemoryStream();
+
+          var blobPath = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{blob.Name}";
+
+          await _blobServiceClient
+               .GetBlobContainerClient(_containerName)
+               .GetBlobClient(blobPath)
+               .DownloadToAsync(blobStream);
+
+          var archivePath = $"{folderName}{GetFolderSeparator()}{blob.Name}";
+
+          logger.LogInformation($"  adding '{blobPath}' to archive '{archivePath}'");
+
+          ZipArchiveEntry readmeEntry = archive.CreateEntry(archivePath);
+          blobStream.CopyTo(readmeEntry.Open());
+
+        }
+
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "CopyFoldertoArchiveAsync error");
+        throw;
+      }
+
+
+      return result;
+    }
   }
 }
