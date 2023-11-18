@@ -24,7 +24,13 @@ namespace OLabWebAPI.Endpoints.WebApi
     private readonly IImporter _importer;
     private readonly AppSettings _appSettings;
 
-    public ImportController(IOptions<AppSettings> appSettings, ILogger logger, OLabDBContext context) : base(logger, appSettings, context)
+    public ImportController(
+      IOptions<AppSettings> appSettings, 
+      ILogger logger, 
+      OLabDBContext context) : base(
+        logger, 
+        appSettings, 
+        context)
     {
       _appSettings = appSettings.Value;
       this.logger = new OLabLogger(logger);

@@ -18,6 +18,11 @@
     <ProjectReference Include="..\..\Common\Endpoints\Endpoints.csproj" />
     <ProjectReference Include="..\..\Common\Import\Import.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <!-- <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <ItemGroup>

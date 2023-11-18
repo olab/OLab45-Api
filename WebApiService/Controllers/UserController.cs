@@ -56,11 +56,12 @@ namespace OLabWebAPI.Endpoints.WebApi
 
       logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
-      AuthenticateResponse response = _userService.Authenticate(model);
-      if (response == null)
+      AuthenticateResponse data = _userService.Authenticate(model);
+      if (data == null)
         return OLabUnauthorizedObjectResult<string>.Result("Username or password is incorrect");
 
-      return OLabObjectResult<AuthenticateResponse>.Result(response);
+      var response =  OLabObjectResult<AuthenticateResponse>.Result(data);
+      return response;
     }
 
     /// <summary>
