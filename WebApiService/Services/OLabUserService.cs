@@ -210,24 +210,15 @@ namespace OLabWebAPI.Services
       // get user flagged for anonymous use
       Users serverUser = _context.Users.FirstOrDefault(x => x.Group == "anonymous");
       if (serverUser == null)
-      {
-        _logger.LogError($"No user is defined for anonymous map play");
-        return null;
-      }
+        throw new Exception($"No user is defined for anonymous map play");
 
       Maps map = _context.Maps.FirstOrDefault(x => x.Id == mapId);
       if (map == null)
-      {
-        _logger.LogError($"Map {mapId} is not defined for anonymous map play");
-        return null;
-      }
+        throw new Exception($"Map {mapId} is not defined.");
 
       // test for 'open' map
       if (map.SecurityId != 1)
-      {
         _logger.LogError($"Map {mapId} is not configured for anonymous map play");
-        return null;
-      }
 
       var user = new Users();
 
