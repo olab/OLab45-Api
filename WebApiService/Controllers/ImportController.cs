@@ -1,83 +1,53 @@
+using Dawn;
+using HttpMultipartParser;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OLabWebAPI.Common;
-using OLabWebAPI.Importer;
-using OLabWebAPI.Model;
-using OLabWebAPI.Services;
-using OLabWebAPI.Utils;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
+using OLab.Api.Model;
+using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.Data.Interface;
+using OLab.Endpoints;
+using OLabWebAPI.Extensions;
 using System;
 using System.IO;
-using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
-using UserContext = OLabWebAPI.Data.UserContext;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
   [Route("olab/api/v3/[controller]/[action]")]
   [ApiController]
-  public class ImportController : OlabController
+  public class ImportController : OLabController
   {
-    private readonly IImporter _importer;
-    private readonly AppSettings _appSettings;
+    private readonly ImportEndpoint _endpoint;
 
-    public ImportController(IOptions<AppSettings> appSettings, ILogger logger, OLabDBContext context) : base(logger, appSettings, context)
+    public ImportController(
+      ILoggerFactory loggerFactory,
+      IOLabConfiguration configuration,
+      OLabDBContext dbContext,
+      IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+        configuration,
+        dbContext,
+        wikiTagProvider,
+        fileStorageProvider)
     {
-      _appSettings = appSettings.Value;
-      this.logger = new OLabLogger(logger);
-      _importer = new Importer.Importer(_appSettings, this.logger, this.dbContext);
-    }
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    private string GetUploadDirectory()
-    {
-      return _appSettings.DefaultImportDirectory;
-    }
+      Logger = OLabLogger.CreateNew<ImportController>(loggerFactory, true);
 
-    //[HttpPost("upload", Name = "upload")]
-    [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> Upload(IFormFile file)
-    {
-      try
-      {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-
-        // test if user has access to import.
-        var userContext = new UserContext(logger, dbContext, HttpContext);
-        if (!userContext.HasAccess("X", "Import", 0))
-          return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
-
-        var fileName = await WriteFile(file);
-
-        if (!CheckIfValidFile(fileName))
-        {
-          System.IO.File.Delete(fileName);
-          throw new Exception("Invalid file");
-        }
-
-        logger.ClearMessages();
-
-        logger.LogInformation($"Loading archive: '{fileName}'");
-
-        if (_importer.LoadAll(fileName))
-          _importer.SaveAll();
-
-      }
-      catch (Exception ex)
-      {
-        logger.LogError(ex, $"UploadAsync excpetion");
-        return BadRequest(new { message = ex.Message });
-      }
-
-      var dto = new ImportResponse
-      {
-        Messages = logger.GetMessageStrings()
-      };
-
-      return OLabObjectResult<ImportResponse>.Result(dto);
+      _endpoint = new ImportEndpoint(
+        Logger,
+        configuration,
+        DbContext,
+        wikiTagProvider,
+        fileStorageProvider);
     }
 
     /// <summary>
@@ -87,79 +57,39 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <returns>IActionResult</returns>
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public IActionResult Post(IFormFile file)
+    public async Task<IActionResult> Upload(CancellationToken token)
     {
-      var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
 
-      // test if user has access to map.
-      Data.Interface.IUserContext userContext = auth.GetUserContext();
-      if (!userContext.HasAccess("X", "Import", 0))
-        return OLabUnauthorizedObjectResult<uint>.Result(userContext.UserId);
+      if (!auth.HasAccess("X", "Import", 0))
+        throw new OLabUnauthorizedException();
 
-      // test for bad file name (including any directory characters)
-      if (file.FileName.Contains(Path.DirectorySeparatorChar))
-        logger.LogError("Invalid file name");
-      else
+      if (Request.Body == null)
+        throw new ArgumentNullException(nameof(Request.Body));
+
+      using (var archiveFileStream = Request.Form.Files[0].OpenReadStream())
       {
-        var fullFileName = Path.Combine(GetUploadDirectory(), file.FileName);
+        Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {archiveFileStream.Length}");
 
-        if (!System.IO.File.Exists(fullFileName))
-          logger.LogError("Unable to load file");
+        archiveFileStream.Position = 0;
+
+        // test for bad file name (including any directory characters)
+        if (Request.Form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
+          Logger.LogError("Invalid file name");
         else
-        {
-          logger.LogInformation($"Loading archive: '{Path.GetFileName(fullFileName)}'");
-
-          if (_importer.LoadAll(fullFileName))
-            _importer.SaveAll();
-        }
+          await _endpoint.ImportAsync(
+            archiveFileStream, 
+            Request.Form.Files[0].FileName, 
+            token);
       }
 
-      var dto = new ImportResponse { Messages = logger.GetMessageStrings() };
-
-      return OLabObjectResult<ImportResponse>.Result(dto);
-    }
-
-    private bool CheckIfValidFile(string path)
-    {
-      var rc = true;
-
-      try
+      var dto = new ImportResponse
       {
-        using (ZipArchive zipFile = ZipFile.OpenRead(path))
-        {
-          System.Collections.ObjectModel.ReadOnlyCollection<ZipArchiveEntry> entries = zipFile.Entries;
-        }
-      }
-      catch (InvalidDataException)
-      {
-        rc = false;
-      }
+        Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+      };
 
-      logger.LogInformation($"Export file '{path}' valid? {rc}");
-      return rc;
-    }
-
-    private async Task<string> WriteFile(IFormFile file)
-    {
-      // strip off any directory
-      var fileName = Path.GetRandomFileName();
-      fileName += Path.GetExtension(file.FileName);
-
-      var pathBuilt = GetUploadDirectory();
-      if (!Directory.Exists(pathBuilt))
-      {
-        Directory.CreateDirectory(pathBuilt);
-      }
-
-      var path = Path.Combine(GetUploadDirectory(), fileName);
-
-      using (var stream = new FileStream(path, FileMode.Create))
-      {
-        await file.CopyToAsync(stream);
-        logger.LogInformation($"Wrote upload file to '{path}'. Size: {file.Length}");
-      }
-
-      return path;
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
     }
 
   }

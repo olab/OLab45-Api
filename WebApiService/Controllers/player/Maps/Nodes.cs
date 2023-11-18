@@ -1,17 +1,16 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OLabWebAPI.Common;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Services;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
+using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
-using UserContext = OLabWebAPI.Data.UserContext;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
-  public partial class MapsController : OlabController
+  public partial class MapsController : OLabController
   {
     /// <summary>
     /// Plays specific map node with a dynamic object state
@@ -29,21 +28,16 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
 
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        var userContext = new UserContext(logger, dbContext, HttpContext);
-        _endpoint.SetUserContext(userContext);
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
 
-        MapsNodesFullRelationsDto dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
+        var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
 
-        return OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "PostMapNodeAsync failed");
-
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        return ProcessException(ex, HttpContext.Request);
       }
 
     }
@@ -63,15 +57,15 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        MapNodesPostResponseDto dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
-        return OLabObjectResult<MapNodesPostResponseDto>.Result(dto);
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
+
+        var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        return ProcessException(ex, HttpContext.Request);
       }
 
     }
@@ -93,15 +87,15 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        MapNodesPostResponseDto newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
-        return OLabObjectResult<MapNodesPostResponseDto>.Result(newDto);
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
+
+        var newDto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, dto);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(newDto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        return ProcessException(ex, HttpContext.Request);
       }
     }
 
