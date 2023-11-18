@@ -13,7 +13,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.API
+namespace OLab.FunctionApp.Functions
 {
   public class ConstantsFunction : OLabFunction
   {
