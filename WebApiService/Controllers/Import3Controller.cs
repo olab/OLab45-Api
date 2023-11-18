@@ -23,11 +23,11 @@ namespace OLabWebAPI.Endpoints.WebApi
 {
   [Route("olab/api/v3/[controller]/[action]")]
   [ApiController]
-  public class ImportController : OLabController
+  public class Import3Controller : OLabController
   {
-    private readonly ImportEndpoint _endpoint;
+    private readonly Import3Endpoint _endpoint;
 
-    public ImportController(
+    public Import3Controller(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       OLabDBContext dbContext,
@@ -40,9 +40,9 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = OLabLogger.CreateNew<ImportController>(loggerFactory, true);
+      Logger = OLabLogger.CreateNew<Import3Controller>(loggerFactory, true);
 
-      _endpoint = new ImportEndpoint(
+      _endpoint = new Import3Endpoint(
         Logger,
         configuration,
         DbContext,
