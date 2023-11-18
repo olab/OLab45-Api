@@ -13,7 +13,7 @@ using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Services;
 using System.Net;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.FunctionApp.Functions.API;
 
 public class UserFunction : OLabFunction
 {

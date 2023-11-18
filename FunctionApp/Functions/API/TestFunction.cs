@@ -8,7 +8,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Net;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.FunctionApp.Functions.API;
 
 public class TestFunction : OLabFunction
 {

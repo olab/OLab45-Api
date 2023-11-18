@@ -11,7 +11,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.Player
+namespace OLab.FunctionApp.Functions.API.player
 {
   public partial class ServerFunction : OLabFunction
   {
@@ -23,9 +23,9 @@ namespace OLab.FunctionApp.Functions.Player
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
-        configuration, 
-        dbContext, 
-        wikiTagProvider, 
+        configuration,
+        dbContext,
+        wikiTagProvider,
         fileStorageProvider)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
@@ -34,10 +34,10 @@ namespace OLab.FunctionApp.Functions.Player
 
       Logger = OLabLogger.CreateNew<ServerFunction>(loggerFactory);
       _endpoint = new ServerEndpoint(
-        Logger, 
-        configuration, 
-        DbContext, 
-        _wikiTagProvider, 
+        Logger,
+        configuration,
+        DbContext,
+        _wikiTagProvider,
         _fileStorageProvider);
     }
 
@@ -95,7 +95,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
-        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -124,7 +124,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {

@@ -13,7 +13,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.Player
+namespace OLab.FunctionApp.Functions.API.player
 {
   public partial class QuestionResponsesFunction : OLabFunction
   {

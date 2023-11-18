@@ -13,7 +13,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions
+namespace OLab.FunctionApp.Functions.API
 {
   public class CountersFunction : OLabFunction
   {

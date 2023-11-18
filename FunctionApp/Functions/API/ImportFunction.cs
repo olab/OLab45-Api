@@ -23,7 +23,7 @@ using SharpCompress.Compressors.Xz;
 using System.IO;
 using System.IO.Compression;
 
-namespace OLab.FunctionApp.Functions
+namespace OLab.FunctionApp.Functions.API
 {
   public class ImportFunction : OLabFunction
   {

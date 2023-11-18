@@ -17,7 +17,7 @@ using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 using System.Net;
 
-namespace OLab.FunctionApp.Functions
+namespace OLab.FunctionApp.Functions.API
 {
   public class FilesFunction : OLabFunction
   {
@@ -43,9 +43,7 @@ namespace OLab.FunctionApp.Functions
       var provider = new FileExtensionContentTypeProvider();
 
       if (!provider.TryGetContentType(filePath, out var contentType))
-      {
         contentType = DefaultContentType;
-      }
 
       return contentType;
     }
@@ -188,9 +186,9 @@ namespace OLab.FunctionApp.Functions
       }
       catch (Exception ex)
       {
-        if (ex is global::Azure.RequestFailedException)
+        if (ex is Azure.RequestFailedException)
         {
-          var azureException = ex as global::Azure.RequestFailedException;
+          var azureException = ex as Azure.RequestFailedException;
           if (azureException.Status == 409)
             response = request.CreateResponse(
               OLabServerErrorResult.Result(

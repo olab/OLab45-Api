@@ -14,9 +14,9 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.designer
+namespace OLab.FunctionApp.Functions.API.designer
 {
-    public class QuestionResponsesFunction : OLabFunction
+  public class QuestionResponsesFunction : OLabFunction
     {
         private readonly QuestionResponsesEndpoint _endpoint;
 

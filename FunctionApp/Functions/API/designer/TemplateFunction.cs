@@ -13,7 +13,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.Designer
+namespace OLab.FunctionApp.Functions.API.designer
 {
   public class TemplateFunction : OLabFunction
   {
@@ -25,9 +25,9 @@ namespace OLab.FunctionApp.Functions.Designer
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
-        configuration, 
-        dbContext, 
-        wikiTagProvider, 
+        configuration,
+        dbContext,
+        wikiTagProvider,
         fileStorageProvider)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));

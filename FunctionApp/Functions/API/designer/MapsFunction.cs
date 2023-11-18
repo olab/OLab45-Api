@@ -12,7 +12,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.Designer
+namespace OLab.FunctionApp.Functions.API.designer
 {
   public class MapsFunction : OLabFunction
   {
@@ -25,9 +25,9 @@ namespace OLab.FunctionApp.Functions.Designer
       OLabDBContext dbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
-        configuration, 
-        dbContext, 
-        wikiTagProvider, 
+        configuration,
+        dbContext,
+        wikiTagProvider,
         fileStorageProvider)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
@@ -201,7 +201,7 @@ namespace OLab.FunctionApp.Functions.Designer
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, mapId);
-        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
