@@ -75,6 +75,30 @@ public partial class MapsController : OLabController
     {
       return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
+
+    /// <summary>
+    /// Retrieve all sessions for a given map
+    /// </summary>
+    /// <param name="mapId"></param>
+    /// <returns></returns>
+    [HttpGet("{mapId}/sessions")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> GetSessionsAsync(uint mapId)
+    {
+      try
+      {
+        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
+        System.Collections.Generic.IList<SessionInfo> dtoList = await _endpoint.GetSessionsAsync(auth, mapId);
+        return OLabObjectListResult<SessionInfo>.Result(dtoList);
+      }
+      catch (Exception ex)
+      {
+        if (ex is OLabUnauthorizedException)
+          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
+        return OLabServerErrorResult.Result(ex.Message);
+      }
+
+    }
   }
 
   /// <summary>
