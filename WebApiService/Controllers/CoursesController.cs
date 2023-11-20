@@ -15,7 +15,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     // GET: api/Courses/5
-    [HttpGet("{id}", Name = "Get")]
+    [HttpGet("{id}", Name = "GetAsync")]
     public string Get(int id)
     {
       return "value";

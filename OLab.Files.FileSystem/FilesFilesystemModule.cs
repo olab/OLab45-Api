@@ -1,4 +1,6 @@
 ﻿using Dawn;
+using DocumentFormat.OpenXml.Math;
+using DocumentFormat.OpenXml.Vml.Office;
 using HttpMultipartParser;
 using OLab.Api.Dto;
 using OLab.Api.Model;
@@ -334,6 +336,13 @@ public class FilesFilesystemModule : IFileStorageModule
 
       var physicalPath = GetPhysicalPath(folderName);
 
+      // check if sirectory exists
+      if (!Directory.Exists(physicalPath))
+      {
+        logger.LogInformation($"  file folder '{physicalPath}' does not exist");
+        return result;
+      }
+
       var files = Directory.GetFiles(physicalPath);
 
       foreach (var file in files)
@@ -344,8 +353,13 @@ public class FilesFilesystemModule : IFileStorageModule
 
           logger.LogInformation($"  adding '{file}' to archive '{archivePath}'");
 
-          ZipArchiveEntry readmeEntry = archive.CreateEntry(archivePath);
-          fileStream.CopyTo(readmeEntry.Open());
+          ZipArchiveEntry entry = archive.CreateEntry(archivePath);
+          using (var entryStream = entry.Open())
+          {
+            fileStream.CopyTo(entryStream);
+            entryStream.Close();
+          }
+
         }
 
       }

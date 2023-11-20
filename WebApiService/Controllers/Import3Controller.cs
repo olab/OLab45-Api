@@ -57,7 +57,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <returns>IActionResult</returns>
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> Upload(CancellationToken token)
+    public async Task<IActionResult> Import(CancellationToken token)
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);

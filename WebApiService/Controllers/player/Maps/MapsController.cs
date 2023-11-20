@@ -48,7 +48,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// Get security level of map
+  /// GetAsync security level of map
   /// </summary>
   /// <param name="id">Map Id to retrieve</param>
   /// <returns>MapsTestAccessDto</returns>
@@ -78,7 +78,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// Get a list of maps
+  /// GetAsync a list of maps
   /// </summary>
   /// <param name="take">Max number of records to return</param>
   /// <param name="skip">SKip over a number of records</param>

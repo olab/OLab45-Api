@@ -81,7 +81,7 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// Get all defined users
+  /// GetAsync all defined users
   /// </summary>
   /// <returns>Enumerable list of users</returns>
   public IEnumerable<Users> GetAll()
@@ -90,7 +90,7 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// Get user by Id
+  /// GetAsync user by Id
   /// </summary>
   /// <param name="id">User id</param>
   /// <returns>User record</returns>
@@ -100,7 +100,7 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// Get user by name
+  /// GetAsync user by name
   /// </summary>
   /// <param name="userName">User name</param>
   /// <returns>User record</returns>

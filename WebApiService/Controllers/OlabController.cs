@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
-  public class OLabController : ControllerBase
+    public class OLabController : ControllerBase
   {
     protected readonly OLabDBContext DbContext;
 
@@ -97,7 +97,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get the _authentication context from the host context
+    /// GetAsync the _authentication context from the host context
     /// </summary>
     /// <param name="hostContext">Function context</param>
     /// <returns>IOLabAuthentication</returns>
@@ -105,7 +105,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     [NonAction]
     protected IOLabAuthorization GetAuthorization(HttpContext hostContext)
     {
-      // Get the item set by the middleware
+      // GetAsync the item set by the middleware
       if (hostContext.Items.TryGetValue("usercontext", out var value) && value is IUserContext userContext)
       {
         Logger.LogInformation($"User context: {userContext}");
@@ -150,7 +150,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get nodes for map
+    /// GetAsync nodes for map
     /// </summary>
     /// <param name="map">Parent map to query for</param>
     /// <param name="enableWikiTanslation">PErform WikiTag translation</param>
@@ -166,7 +166,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get node for map
+    /// GetAsync node for map
     /// </summary>
     /// <param name="map">Map object</param>
     /// <param name="nodeId">Node id</param>
@@ -202,7 +202,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     //}
 
     /// <summary>
-    /// Get a mapnode
+    /// GetAsync a mapnode
     /// </summary>
     /// <param name="nodeId">Node id</param>
     /// <returns></returns>
@@ -219,7 +219,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get question response
+    /// GetAsync question response
     /// </summary>
     /// <param name="id">id</param>
     /// <returns></returns>
@@ -231,7 +231,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get constant
+    /// GetAsync constant
     /// </summary>
     /// <param name="id">question id</param>
     /// <returns></returns>
@@ -244,7 +244,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get file
+    /// GetAsync file
     /// </summary>
     /// <param name="id">file id</param>
     /// <returns></returns>
@@ -257,7 +257,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get question
+    /// GetAsync question
     /// </summary>
     /// <param name="id">question id</param>
     /// <returns></returns>
@@ -270,7 +270,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get question with responses
+    /// GetAsync question with responses
     /// </summary>
     /// <param name="id">question id</param>
     /// <returns></returns>
@@ -290,52 +290,19 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <param name="sinceTime"></param>
     /// <param name="scopeLevel"></param>
     /// <returns></returns>
-    [NonAction]
-    protected async ValueTask<OLab.Api.Model.ScopedObjects> GetScopedObjectsDynamicAsync(
-      uint parentId,
-      uint sinceTime,
-      string scopeLevel)
-    {
-      var phys = new OLab.Api.Model.ScopedObjects
-      {
-        Counters = await GetScopedCountersAsync(scopeLevel, parentId, sinceTime)
-      };
+    //[NonAction]
+    //protected async ValueTask<OLab.Data.BusinessObjects.ScopedObjectsMapper> GetScopedObjectsDynamicAsync(
+    //  uint parentId,
+    //  uint sinceTime,
+    //  string scopeLevel)
+    //{
+    //  var phys = new ScopedObjectsMapper
+    //  {
+    //    Counters = await GetScopedCountersAsync(scopeLevel, parentId, sinceTime)
+    //  };
 
-      return phys;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="parentId"></param>
-    /// <param name="scopeLevel"></param>
-    /// <returns></returns>
-    [NonAction]
-    protected async ValueTask<OLab.Api.Model.ScopedObjects> GetScopedObjectsAllAsync(
-      uint parentId,
-      string scopeLevel)
-    {
-      var phys = new OLab.Api.Model.ScopedObjects
-      {
-        Constants = await GetScopedConstantsAsync(parentId, scopeLevel),
-        Questions = await GetScopedQuestionsAsync(parentId, scopeLevel),
-        Files = await GetScopedFilesAsync(parentId, scopeLevel),
-        Scripts = await GetScopedScriptsAsync(parentId, scopeLevel),
-        Themes = await GetScopedThemesAsync(parentId, scopeLevel),
-        Counters = await GetScopedCountersAsync(scopeLevel, parentId, 0)
-      };
-
-      if (scopeLevel == OLab.Api.Utils.Constants.ScopeLevelMap)
-      {
-        var items = new List<SystemCounterActions>();
-        items.AddRange(await DbContext.SystemCounterActions.Where(x =>
-            x.MapId == parentId).ToListAsync());
-
-        phys.CounterActions.AddRange(items);
-      }
-
-      return phys;
-    }
+    //  return phys;
+    //}
 
     /// <summary>
     /// 
@@ -343,56 +310,32 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <param name="parentId"></param>
     /// <param name="scopeLevel"></param>
     /// <returns></returns>
-    [NonAction]
-    protected async Task<List<SystemConstants>> GetScopedConstantsAsync(uint parentId, string scopeLevel)
-    {
-      var items = new List<SystemConstants>();
+    //[NonAction]
+    //protected async ValueTask<OLab.Data.BusinessObjects.ScopedObjectsMapper> GetAsync(
+    //  uint parentId,
+    //  string scopeLevel)
+    //{
+    //  var phys = new ScopedObjectsMapper
+    //  {
+    //    Constants = await GetScopedConstantsAsync(parentId, scopeLevel),
+    //    Questions = await GetScopedQuestionsAsync(parentId, scopeLevel),
+    //    Files = await GetScopedFilesAsync(parentId, scopeLevel),
+    //    Scripts = await GetScopedScriptsAsync(parentId, scopeLevel),
+    //    Themes = await GetScopedThemesAsync(parentId, scopeLevel),
+    //    Counters = await GetScopedCountersAsync(scopeLevel, parentId, 0)
+    //  };
 
-      items.AddRange(await DbContext.SystemConstants.Where(x =>
-        x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
+    //  if (scopeLevel == OLab.Api.Utils.Constants.ScopeLevelMap)
+    //  {
+    //    var items = new List<SystemCounterActions>();
+    //    items.AddRange(await DbContext.SystemCounterActions.Where(x =>
+    //        x.MapId == parentId).ToListAsync());
 
-      return items;
-    }
+    //    phys.CounterActions.AddRange(items);
+    //  }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="parentId"></param>
-    /// <param name="scopeLevel"></param>
-    /// <returns></returns>
-    [NonAction]
-    protected async Task<List<SystemFiles>> GetScopedFilesAsync(uint parentId, string scopeLevel)
-    {
-      var items = new List<SystemFiles>();
-
-      items.AddRange(await DbContext.SystemFiles.Where(x =>
-        x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
-
-      return items;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="parentId"></param>
-    /// <param name="scopeLevel"></param>
-    /// <returns></returns>
-    [NonAction]
-    protected async Task<List<SystemQuestions>> GetScopedQuestionsAsync(uint parentId, string scopeLevel)
-    {
-      var items = new List<SystemQuestions>();
-
-      items.AddRange(await DbContext.SystemQuestions
-        .Where(x => x.ImageableType == scopeLevel && x.ImageableId == parentId)
-        .Include("SystemQuestionResponses")
-        .ToListAsync());
-
-      // order the responses by Order field
-      foreach (var item in items)
-        item.SystemQuestionResponses = item.SystemQuestionResponses.OrderBy(x => x.Order).ToList();
-
-      return items;
-    }
+    //  return phys;
+    //}
 
     /// <summary>
     /// 
@@ -400,16 +343,16 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <param name="parentId"></param>
     /// <param name="scopeLevel"></param>
     /// <returns></returns>
-    [NonAction]
-    protected async Task<List<SystemThemes>> GetScopedThemesAsync(uint parentId, string scopeLevel)
-    {
-      var items = new List<SystemThemes>();
+    //[NonAction]
+    //protected async Task<List<SystemConstants>> GetScopedConstantsAsync(uint parentId, string scopeLevel)
+    //{
+    //  var items = new List<SystemConstants>();
 
-      items.AddRange(await DbContext.SystemThemes.Where(x =>
-        x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
+    //  items.AddRange(await DbContext.SystemConstants.Where(x =>
+    //    x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
 
-      return items;
-    }
+    //  return items;
+    //}
 
     /// <summary>
     /// 
@@ -417,19 +360,76 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <param name="parentId"></param>
     /// <param name="scopeLevel"></param>
     /// <returns></returns>
-    [NonAction]
-    protected async Task<List<SystemScripts>> GetScopedScriptsAsync(uint parentId, string scopeLevel)
-    {
-      var items = new List<SystemScripts>();
+    //[NonAction]
+    //protected async Task<List<SystemFiles>> GetScopedFilesAsync(uint parentId, string scopeLevel)
+    //{
+    //  var items = new List<SystemFiles>();
 
-      items.AddRange(await DbContext.SystemScripts.Where(x =>
-        x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
+    //  items.AddRange(await DbContext.SystemFiles.Where(x =>
+    //    x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
 
-      return items;
-    }
+    //  return items;
+    //}
 
     /// <summary>
-    /// Get counter 
+    /// 
+    /// </summary>
+    /// <param name="parentId"></param>
+    /// <param name="scopeLevel"></param>
+    /// <returns></returns>
+    //[NonAction]
+    //protected async Task<List<SystemQuestions>> GetScopedQuestionsAsync(uint parentId, string scopeLevel)
+    //{
+    //  var items = new List<SystemQuestions>();
+
+    //  items.AddRange(await DbContext.SystemQuestions
+    //    .Where(x => x.ImageableType == scopeLevel && x.ImageableId == parentId)
+    //    .Include("SystemQuestionResponses")
+    //    .ToListAsync());
+
+    //  // order the responses by Order field
+    //  foreach (var item in items)
+    //    item.SystemQuestionResponses = item.SystemQuestionResponses.OrderBy(x => x.Order).ToList();
+
+    //  return items;
+    //}
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="parentId"></param>
+    /// <param name="scopeLevel"></param>
+    /// <returns></returns>
+    //[NonAction]
+    //protected async Task<List<SystemThemes>> GetScopedThemesAsync(uint parentId, string scopeLevel)
+    //{
+    //  var items = new List<SystemThemes>();
+
+    //  items.AddRange(await DbContext.SystemThemes.Where(x =>
+    //    x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
+
+    //  return items;
+    //}
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="parentId"></param>
+    /// <param name="scopeLevel"></param>
+    /// <returns></returns>
+    //[NonAction]
+    //protected async Task<List<SystemScripts>> GetScopedScriptsAsync(uint parentId, string scopeLevel)
+    //{
+    //  var items = new List<SystemScripts>();
+
+    //  items.AddRange(await DbContext.SystemScripts.Where(x =>
+    //    x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
+
+    //  return items;
+    //}
+
+    /// <summary>
+    /// GetAsync counter 
     /// </summary>
     /// <param name="id">counter id</param>
     /// <returns>Counter</returns>
@@ -445,32 +445,32 @@ namespace OLabWebAPI.Endpoints.WebApi
     }
 
     /// <summary>
-    /// Get counters associated with a 'parent' object 
+    /// GetAsync counters associated with a 'parent' object 
     /// </summary>
     /// <param name="scopeLevel">Scope level of parent (Maps, MapNodes, etc)</param>
     /// <param name="parentId">Id of parent object</param>
     /// <param name="sinceTime">(optional) looks for values changed since a (unix) time</param>
     /// <returns>List of counters</returns>
-    [NonAction]
-    protected async Task<List<SystemCounters>> GetScopedCountersAsync(string scopeLevel, uint parentId, uint sinceTime = 0)
-    {
-      var items = new List<SystemCounters>();
+    //[NonAction]
+    //protected async Task<List<SystemCounters>> GetScopedCountersAsync(string scopeLevel, uint parentId, uint sinceTime = 0)
+    //{
+    //  var items = new List<SystemCounters>();
 
-      if (sinceTime != 0)
-      {
-        // generate DateTime from sinceTime
-        var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        dateTime = dateTime.AddSeconds(sinceTime).ToLocalTime();
-        items.AddRange(await DbContext.SystemCounters.Where(x =>
-          x.ImageableType == scopeLevel && x.ImageableId == parentId && x.UpdatedAt >= dateTime).ToListAsync());
-      }
-      else
-      {
-        items.AddRange(await DbContext.SystemCounters.Where(x =>
-          x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
-      }
+    //  if (sinceTime != 0)
+    //  {
+    //    // generate DateTime from sinceTime
+    //    var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+    //    dateTime = dateTime.AddSeconds(sinceTime).ToLocalTime();
+    //    items.AddRange(await DbContext.SystemCounters.Where(x =>
+    //      x.ImageableType == scopeLevel && x.ImageableId == parentId && x.UpdatedAt >= dateTime).ToListAsync());
+    //  }
+    //  else
+    //  {
+    //    items.AddRange(await DbContext.SystemCounters.Where(x =>
+    //      x.ImageableType == scopeLevel && x.ImageableId == parentId).ToListAsync());
+    //  }
 
-      return items;
-    }
+    //  return items;
+    //}
   }
 }

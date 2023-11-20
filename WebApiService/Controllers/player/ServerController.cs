@@ -46,7 +46,7 @@ public partial class ServerController : OLabController
   }
 
   /// <summary>
-  /// Get a list of servers
+  /// GetAsync a list of servers
   /// </summary>
   /// <param name="take">Max number of records to return</param>
   /// <param name="skip">SKip over a number of records</param>
