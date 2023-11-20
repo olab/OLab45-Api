@@ -1,18 +1,12 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using SharpCompress.Common;
 using System.Configuration;
 using System.IO.Compression;
-using System.Net.NetworkInformation;
-using System.Reflection;
-using static NuGet.Packaging.PackagingConstants;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -402,7 +396,7 @@ namespace OLab.Files.AzureBlobStorage
 
           logger.LogInformation($"  adding '{blobPath}' to archive '{archivePath}'");
 
-          ZipArchiveEntry readmeEntry = archive.CreateEntry(archivePath);
+          var readmeEntry = archive.CreateEntry(archivePath);
           blobStream.CopyTo(readmeEntry.Open());
 
         }

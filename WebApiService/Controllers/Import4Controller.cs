@@ -1,5 +1,4 @@
 using Dawn;
-using HttpMultipartParser;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -114,7 +112,7 @@ namespace OLabWebAPI.Endpoints.WebApi
 
         if (!auth.HasAccess("X", "Export", 0))
           throw new OLabUnauthorizedException();
-       
+
         using (var memoryStream = new MemoryStream())
         {
           await _endpoint.ExportAsync(memoryStream, id, token);
@@ -122,8 +120,8 @@ namespace OLabWebAPI.Endpoints.WebApi
           memoryStream.Position = 0;
           var now = DateTime.UtcNow;
           return File(
-            memoryStream.ToArray(), 
-            "application/zip", 
+            memoryStream.ToArray(),
+            "application/zip",
             $"OLab4Export.map{id}.{now.ToString("yyyyMMddHHmm")}.zip");
         }
 

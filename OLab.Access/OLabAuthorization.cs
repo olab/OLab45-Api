@@ -1,7 +1,5 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
@@ -45,8 +43,8 @@ namespace OLab.Access
       UserContext = userContext;
 
       var roles = UserContext.UserRoles;
-      string userName = UserContext.UserName;
-      uint userId = UserContext.UserId;
+      var userName = UserContext.UserName;
+      var userId = UserContext.UserId;
 
       _roleAcls = _dbContext.SecurityRoles.Where(x => roles.Contains(x.Name.ToLower())).ToList();
 

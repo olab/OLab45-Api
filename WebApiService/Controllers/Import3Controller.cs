@@ -1,5 +1,4 @@
 using Dawn;
-using HttpMultipartParser;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -79,8 +77,8 @@ namespace OLabWebAPI.Endpoints.WebApi
           Logger.LogError("Invalid file name");
         else
           await _endpoint.ImportAsync(
-            archiveFileStream, 
-            Request.Form.Files[0].FileName, 
+            archiveFileStream,
+            Request.Form.Files[0].FileName,
             token);
       }
 

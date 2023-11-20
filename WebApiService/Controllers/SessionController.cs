@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -13,11 +10,8 @@ using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data.Contracts;
 using OLab.Data.Interface;
-using OLabWebAPI.Extensions;
 using System;
 using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
@@ -66,7 +60,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         var dto = _endpoint.GetAsync(auth, id);
 
         var sessionTraces = DbContext.UserSessionTraces.Where(x => x.SessionId == 163370).ToList();
-        FileStreamResult fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
+        var fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
 
         return fr;
       }
@@ -94,7 +88,7 @@ namespace OLabWebAPI.Endpoints.WebApi
         var auth = GetAuthorization(HttpContext);
 
         var sessionTraces = DbContext.UserSessionTraces.Where(x => x.SessionId == 163370).ToList();
-        FileStreamResult fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
+        var fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
 
         return fr;
       }

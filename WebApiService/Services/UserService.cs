@@ -1,7 +1,5 @@
 using Dawn;
 using Microsoft.Extensions.Logging;
-using OLab.Access;
-using OLab.Access.Interfaces;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;

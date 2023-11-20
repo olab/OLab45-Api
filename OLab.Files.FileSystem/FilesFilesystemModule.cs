@@ -1,18 +1,9 @@
 ﻿using Dawn;
-using DocumentFormat.OpenXml.Math;
-using DocumentFormat.OpenXml.Vml.Office;
-using HttpMultipartParser;
-using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using System.Diagnostics;
-using System.IO;
 using System.IO.Compression;
-using System.Reflection.Metadata;
-using static NuGet.Packaging.PackagingConstants;
 
 namespace OLab.Files.FileSystem;
 
@@ -353,7 +344,7 @@ public class FilesFilesystemModule : IFileStorageModule
 
           logger.LogInformation($"  adding '{file}' to archive '{archivePath}'");
 
-          ZipArchiveEntry entry = archive.CreateEntry(archivePath);
+          var entry = archive.CreateEntry(archivePath);
           using (var entryStream = entry.Open())
           {
             fileStream.CopyTo(entryStream);

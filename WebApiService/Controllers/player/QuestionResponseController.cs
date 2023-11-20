@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Data;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;

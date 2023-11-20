@@ -3,15 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.ObjectMapper;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -86,10 +82,10 @@ public partial class FilesController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var dto = new FilesFullDto(Request.Form);      
+      var dto = new FilesFullDto(Request.Form);
       dto = await _endpoint.PostAsync(auth, dto, cancel);
 
-      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result((FilesFullDto)dto));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
 
     }
     catch (Exception ex)

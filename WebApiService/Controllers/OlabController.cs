@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OLab.Access;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {
-    public class OLabController : ControllerBase
+  public class OLabController : ControllerBase
   {
     protected readonly OLabDBContext DbContext;
 
