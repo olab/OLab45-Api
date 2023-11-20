@@ -14,7 +14,7 @@ if [ ! -L "bin" ]; then
 	ln -s /opt/olab46/$1/api bin
 fi
 cd ..
-dotnet clean OLab4WebApi.sln
-dotnet build -c $1 OLab4WebApi.sln
+dotnet clean WebApp.sln
+dotnet build -c $1 WebApp.sln
 service olab46api.$1 start
 service olab46api.$1 status
