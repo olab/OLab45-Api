@@ -1,7 +1,11 @@
+using Azure.Core;
 using Azure.Storage.Blobs;
 using Dawn;
+using DocumentFormat.OpenXml.Drawing;
 using FluentValidation;
 using HttpMultipartParser;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -11,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Importer;
+
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -18,18 +23,18 @@ using OLab.Data;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using OLab.FunctionApp.Extensions;
-using OLab.Import.Interfaces;
 using SharpCompress.Compressors.Xz;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class ImportFunction : OLabFunction
+  public class Import4Function : OLabFunction
   {
-    private readonly ImportEndpoint _endpoint;
+    private readonly Import4Endpoint _endpoint;
 
-    public ImportFunction(
+    public Import4Function(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       OLabDBContext dbContext,
@@ -42,9 +47,9 @@ namespace OLab.FunctionApp.Functions.API
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = OLabLogger.CreateNew<ImportFunction>(loggerFactory);
+      Logger = OLabLogger.CreateNew<Import4Function>(loggerFactory);
 
-      _endpoint = new ImportEndpoint(
+      _endpoint = new Import4Endpoint(
         Logger,
         configuration,
         DbContext,
@@ -59,7 +64,7 @@ namespace OLab.FunctionApp.Functions.API
     /// <returns>IActionResult</returns>
     [Function("Import")]
     public async Task<HttpResponseData> ImportAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import")] HttpRequestData request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import4/import")] HttpRequestData request,
       FunctionContext hostContext,
       CancellationToken cancel)
     {
@@ -89,6 +94,48 @@ namespace OLab.FunctionApp.Functions.API
         Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
       };
       response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
+      return response;
+
+    }
+
+    [Function("Export}")]
+    public async Task<HttpResponseData> ExportAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}")] HttpRequestData request,
+      FunctionContext hostContext,
+      uint id,
+      CancellationToken token)
+    {
+      try
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization(hostContext);
+
+        if (!auth.HasAccess("X", "Export", 0))
+          throw new OLabUnauthorizedException();
+
+        using (var memoryStream = new MemoryStream())
+        {
+          await _endpoint.ExportAsync(memoryStream, id, token);
+
+          memoryStream.Position = 0;
+          var now = DateTime.UtcNow;
+
+          var fileDownloadName = $"OLab4Export.map{id}.{now.ToString("yyyyMMddHHmm")}.zip";
+
+          response = request.CreateResponse(HttpStatusCode.OK);
+          response.WriteBytes(memoryStream.ToArray());
+          response.Headers.Add("Content-Type", "application/zip");
+          response.Headers.Add("Content-Length", $"{memoryStream.Length}");
+          response.Headers.Add("Content-Disposition", $"attachment; filename={fileDownloadName}; filename*=UTF-8'{fileDownloadName}");
+        }
+
+      }
+      catch (Exception ex)
+      {
+        ProcessException(ex);
+        response = request.CreateResponse(ex);
+      }
+
       return response;
 
     }

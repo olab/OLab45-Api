@@ -6,6 +6,7 @@ using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Configuration;
+using System.IO;
 using System.IO.Compression;
 
 namespace OLab.Files.AzureBlobStorage
@@ -256,11 +257,11 @@ namespace OLab.Files.AzureBlobStorage
       {
         logger.LogInformation($"CopyStreamToFileAsync reading '{fileName}'");
 
-        var filePath = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}";
+        var physicalFileName = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}";
 
         await _blobServiceClient
              .GetBlobContainerClient(_containerName)
-             .GetBlobClient(filePath)
+             .GetBlobClient(physicalFileName)
              .DownloadToAsync(stream);
 
         stream.Position = 0;
@@ -289,13 +290,13 @@ namespace OLab.Files.AzureBlobStorage
 
       try
       {
-        var sourceFolder = $"{folderName}{GetFolderSeparator()}{fileName}";
+        var physicalFileName = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}";
 
-        logger.LogInformation($"DeleteFileAsync '{sourceFolder}'");
+        logger.LogInformation($"DeleteFileAsync '{physicalFileName}'");
 
         await _blobServiceClient
           .GetBlobContainerClient(_containerName)
-          .DeleteBlobAsync(sourceFolder);
+          .DeleteBlobAsync(physicalFileName);
 
         return true;
       }
@@ -375,29 +376,33 @@ namespace OLab.Files.AzureBlobStorage
       {
         IList<BlobItem> blobs;
 
-        logger.LogInformation($"reading '{folderName}' for files to add to stream");
+        var physicalFolder = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}";
+        logger.LogInformation($"reading '{physicalFolder}' for files to add to stream");
 
+        
         blobs = _blobServiceClient
           .GetBlobContainerClient(_containerName)
-          .GetBlobs(prefix: folderName).ToList();
+          .GetBlobs(prefix: physicalFolder).ToList();
 
         foreach (var blob in blobs)
         {
           var blobStream = new MemoryStream();
 
-          var blobPath = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{blob.Name}";
-
           await _blobServiceClient
                .GetBlobContainerClient(_containerName)
-               .GetBlobClient(blobPath)
+               .GetBlobClient(blob.Name)
                .DownloadToAsync(blobStream);
 
-          var archivePath = $"{folderName}{GetFolderSeparator()}{blob.Name}";
+          var archivePath = $"{folderName}{GetFolderSeparator()}{Path.GetFileName(blob.Name)}";
 
-          logger.LogInformation($"  adding '{blobPath}' to archive '{archivePath}'");
+          logger.LogInformation($"  adding '{blob.Name}' to archive '{archivePath}'");
 
-          var readmeEntry = archive.CreateEntry(archivePath);
-          blobStream.CopyTo(readmeEntry.Open());
+          var entry = archive.CreateEntry(archivePath);
+          using (var entryStream = entry.Open())
+          {
+            blobStream.CopyTo(entryStream);
+            entryStream.Close();
+          }
 
         }
 
