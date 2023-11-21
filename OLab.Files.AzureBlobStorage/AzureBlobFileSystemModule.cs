@@ -63,9 +63,7 @@ namespace OLab.Files.AzureBlobStorage
 
     private string GetPhysicalPath(string folderName)
     {
-      var physicalPath = Path.Combine(
-        _configuration.GetAppSettings().FileStorageFolder,
-        folderName);
+      var physicalPath = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}";
       return physicalPath;
     }
 
@@ -132,18 +130,23 @@ namespace OLab.Files.AzureBlobStorage
 
         // if we do not have this folderName already in cache
         // then hit the blob storage and cache the results
-        if (!_folderContentCache.ContainsKey(folderName))
+        if (!_folderContentCache.ContainsKey(physicalPath))
         {
           logger.LogInformation($"reading '{folderName}' for files");
 
           blobs = _blobServiceClient
             .GetBlobContainerClient(_containerName)
-            .GetBlobs(prefix: folderName).ToList();
+            .GetBlobs(prefix: physicalPath).ToList();
+
+          logger.LogInformation($"found '{blobs.Count}' file blobs");
+
+          foreach( var blob in blobs)
+            logger.LogInformation($"  found '{blob.Name}'");
 
           _folderContentCache[physicalPath] = blobs;
         }
         else
-          blobs = _folderContentCache[folderName];
+          blobs = _folderContentCache[physicalPath];
 
         result = blobs.Any(x => x.Name.Contains(fileName));
 
