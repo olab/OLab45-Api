@@ -1,4 +1,5 @@
 using Dawn;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,6 +58,8 @@ public partial class QuestionsController : OLabController
   {
     try
     {
+      Logger.LogInformation($"GET questions");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -82,6 +85,8 @@ public partial class QuestionsController : OLabController
     {
       Guard.Argument(id, nameof(id)).NotZero();
 
+      Logger.LogInformation($"GET question {id}");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -106,6 +111,8 @@ public partial class QuestionsController : OLabController
     try
     {
       Guard.Argument(id, nameof(id)).NotZero();
+
+      Logger.LogInformation($"PUT question {dto.Id}");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
@@ -133,6 +140,8 @@ public partial class QuestionsController : OLabController
     {
       Guard.Argument(dto).NotNull(nameof(dto));
 
+      Logger.LogInformation($"POST question");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -157,6 +166,8 @@ public partial class QuestionsController : OLabController
     try
     {
       Guard.Argument(id, nameof(id)).NotZero();
+
+      Logger.LogInformation($"DELETE question {id}");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
