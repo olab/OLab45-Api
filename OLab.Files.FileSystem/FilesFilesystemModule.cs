@@ -340,11 +340,11 @@ public class FilesFilesystemModule : IFileStorageModule
       {
         using (var fileStream = new FileStream(file, FileMode.Open))
         {
-          var archivePath = $"{folderName}{GetFolderSeparator()}{Path.GetFileName(file)}";
+          var entryPath = $"{folderName}{GetFolderSeparator()}{Path.GetFileName(file)}";
 
-          logger.LogInformation($"  adding '{file}' to archive '{archivePath}'");
+          logger.LogInformation($"  adding '{file}' to archive '{entryPath}'");
 
-          var entry = archive.CreateEntry(archivePath);
+          var entry = archive.CreateEntry(entryPath);
           using (var entryStream = entry.Open())
           {
             fileStream.CopyTo(entryStream);

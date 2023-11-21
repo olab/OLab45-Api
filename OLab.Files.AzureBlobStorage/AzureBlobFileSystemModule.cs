@@ -378,7 +378,6 @@ namespace OLab.Files.AzureBlobStorage
 
         var physicalFolder = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}";
         logger.LogInformation($"reading '{physicalFolder}' for files to add to stream");
-
         
         blobs = _blobServiceClient
           .GetBlobContainerClient(_containerName)
@@ -393,11 +392,12 @@ namespace OLab.Files.AzureBlobStorage
                .GetBlobClient(blob.Name)
                .DownloadToAsync(blobStream);
 
-          var archivePath = $"{folderName}{GetFolderSeparator()}{Path.GetFileName(blob.Name)}";
+          blobStream.Position = 0;
 
-          logger.LogInformation($"  adding '{blob.Name}' to archive '{archivePath}'");
+          var entryPath = $"{folderName}{GetFolderSeparator()}{Path.GetFileName(blob.Name)}";
+          logger.LogInformation($"  adding '{blob.Name}' to archive '{entryPath}'. size = {blobStream.Length}");
 
-          var entry = archive.CreateEntry(archivePath);
+          var entry = archive.CreateEntry(entryPath);
           using (var entryStream = entry.Open())
           {
             blobStream.CopyTo(entryStream);

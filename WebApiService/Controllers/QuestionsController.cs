@@ -72,7 +72,7 @@ public partial class QuestionsController : OLabController
   /// <summary>
   /// Gets a specific question
   /// </summary>
-  /// <param name="id"></param>
+  /// <param name="id">Question id</param>
   /// <returns></returns>
   [HttpGet("{id}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -95,7 +95,7 @@ public partial class QuestionsController : OLabController
   }
 
   /// <summary>
-  /// Saves a question edit
+  /// Edit a Question
   /// </summary>
   /// <param name="id">question id</param>
   /// <returns>IActionResult</returns>
@@ -143,5 +143,32 @@ public partial class QuestionsController : OLabController
     {
       return ProcessException(ex, HttpContext.Request);
     }
+  }
+
+  /// <summary>
+  /// Delete question
+  /// </summary>
+  /// <param name="id">Question id</param>
+  /// <returns>IActionResult</returns>
+  [HttpDelete("{id}")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> DeleteAsync(uint id)
+  {
+    try
+    {
+      Guard.Argument(id, nameof(id)).NotZero();
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      await _endpoint.DeleteAsync(auth, id);
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+    return NoContent();
+
   }
 }

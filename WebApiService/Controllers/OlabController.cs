@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using OLab.Access;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
@@ -84,6 +85,10 @@ namespace OLabWebAPI.Endpoints.WebApi
 
       if (ex is OLabUnauthorizedException)
         return request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+
+      if ( ex is OLabObjectNotFoundException )
+        return request.CreateResponse(OLabNotFoundResult<string>.Result(ex.Message));
+
       return request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
     }
 
