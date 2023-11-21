@@ -75,15 +75,18 @@ public class FilesFilesystemModule : IFileStorageModule
         var scopeLevel = item.ImageableType;
         var scopeId = item.ImageableId;
 
-        var physicalPath = GetPhysicalPath(item.Path);
+        var physicalPath = GetPhysicalPath($"{scopeLevel}{GetFolderSeparator()}{scopeId}{GetFolderSeparator()}{item.Path}");
 
-        if (FileExists(physicalPath, item.Path))
+        if (FileExists(Path.GetDirectoryName(physicalPath), item.Path))
         {
-          item.OriginUrl = $"{GetFolderSeparator()}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{GetFolderSeparator()}{scopeLevel}{GetFolderSeparator()}{scopeId}{GetFolderSeparator()}{item.Path}";
+          item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}/{scopeLevel}/{scopeId}/{item.Path}";
           logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
         }
         else
+        {
+          logger.LogWarning($"  '{physicalPath}' not found");
           item.OriginUrl = null;
+        }
       }
       catch (Exception ex)
       {
