@@ -165,7 +165,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="targetFolder">Target folderName</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
-  public async Task<string> CopyFiletoStreamAsync(
+  public async Task<string> CopyStreamToFileAsync(
     Stream stream,
     string targetFolder,
     CancellationToken token)
@@ -206,7 +206,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="folderName">Target folder</param>
   /// <param name="fileName">Target file name</param>
   /// <param name="token"></param>
-  public async Task CopyStreamToFileAsync(
+  public async Task CopyFileToStreamAsync(
       Stream stream,
       string folderName,
       string fileName,

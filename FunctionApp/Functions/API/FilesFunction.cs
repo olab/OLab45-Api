@@ -163,11 +163,11 @@ namespace OLab.FunctionApp.Functions.API
     /// <returns>IActionResult</returns>
     [Function("FilePost")]
     public async Task<HttpResponseData> FilePostAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "file")] HttpRequestData request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "files")] HttpRequestData request,
       FunctionContext hostContext,
       CancellationToken token)
     {
-      SystemFiles phys = null;
+      string fileName = "";
 
       try
       {
@@ -176,6 +176,7 @@ namespace OLab.FunctionApp.Functions.API
         var parser = await MultipartFormDataParser.ParseAsync(request.Body).ConfigureAwait(false);
 
         var dto = new FilesFullDto(parser);
+        fileName = dto.FileName;
 
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
@@ -192,12 +193,12 @@ namespace OLab.FunctionApp.Functions.API
           if (azureException.Status == 409)
             response = request.CreateResponse(
               OLabServerErrorResult.Result(
-                $"File '{phys.Path}' already exists",
+                $"File '{fileName}' already exists",
                 HttpStatusCode.Conflict));
           else
             response = request.CreateResponse(
               OLabServerErrorResult.Result(
-                $"Error creating static file '{phys.Path}'.  {ex.Message}",
+                $"Error creating static file '{fileName}'.  {ex.Message}",
                 (HttpStatusCode)azureException.Status));
         }
         else

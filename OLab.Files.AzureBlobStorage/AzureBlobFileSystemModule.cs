@@ -110,7 +110,7 @@ namespace OLab.Files.AzureBlobStorage
     /// <summary>
     /// Test if a file exists
     /// </summary>
-    /// <param name="folderName">File folderName</param>
+    /// <param name="folderName">File sourceFolderName</param>
     /// <param name="fileName">file name</param>
     /// <returns>true/false</returns>
     public bool FileExists(
@@ -128,7 +128,7 @@ namespace OLab.Files.AzureBlobStorage
 
         var physicalPath = GetPhysicalPath(folderName);
 
-        // if we do not have this folderName already in cache
+        // if we do not have this sourceFolderName already in cache
         // then hit the blob storage and cache the results
         if (!_folderContentCache.ContainsKey(physicalPath))
         {
@@ -171,8 +171,8 @@ namespace OLab.Files.AzureBlobStorage
     /// </summary>
     /// <param name="logger">OLabLogger </param>
     /// <param name="fileName">File name</param>
-    /// <param name="sourceFolder">Source folderName</param>
-    /// <param name="destinationFolder">Destination folderName</param>
+    /// <param name="sourceFolder">Source sourceFolderName</param>
+    /// <param name="destinationFolder">Destination sourceFolderName</param>
     /// <exception cref="NotImplementedException"></exception>
     public async Task MoveFileAsync(
       string fileName,
@@ -190,10 +190,10 @@ namespace OLab.Files.AzureBlobStorage
         using (var sourceFileStream = new MemoryStream())
         {
           var sourceFilePath = $"{sourceFolder}{GetFolderSeparator()}{fileName}";
-          await CopyStreamToFileAsync(sourceFileStream, sourceFolder, fileName, token);
+          await CopyFileToStreamAsync(sourceFileStream, sourceFolder, fileName, token);
 
           var destinationFilePath = $"{destinationFolder}{GetFolderSeparator()}{fileName}";
-          await CopyFiletoStreamAsync(sourceFileStream, destinationFolder, token);
+          await CopyStreamToFileAsync(sourceFileStream, destinationFolder, token);
 
           await DeleteFileAsync(sourceFolder, fileName);
         }
@@ -210,10 +210,9 @@ namespace OLab.Files.AzureBlobStorage
     /// Copy file presented by stream to file store
     /// </summary>
     /// <param name="stream">File stream</param>
-    /// <param name="folderName">Target folder</param>
-    /// <param name="fileName">Target file name</param>
+    /// <param name="targetFolder">Target folder</param>
     /// <param name="token"></param>
-    public async Task<string> CopyFiletoStreamAsync(
+    public async Task<string> CopyStreamToFileAsync(
       Stream stream,
       string targetFolder,
       CancellationToken token)
@@ -233,7 +232,7 @@ namespace OLab.Files.AzureBlobStorage
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "CopyFiletoStreamAsync Exception");
+        logger.LogError(ex, "CopyFileToStreamAsync Exception");
         throw;
       }
 
@@ -243,10 +242,10 @@ namespace OLab.Files.AzureBlobStorage
     /// Read file from storage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
-    /// <param name="folderName">Source folderName name</param>
+    /// <param name="folderName">Source sourceFolderName name</param>
     /// <param name="fileName">File name</param>
     /// <returns>File contents sourceFileStream</returns>
-    public async Task CopyStreamToFileAsync(
+    public async Task CopyFileToStreamAsync(
       Stream stream,
       string folderName,
       string fileName,
@@ -258,9 +257,9 @@ namespace OLab.Files.AzureBlobStorage
 
       try
       {
-        logger.LogInformation($"CopyStreamToFileAsync reading '{fileName}'");
+        logger.LogInformation($"CopyFileToStreamAsync reading '{fileName}'");
 
-        var physicalFileName = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}";
+        var physicalFileName = $"{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}";
 
         await _blobServiceClient
              .GetBlobContainerClient(_containerName)
@@ -271,7 +270,7 @@ namespace OLab.Files.AzureBlobStorage
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "CopyStreamToFileAsync Exception");
+        logger.LogError(ex, "CopyFileToStreamAsync Exception");
         throw;
       }
 
@@ -281,7 +280,7 @@ namespace OLab.Files.AzureBlobStorage
     /// Delete file from blob storage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
-    /// <param name="folderName">File folderName</param>
+    /// <param name="folderName">File sourceFolderName</param>
     /// <param name="fileName">File to delete</param>
     /// <returns></returns>
     public async Task<bool> DeleteFileAsync(
@@ -293,7 +292,7 @@ namespace OLab.Files.AzureBlobStorage
 
       try
       {
-        var physicalFileName = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}";
+        var physicalFileName = $"{folderName}{GetFolderSeparator()}{fileName}";
 
         logger.LogInformation($"DeleteFileAsync '{physicalFileName}'");
 
@@ -316,33 +315,33 @@ namespace OLab.Files.AzureBlobStorage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
     /// <param name="archiveFileName">Source file name</param>
-    /// <param name="extractDirectory">TTarget extreaction folderName</param>
+    /// <param name="extractDirectory">TTarget extreaction sourceFolderName</param>
     /// <param name="token">Cancellation token</param>
     /// <returns></returns>
     public async Task<bool> ExtractFileToStorageAsync(
-      string folderName,
-      string fileName,
-      string extractDirectoryName,
+      string sourceFolderName,
+      string sourceFileName,
+      string targetDirectoryName,
       CancellationToken token)
     {
-      Guard.Argument(folderName).NotEmpty(nameof(folderName));
-      Guard.Argument(fileName).NotEmpty(nameof(fileName));
-      Guard.Argument(extractDirectoryName).NotEmpty(nameof(extractDirectoryName));
+      Guard.Argument(sourceFolderName).NotEmpty(nameof(sourceFolderName));
+      Guard.Argument(sourceFileName).NotEmpty(nameof(sourceFileName));
+      Guard.Argument(targetDirectoryName).NotEmpty(nameof(targetDirectoryName));
 
       try
       {
-        logger.LogInformation($"extracting '{folderName}' {fileName} -> {extractDirectoryName}");
+        logger.LogInformation($"extracting '{sourceFolderName}' {sourceFileName} -> {targetDirectoryName}");
 
         using (var stream = new MemoryStream())
         {
-          await CopyStreamToFileAsync(stream, folderName, fileName, token);
+          await CopyFileToStreamAsync(stream, sourceFolderName, sourceFileName, token);
 
           var fileProcessor = new ZipFileProcessor(
             _blobServiceClient.GetBlobContainerClient(_containerName),
             logger,
             _configuration);
 
-          var extractPath = $"{_configuration.GetAppSettings().FileImportFolder}{GetFolderSeparator()}{folderName}{GetFolderSeparator()}{fileName}.import";
+          var extractPath = $"{GetFolderSeparator()}{sourceFolderName}{GetFolderSeparator()}{Path.GetFileNameWithoutExtension(sourceFileName)}";
           await fileProcessor.ProcessFileAsync(stream, extractPath, token);
 
         }
