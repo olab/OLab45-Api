@@ -232,7 +232,7 @@ namespace OLab.Files.AzureBlobStorage
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "CopyFileToStreamAsync Exception");
+        logger.LogError(ex, "CopyStreamToFileAsync Exception");
         throw;
       }
 

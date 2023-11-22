@@ -193,7 +193,7 @@ public class FilesFilesystemModule : IFileStorageModule
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyFiletoStreamAsync Exception");
+      logger.LogError(ex, "CopyStreamToFileAsync Exception");
       throw;
     }
 
@@ -234,7 +234,7 @@ public class FilesFilesystemModule : IFileStorageModule
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyStreamToFileAsync Exception");
+      logger.LogError(ex, "CopyFileToStreamAsync Exception");
       throw;
     }
   }
