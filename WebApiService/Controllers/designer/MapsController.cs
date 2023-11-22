@@ -1,9 +1,11 @@
+using Azure;
 using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Exceptions;
@@ -19,6 +21,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer;
@@ -102,6 +105,67 @@ public partial class MapsController : OLabController
     {
       return ProcessException(ex, HttpContext.Request);
     }
+  }
+
+  /// <summary>
+  /// Delete a constant
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [HttpDelete("{mapId}/nodes/{nodeId}/links/{id}")]
+  public async Task<IActionResult> MapNodeLinkDeleteDesigner(
+    uint mapId,
+    uint nodeId,
+    uint id,
+    CancellationToken cancellationToken)
+  {
+    try
+    {
+      Guard.Argument(mapId, nameof(mapId)).NotZero();
+      Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+      Guard.Argument(id, nameof(id)).NotZero();
+
+      var auth = GetAuthorization(HttpContext);
+
+      await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, id);
+      return NoContent();
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+  /// <summary>
+  /// Delete a constant
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [HttpGet("{mapId}/nodes/{nodeId}/links/{id}")]
+  public async Task<IActionResult> MapNodeLinkGetDesigner(
+    uint mapId,
+    uint nodeId,
+    uint id,
+    CancellationToken cancellationToken)
+  {
+    try
+    {
+      Guard.Argument(mapId, nameof(mapId)).NotZero();
+      Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+      Guard.Argument(id, nameof(id)).NotZero();
+
+      var auth = GetAuthorization(HttpContext);
+
+      var dto = await _endpoint.GetMapNodeLinkAsync(auth, mapId, id);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodeLinksDto>.Result(dto));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
   }
 
   /// <summary>
