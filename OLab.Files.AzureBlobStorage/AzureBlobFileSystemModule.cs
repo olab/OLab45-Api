@@ -93,7 +93,7 @@ namespace OLab.Files.AzureBlobStorage
           if (FileExists(scopeFolder, item.Path))
           {
             item.OriginUrl = $"{_configuration.GetAppSettings().FileStorageUrl}{GetFolderSeparator()}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{GetFolderSeparator()}{scopeFolder}{GetFolderSeparator()}{item.Path}";
-            logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
+            logger.LogInformation($"  file {item.Name}({item.Id}): '{item.Path}' mapped to url '{item.OriginUrl}'");
           }
           else
             item.OriginUrl = null;

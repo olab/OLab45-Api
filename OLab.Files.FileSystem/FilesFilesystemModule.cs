@@ -80,7 +80,7 @@ public class FilesFilesystemModule : IFileStorageModule
         if (FileExists(Path.GetDirectoryName(physicalPath), item.Path))
         {
           item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}/{scopeLevel}/{scopeId}/{item.Path}";
-          logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
+          logger.LogInformation($"  file {item.Name}({item.Id}): '{item.Path}' mapped to url '{item.OriginUrl}'");
         }
         else
         {
