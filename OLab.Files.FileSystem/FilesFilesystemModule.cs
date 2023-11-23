@@ -4,6 +4,7 @@ using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.IO.Compression;
+using System.Text;
 
 namespace OLab.Files.FileSystem;
 
@@ -115,9 +116,14 @@ public class FilesFilesystemModule : IFileStorageModule
     try
     {
       var sourceFilePath = GetPhysicalPath(sourceFolder, fileName);
+
+      if ( !Directory.Exists(destinationFolder) )
+        Directory.CreateDirectory(destinationFolder);
+
       File.Move(
         sourceFilePath,
-        destinationFolder);
+        Path.Combine( destinationFolder, fileName ),
+        true);
 
       logger.LogInformation($"moved file from '{sourceFilePath}' to {destinationFolder}");
     }
@@ -183,7 +189,7 @@ public class FilesFilesystemModule : IFileStorageModule
       if (physicalDirectory != null)
         Directory.CreateDirectory(physicalDirectory);
 
-      using (var file = new FileStream(physicalPath, FileMode.Create))
+      using (var file = new FileStream(physicalPath, FileMode.OpenOrCreate, FileAccess.Write))
       {
         await stream.CopyToAsync(file);
         logger.LogInformation($"wrote file to '{physicalPath}'. Size: {file.Length}");
@@ -367,6 +373,52 @@ public class FilesFilesystemModule : IFileStorageModule
 
 
     return result;
+  }
+
+  public IList<string> GetFiles(string folderName, CancellationToken token)
+  {
+    var fileNames = new List<string>();
+
+    try
+    {
+      var physicalPath = GetPhysicalPath(folderName);
+
+      logger.LogInformation($"reading '{folderName}' for files");
+
+      if (!Directory.Exists(physicalPath))
+      {
+        logger.LogInformation($"source folder '{folderName}' does not exist");
+        return fileNames;
+      }
+
+      var contents = Directory.GetFiles(physicalPath).ToList();
+      logger.LogInformation($"  found '{contents.Count}' files");
+
+      fileNames = contents.Select( x => Path.GetFileName( x ) ).ToList();
+      foreach (var fileName in fileNames)
+        logger.LogInformation($"  {fileName}");
+
+      return fileNames;
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "GetFiles error");
+      throw;
+    }
+
+  }
+
+  public string BuildPath(params object[] pathParts)
+  {
+    var sb = new StringBuilder();
+    for (int i = 0; i < pathParts.Length; i++)
+    {
+      sb.Append(pathParts[i].ToString());
+      if (i < pathParts.Length - 1)
+        sb.Append(GetFolderSeparator());
+    }
+
+    return sb.ToString();
   }
 }
 

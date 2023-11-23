@@ -9,6 +9,7 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using OLabWebAPI.Extensions;
@@ -55,7 +56,8 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <returns>IActionResult</returns>
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> Import(CancellationToken token)
+    public async Task<IActionResult> Import(
+      CancellationToken token)
     {
       try
       {
@@ -65,23 +67,30 @@ namespace OLabWebAPI.Endpoints.WebApi
         if (!auth.HasAccess("X", "Import", 0))
           throw new OLabUnauthorizedException();
 
-        if (Request.Body == null)
-          throw new ArgumentNullException(nameof(Request.Body));
+        if (Request.Form == null)
+          throw new ArgumentNullException(nameof(Request.Form));
 
-        using (var archiveFileStream = Request.Form.Files[0].OpenReadStream())
+        var form = Request.Form;
+
+        if (form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
+          throw new Exception("Invalid file name");
+
+        using (var stream = new MemoryStream())
         {
-          Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {archiveFileStream.Length}");
+          var helper = new OLabFormFieldHelper(stream);
 
-          archiveFileStream.Position = 0;
+          var file = Request.Form.Files[0];
+          await file.CopyToAsync(helper.Stream);
 
-          // test for bad file name (including any directory characters)
-          if (Request.Form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
-            Logger.LogError("Invalid file name");
-          else
-            await _endpoint.ImportAsync(
-              archiveFileStream,
-              Request.Form.Files[0].FileName,
-              token);
+          helper.Stream.Position = 0;
+
+          Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {stream.Length}");
+
+          await _endpoint.ImportAsync(
+            stream,
+            Request.Form.Files[0].FileName,
+            token);
+
         }
 
         var dto = new ImportResponse

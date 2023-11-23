@@ -6,8 +6,8 @@ using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System.Configuration;
-using System.IO;
 using System.IO.Compression;
+using System.Text;
 
 namespace OLab.Files.AzureBlobStorage
 {
@@ -140,7 +140,7 @@ namespace OLab.Files.AzureBlobStorage
 
           logger.LogInformation($"found '{blobs.Count}' file blobs");
 
-          foreach( var blob in blobs)
+          foreach (var blob in blobs)
             logger.LogInformation($"  found '{blob.Name}'");
 
           _folderContentCache[physicalPath] = blobs;
@@ -226,7 +226,9 @@ namespace OLab.Files.AzureBlobStorage
 
         await _blobServiceClient
               .GetBlobContainerClient(_containerName)
-              .UploadBlobAsync(targetFolder, stream, token);
+              .GetBlobClient(targetFolder)
+              .UploadAsync(stream, overwrite: true, token);
+        //.UploadBlobAsync(targetFolder, stream, token);
 
         return targetFolder;
       }
@@ -380,7 +382,7 @@ namespace OLab.Files.AzureBlobStorage
 
         var physicalFolder = $"{_configuration.GetAppSettings().FileStorageFolder}{GetFolderSeparator()}{folderName}";
         logger.LogInformation($"reading '{physicalFolder}' for files to add to stream");
-        
+
         blobs = _blobServiceClient
           .GetBlobContainerClient(_containerName)
           .GetBlobs(prefix: physicalFolder).ToList();
@@ -417,6 +419,52 @@ namespace OLab.Files.AzureBlobStorage
 
 
       return result;
+    }
+
+    public IList<string> GetFiles(string folderName, CancellationToken token)
+    {
+      var fileNames = new List<string>();
+
+      try
+      {
+        var physicalPath = GetPhysicalPath(folderName);
+
+        logger.LogInformation($"reading '{folderName}' for files");
+
+        var blobs = _blobServiceClient
+          .GetBlobContainerClient(_containerName)
+          .GetBlobs(prefix: physicalPath).ToList();
+
+        if (blobs.Count == 0)
+          return fileNames;
+
+        logger.LogInformation($"  found '{blobs.Count}' file blobs");
+        fileNames = blobs.Select(blob => blob.Name).ToList();
+
+        foreach (var fileName in fileNames)
+          logger.LogInformation($"  {fileName}");
+
+        return fileNames;
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "GetFiles error");
+        throw;
+      }
+
+    }
+
+    public string BuildPath(params object[] pathParts)
+    {
+      var sb = new StringBuilder();
+      for (int i = 0; i < pathParts.Length; i++)
+      {
+        sb.Append(pathParts[i].ToString());
+        if ( i < pathParts.Length - 1)
+          sb.Append(GetFolderSeparator());
+      }
+
+      return sb.ToString();
     }
   }
 }

@@ -86,7 +86,7 @@ namespace OLabWebAPI.Endpoints.WebApi
       if (ex is OLabUnauthorizedException)
         return request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
 
-      if ( ex is OLabObjectNotFoundException )
+      if (ex is OLabObjectNotFoundException)
         return request.CreateResponse(OLabNotFoundResult<string>.Result(ex.Message));
 
       return request.CreateResponse(OLabServerErrorResult.Result(ex.Message));

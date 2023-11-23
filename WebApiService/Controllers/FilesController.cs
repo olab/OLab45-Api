@@ -62,7 +62,7 @@ public partial class FilesController : OLabController
     {
       var file = form.Files[0];
       await file.CopyToAsync(helper.Stream);
-      stream.Position = 0;
+      helper.Stream.Position = 0;
 
       Logger.LogInformation($"  file: {file.FileName}. size {helper.Stream.Length}");
     }
