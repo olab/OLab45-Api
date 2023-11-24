@@ -64,7 +64,7 @@ namespace OLab.FunctionApp.Functions.API
     /// <returns>IActionResult</returns>
     [Function("Import")]
     public async Task<HttpResponseData> ImportAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import4/import")] HttpRequestData request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import4")] HttpRequestData request,
       FunctionContext hostContext,
       CancellationToken cancel)
     {
@@ -100,7 +100,7 @@ namespace OLab.FunctionApp.Functions.API
 
     [Function("Export}")]
     public async Task<HttpResponseData> ExportAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}")] HttpRequestData request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "export4/{id}")] HttpRequestData request,
       FunctionContext hostContext,
       uint id,
       CancellationToken token)

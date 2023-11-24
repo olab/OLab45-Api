@@ -1,4 +1,6 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using OLab.Common.Interfaces;
 using SharpCompress.Archives;
 
@@ -6,7 +8,7 @@ namespace OLab.Files.AzureBlobStorage;
 
 public abstract class FileProcessorBase : IFileProcessor
 {
-  private readonly BlobContainerClient _containerClient;
+  protected readonly BlobContainerClient _containerClient;
   public readonly IOLabLogger Logger;
   private readonly IOLabConfiguration _configuration;
 

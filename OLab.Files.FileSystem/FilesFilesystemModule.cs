@@ -117,12 +117,12 @@ public class FilesFilesystemModule : IFileStorageModule
     {
       var sourceFilePath = GetPhysicalPath(sourceFolder, fileName);
 
-      if ( !Directory.Exists(destinationFolder) )
+      if (!Directory.Exists(destinationFolder))
         Directory.CreateDirectory(destinationFolder);
 
       File.Move(
         sourceFilePath,
-        Path.Combine( destinationFolder, fileName ),
+        Path.Combine(destinationFolder, fileName),
         true);
 
       logger.LogInformation($"moved file from '{sourceFilePath}' to {destinationFolder}");
@@ -171,17 +171,19 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="targetFolder">Target folderName</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
-  public async Task<string> CopyStreamToFileAsync(
+  public async Task<string> WriteFileAsync(
     Stream stream,
-    string targetFolder,
+    string folderName,
+    string fileName,
     CancellationToken token)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(targetFolder).NotEmpty(nameof(targetFolder));
+    Guard.Argument(folderName).NotEmpty(nameof(folderName));
+    Guard.Argument(fileName).NotEmpty(nameof(fileName));
 
     try
     {
-      var physicalPath = GetPhysicalPath(targetFolder);
+      var physicalPath = GetPhysicalPath(folderName);
 
       logger.LogInformation($"Writing physical file: {physicalPath}");
 
@@ -189,17 +191,21 @@ public class FilesFilesystemModule : IFileStorageModule
       if (physicalDirectory != null)
         Directory.CreateDirectory(physicalDirectory);
 
-      using (var file = new FileStream(physicalPath, FileMode.OpenOrCreate, FileAccess.Write))
+      var physicalFileName = BuildPath(
+        physicalPath,
+        fileName);
+
+      using (var file = new FileStream(physicalFileName, FileMode.OpenOrCreate, FileAccess.Write))
       {
         await stream.CopyToAsync(file);
-        logger.LogInformation($"wrote file to '{physicalPath}'. Size: {file.Length}");
+        logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
       }
 
       return physicalPath;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyStreamToFileAsync Exception");
+      logger.LogError(ex, "WriteFileAsync Exception");
       throw;
     }
 
@@ -212,7 +218,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="folderName">Target folder</param>
   /// <param name="fileName">Target file name</param>
   /// <param name="token"></param>
-  public async Task CopyFileToStreamAsync(
+  public async Task ReadFileAsync(
       Stream stream,
       string folderName,
       string fileName,
@@ -227,7 +233,7 @@ public class FilesFilesystemModule : IFileStorageModule
 
       var physicalFilePath = GetPhysicalPath(folderName, fileName);
 
-      logger.LogInformation($"CopyStreamToFileAsync writing to file '{physicalFilePath}'");
+      logger.LogInformation($"ReadFileAsync reading file '{physicalFilePath}'");
 
       using (var inputStream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read))
       {
@@ -240,7 +246,7 @@ public class FilesFilesystemModule : IFileStorageModule
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyFileToStreamAsync Exception");
+      logger.LogError(ex, "ReadFileAsync Exception");
       throw;
     }
   }
@@ -252,8 +258,8 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="fileName">File name</param>
   /// <returns></returns>
   public async Task<bool> DeleteFileAsync(
-  string folderName,
-  string fileName)
+    string folderName,
+    string fileName)
   {
     Guard.Argument(folderName).NotEmpty(nameof(folderName));
     Guard.Argument(fileName).NotEmpty(nameof(fileName));
@@ -271,6 +277,15 @@ public class FilesFilesystemModule : IFileStorageModule
       logger.LogError(ex, "CopyStreamToFileAsync Exception");
       throw;
     }
+  }
+
+  /// Delete folder from blob storage
+  /// </summary>
+  /// <param name="folderName">Folder to delete</param>
+  public async Task DeleteFolderAsync(string folderName)
+  {
+    if (Directory.Exists(folderName))
+      Directory.Delete(folderName, true);
   }
 
   /// <summary>
@@ -297,8 +312,7 @@ public class FilesFilesystemModule : IFileStorageModule
       var archiveFilePath = GetPhysicalPath(folderName, fileName);
       var extractPath = GetPhysicalPath(extractDirectoryName);
 
-      if (Directory.Exists(extractPath))
-        Directory.Delete(extractPath, true);
+      await DeleteFolderAsync(extractPath);
 
       ZipFile.ExtractToDirectory(archiveFilePath, extractPath);
       return true;
@@ -394,7 +408,7 @@ public class FilesFilesystemModule : IFileStorageModule
       var contents = Directory.GetFiles(physicalPath).ToList();
       logger.LogInformation($"  found '{contents.Count}' files");
 
-      fileNames = contents.Select( x => Path.GetFileName( x ) ).ToList();
+      fileNames = contents.Select(x => Path.GetFileName(x)).ToList();
       foreach (var fileName in fileNames)
         logger.LogInformation($"  {fileName}");
 
@@ -408,6 +422,11 @@ public class FilesFilesystemModule : IFileStorageModule
 
   }
 
+  /// <summary>
+  /// Builds a path, compatible with the file module
+  /// </summary>
+  /// <param name="pathParts">Argument list of path parts</param>
+  /// <returns>Path string</returns>
   public string BuildPath(params object[] pathParts)
   {
     var sb = new StringBuilder();
