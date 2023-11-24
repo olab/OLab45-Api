@@ -406,7 +406,6 @@ public class FilesFilesystemModule : IFileStorageModule
       }
 
       var contents = Directory.GetFiles(physicalPath).ToList();
-      logger.LogInformation($"  found '{contents.Count}' files");
 
       fileNames = contents.Select(x => Path.GetFileName(x)).ToList();
       foreach (var fileName in fileNames)
