@@ -40,7 +40,7 @@ public partial class ReportController : OLabController
   }
 
   /// <summary>
-  /// GetAsync a list of servers
+  /// ReadAsync a list of servers
   /// </summary>
   /// <param name="take">Max number of records to return</param>
   /// <param name="skip">SKip over a number of records</param>

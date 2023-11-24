@@ -13,14 +13,14 @@ namespace OLab.Files.FileSystem;
 [OLabModule("FILESYSTEM")]
 public class FilesFilesystemModule : IFileStorageModule
 {
-  private readonly IOLabLogger logger;
+  private readonly IOLabLogger _logger;
   private readonly IOLabConfiguration _configuration;
 
   public FilesFilesystemModule(
     IOLabLogger logger,
     IOLabConfiguration configuration)
   {
-    this.logger = logger;
+    _logger = logger;
     _configuration = configuration;
 
     // if not set to use this module, then don't proceed further
@@ -66,7 +66,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="items">SystemFiles records</param>
   public void AttachUrls(IList<SystemFiles> items)
   {
-    logger.LogInformation($"Attaching file storage URLs for {items.Count} file records");
+    _logger.LogInformation($"Attaching file storage URLs for {items.Count} file records");
 
 
     foreach (var item in items)
@@ -81,17 +81,17 @@ public class FilesFilesystemModule : IFileStorageModule
         if (FileExists(Path.GetDirectoryName(physicalPath), item.Path))
         {
           item.OriginUrl = $"/{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}/{scopeLevel}/{scopeId}/{item.Path}";
-          logger.LogInformation($"  file {item.Name}({item.Id}): '{item.Path}' mapped to url '{item.OriginUrl}'");
+          _logger.LogInformation($"  file {item.Name}({item.Id}): '{item.Path}' mapped to url '{item.OriginUrl}'");
         }
         else
         {
-          logger.LogWarning($"  '{physicalPath}' not found");
+          _logger.LogWarning($"  '{physicalPath}' not found");
           item.OriginUrl = null;
         }
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "AttachUrls Exception");
+        _logger.LogError(ex, "AttachUrls Exception");
       }
     }
 
@@ -125,11 +125,11 @@ public class FilesFilesystemModule : IFileStorageModule
         Path.Combine(destinationFolder, fileName),
         true);
 
-      logger.LogInformation($"moved file from '{sourceFilePath}' to {destinationFolder}");
+      _logger.LogInformation($"moved file from '{sourceFilePath}' to {destinationFolder}");
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "MoveFileAsync Exception");
+      _logger.LogError(ex, "MoveFileAsync Exception");
       throw;
     }
 
@@ -152,13 +152,13 @@ public class FilesFilesystemModule : IFileStorageModule
       var physicalPath = GetPhysicalPath(folderName, fileName);
       var result = File.Exists(physicalPath);
       if (!result)
-        logger.LogWarning($"  '{physicalPath}' physical file not found");
+        _logger.LogWarning($"  '{physicalPath}' physical file not found");
 
       return result;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "FileExists Exception");
+      _logger.LogError(ex, "FileExists Exception");
       throw;
     }
 
@@ -184,12 +184,10 @@ public class FilesFilesystemModule : IFileStorageModule
     try
     {
       var physicalPath = GetPhysicalPath(folderName);
+      _logger.LogInformation($"Writing file {fileName} to {physicalPath}");
 
-      logger.LogInformation($"Writing physical file: {physicalPath}");
-
-      var physicalDirectory = Path.GetDirectoryName(physicalPath);
-      if (physicalDirectory != null)
-        Directory.CreateDirectory(physicalDirectory);
+      if (!Directory.Exists(physicalPath))
+        Directory.CreateDirectory(physicalPath);
 
       var physicalFileName = BuildPath(
         physicalPath,
@@ -198,14 +196,14 @@ public class FilesFilesystemModule : IFileStorageModule
       using (var file = new FileStream(physicalFileName, FileMode.OpenOrCreate, FileAccess.Write))
       {
         await stream.CopyToAsync(file);
-        logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
+        _logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
       }
 
       return physicalPath;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "WriteFileAsync Exception");
+      _logger.LogError(ex, "WriteFileAsync Exception");
       throw;
     }
 
@@ -233,20 +231,20 @@ public class FilesFilesystemModule : IFileStorageModule
 
       var physicalFilePath = GetPhysicalPath(folderName, fileName);
 
-      logger.LogInformation($"ReadFileAsync reading file '{physicalFilePath}'");
+      _logger.LogInformation($"ReadFileAsync reading file '{physicalFilePath}'");
 
       using (var inputStream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read))
       {
         inputStream.CopyTo(stream);
 
         stream.Position = 0;
-        logger.LogInformation($"  wrote '{inputStream.Length}'");
+        _logger.LogInformation($"  read '{inputStream.Length}' bytes");
       }
 
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "ReadFileAsync Exception");
+      _logger.LogError(ex, "ReadFileAsync Exception");
       throw;
     }
   }
@@ -267,14 +265,14 @@ public class FilesFilesystemModule : IFileStorageModule
     try
     {
       var physicalFilePath = GetPhysicalPath(folderName, fileName);
-      logger.LogInformation($"DeleteFileAsync deleting '{physicalFilePath}'");
+      _logger.LogInformation($"DeleteFileAsync deleting '{physicalFilePath}'");
 
       File.Delete(physicalFilePath);
       return true;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyStreamToFileAsync Exception");
+      _logger.LogError(ex, "CopyStreamToFileAsync Exception");
       throw;
     }
   }
@@ -307,7 +305,7 @@ public class FilesFilesystemModule : IFileStorageModule
     try
     {
 
-      logger.LogInformation($"extracting '{folderName}' {fileName} -> {extractDirectoryName}");
+      _logger.LogInformation($"extracting '{folderName}' {fileName} -> {extractDirectoryName}");
 
       var archiveFilePath = GetPhysicalPath(folderName, fileName);
       var extractPath = GetPhysicalPath(extractDirectoryName);
@@ -320,7 +318,7 @@ public class FilesFilesystemModule : IFileStorageModule
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "ExtractFileToStorageAsync error");
+      _logger.LogError(ex, "ExtractFileToStorageAsync error");
       throw;
     }
 
@@ -346,14 +344,14 @@ public class FilesFilesystemModule : IFileStorageModule
 
     try
     {
-      logger.LogInformation($"reading '{folderName}' for files to add to stream");
+      _logger.LogInformation($"reading '{folderName}' for files to add to stream");
 
       var physicalPath = GetPhysicalPath(folderName);
 
       // check if sirectory exists
       if (!Directory.Exists(physicalPath))
       {
-        logger.LogInformation($"  file folder '{physicalPath}' does not exist");
+        _logger.LogInformation($"  file folder '{physicalPath}' does not exist");
         return result;
       }
 
@@ -365,7 +363,7 @@ public class FilesFilesystemModule : IFileStorageModule
         {
           var entryPath = $"{folderName}{GetFolderSeparator()}{Path.GetFileName(file)}";
 
-          logger.LogInformation($"  adding '{file}' to archive '{entryPath}'");
+          _logger.LogInformation($"  adding '{file}' to archive '{entryPath}'");
 
           var entry = archive.CreateEntry(entryPath);
           using (var entryStream = entry.Open())
@@ -381,7 +379,7 @@ public class FilesFilesystemModule : IFileStorageModule
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyFoldertoArchiveAsync error");
+      _logger.LogError(ex, "CopyFoldertoArchiveAsync error");
       throw;
     }
 
@@ -397,11 +395,11 @@ public class FilesFilesystemModule : IFileStorageModule
     {
       var physicalPath = GetPhysicalPath(folderName);
 
-      logger.LogInformation($"reading '{folderName}' for files");
+      _logger.LogInformation($"reading '{folderName}' for files");
 
       if (!Directory.Exists(physicalPath))
       {
-        logger.LogInformation($"source folder '{folderName}' does not exist");
+        _logger.LogInformation($"source folder '{folderName}' does not exist");
         return fileNames;
       }
 
@@ -409,13 +407,13 @@ public class FilesFilesystemModule : IFileStorageModule
 
       fileNames = contents.Select(x => Path.GetFileName(x)).ToList();
       foreach (var fileName in fileNames)
-        logger.LogInformation($"  {fileName}");
+        _logger.LogInformation($"  {fileName}");
 
       return fileNames;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "GetFiles error");
+      _logger.LogError(ex, "GetFiles error");
       throw;
     }
 

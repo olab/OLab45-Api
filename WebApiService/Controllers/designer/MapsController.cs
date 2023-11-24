@@ -81,7 +81,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// GetAsync non-rendered nodes for a map
+  /// ReadAsync non-rendered nodes for a map
   /// </summary>
   /// <param name="mapId">Map id</param>
   /// <returns>IActionResult</returns>
@@ -348,7 +348,7 @@ public partial class MapsController : OLabController
   //}
 
   /// <summary>
-  /// GetAsync a list of users
+  /// ReadAsync a list of users
   /// </summary>
   /// <param name="mapId"></param>
   /// <returns></returns>
@@ -436,7 +436,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// GetAsync a list of security users for a given map
+  /// ReadAsync a list of security users for a given map
   /// </summary>
   /// <param name="mapId"></param>
   /// <returns></returns>

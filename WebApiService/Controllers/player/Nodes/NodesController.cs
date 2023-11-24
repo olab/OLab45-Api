@@ -45,7 +45,7 @@ public partial class NodesController : OLabController
   }
 
   /// <summary>
-  /// GetAsync full map node, with relations
+  /// ReadAsync full map node, with relations
   /// </summary>
   /// <param name="nodeId">Node id (0, if root node)</param>
   /// <returns>MapsNodesFullRelationsDto response</returns>

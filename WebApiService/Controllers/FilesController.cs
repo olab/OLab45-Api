@@ -82,7 +82,7 @@ public partial class FilesController : OLabController
   {
     try
     {
-      Logger.LogDebug($"GetAsync");
+      Logger.LogDebug($"ReadAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
@@ -140,7 +140,7 @@ public partial class FilesController : OLabController
   {
     try
     {
-      Logger.LogDebug($"GetAsync");
+      Logger.LogDebug($"ReadAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);

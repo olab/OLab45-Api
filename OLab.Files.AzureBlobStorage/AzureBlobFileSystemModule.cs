@@ -95,7 +95,10 @@ namespace OLab.Files.AzureBlobStorage
             _logger.LogInformation($"  file {item.Name}({item.Id}): '{item.Path}' mapped to url '{item.OriginUrl}'");
           }
           else
+          {
+            _logger.LogWarning($"  '{scopeFolder}/{item.Path}' not found");
             item.OriginUrl = null;
+          }
 
         }
         catch (Exception ex)
@@ -231,7 +234,7 @@ namespace OLab.Files.AzureBlobStorage
     }
 
     /// <summary>
-    /// Read file from storage
+    /// ReadAsync file from storage
     /// </summary>
     /// <param name="logger">OLabLogger</param>
     /// <param name="folderName">Source sourceFolderName name</param>
@@ -484,7 +487,7 @@ namespace OLab.Files.AzureBlobStorage
           return fileNames;
 
         _logger.LogInformation($"  found '{blobs.Count}' file blobs");
-        fileNames = blobs.Select(blob => Path.GetFileName( blob.Name )).ToList();
+        fileNames = blobs.Select(blob => Path.GetFileName(blob.Name)).ToList();
 
         foreach (var fileName in fileNames)
           _logger.LogInformation($"  {fileName}");
