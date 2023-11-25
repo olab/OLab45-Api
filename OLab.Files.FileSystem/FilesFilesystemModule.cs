@@ -6,6 +6,7 @@ using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System.Configuration;
 using System.IO.Compression;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace OLab.Files.FileSystem;
@@ -62,12 +63,15 @@ public class FilesFilesystemModule : OLabFileStorageModule
       if (FileExists(fileName, sourceFilePath))
         throw new Exception($"file '{sourceFilePath}' does not exist");
 
-      if (!Directory.Exists(destinationFolder))
-        Directory.CreateDirectory(destinationFolder);
+      var destinationFilePath = GetPhysicalPath(destinationFolder);
+      if (!Directory.Exists(destinationFilePath))
+        Directory.CreateDirectory(destinationFilePath);
+
+      destinationFilePath = GetPhysicalPath(destinationFolder, fileName);
 
       File.Move(
         sourceFilePath,
-        Path.Combine(destinationFolder, fileName),
+        destinationFilePath,
         true);
 
       logger.LogInformation($"moved {fileName} from '{sourceFilePath}' to {destinationFolder}");
@@ -278,6 +282,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
   public override async Task<bool> CopyFolderToArchiveAsync(
     ZipArchive archive,
     string folderName,
+    string zipEntryFolderName,
     bool appendToStream,
     CancellationToken token = default)
   {
@@ -298,12 +303,10 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
         using (var fileStream = new FileStream(physicalFilePath, FileMode.Open))
         {
-          // need to take the file root off the path
-          var entryName = file.Replace($"{FilesRoot}{GetFolderSeparator()}", "");
+          var entryPath = BuildPath(zipEntryFolderName, Path.GetFileName(file));
+          logger.LogInformation($"  adding '{file}' to archive '{entryPath}'. size = {fileStream.Length}");
 
-          logger.LogInformation($"  creating archive entry '{entryName}'");
-
-          var entry = archive.CreateEntry(entryName);
+          var entry = archive.CreateEntry(entryPath);
           using (var entryStream = entry.Open())
           {
             fileStream.CopyTo(entryStream);
