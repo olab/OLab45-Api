@@ -115,7 +115,7 @@ public partial class MapsController : OLabController
     uint mapId,
     uint nodeId,
     uint id,
-    CancellationToken cancellationToken)
+    CancellationToken token)
   {
     try
     {
@@ -145,7 +145,7 @@ public partial class MapsController : OLabController
     uint mapId,
     uint nodeId,
     uint id,
-    CancellationToken cancellationToken)
+    CancellationToken token)
   {
     try
     {

@@ -34,7 +34,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
     if (string.IsNullOrEmpty(cfg.GetAppSettings().FileStorageRoot))
       throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
 
-    if (!Directory.Exists(cfg.GetAppSettings().FileStorageRoot)) 
+    if (!Directory.Exists(cfg.GetAppSettings().FileStorageRoot))
       throw new ConfigurationErrorsException($"{cfg.GetAppSettings().FileStorageRoot} root directory does not exist");
   }
 
@@ -288,28 +288,22 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
     try
     {
-      var physicalPath = GetPhysicalPath(folderName);
-
-      // check if sirectory exists
-      if (!Directory.Exists(physicalPath))
-      {
-        logger.LogWarning($"  file folder '{physicalPath}' does not exist to add to stream");
-        return result;
-      }
-
       logger.LogInformation($"reading '{folderName}' for files to add to stream");
 
-      var files = GetFiles(physicalPath);
+      var files = GetFiles(folderName);
 
       foreach (var file in files)
       {
-        using (var fileStream = new FileStream(file, FileMode.Open))
+        var physicalFilePath = GetPhysicalPath(file);
+
+        using (var fileStream = new FileStream(physicalFilePath, FileMode.Open))
         {
-          var entryPath = BuildPath(folderName, Path.GetFileName(file));
+          // need to take the file root off the path
+          var entryName = file.Replace($"{FilesRoot}{GetFolderSeparator()}", "");
 
-          logger.LogInformation($"  adding '{file}' to archive '{entryPath}'");
+          logger.LogInformation($"  creating archive entry '{entryName}'");
 
-          var entry = archive.CreateEntry(entryPath);
+          var entry = archive.CreateEntry(entryName);
           using (var entryStream = entry.Open())
           {
             fileStream.CopyTo(entryStream);
@@ -332,7 +326,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
   }
 
   public override IList<string> GetFiles(
-    string folderName, 
+    string folderName,
     CancellationToken token = default)
   {
     var fileNames = new List<string>();
@@ -351,7 +345,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
       var contents = Directory.GetFiles(physicalPath).ToList();
 
-      fileNames = contents.Select(x => Path.GetFileName(x)).ToList();
+      fileNames = contents.Select(x => BuildPath(folderName, Path.GetFileName(x))).ToList();
       foreach (var fileName in fileNames)
         logger.LogInformation($"  {fileName}");
 
