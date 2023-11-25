@@ -62,7 +62,7 @@ public class OLabAuthentication : IOLabAuthentication
   /// <summary>
   /// Builds token validation object
   /// </summary>
-  /// <param name="configuration">App configuration</param>
+  /// <param name="configuration">App cfg</param>
   public static TokenValidationParameters BuildTokenValidationObject(IOLabConfiguration config)
   {
     // get and extract the valid token issuers
