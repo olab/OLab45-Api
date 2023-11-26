@@ -58,23 +58,23 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
     try
     {
-      var sourceFilePath = GetPhysicalPath(sourceFolder, fileName);
+      if (FileExists(fileName, sourceFolder))
+        throw new Exception($"file '{fileName}' not found");
 
-      if (FileExists(fileName, sourceFilePath))
-        throw new Exception($"file '{sourceFilePath}' does not exist");
+      var sourcePhysFilePath = GetPhysicalPath(BuildPath(sourceFolder, fileName));
+      var destinationPhysFolder = GetPhysicalPath(destinationFolder);
 
-      var destinationFilePath = GetPhysicalPath(destinationFolder);
-      if (!Directory.Exists(destinationFilePath))
-        Directory.CreateDirectory(destinationFilePath);
+      if (!Directory.Exists(destinationPhysFolder))
+        Directory.CreateDirectory(destinationPhysFolder);
 
-      destinationFilePath = GetPhysicalPath(destinationFolder, fileName);
+      var destinationPhysFilePath = GetPhysicalPath(destinationFolder, fileName);
 
       File.Move(
-        sourceFilePath,
-        destinationFilePath,
+        sourcePhysFilePath,
+        destinationPhysFilePath,
         true);
 
-      logger.LogInformation($"moved {fileName} from '{sourceFilePath}' to {destinationFolder}");
+      logger.LogInformation($"moved '{sourcePhysFilePath}' to {destinationPhysFilePath}");
     }
     catch (Exception ex)
     {
@@ -87,18 +87,19 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Test if file exists in storage
   /// </summary>
-  /// <param name="physicalPath">Path to look for file</param>
+  /// <param name="relativePath">Relative path to look for</param>
+  /// <param name="fileName">File name to look for</param>
   /// <returns>true/false</returns>
   public override bool FileExists(
-    string folderName,
+    string relativePath,
     string fileName)
   {
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
+    Guard.Argument(relativePath).NotEmpty(nameof(relativePath));
     Guard.Argument(fileName).NotEmpty(nameof(fileName));
 
     try
     {
-      var physicalPath = GetPhysicalPath(folderName, fileName);
+      var physicalPath = GetPhysicalPath(relativePath, fileName);
       var result = File.Exists(physicalPath);
       if (!result)
         logger.LogWarning($"  '{physicalPath}' physical file not found");
@@ -117,7 +118,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// Uploads a file represented by a stream to a directory
   /// </summary>
   /// <param name="file">File contents stream</param>
-  /// <param name="targetFolder">Target folderName</param>
+  /// <param name="targetFolder">Target relativePath</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
   public override async Task<string> WriteFileAsync(
@@ -200,7 +201,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Delete file
   /// </summary>
-  /// <param name="folderName">Target file folderName</param>
+  /// <param name="folderName">Target file relativePath</param>
   /// <param name="fileName">File name</param>
   /// <returns></returns>
   public override async Task<bool> DeleteFileAsync(
@@ -227,7 +228,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
   /// Delete folder from blob storage
   /// </summary>
-  /// <param name="folderName">Folder to delete</param>
+  /// <param name="relativePath">Folder to delete</param>
   public override async Task DeleteFolderAsync(string folderName)
   {
     if (Directory.Exists(folderName))
@@ -293,8 +294,6 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
     try
     {
-      logger.LogInformation($"reading '{folderName}' for files to add to stream");
-
       var files = GetFiles(folderName);
 
       foreach (var file in files)
@@ -341,8 +340,6 @@ public class FilesFilesystemModule : OLabFileStorageModule
     {
       var physicalPath = GetPhysicalPath(folderName);
 
-      logger.LogInformation($"reading '{folderName}' for files");
-
       if (!Directory.Exists(physicalPath))
       {
         logger.LogInformation($"source folder '{folderName}' does not exist");
@@ -350,6 +347,9 @@ public class FilesFilesystemModule : OLabFileStorageModule
       }
 
       var contents = Directory.GetFiles(physicalPath).ToList();
+
+      if (contents.Count > 0)
+        logger.LogInformation($"found {contents.Count} files in '{folderName}'");
 
       fileNames = contents.Select(x => BuildPath(folderName, Path.GetFileName(x))).ToList();
       foreach (var fileName in fileNames)
