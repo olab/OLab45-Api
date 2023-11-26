@@ -304,6 +304,9 @@ public class FilesFilesystemModule : OLabFileStorageModule
         using (var fileStream = new FileStream(physicalFilePath, FileMode.Open))
         {
           var entryPath = BuildPath(zipEntryFolderName, Path.GetFileName(file));
+          // normalize to standard folder separator
+          entryPath = entryPath.Replace('\\', '/');
+
           logger.LogInformation($"  adding '{file}' to archive '{entryPath}'. size = {fileStream.Length}");
 
           var entry = archive.CreateEntry(entryPath);
