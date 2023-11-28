@@ -35,6 +35,9 @@ public class FilesFilesystemModule : OLabFileStorageModule
     if (string.IsNullOrEmpty(cfg.GetAppSettings().FileStorageRoot))
       throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
 
+    if (string.IsNullOrEmpty(cfg.GetAppSettings().FileStorageUrl))
+      throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
+
     if (!Directory.Exists(cfg.GetAppSettings().FileStorageRoot))
       throw new ConfigurationErrorsException($"{cfg.GetAppSettings().FileStorageRoot} root directory does not exist");
   }
@@ -58,7 +61,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
     try
     {
-      if (FileExists(fileName, sourceFolder))
+      if (!FileExists(sourceFolder, fileName))
         throw new Exception($"file '{fileName}' not found");
 
       var sourcePhysFilePath = GetPhysicalPath(BuildPath(sourceFolder, fileName));
