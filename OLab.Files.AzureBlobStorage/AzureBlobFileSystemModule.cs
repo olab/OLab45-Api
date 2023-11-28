@@ -47,7 +47,10 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     if (string.IsNullOrEmpty(_containerName))
       throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
 
-    logger.LogInformation($"FileStorageRoot: {cfg.GetAppSettings().FileStorageRoot}");
+    logger.LogInformation($"Container: {_containerName}");
+
+    // need to prevent container name from being part of the file root
+    cfg.GetAppSettings().FileStorageRoot = string.Empty;
   }
 
   public override char GetFolderSeparator() { return '/'; }
