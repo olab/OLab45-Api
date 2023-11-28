@@ -117,7 +117,7 @@ namespace OLab.FunctionApp.Functions.API
 
       try
       {
-        Logger.LogDebug($"FilesGetAsync");
+        Logger.LogDebug($"FilesGet");
 
         var queryTake = Convert.ToInt32(request.Query["take"]);
         var querySkip = Convert.ToInt32(request.Query["skip"]);
@@ -158,7 +158,7 @@ namespace OLab.FunctionApp.Functions.API
 
       try
       {
-        Logger.LogDebug($"FileGetAsync");
+        Logger.LogDebug($"FileGet");
 
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
@@ -195,7 +195,7 @@ namespace OLab.FunctionApp.Functions.API
 
       try
       {
-        Logger.LogDebug($"FilePostAsync");
+        Logger.LogDebug($"FilePost");
 
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
@@ -250,7 +250,7 @@ namespace OLab.FunctionApp.Functions.API
     {
       try
       {
-        Logger.LogDebug($"DeleteAsync");
+        Logger.LogDebug($"FileDelete");
 
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
