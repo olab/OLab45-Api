@@ -98,9 +98,9 @@ namespace OLab.FunctionApp.Functions.API
 
     }
 
-    [Function("Export}")]
+    [Function("Export")]
     public async Task<HttpResponseData> ExportAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "export4/{id}")] HttpRequestData request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}")] HttpRequestData request,
       FunctionContext hostContext,
       uint id,
       CancellationToken token)

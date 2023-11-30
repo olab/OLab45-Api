@@ -74,8 +74,6 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      logger.LogInformation($"looking for existance of '{folderName}/{fileName}'");
-
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
       if (!_folderContentCache.ContainsKey(folderName))
@@ -92,9 +90,9 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       result = blobs.Any(x => x.Name.Contains(fileName));
 
       if (!result)
-        logger.LogWarning($"  '{folderName}' not found");
+        logger.LogWarning($"  '{folderName}{GetFolderSeparator()}{fileName}' not found");
       else
-        logger.LogInformation($"  '{folderName}' exists");
+        logger.LogInformation($"  '{folderName}{GetFolderSeparator()}{fileName}' exists");
 
     }
     catch (Exception ex)
