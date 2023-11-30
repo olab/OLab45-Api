@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -99,6 +100,31 @@ namespace OLabWebAPI.Endpoints.WebApi
         };
 
         return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
+
+      }
+      catch (Exception ex)
+      {
+        return ProcessException(ex, HttpContext.Request);
+      }
+
+    }
+
+    [HttpGet("export/{id}/json")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> ExportAsJson(
+      uint id,
+      CancellationToken token)
+    {
+      try
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
+
+        if (!auth.HasAccess("X", "Export", 0))
+          throw new OLabUnauthorizedException();
+
+        var dto = await _endpoint.ExportAsync(id, token);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
 
       }
       catch (Exception ex)

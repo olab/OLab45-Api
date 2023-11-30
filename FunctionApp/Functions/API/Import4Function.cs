@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Dto;
 using OLab.Api.Importer;
 
 using OLab.Api.Model;
@@ -98,7 +99,36 @@ namespace OLab.FunctionApp.Functions.API
 
     }
 
-    [Function("Export")]
+    [Function("ExportAsJson")]
+    public async Task<HttpResponseData> ExportAsJsonAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}/json")] HttpRequestData request,
+      FunctionContext hostContext,
+      uint id,
+      CancellationToken token)
+    {
+      try
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization(hostContext);
+
+        if (!auth.HasAccess("X", "ExportAsync", 0))
+          throw new OLabUnauthorizedException();
+
+        var dto = await _endpoint.ExportAsync(id, token);
+        response = request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
+
+      }
+      catch (Exception ex)
+      {
+        ProcessException(ex);
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+
+    }
+
+    [Function("ExportAsync")]
     public async Task<HttpResponseData> ExportAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}")] HttpRequestData request,
       FunctionContext hostContext,
@@ -110,7 +140,7 @@ namespace OLab.FunctionApp.Functions.API
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
-        if (!auth.HasAccess("X", "Export", 0))
+        if (!auth.HasAccess("X", "ExportAsync", 0))
           throw new OLabUnauthorizedException();
 
         using (var memoryStream = new MemoryStream())
