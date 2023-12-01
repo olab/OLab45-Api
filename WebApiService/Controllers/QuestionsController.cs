@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
@@ -58,6 +57,8 @@ public partial class QuestionsController : OLabController
   {
     try
     {
+      Logger.LogInformation($"GET questions");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -73,7 +74,7 @@ public partial class QuestionsController : OLabController
   /// <summary>
   /// Gets a specific question
   /// </summary>
-  /// <param name="id"></param>
+  /// <param name="id">Question id</param>
   /// <returns></returns>
   [HttpGet("{id}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -82,6 +83,8 @@ public partial class QuestionsController : OLabController
     try
     {
       Guard.Argument(id, nameof(id)).NotZero();
+
+      Logger.LogInformation($"GET question {id}");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
@@ -96,7 +99,7 @@ public partial class QuestionsController : OLabController
   }
 
   /// <summary>
-  /// Saves a question edit
+  /// Edit a Question
   /// </summary>
   /// <param name="id">question id</param>
   /// <returns>IActionResult</returns>
@@ -107,6 +110,8 @@ public partial class QuestionsController : OLabController
     try
     {
       Guard.Argument(id, nameof(id)).NotZero();
+
+      Logger.LogInformation($"PUT question {dto.Id}");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
@@ -134,6 +139,8 @@ public partial class QuestionsController : OLabController
     {
       Guard.Argument(dto).NotNull(nameof(dto));
 
+      Logger.LogInformation($"POST question");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -144,5 +151,34 @@ public partial class QuestionsController : OLabController
     {
       return ProcessException(ex, HttpContext.Request);
     }
+  }
+
+  /// <summary>
+  /// Delete question
+  /// </summary>
+  /// <param name="id">Question id</param>
+  /// <returns>IActionResult</returns>
+  [HttpDelete("{id}")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> DeleteAsync(uint id)
+  {
+    try
+    {
+      Guard.Argument(id, nameof(id)).NotZero();
+
+      Logger.LogInformation($"DELETE question {id}");
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      await _endpoint.DeleteAsync(auth, id);
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+    return NoContent();
+
   }
 }

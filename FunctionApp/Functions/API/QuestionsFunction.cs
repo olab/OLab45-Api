@@ -113,7 +113,8 @@ namespace OLab.FunctionApp.Functions.API
     [Function("QuestionPut")]
     public async Task<HttpResponseData> QuestionPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questions/{id}")] HttpRequestData request,
-      FunctionContext hostContext, CancellationToken cancellationToken,
+      FunctionContext hostContext, 
+      CancellationToken cancellationToken,
       uint id)
     {
 
@@ -167,5 +168,32 @@ namespace OLab.FunctionApp.Functions.API
       return response;
     }
 
+    /// <summary>
+    /// Create new object
+    /// </summary>
+    /// <param name="dto">object data</param>
+    /// <returns>IActionResult</returns>
+    [Function("QuestionDelete")]
+    public async Task<HttpResponseData> QuestionDeleteAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "questions/{id}")] HttpRequestData request,
+      FunctionContext hostContext,
+      uint id)
+    {
+
+      try
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization(hostContext);
+
+        await _endpoint.DeleteAsync(auth, id);
+        response = request.CreateResponse(new NoContentResult());
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+    }
   }
 }

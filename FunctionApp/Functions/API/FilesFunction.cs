@@ -1,4 +1,7 @@
 using Dawn;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using DocumentFormat.OpenXml.Wordprocessing;
 using FluentValidation;
 using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +16,7 @@ using OLab.Api.Model;
 using OLab.Api.ObjectMapper;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 using System.Net;
@@ -34,18 +38,6 @@ namespace OLab.FunctionApp.Functions.API
 
       Logger = OLabLogger.CreateNew<FilesFunction>(loggerFactory);
       _endpoint = new FilesEndpoint(Logger, configuration, dbContext, wikiTagProvider, fileStorageProvider);
-    }
-
-    public string GetMimeTypeForFileExtension(string filePath)
-    {
-      const string DefaultContentType = "application/octet-stream";
-
-      var provider = new FileExtensionContentTypeProvider();
-
-      if (!provider.TryGetContentType(filePath, out var contentType))
-        contentType = DefaultContentType;
-
-      return contentType;
     }
 
     private static string CapitalizeFirstLetter(string str)
@@ -80,6 +72,34 @@ namespace OLab.FunctionApp.Functions.API
       return tempFileName;
     }
 
+    private IOLabFormFieldHelper GetFormFieldHelperAsync(Stream stream, MultipartFormDataParser parser)
+    {
+      var helper = new OLabFormFieldHelper(stream);
+
+      helper.Fields.Add("id", Convert.ToUInt32(parser.GetParameterValue("id")));
+      helper.Fields.Add("name", parser.GetParameterValue("name"));
+      helper.Fields.Add("description", parser.GetParameterValue("description"));
+      helper.Fields.Add("copyright", parser.GetParameterValue("copyright"));
+      helper.Fields.Add("parentId", Convert.ToUInt32(parser.GetParameterValue("parentId")));
+      helper.Fields.Add("scopeLevel", parser.GetParameterValue("scopeLevel"));
+      helper.Fields.Add("isMediaResource", Convert.ToBoolean(parser.GetParameterValue("isMediaResource")));
+      helper.Fields.Add("selectedFileName", parser.GetParameterValue("selectedFileName"));
+      helper.Fields.Add("fileSize", Convert.ToInt32(parser.GetParameterValue("fileSize")));
+
+      Logger.LogInformation($"Form fields:");
+
+      foreach (var field in helper.Fields)
+        Logger.LogInformation($"  {field.Key} = {field.Value}");
+
+      helper.Stream = parser.Files[0].Data;
+      helper.Stream.Position = 0;
+
+      if (helper.Stream.Length > 0)
+        Logger.LogInformation($"  file: {helper.Field("selectedFileName")}. size {helper.Stream.Length}");
+
+      return helper;
+    }
+
     /// <summary>
     /// Gets all counters
     /// </summary>
@@ -97,6 +117,8 @@ namespace OLab.FunctionApp.Functions.API
 
       try
       {
+        Logger.LogDebug($"FilesGet");
+
         var queryTake = Convert.ToInt32(request.Query["take"]);
         var querySkip = Convert.ToInt32(request.Query["skip"]);
         int? take = queryTake > 0 ? queryTake : null;
@@ -136,6 +158,8 @@ namespace OLab.FunctionApp.Functions.API
 
       try
       {
+        Logger.LogDebug($"FileGet");
+
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
@@ -163,26 +187,31 @@ namespace OLab.FunctionApp.Functions.API
     /// <returns>IActionResult</returns>
     [Function("FilePost")]
     public async Task<HttpResponseData> FilePostAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "file")] HttpRequestData request,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "files")] HttpRequestData request,
       FunctionContext hostContext,
       CancellationToken token)
     {
-      SystemFiles phys = null;
+      string fileName = "";
 
       try
       {
-        Logger.LogDebug($"FilePostAsync");
-
-        var parser = await MultipartFormDataParser.ParseAsync(request.Body).ConfigureAwait(false);
-
-        var dto = new FilesFullDto(parser);
+        Logger.LogDebug($"FilePost");
 
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
-        dto = await _endpoint.PostAsync(auth, dto, token);
+        var parser = await MultipartFormDataParser.ParseAsync(request.Body).ConfigureAwait(false);
 
-        response = request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
+        using (var stream = new MemoryStream())
+        {
+          var formHelper = GetFormFieldHelperAsync(stream, parser);
+
+          var dto = new FilesFullDto(formHelper);
+          dto = await _endpoint.PostAsync(auth, dto, token);
+
+          response = request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
+        }
+
       }
       catch (Exception ex)
       {
@@ -192,12 +221,12 @@ namespace OLab.FunctionApp.Functions.API
           if (azureException.Status == 409)
             response = request.CreateResponse(
               OLabServerErrorResult.Result(
-                $"File '{phys.Path}' already exists",
+                $"File '{fileName}' already exists",
                 HttpStatusCode.Conflict));
           else
             response = request.CreateResponse(
               OLabServerErrorResult.Result(
-                $"Error creating static file '{phys.Path}'.  {ex.Message}",
+                $"Error creating static file '{fileName}'.  {ex.Message}",
                 (HttpStatusCode)azureException.Status));
         }
         else
@@ -221,6 +250,8 @@ namespace OLab.FunctionApp.Functions.API
     {
       try
       {
+        Logger.LogDebug($"FileDelete");
+
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 

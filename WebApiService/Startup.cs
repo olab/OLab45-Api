@@ -1,6 +1,5 @@
 //using Mapster;
 //using MapsterMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -14,8 +13,6 @@ using Newtonsoft.Json.Serialization;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Data;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -23,7 +20,6 @@ using OLab.Common.Utils;
 using OLab.Data;
 using OLab.Data.Interface;
 using OLabWebAPI.Services;
-using System.Configuration;
 
 namespace OLabWebAPI
 {

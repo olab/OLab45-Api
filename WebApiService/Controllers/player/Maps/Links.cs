@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
-using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 

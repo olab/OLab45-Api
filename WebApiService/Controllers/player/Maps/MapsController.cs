@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
@@ -48,7 +47,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// Get security level of map
+  /// ReadAsync security level of map
   /// </summary>
   /// <param name="id">Map Id to retrieve</param>
   /// <returns>MapsTestAccessDto</returns>
@@ -78,7 +77,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// Get a list of maps
+  /// ReadAsync a list of maps
   /// </summary>
   /// <param name="take">Max number of records to return</param>
   /// <param name="skip">SKip over a number of records</param>

@@ -1,105 +1,48 @@
 ﻿using Dawn;
-using HttpMultipartParser;
-using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
-using System.Diagnostics;
-using System.IO;
+using System.Configuration;
 using System.IO.Compression;
 using System.Reflection.Metadata;
-using static NuGet.Packaging.PackagingConstants;
+using System.Text;
 
 namespace OLab.Files.FileSystem;
 
 #pragma warning disable CS1998
 
 [OLabModule("FILESYSTEM")]
-public class FilesFilesystemModule : IFileStorageModule
+public class FilesFilesystemModule : OLabFileStorageModule
 {
-  private readonly IOLabLogger logger;
-  private readonly IOLabConfiguration _configuration;
-
+  /// <summary>
+  /// Constructor
+  /// </summary>
+  /// <param name="logger">OlabLogger</param>
+  /// <param name="configuration">Application cfg</param>
+  /// <exception cref="ConfigurationErrorsException"></exception>
   public FilesFilesystemModule(
     IOLabLogger logger,
-    IOLabConfiguration configuration)
+    IOLabConfiguration configuration) : base(logger, configuration)
   {
-    this.logger = logger;
-    _configuration = configuration;
-
     // if not set to use this module, then don't proceed further
-    if (GetModuleName().ToLower() != _configuration.GetAppSettings().FileStorageType.ToLower())
+    if (GetModuleName().ToLower() != cfg.GetAppSettings().FileStorageType.ToLower())
       return;
 
     logger.LogInformation($"Initializing FilesFilesystemModule");
 
-    logger.LogInformation($"FileStorageFolder: {_configuration.GetAppSettings().FileStorageFolder}");
-    logger.LogInformation($"FileStorageContainer: {_configuration.GetAppSettings().FileStorageContainer}");
-    logger.LogInformation($"FileStorageUrl: {_configuration.GetAppSettings().FileStorageUrl}");
+    if (string.IsNullOrEmpty(cfg.GetAppSettings().FileStorageRoot))
+      throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
 
+    if (string.IsNullOrEmpty(cfg.GetAppSettings().FileStorageUrl))
+      throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
+
+    if (!Directory.Exists(cfg.GetAppSettings().FileStorageRoot))
+      throw new ConfigurationErrorsException($"{cfg.GetAppSettings().FileStorageRoot} root directory does not exist");
   }
 
-  public string GetModuleName()
-  {
-    var attrib = this.GetType().GetCustomAttributes(typeof(OLabModuleAttribute), true).FirstOrDefault() as OLabModuleAttribute;
-    return attrib == null ? "" : attrib.Name;
-  }
-
-  private string GetPhysicalPath(string folderName, string fileName)
-  {
-    var physicalPath = Path.Combine(
-      _configuration.GetAppSettings().FileStorageFolder,
-      folderName,
-      fileName);
-    return physicalPath;
-  }
-
-  private string GetPhysicalPath(string filePath)
-  {
-    var physicalPath = Path.Combine(
-      _configuration.GetAppSettings().FileStorageFolder,
-      filePath.Replace('/', GetFolderSeparator()));
-    return physicalPath;
-  }
-
-  public char GetFolderSeparator() { return Path.DirectorySeparatorChar; }
-
-  /// <summary>
-  /// Attach URLs to access files
-  /// </summary>
-  /// <param name="items">SystemFiles records</param>
-  public void AttachUrls(IList<SystemFiles> items)
-  {
-    logger.LogInformation($"Attaching file storage URLs for {items.Count} file records");
-
-
-    foreach (var item in items)
-    {
-      try
-      {
-        var scopeLevel = item.ImageableType;
-        var scopeId = item.ImageableId;
-
-        var physicalPath = GetPhysicalPath(item.Path);
-
-        if (FileExists(physicalPath, item.Path))
-        {
-          item.OriginUrl = $"{GetFolderSeparator()}{Path.GetFileName(_configuration.GetAppSettings().FileStorageFolder)}{GetFolderSeparator()}{scopeLevel}{GetFolderSeparator()}{scopeId}{GetFolderSeparator()}{item.Path}";
-          logger.LogInformation($"  '{item.Path}' mapped to url '{item.OriginUrl}'");
-        }
-        else
-          item.OriginUrl = null;
-      }
-      catch (Exception ex)
-      {
-        logger.LogError(ex, "AttachUrls Exception");
-      }
-    }
-
-
-  }
+  public override char GetFolderSeparator() { return Path.DirectorySeparatorChar; }
 
   /// <summary>
   /// Move file from one folder to another
@@ -107,7 +50,7 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="fileName">File name</param>
   /// <param name="sourceFolder">Source path</param>
   /// <param name="destinationFolder">Destination path</param>
-  public async Task MoveFileAsync(
+  public override async Task MoveFileAsync(
       string fileName,
       string sourceFolder,
       string destinationFolder,
@@ -118,12 +61,23 @@ public class FilesFilesystemModule : IFileStorageModule
 
     try
     {
-      var sourceFilePath = GetPhysicalPath(sourceFolder, fileName);
-      File.Move(
-        sourceFilePath,
-        destinationFolder);
+      if (!FileExists(sourceFolder, fileName))
+        throw new Exception($"file '{fileName}' not found");
 
-      logger.LogInformation($"moved file from '{sourceFilePath}' to {destinationFolder}");
+      var sourcePhysFilePath = GetPhysicalPath(BuildPath(sourceFolder, fileName));
+      var destinationPhysFolder = GetPhysicalPath(destinationFolder);
+
+      if (!Directory.Exists(destinationPhysFolder))
+        Directory.CreateDirectory(destinationPhysFolder);
+
+      var destinationPhysFilePath = GetPhysicalPath(destinationFolder, fileName);
+
+      File.Move(
+        sourcePhysFilePath,
+        destinationPhysFilePath,
+        true);
+
+      logger.LogInformation($"moved '{sourcePhysFilePath}' to {destinationPhysFilePath}");
     }
     catch (Exception ex)
     {
@@ -136,18 +90,19 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <summary>
   /// Test if file exists in storage
   /// </summary>
-  /// <param name="physicalPath">Path to look for file</param>
+  /// <param name="relativePath">Relative path to look for</param>
+  /// <param name="fileName">File name to look for</param>
   /// <returns>true/false</returns>
-  public bool FileExists(
-    string folderName,
+  public override bool FileExists(
+    string relativePath,
     string fileName)
   {
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
+    Guard.Argument(relativePath).NotEmpty(nameof(relativePath));
     Guard.Argument(fileName).NotEmpty(nameof(fileName));
 
     try
     {
-      var physicalPath = GetPhysicalPath(folderName, fileName);
+      var physicalPath = GetPhysicalPath(relativePath, fileName);
       var result = File.Exists(physicalPath);
       if (!result)
         logger.LogWarning($"  '{physicalPath}' physical file not found");
@@ -166,38 +121,42 @@ public class FilesFilesystemModule : IFileStorageModule
   /// Uploads a file represented by a stream to a directory
   /// </summary>
   /// <param name="file">File contents stream</param>
-  /// <param name="targetFolder">Target folderName</param>
+  /// <param name="targetFolder">Target relativePath</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
-  public async Task<string> CopyFiletoStreamAsync(
+  public override async Task<string> WriteFileAsync(
     Stream stream,
-    string targetFolder,
-    CancellationToken token)
+    string folderName,
+    string fileName,
+    CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(targetFolder).NotEmpty(nameof(targetFolder));
+    Guard.Argument(folderName).NotEmpty(nameof(folderName));
+    Guard.Argument(fileName).NotEmpty(nameof(fileName));
 
     try
     {
-      var physicalPath = GetPhysicalPath(targetFolder);
+      var physicalPath = GetPhysicalPath(folderName);
+      logger.LogInformation($"Writing file {fileName} to {physicalPath}");
 
-      logger.LogInformation($"Writing physical file: {physicalPath}");
+      if (!Directory.Exists(physicalPath))
+        Directory.CreateDirectory(physicalPath);
 
-      var physicalDirectory = Path.GetDirectoryName(physicalPath);
-      if (physicalDirectory != null)
-        Directory.CreateDirectory(physicalDirectory);
+      var physicalFileName = BuildPath(
+        physicalPath,
+        fileName);
 
-      using (var file = new FileStream(physicalPath, FileMode.Create))
+      using (var file = new FileStream(physicalFileName, FileMode.OpenOrCreate, FileAccess.Write))
       {
         await stream.CopyToAsync(file);
-        logger.LogInformation($"wrote file to '{physicalPath}'. Size: {file.Length}");
+        logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
       }
 
       return physicalPath;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyFiletoStreamAsync Exception");
+      logger.LogError(ex, "WriteFileAsync Exception");
       throw;
     }
 
@@ -210,11 +169,11 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="folderName">Target folder</param>
   /// <param name="fileName">Target file name</param>
   /// <param name="token"></param>
-  public async Task CopyStreamToFileAsync(
+  public override async Task ReadFileAsync(
       Stream stream,
       string folderName,
       string fileName,
-      CancellationToken token)
+      CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
     Guard.Argument(folderName).NotEmpty(nameof(folderName));
@@ -224,21 +183,20 @@ public class FilesFilesystemModule : IFileStorageModule
     {
 
       var physicalFilePath = GetPhysicalPath(folderName, fileName);
-
-      logger.LogInformation($"CopyStreamToFileAsync writing to file '{physicalFilePath}'");
+      logger.LogInformation($"ReadFileAsync reading file '{physicalFilePath}'");
 
       using (var inputStream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read))
       {
         inputStream.CopyTo(stream);
 
         stream.Position = 0;
-        logger.LogInformation($"  wrote '{inputStream.Length}'");
+        logger.LogInformation($"  read '{inputStream.Length}' bytes");
       }
 
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyStreamToFileAsync Exception");
+      logger.LogError(ex, "ReadFileAsync Exception");
       throw;
     }
   }
@@ -246,12 +204,12 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <summary>
   /// Delete file
   /// </summary>
-  /// <param name="folderName">Target file folderName</param>
+  /// <param name="folderName">Target file relativePath</param>
   /// <param name="fileName">File name</param>
   /// <returns></returns>
-  public async Task<bool> DeleteFileAsync(
-  string folderName,
-  string fileName)
+  public override async Task<bool> DeleteFileAsync(
+    string folderName,
+    string fileName)
   {
     Guard.Argument(folderName).NotEmpty(nameof(folderName));
     Guard.Argument(fileName).NotEmpty(nameof(fileName));
@@ -271,17 +229,26 @@ public class FilesFilesystemModule : IFileStorageModule
     }
   }
 
+  /// Delete folder from blob storage
+  /// </summary>
+  /// <param name="relativePath">Folder to delete</param>
+  public override async Task DeleteFolderAsync(string folderName)
+  {
+    if (Directory.Exists(folderName))
+      Directory.Delete(folderName, true);
+  }
+
   /// <summary>
   /// Extract archive file to folder
   /// </summary>
   /// <param name="folderName">Archive file folder</param>
   /// <param name="fileName">Archive file name</param>
   /// <param name="token"></param>
-  public async Task<bool> ExtractFileToStorageAsync(
+  public override async Task<bool> ExtractFileToStorageAsync(
     string folderName,
     string fileName,
     string extractDirectoryName,
-    CancellationToken token)
+    CancellationToken token = default)
   {
     Guard.Argument(folderName).NotEmpty(nameof(folderName));
     Guard.Argument(fileName).NotEmpty(nameof(fileName));
@@ -295,8 +262,7 @@ public class FilesFilesystemModule : IFileStorageModule
       var archiveFilePath = GetPhysicalPath(folderName, fileName);
       var extractPath = GetPhysicalPath(extractDirectoryName);
 
-      if (Directory.Exists(extractPath))
-        Directory.Delete(extractPath, true);
+      await DeleteFolderAsync(extractPath);
 
       ZipFile.ExtractToDirectory(archiveFilePath, extractPath);
       return true;
@@ -317,11 +283,12 @@ public class FilesFilesystemModule : IFileStorageModule
   /// <param name="folderName">Source file folder</param>
   /// <param name="appendToStream">Append or replace stream contents</param>
   /// <param name="token"></param>
-  public async Task<bool> CopyFoldertoArchiveAsync(
+  public override async Task<bool> CopyFolderToArchiveAsync(
     ZipArchive archive,
     string folderName,
+    string zipEntryFolderName,
     bool appendToStream,
-    CancellationToken token)
+    CancellationToken token = default)
   {
     Guard.Argument(archive).NotNull(nameof(archive));
     Guard.Argument(folderName).NotEmpty(nameof(folderName));
@@ -330,22 +297,27 @@ public class FilesFilesystemModule : IFileStorageModule
 
     try
     {
-      logger.LogInformation($"reading '{folderName}' for files to add to stream");
-
-      var physicalPath = GetPhysicalPath(folderName);
-
-      var files = Directory.GetFiles(physicalPath);
+      var files = GetFiles(folderName);
 
       foreach (var file in files)
       {
-        using (var fileStream = new FileStream(file, FileMode.Open))
+        var physicalFilePath = GetPhysicalPath(file);
+
+        using (var fileStream = new FileStream(physicalFilePath, FileMode.Open))
         {
-          var archivePath = $"{folderName}{GetFolderSeparator()}{Path.GetFileName(file)}";
+          var entryPath = BuildPath(zipEntryFolderName, Path.GetFileName(file));
+          // normalize to standard folder separator
+          entryPath = entryPath.Replace('\\', '/');
 
-          logger.LogInformation($"  adding '{file}' to archive '{archivePath}'");
+          logger.LogInformation($"  adding '{file}' to archive '{entryPath}'. size = {fileStream.Length}");
 
-          ZipArchiveEntry readmeEntry = archive.CreateEntry(archivePath);
-          fileStream.CopyTo(readmeEntry.Open());
+          var entry = archive.CreateEntry(entryPath);
+          using (var entryStream = entry.Open())
+          {
+            fileStream.CopyTo(entryStream);
+            entryStream.Close();
+          }
+
         }
 
       }
@@ -353,13 +325,49 @@ public class FilesFilesystemModule : IFileStorageModule
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "CopyFoldertoArchiveAsync error");
+      logger.LogError(ex, "CopyFolderToArchiveAsync error");
       throw;
     }
 
 
     return result;
   }
+
+  public override IList<string> GetFiles(
+    string folderName,
+    CancellationToken token = default)
+  {
+    var fileNames = new List<string>();
+
+    try
+    {
+      var physicalPath = GetPhysicalPath(folderName);
+
+      if (!Directory.Exists(physicalPath))
+      {
+        logger.LogInformation($"source folder '{folderName}' does not exist");
+        return fileNames;
+      }
+
+      var contents = Directory.GetFiles(physicalPath).ToList();
+
+      if (contents.Count > 0)
+        logger.LogInformation($"found {contents.Count} files in '{folderName}'");
+
+      fileNames = contents.Select(x => BuildPath(folderName, Path.GetFileName(x))).ToList();
+      foreach (var fileName in fileNames)
+        logger.LogInformation($"  {fileName}");
+
+      return fileNames;
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "GetFiles error");
+      throw;
+    }
+
+  }
+
 }
 
 #pragma warning restore CS1998

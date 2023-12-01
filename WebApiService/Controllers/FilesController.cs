@@ -3,20 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.ObjectMapper;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,6 +46,30 @@ public partial class FilesController : OLabController
       fileStorageProvider);
   }
 
+  private async Task<IOLabFormFieldHelper> GetFormFieldHelperAsync(Stream stream, IFormCollection form)
+  {
+    var helper = new OLabFormFieldHelper(stream);
+
+    Logger.LogInformation($"Form fields:");
+
+    foreach (var field in form)
+    {
+      Logger.LogInformation($"  {field.Key} = {field.Value}");
+      helper.Fields.Add(field.Key, field.Value);
+    }
+
+    if (form.Files.Count == 1)
+    {
+      var file = form.Files[0];
+      await file.CopyToAsync(helper.Stream);
+      helper.Stream.Position = 0;
+
+      Logger.LogInformation($"  file: {file.FileName}. size {helper.Stream.Length}");
+    }
+
+    return helper;
+  }
+
   /// <summary>
   /// Retrieve all files objects
   /// </summary>
@@ -60,6 +82,8 @@ public partial class FilesController : OLabController
   {
     try
     {
+      Logger.LogDebug($"ReadAsync");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -83,13 +107,20 @@ public partial class FilesController : OLabController
   {
     try
     {
+      Logger.LogDebug($"PostAsync");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var dto = new FilesFullDto(Request.Form);      
-      dto = await _endpoint.PostAsync(auth, dto, cancel);
+      using (var stream = new MemoryStream())
+      {
+        var formHelper = await GetFormFieldHelperAsync(stream, Request.Form);
 
-      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result((FilesFullDto)dto));
+        var dto = new FilesFullDto(formHelper);
+        dto = await _endpoint.PostAsync(auth, dto, cancel);
+
+        return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
+      }
 
     }
     catch (Exception ex)
@@ -109,6 +140,8 @@ public partial class FilesController : OLabController
   {
     try
     {
+      Logger.LogDebug($"ReadAsync");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -133,6 +166,8 @@ public partial class FilesController : OLabController
   {
     try
     {
+      Logger.LogDebug($"PutAsync");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
@@ -157,6 +192,8 @@ public partial class FilesController : OLabController
   {
     try
     {
+      Logger.LogDebug($"DeleteAsync");
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 

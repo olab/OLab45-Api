@@ -1,5 +1,7 @@
 using Dawn;
 using FluentValidation;
+using Humanizer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -138,6 +140,75 @@ namespace OLab.FunctionApp.Functions.API.designer
       catch (Exception ex)
       {
         ProcessException(ex);
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+
+    }
+
+    /// <summary>
+    /// Delete a constant
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [Function("MapNodeLinkDeleteDesigner")]
+    public async Task<HttpResponseData> MapNodeLinkDeleteDesigner(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "designer/maps/{mapId}/nodes/{nodeId}/links/{id}")] HttpRequestData request,
+      FunctionContext hostContext, CancellationToken cancellationToken,
+      uint mapId,
+      uint nodeId,
+      uint id)
+    {
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(hostContext).NotNull(nameof(hostContext));
+        Guard.Argument(id, nameof(id)).NotZero();
+
+        var auth = GetAuthorization(hostContext);
+
+        await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, id);
+        response = request.CreateResponse(new NoContentResult());
+
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+
+    }
+
+    /// <summary>
+    /// Delete a constant
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [Function("MapNodeLinkGetDesigner")]
+    public async Task<HttpResponseData> MapNodeLinkGetDesigner(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/nodes/{nodeId}/links/{id}")] HttpRequestData request,
+      FunctionContext hostContext, CancellationToken cancellationToken,
+      uint mapId,
+      uint nodeId,
+      uint id)
+    {
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(hostContext).NotNull(nameof(hostContext));
+        Guard.Argument(id, nameof(id)).NotZero();
+
+        var auth = GetAuthorization(hostContext);
+
+        var dto = await _endpoint.GetMapNodeLinkAsync(auth, mapId, id);
+        response = request.CreateResponse(OLabObjectResult<MapNodeLinksDto>.Result(dto));
+
+
+      }
+      catch (Exception ex)
+      {
         response = request.CreateResponse(ex);
       }
 

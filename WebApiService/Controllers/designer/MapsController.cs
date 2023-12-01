@@ -19,6 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Designer;
@@ -80,7 +81,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// Get non-rendered nodes for a map
+  /// ReadAsync non-rendered nodes for a map
   /// </summary>
   /// <param name="mapId">Map id</param>
   /// <returns>IActionResult</returns>
@@ -102,6 +103,67 @@ public partial class MapsController : OLabController
     {
       return ProcessException(ex, HttpContext.Request);
     }
+  }
+
+  /// <summary>
+  /// Delete a constant
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [HttpDelete("{mapId}/nodes/{nodeId}/links/{id}")]
+  public async Task<IActionResult> MapNodeLinkDeleteDesigner(
+    uint mapId,
+    uint nodeId,
+    uint id,
+    CancellationToken token)
+  {
+    try
+    {
+      Guard.Argument(mapId, nameof(mapId)).NotZero();
+      Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+      Guard.Argument(id, nameof(id)).NotZero();
+
+      var auth = GetAuthorization(HttpContext);
+
+      await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, id);
+      return NoContent();
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+  /// <summary>
+  /// Delete a constant
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [HttpGet("{mapId}/nodes/{nodeId}/links/{id}")]
+  public async Task<IActionResult> MapNodeLinkGetDesigner(
+    uint mapId,
+    uint nodeId,
+    uint id,
+    CancellationToken token)
+  {
+    try
+    {
+      Guard.Argument(mapId, nameof(mapId)).NotZero();
+      Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+      Guard.Argument(id, nameof(id)).NotZero();
+
+      var auth = GetAuthorization(HttpContext);
+
+      var dto = await _endpoint.GetMapNodeLinkAsync(auth, mapId, id);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapNodeLinksDto>.Result(dto));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
   }
 
   /// <summary>
@@ -286,7 +348,7 @@ public partial class MapsController : OLabController
   //}
 
   /// <summary>
-  /// Get a list of users
+  /// ReadAsync a list of users
   /// </summary>
   /// <param name="mapId"></param>
   /// <returns></returns>
@@ -374,7 +436,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// Get a list of security users for a given map
+  /// ReadAsync a list of security users for a given map
   /// </summary>
   /// <param name="mapId"></param>
   /// <returns></returns>

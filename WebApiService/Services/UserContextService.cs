@@ -1,7 +1,5 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
@@ -76,10 +74,10 @@ namespace OLabWebAPI.Services
       get => _issuer;
       set => _issuer = value;
     }
-    string IUserContext.SessionId 
-    { 
-      get => _sessionId; 
-      set => _sessionId = value; 
+    string IUserContext.SessionId
+    {
+      get => _sessionId;
+      set => _sessionId = value;
     }
 
     public string CourseName { get { return _courseName; } }

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -52,7 +51,7 @@ public class OLabAuthMiddleware
   }
 
   public static void SetupServices(
-    IConfiguration configuration, 
+    IConfiguration configuration,
     IServiceCollection services,
     OLabDBContext dbContext)
   {
@@ -63,8 +62,8 @@ public class OLabAuthMiddleware
     // from IOLabAuthentication
     var config = new OLabConfiguration(NullLoggerFactory.Instance, configuration);
     var authentication = new OLabAuthentication(
-      logger, 
-      config, 
+      logger,
+      config,
       dbContext);
 
     services.AddAuthentication(x =>
@@ -91,7 +90,7 @@ public class OLabAuthMiddleware
           // If the request is for our SignalR hub based on
           // the URL requested then don't bother adding olab issued token.
           // SignalR has it's own
-          PathString path = context.HttpContext.Request.Path;
+          var path = context.HttpContext.Request.Path;
 
           var accessToken = authentication.ExtractAccessToken(
             context.Request,
@@ -106,8 +105,8 @@ public class OLabAuthMiddleware
   }
 
   public async Task InvokeAsync(
-    HttpContext hostContext, 
-    OLabDBContext dbContext, 
+    HttpContext hostContext,
+    OLabDBContext dbContext,
     IOLabAuthentication authentication)
   {
     Guard.Argument(hostContext).NotNull(nameof(hostContext));

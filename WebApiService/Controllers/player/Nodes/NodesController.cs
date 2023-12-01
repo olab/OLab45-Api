@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
@@ -46,7 +45,7 @@ public partial class NodesController : OLabController
   }
 
   /// <summary>
-  /// Get full map node, with relations
+  /// ReadAsync full map node, with relations
   /// </summary>
   /// <param name="nodeId">Node id (0, if root node)</param>
   /// <returns>MapsNodesFullRelationsDto response</returns>

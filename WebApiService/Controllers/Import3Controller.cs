@@ -1,5 +1,4 @@
 using Dawn;
-using HttpMultipartParser;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -23,11 +21,11 @@ namespace OLabWebAPI.Endpoints.WebApi
 {
   [Route("olab/api/v3/[controller]/[action]")]
   [ApiController]
-  public class ImportController : OLabController
+  public class Import3Controller : OLabController
   {
-    private readonly ImportEndpoint _endpoint;
+    private readonly Import3Endpoint _endpoint;
 
-    public ImportController(
+    public Import3Controller(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       OLabDBContext dbContext,
@@ -40,9 +38,9 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = OLabLogger.CreateNew<ImportController>(loggerFactory, true);
+      Logger = OLabLogger.CreateNew<Import3Controller>(loggerFactory, true);
 
-      _endpoint = new ImportEndpoint(
+      _endpoint = new Import3Endpoint(
         Logger,
         configuration,
         DbContext,
@@ -57,7 +55,7 @@ namespace OLabWebAPI.Endpoints.WebApi
     /// <returns>IActionResult</returns>
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> Upload(CancellationToken token)
+    public async Task<IActionResult> Import(CancellationToken token)
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
@@ -79,8 +77,8 @@ namespace OLabWebAPI.Endpoints.WebApi
           Logger.LogError("Invalid file name");
         else
           await _endpoint.ImportAsync(
-            archiveFileStream, 
-            Request.Form.Files[0].FileName, 
+            archiveFileStream,
+            Request.Form.Files[0].FileName,
             token);
       }
 

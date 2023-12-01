@@ -1,12 +1,9 @@
 ﻿using Dawn;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -65,7 +62,7 @@ public class OLabAuthentication : IOLabAuthentication
   /// <summary>
   /// Builds token validation object
   /// </summary>
-  /// <param name="configuration">App configuration</param>
+  /// <param name="configuration">App cfg</param>
   public static TokenValidationParameters BuildTokenValidationObject(IOLabConfiguration config)
   {
     // get and extract the valid token issuers
@@ -154,14 +151,14 @@ public class OLabAuthentication : IOLabAuthentication
 
 
     // handler for external logins
-    if ( ( bindingData != null ) && bindingData.TryGetValue("token", out var externalToken))
+    if ((bindingData != null) && bindingData.TryGetValue("token", out var externalToken))
     {
       token = externalToken as string;
       Logger.LogInformation("Binding data token provided");
     }
 
     // handler for signalR logins 
-    else if (( bindingData != null ) && bindingData.TryGetValue("access_token", out var signalRToken))
+    else if ((bindingData != null) && bindingData.TryGetValue("access_token", out var signalRToken))
     {
       token = signalRToken as string;
       Logger.LogInformation("Signalr token provided");
@@ -174,7 +171,7 @@ public class OLabAuthentication : IOLabAuthentication
       Logger.LogInformation("Authorization header bearer token provided");
     }
 
-    if ( string.IsNullOrEmpty( token ) )
+    if (string.IsNullOrEmpty(token))
     {
       Logger.LogError("No auth token provided");
       throw new OLabUnauthorizedException();
@@ -210,7 +207,7 @@ public class OLabAuthentication : IOLabAuthentication
       foreach (var claim in claimsPrincipal.Claims)
       {
         var added = Claims.TryAdd(claim.Type, claim.Value);
-        Logger.LogInformation($" claim: {claim.Type} = {claim.Value}. added: {added}");        
+        Logger.LogInformation($" claim: {claim.Type} = {claim.Value}. added: {added}");
       }
 
       Logger.LogInformation("bearer token validated");
