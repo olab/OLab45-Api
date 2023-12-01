@@ -9,6 +9,7 @@ using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System.Configuration;
 using System.IO.Compression;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace OLab.Files.AzureBlobStorage;
@@ -43,14 +44,14 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       throw new ConfigurationErrorsException("missing FileStorageConnectionString parameter");
     _blobServiceClient = new BlobServiceClient(connectionString);
 
-    _containerName = cfg.GetAppSettings().FileStorageRoot;
+    _containerName = Path.GetDirectoryName( cfg.GetAppSettings().FileStorageRoot );
     if (string.IsNullOrEmpty(_containerName))
       throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
 
     logger.LogInformation($"Container: {_containerName}");
 
     // need to prevent container name from being part of the file root
-    cfg.GetAppSettings().FileStorageRoot = string.Empty;
+    cfg.GetAppSettings().FileStorageRoot = Path.GetFileName(cfg.GetAppSettings().FileStorageRoot );
   }
 
   public override char GetFolderSeparator() { return '/'; }
@@ -74,18 +75,26 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
+      var physicalPath = BuildPath(cfg.GetAppSettings().FileStorageRoot, folderName);
+
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
-      if (!_folderContentCache.ContainsKey(folderName))
+      if (!_folderContentCache.ContainsKey(physicalPath))
       {
+        logger.LogInformation($"  searching '{physicalPath} for blobs'");
+
         blobs = _blobServiceClient
           .GetBlobContainerClient(_containerName)
-          .GetBlobs(prefix: folderName).ToList();
+          .GetBlobs(prefix: physicalPath).ToList();
 
-        _folderContentCache[folderName] = blobs;
+        _folderContentCache[physicalPath] = blobs;
+
+        foreach (var blob in blobs)
+          logger.LogInformation($"  found blob '{blob.Name}'");
+
       }
       else
-        blobs = _folderContentCache[folderName];
+        blobs = _folderContentCache[physicalPath];
 
       result = blobs.Any(x => x.Name.Contains(fileName));
 
