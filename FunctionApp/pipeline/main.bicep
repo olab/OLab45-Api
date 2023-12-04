@@ -88,7 +88,8 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     FUNCTIONS_WORKER_RUNTIME: 'dotnet'
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: functionAppStorageConnectionString
     WEBSITE_CONTENTSHARE: '${resourceNameFunctionApp}9552'
-    WEBSITE_RUN_FROM_PACKAGE: '1'
+    WEBSITE_RUN_FROM_PACKAGE: '1',
+    AzureSignalRConnectionString: "Endpoint=https://olabsignalr.service.signalr.net;AccessKey=K1l3xQqwdxLhsKTANL5rI34cDuH1ceGvBmeGsHxo7Bw=;Version=1.0;",
   }
 }
 

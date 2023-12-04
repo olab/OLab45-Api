@@ -16,7 +16,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API.designer
 {
-  public class MapsFunction : OLabFunction
+    public class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
 

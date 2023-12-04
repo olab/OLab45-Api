@@ -15,7 +15,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class CountersFunction : OLabFunction
+    public class CountersFunction : OLabFunction
   {
     private readonly CountersEndpoint _endpoint;
 

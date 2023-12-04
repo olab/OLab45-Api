@@ -5,11 +5,10 @@ using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.FunctionApp.Extensions;
-using OLab.FunctionApp.Functions.API;
 
 namespace OLab.FunctionApp.Functions.Player
 {
-  public partial class NodesFunction : OLabFunction
+    public partial class NodesFunction : OLabFunction
   {
     /// <summary>
     /// 

@@ -15,7 +15,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class ConstantsFunction : OLabFunction
+    public class ConstantsFunction : OLabFunction
   {
     private readonly ConstantsEndpoint _endpoint;
 

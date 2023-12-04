@@ -23,7 +23,7 @@ using System.Net;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class FilesFunction : OLabFunction
+    public class FilesFunction : OLabFunction
   {
     private readonly FilesEndpoint _endpoint;
 

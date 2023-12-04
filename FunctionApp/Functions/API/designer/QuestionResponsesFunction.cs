@@ -16,7 +16,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API.designer
 {
-  public class QuestionResponsesFunction : OLabFunction
+    public class QuestionResponsesFunction : OLabFunction
     {
         private readonly QuestionResponsesEndpoint _endpoint;
 

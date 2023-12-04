@@ -13,7 +13,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API.player
 {
-  public partial class ServerFunction : OLabFunction
+    public partial class ServerFunction : OLabFunction
   {
     private readonly ServerEndpoint _endpoint;
 

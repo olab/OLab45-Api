@@ -15,7 +15,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API.player
 {
-  public partial class QuestionResponsesFunction : OLabFunction
+    public partial class QuestionResponsesFunction : OLabFunction
   {
     private readonly ResponseEndpoint _endpoint;
 

@@ -73,7 +73,10 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         _logger.LogInformation($"  header: {header.Key} = {header.Value}");
 
       // skip middleware for non-authenicated endpoints
-      if (_functionName.ToLower().Contains("login") || _functionName.ToLower().Contains("health"))
+      if (_functionName.ToLower().Contains("login") ||
+          _functionName.ToLower().Contains("health") ||
+          _functionName.ToLower().Contains("index") ||
+          _functionName.ToLower().Contains("negotiate"))
         await next(hostContext);
 
       // if not login endpoint, then continue with middleware evaluation
@@ -116,6 +119,8 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
           throw;
         }
       }
+      else
+        _logger.LogWarning($"Unknown HTTP request {_functionName}");
     }
     catch (Exception ex)
     {

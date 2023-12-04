@@ -15,7 +15,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API.designer
 {
-  public class TemplateFunction : OLabFunction
+    public class TemplateFunction : OLabFunction
   {
     private readonly TemplateEndpoint _endpoint;
 

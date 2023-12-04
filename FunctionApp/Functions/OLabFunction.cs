@@ -11,7 +11,7 @@ using System.Net;
 using OLab.FunctionApp.Middleware;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace OLab.FunctionApp.Functions.API;
+namespace OLab.FunctionApp.Functions;
 
 public class OLabFunction
 {

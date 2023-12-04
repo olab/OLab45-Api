@@ -11,11 +11,10 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
-using OLab.FunctionApp.Functions.API;
 
 namespace OLab.FunctionApp.Functions.Player
 {
-  public partial class NodesFunction : OLabFunction
+    public partial class NodesFunction : OLabFunction
   {
     private readonly NodesEndpoint _endpoint;
 

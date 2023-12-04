@@ -5,11 +5,10 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Dto;
 using OLab.FunctionApp.Extensions;
-using OLab.FunctionApp.Functions.API;
 
 namespace OLab.FunctionApp.Functions.Player
 {
-  public partial class MapsFunction : OLabFunction
+    public partial class MapsFunction : OLabFunction
   {
     /// <summary>
     /// Saves a link edit

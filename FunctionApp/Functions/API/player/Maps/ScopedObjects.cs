@@ -6,11 +6,10 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Utils;
 using OLab.FunctionApp.Extensions;
-using OLab.FunctionApp.Functions.API;
 
 namespace OLab.FunctionApp.Functions.Player
 {
-  public partial class MapsFunction : OLabFunction
+    public partial class MapsFunction : OLabFunction
   {
     /// <summary>
     /// 
