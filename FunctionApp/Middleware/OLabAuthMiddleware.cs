@@ -68,7 +68,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
       _functionName = hostContext.FunctionDefinition.Name.ToLower();
       _httpRequestData = hostContext.GetHttpRequestData();
 
-      _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
+      _logger.LogInformation($"Middleware Invoke. function '{_functionName}' {_httpRequestData.Url}");
       foreach (var header in _headers)
         _logger.LogInformation($"  header: {header.Key} = {header.Value}");
 
