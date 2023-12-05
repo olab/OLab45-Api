@@ -186,46 +186,58 @@
           }
         }
       });
-      const apiBaseUrl = window.location.origin;
-      data.username = prompt("Enter your username");
 
+      const apiBaseUrl = window.location.origin;
       var connection = null;
-      if (!data.username) {
-        alert("No username entered. Reload page and try again.");
-        throw "No username entered";
+
+      if (data.accessToken != null) {
+
+        data.username = prompt("Enter your username");
+
+        if (!data.username) {
+          alert("No username entered. Reload page and try again.");
+          throw "No username entered";
+        }
+
+        getConnectionInfo().then(info => {
+          // make compatible with old and new SignalRConnectionInfo
+          info.accessToken = info.AccessToken || info.accessKey; // pay attention to the case
+          info.url = info.Url || info.endpoint; // pay attention to the case
+          data.ready = true;
+          const options = {
+            accessTokenFactory: () => info.accessToken
+          };
+          connection = new signalR.HubConnectionBuilder()
+            .withUrl(info.url, options)
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+          connection.on('newMessage', onNewMessage);
+          connection.on('newConnection', onNewConnection)
+          connection.onclose(() => console.log('disconnected'));
+          console.log('connecting...');
+          connection.start()
+            .then(() => {
+              data.ready = true;
+              console.log('connected!');
+            })
+            .catch(console.error);
+        }).catch(alert);
+
       }
-      getConnectionInfo().then(info => {
-        // make compatible with old and new SignalRConnectionInfo
-        info.accessToken = info.AccessToken || info.accessKey; // pay attention to the case
-        info.url = info.Url || info.endpoint; // pay attention to the case
+      else
         data.ready = true;
-        const options = {
-          accessTokenFactory: () => info.accessToken
-        };
-        connection = new signalR.HubConnectionBuilder()
-          .withUrl(info.url, options)
-          .configureLogging(signalR.LogLevel.Information)
-          .build();
-        connection.on('newMessage', onNewMessage);
-        connection.on('newConnection', onNewConnection)
-        connection.onclose(() => console.log('disconnected'));
-        console.log('connecting...');
-        connection.start()
-          .then(() => {
-            data.ready = true;
-            console.log('connected!');
-          })
-          .catch(console.error);
-      }).catch(alert);
+
       function getConnectionInfo() {
         return axios.post(`${apiBaseUrl}/olab/api/v3/turktalk/negotiate?userid=${data.username}&accessToken=${data.accessToken}`, null, null)
           .then(resp => resp.data);
       }
+
       let counter = 0;
       function onNewMessage(message) {
         message.id = counter++; // vue transitions need an id
         data.messages.unshift(message);
       };
+
       function onNewConnection(message) {
         data.myConnectionId = message.ConnectionId;
         authEnabled = false;
