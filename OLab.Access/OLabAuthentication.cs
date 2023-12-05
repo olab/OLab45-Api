@@ -149,7 +149,6 @@ public class OLabAuthentication : IOLabAuthentication
 
     var token = string.Empty;
 
-
     // handler for external logins
     if ((bindingData != null) && bindingData.TryGetValue("token", out var externalToken))
     {
@@ -172,10 +171,7 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     if (string.IsNullOrEmpty(token))
-    {
-      Logger.LogError("No auth token provided");
-      throw new OLabUnauthorizedException();
-    }
+      throw new OLabUnauthorizedException("No auth token provided");
 
     return token;
   }

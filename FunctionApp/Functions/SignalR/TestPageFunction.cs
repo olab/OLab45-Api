@@ -14,9 +14,9 @@ namespace OLab.FunctionApp.Functions.SignalR
   public partial class OLabSignalRFunction
   {
 
-    [Function("index")]
+    [Function("testpage")]
     public async Task<HttpResponseData> GetWebPage(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "turktalk/index")] HttpRequestData req,
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "turktalk/testpage")] HttpRequestData req,
       FunctionContext hostContext,
       CancellationToken token)
     {

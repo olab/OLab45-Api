@@ -18,8 +18,8 @@ namespace OLab.FunctionApp.Functions.SignalR
   public partial class OLabSignalRFunction
   {
     [Function("Negotiate")]
-    public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req,
-        [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
+    public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "turktalk/negotiate")] HttpRequestData req,
+        [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}", IdToken = "{query.access_token}")] SignalRConnectionInfo signalRConnectionInfo)
     {
       Logger.LogInformation("Executing negotiation.");
       return signalRConnectionInfo;

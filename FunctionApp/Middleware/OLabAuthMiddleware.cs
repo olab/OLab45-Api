@@ -38,7 +38,6 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     ILoggerFactory loggerFactory,
     IOLabAuthentication authentication)
   {
-    Guard.Argument(configuration).NotNull(nameof(configuration));
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
     Guard.Argument(authentication).NotNull(nameof(authentication));
 
@@ -50,7 +49,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
   }
 
   public async Task Invoke(
-    FunctionContext hostContext, 
+    FunctionContext hostContext,
     FunctionExecutionDelegate next)
   {
     Guard.Argument(hostContext).NotNull(nameof(hostContext));
@@ -58,32 +57,43 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 
     try
     {
+      Guard.Argument(hostContext).NotNull(nameof(hostContext));
+
       var dbContext = hostContext.InstanceServices.GetService(typeof(OLabDBContext)) as OLabDBContext;
       Guard.Argument(dbContext).NotNull(nameof(dbContext));
-
       _dbContext = dbContext;
 
       _headers = hostContext.GetHttpRequestHeaders();
-      _bindingData = hostContext.BindingContext.BindingData;
-      _functionName = hostContext.FunctionDefinition.Name.ToLower();
-      _httpRequestData = hostContext.GetHttpRequestData();
+      Guard.Argument(_headers).NotNull(nameof(_headers));
 
-      _logger.LogInformation($"Middleware Invoke. function '{_functionName}' {_httpRequestData.Url}");
+      _bindingData = hostContext.BindingContext.BindingData;
+      Guard.Argument(_bindingData).NotNull(nameof(_bindingData));
+
+      _functionName = hostContext.FunctionDefinition.Name.ToLower();
+      Guard.Argument(_functionName).NotEmpty(nameof(_functionName));
+
+      _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
       foreach (var header in _headers)
         _logger.LogInformation($"  header: {header.Key} = {header.Value}");
 
-      // skip middleware for non-authenicated endpoints
+      _httpRequestData = hostContext.GetHttpRequestData();
+      if (_httpRequestData != null)
+        _logger.LogInformation($"url: {_httpRequestData.Url}");
+
+      // test for non-authenicated endpoints
       if (_functionName.ToLower().Contains("login") ||
           _functionName.ToLower().Contains("health") ||
-          _functionName.ToLower().Contains("index") ||
+          _functionName.ToLower().Contains("testpage") ||
           _functionName.ToLower().Contains("negotiate"))
         await next(hostContext);
 
-      // if not login endpoint, then continue with middleware evaluation
-      else if (!_functionName.Contains("login"))
+      // else is auth endpoint, then continue with middleware evaluation
+      else
       {
         try
         {
+          _logger.LogInformation("evaluating REST API method");
+
           var token = _authentication.ExtractAccessToken(_headers, _bindingData);
 
           _authentication.ValidateToken(token);
@@ -119,8 +129,8 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
           throw;
         }
       }
-      else
-        _logger.LogWarning($"Unknown HTTP request {_functionName}");
+      //else
+      //  _logger.LogWarning($"Unknown HTTP request {_functionName}");
     }
     catch (Exception ex)
     {
