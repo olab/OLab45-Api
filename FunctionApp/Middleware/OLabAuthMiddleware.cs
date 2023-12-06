@@ -120,13 +120,11 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
           _logger.LogError($"function auth error: {ex.Message} {ex.StackTrace}");
           // Unable to get token from headers
           await hostContext.CreateJsonResponse(HttpStatusCode.Unauthorized, new { Message = "Token is not valid." });
-          throw;
         }
         catch (Exception ex)
         {
           _logger.LogError($"function error: {ex.Message} {ex.StackTrace}");
           await hostContext.CreateJsonResponse(HttpStatusCode.InternalServerError, ex.Message);
-          throw;
         }
       }
       //else
@@ -136,7 +134,6 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     {
       _logger.LogError($"Middleware error: {ex.Message} {ex.StackTrace}");
       await hostContext.CreateJsonResponse(HttpStatusCode.InternalServerError, ex.Message);
-      throw;
     }
 
   }
