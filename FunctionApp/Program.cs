@@ -1,89 +1,94 @@
-using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using OLab.Api.Common;
-using OLab.Api.Data;
-using OLab.Api.Data.Interface;
-using OLab.Api.Model;
+using System;
 using OLab.Api.Utils;
-using OLab.Access;
-using OLab.Access.Interfaces;
-using OLab.Common.Interfaces;
-using OLab.Common.Utils;
-using OLab.Data;
-using OLab.Data.Interface;
-using OLab.FunctionApp;
-using OLab.FunctionApp.Middleware;
-using OLab.FunctionApp.Services;
-using System.Net;
 using OLab.Data.BusinessObjects.API;
 using OLab.TurkTalk.Models;
+using OLab.Api.Data.Interface;
+using OLab.Access.Interfaces;
+using OLab.Access;
+using OLab.Api.Common;
+using OLab.Common.Interfaces;
+using OLab.Common.Utils;
+using OLab.Data.Interface;
+using OLab.Data;
+using IsolatedModel_BidirectionChat.Services;
+using IsolatedModel_BidirectionChat.Middleware;
 
-var host = new HostBuilder()
-    .ConfigureAppConfiguration(builder =>
+namespace IsolatedModel_BidirectionChat
+{
+  public class Program
+  {
+    public static void Main()
     {
-      builder.AddJsonFile(
-        "local.settings.json",
-        optional: true,
-        reloadOnChange: true);
-    })
+      var host = new HostBuilder()
 
-    .ConfigureServices((context, services) =>
-    {
-      JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-      {
+          .ConfigureAppConfiguration(builder =>
+          {
+            builder.AddJsonFile(
+              "local.settings.json",
+              optional: true,
+              reloadOnChange: true);
+          })
+
+          .ConfigureLogging(builder =>
+          {
+            builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
+          })
+
+          .ConfigureServices((context, services) =>
+          {
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
 #if DEBUG
-        Formatting = Formatting.Indented,
+              Formatting = Formatting.Indented,
 #endif
-        ContractResolver = new CamelCasePropertyNamesContractResolver()
-      };
+              ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
 
-      var connectionString = Environment.GetEnvironmentVariable("DefaultDatabase");
-      var serverVersion = ServerVersion.AutoDetect(connectionString);
+            var connectionString = Environment.GetEnvironmentVariable("DefaultDatabase");
+            var serverVersion = ServerVersion.AutoDetect(connectionString);
 
-      services.AddDbContext<OLabDBContext>(options =>
-        options.UseMySql(connectionString, serverVersion)
-          .EnableDetailedErrors(), ServiceLifetime.Scoped);
-      //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
+            services.AddDbContext<OLabDBContext>(options =>
+              options.UseMySql(connectionString, serverVersion)
+                .EnableDetailedErrors(), ServiceLifetime.Scoped);
+            //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
 
-      services.AddDbContext<TTalkDBContext>(options =>
-        options.UseMySql(connectionString, serverVersion)
-          .EnableDetailedErrors(), ServiceLifetime.Scoped);
+            services.AddDbContext<TTalkDBContext>(options =>
+              options.UseMySql(connectionString, serverVersion)
+                .EnableDetailedErrors(), ServiceLifetime.Scoped);
 
-      services.AddOptions<AppSettings>()
-        .Configure<IConfiguration>((options, c) =>
-        {
-          c.GetSection("AppSettings").Bind(options);
-        });
+            services.AddOptions<AppSettings>()
+              .Configure<IConfiguration>((options, c) =>
+              {
+                c.GetSection("AppSettings").Bind(options);
+              });
 
-      services.AddAzureAppConfiguration();
+            services.AddAzureAppConfiguration();
 
-      services.AddScoped<IUserContext, UserContextService>();
+            services.AddScoped<IUserContext, UserContextService>();
+            services.AddSingleton<IOLabLogger, OLabLogger>();
+            services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
+            services.AddScoped<IOLabAuthentication, OLabAuthentication>();
+            services.AddSingleton<IUserService, UserService>();
+            services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
+            services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
+            services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
+          })
 
-      services.AddSingleton<IOLabLogger, OLabLogger>();
-      services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
-      services.AddScoped<IOLabAuthentication, OLabAuthentication>();
-      services.AddSingleton<IUserService, UserService>();
-      services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
-      services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
-      services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
-    })
+          .ConfigureFunctionsWorkerDefaults(builder =>
+          {
+            builder.UseMiddleware<OLabAuthMiddleware>();
+          })
 
-    .ConfigureFunctionsWorkerDefaults(builder =>
-    {
-      builder.UseMiddleware<OLabAuthMiddleware>();
-    })
+          .Build();
 
-    .ConfigureLogging(builder =>
-    {
-      builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
-    })
-
-    .Build();
-
-host.Run();
+      host.Run();
+    }
+  }
+}

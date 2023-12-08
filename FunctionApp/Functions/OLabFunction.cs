@@ -7,11 +7,11 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.Access;
 using System.Net;
-using OLab.FunctionApp.Middleware;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OLab.Data.BusinessObjects.API;
+using System;
 
-namespace OLab.FunctionApp.Functions;
+namespace IsolatedModel_BidirectionChat.Functions;
 
 public class OLabFunction
 {

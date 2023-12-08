@@ -8,10 +8,13 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OLab.FunctionApp.Services;
+namespace IsolatedModel_BidirectionChat.Services;
 
 public class UserService : IUserService
 {
@@ -35,7 +38,7 @@ public class UserService : IUserService
 
     _dbContext = context;
     _config = config;
-    
+
     defaultTokenExpiryMinutes = config.GetAppSettings().TokenExpiryMinutes;
 
     Logger = OLabLogger.CreateNew<UserService>(loggerFactory);
@@ -84,7 +87,7 @@ public class UserService : IUserService
     user.Password = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
   }
 
-    /// <summary>
+  /// <summary>
   /// Get all defined users
   /// </summary>
   /// <returns>Enumerable list of users</returns>

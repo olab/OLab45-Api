@@ -10,11 +10,14 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
-using OLab.FunctionApp.Extensions;
-using OLab.FunctionApp.Services;
 using System.Net;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using IsolatedModel_BidirectionChat.Functions;
+using IsolatedModel_BidirectionChat.Extensions;
 
-namespace OLab.FunctionApp.Functions.API;
+namespace IsolatedModel_BidirectionChat.Functions.API;
 
 public class UserFunction : OLabFunction
 {

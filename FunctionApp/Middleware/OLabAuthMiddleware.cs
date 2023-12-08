@@ -10,7 +10,6 @@ using OLab.Api.Utils;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
-using OLab.FunctionApp.Services;
 using System.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -22,8 +21,13 @@ using DocumentFormat.OpenXml.InkML;
 using System.Text.Json;
 using OLab.Data.BusinessObjects.API;
 using DocumentFormat.OpenXml.Math;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
+using IsolatedModel_BidirectionChat.Extensions;
+using IsolatedModel_BidirectionChat.Services;
 
-namespace OLab.FunctionApp.Middleware;
+namespace IsolatedModel_BidirectionChat.Middleware;
 
 public class ContextInformation
 {
@@ -43,8 +47,8 @@ public class ContextInformation
 
     _logger = logger;
 
-    _logger .LogInformation($"ContextInformation");
-    _logger .LogInformation($"  function name: {FunctionName}");
+    _logger.LogInformation($"ContextInformation");
+    _logger.LogInformation($"  function name: {FunctionName}");
 
     Headers = hostContext.GetHttpRequestHeaders();
     Guard.Argument(Headers).NotNull(nameof(Headers));
@@ -55,14 +59,14 @@ public class ContextInformation
     BindingData = hostContext.BindingContext.BindingData;
     Guard.Argument(BindingData).NotNull(nameof(BindingData));
 
-    _logger .LogInformation($"  binding context: {JsonSerializer.Serialize(hostContext.BindingContext)}");
+    _logger.LogInformation($"  binding context: {JsonSerializer.Serialize(hostContext.BindingContext)}");
 
     foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
-      _logger .LogInformation($"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
+      _logger.LogInformation($"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
 
     RequestData = hostContext.GetHttpRequestData();
     if (RequestData != null)
-      _logger .LogInformation($"  url: {RequestData.Url}");
+      _logger.LogInformation($"  url: {RequestData.Url}");
 
     BypassMiddleware = EvaluateHostContext();
   }
@@ -128,38 +132,12 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 
       var contextInfo = new ContextInformation(hostContext, _logger);
 
-      //var dbContext = hostContext.InstanceServices.GetService(typeof(OLabDBContext)) as OLabDBContext;
-      //Guard.Argument(dbContext).NotNull(nameof(dbContext));
-      //_dbContext = dbContext;
-
-      //_functionName = hostContext.FunctionDefinition.Name.ToLower();
-      //Guard.Argument(_functionName).NotEmpty(nameof(_functionName));
-      //_logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
-
-      //_headers = hostContext.GetHttpRequestHeaders();
-      //Guard.Argument(_headers).NotNull(nameof(_headers));
-
-      //_bindingData = hostContext.BindingContext.BindingData;
-      //Guard.Argument(_bindingData).NotNull(nameof(_bindingData));
-      //_logger.LogInformation($"  BindingContext = {JsonSerializer.Serialize(hostContext.BindingContext)}");
-
-      //foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
-      //  _logger.LogInformation($"  InputBinding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
-
-      //foreach (var header in _headers)
-      //  _logger.LogInformation($"  header: {header.Key} = {header.Value}");
-
-      //_httpRequestData = hostContext.GetHttpRequestData();
-      //if (_httpRequestData != null)
-      //  _logger.LogInformation($"url: {_httpRequestData.Url}");
-
       // test for non-authenicated endpoints
       if (contextInfo.BypassMiddleware)
         await next(hostContext);
 
       // else is auth endpoint, then continue with middleware evaluation
       else
-      {
         try
         {
           _logger.LogInformation("evaluating REST API method");
@@ -196,7 +174,6 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
           _logger.LogError($"function error: {ex.Message} {ex.StackTrace}");
           await hostContext.CreateJsonResponse(HttpStatusCode.InternalServerError, ex.Message);
         }
-      }
       //else
       //  _logger.LogWarning($"Unknown HTTP request {_functionName}");
     }

@@ -1,5 +1,10 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Dawn;
 using FluentValidation;
+using IsolatedModel_BidirectionChat.Extensions;
+using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -11,11 +16,10 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
-using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.API
+namespace IsolatedModel_BidirectionChat.Functions.API
 {
-    public class QuestionsFunction : OLabFunction
+  public class QuestionsFunction : OLabFunction
   {
     private readonly QuestionsEndpoint _endpoint;
 
@@ -113,7 +117,7 @@ namespace OLab.FunctionApp.Functions.API
     [Function("QuestionPut")]
     public async Task<HttpResponseData> QuestionPutAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questions/{id}")] HttpRequestData request,
-      FunctionContext hostContext, 
+      FunctionContext hostContext,
       CancellationToken cancellationToken,
       uint id)
     {

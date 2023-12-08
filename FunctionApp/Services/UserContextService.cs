@@ -7,13 +7,16 @@ using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.FunctionApp.Middleware;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using IsolatedModel_BidirectionChat.Extensions;
 
 #nullable disable
 
-namespace OLab.FunctionApp.Services
+namespace IsolatedModel_BidirectionChat.Services
 {
   public class UserContextService : IUserContext
   {
@@ -135,14 +138,12 @@ namespace OLab.FunctionApp.Services
       var headers = (Dictionary<string, string>)headersObjects;
 
       if (headers.TryGetValue("OLabSessionId".ToLower(), out var sessionId))
-      {
         if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
         {
           SessionId = sessionId;
           if (!string.IsNullOrWhiteSpace(SessionId))
             _logger.LogInformation($"Found sessionId '{SessionId}'.");
         }
-      }
 
       if (!hostContext.Items.TryGetValue("claims", out var claimsObject))
         throw new Exception("unable to retrieve claims from host context");

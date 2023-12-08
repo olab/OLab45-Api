@@ -1,6 +1,8 @@
 using Dawn;
 using FluentValidation;
 using Humanizer;
+using IsolatedModel_BidirectionChat.Extensions;
+using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -13,11 +15,13 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
-using OLab.FunctionApp.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace OLab.FunctionApp.Functions.API.designer
+namespace IsolatedModel_BidirectionChat.Functions.API.designer
 {
-    public class MapsFunction : OLabFunction
+  public class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
 
@@ -273,7 +277,7 @@ namespace OLab.FunctionApp.Functions.API.designer
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, mapId);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -305,7 +309,7 @@ namespace OLab.FunctionApp.Functions.API.designer
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(auth, mapId);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {

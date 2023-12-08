@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    },
+    "logLevel": {
+      "default": "Information",
+      "Host.Results": "Information",
+      "Function": "Information",
+      "Host.AggregatorInformation": "Trace"
+    }
+  },
+  "xextensions": {
+    "http": {
+      "routePrefix": "olab/api/v3"
+    }
+  }
+}

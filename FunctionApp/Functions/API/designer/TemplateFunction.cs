@@ -1,5 +1,7 @@
 using Dawn;
 using FluentValidation;
+using IsolatedModel_BidirectionChat.Extensions;
+using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -11,11 +13,13 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
-using OLab.FunctionApp.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace OLab.FunctionApp.Functions.API.designer
+namespace IsolatedModel_BidirectionChat.Functions.API.designer
 {
-    public class TemplateFunction : OLabFunction
+  public class TemplateFunction : OLabFunction
   {
     private readonly TemplateEndpoint _endpoint;
 

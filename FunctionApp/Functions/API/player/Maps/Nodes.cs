@@ -1,16 +1,20 @@
 using Dawn;
 using FluentValidation;
+using IsolatedModel_BidirectionChat.Extensions;
+using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.VisualStudio.Web.CodeGeneration.Templating;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.FunctionApp.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.Player
 {
-    public partial class MapsFunction : OLabFunction
+  public partial class MapsFunction : OLabFunction
   {
     /// <summary>
     /// Plays specific map node

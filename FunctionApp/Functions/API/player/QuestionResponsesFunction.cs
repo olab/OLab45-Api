@@ -1,4 +1,9 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Dawn;
+using IsolatedModel_BidirectionChat.Extensions;
+using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +16,10 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
-using OLab.FunctionApp.Extensions;
 
-namespace OLab.FunctionApp.Functions.API.player
+namespace IsolatedModel_BidirectionChat.Functions.API.player
 {
-    public partial class QuestionResponsesFunction : OLabFunction
+  public partial class QuestionResponsesFunction : OLabFunction
   {
     private readonly ResponseEndpoint _endpoint;
 

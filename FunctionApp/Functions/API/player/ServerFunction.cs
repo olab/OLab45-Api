@@ -1,19 +1,24 @@
 using Dawn;
 using FluentValidation;
+using IsolatedModel_BidirectionChat.Extensions;
+using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
-using OLab.FunctionApp.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace OLab.FunctionApp.Functions.API.player
+namespace IsolatedModel_BidirectionChat.Functions.API.player
 {
-    public partial class ServerFunction : OLabFunction
+  public partial class ServerFunction : OLabFunction
   {
     private readonly ServerEndpoint _endpoint;
 
@@ -95,7 +100,7 @@ namespace OLab.FunctionApp.Functions.API.player
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -124,7 +129,7 @@ namespace OLab.FunctionApp.Functions.API.player
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
