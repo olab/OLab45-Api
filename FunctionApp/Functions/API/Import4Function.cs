@@ -21,6 +21,7 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data;
+using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using OLab.FunctionApp.Extensions;
@@ -31,7 +32,7 @@ using System.Net;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class Import4Function : OLabFunction
+    public class Import4Function : OLabFunction
   {
     private readonly Import4Endpoint _endpoint;
 

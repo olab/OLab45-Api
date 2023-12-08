@@ -20,8 +20,73 @@ using OLab.Data.Interface;
 using OLab.Api.Data.Interface;
 using DocumentFormat.OpenXml.InkML;
 using System.Text.Json;
+using OLab.Data.BusinessObjects.API;
+using DocumentFormat.OpenXml.Math;
 
 namespace OLab.FunctionApp.Middleware;
+
+public class ContextInformation
+{
+  public string FunctionName { get; private set; }
+  public bool BypassMiddleware { get; private set; }
+
+  public IReadOnlyDictionary<string, string> Headers { get; private set; }
+  public IReadOnlyDictionary<string, object> BindingData { get; private set; }
+  public HttpRequestData RequestData { get; private set; }
+
+  private readonly IOLabLogger _logger;
+
+  public ContextInformation(FunctionContext hostContext, IOLabLogger logger)
+  {
+    FunctionName = hostContext.FunctionDefinition.Name.ToLower();
+    Guard.Argument(FunctionName).NotEmpty(nameof(FunctionName));
+
+    _logger = logger;
+
+    _logger .LogInformation($"ContextInformation");
+    _logger .LogInformation($"  function name: {FunctionName}");
+
+    Headers = hostContext.GetHttpRequestHeaders();
+    Guard.Argument(Headers).NotNull(nameof(Headers));
+
+    foreach (var header in Headers)
+      logger.LogInformation($"  header: {header.Key} = {header.Value}");
+
+    BindingData = hostContext.BindingContext.BindingData;
+    Guard.Argument(BindingData).NotNull(nameof(BindingData));
+
+    _logger .LogInformation($"  binding context: {JsonSerializer.Serialize(hostContext.BindingContext)}");
+
+    foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
+      _logger .LogInformation($"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
+
+    RequestData = hostContext.GetHttpRequestData();
+    if (RequestData != null)
+      _logger .LogInformation($"  url: {RequestData.Url}");
+
+    BypassMiddleware = EvaluateHostContext();
+  }
+
+  private bool EvaluateHostContext()
+  {
+    return true;
+
+    if (FunctionName.ToLower().Contains("login") ||
+        FunctionName.ToLower().Contains("health") ||
+        FunctionName.ToLower().Contains("index") ||
+        FunctionName.ToLower().Contains("testpage") ||
+        FunctionName.ToLower().Contains("negotiate"))
+    {
+      _logger.LogInformation("middleware bypass: url");
+      return true;
+    }
+
+    // hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
+
+    _logger.LogInformation("middleware active");
+    return false;
+  }
+}
 
 public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 {
@@ -61,37 +126,35 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     {
       Guard.Argument(hostContext).NotNull(nameof(hostContext));
 
-      var dbContext = hostContext.InstanceServices.GetService(typeof(OLabDBContext)) as OLabDBContext;
-      Guard.Argument(dbContext).NotNull(nameof(dbContext));
-      _dbContext = dbContext;
+      var contextInfo = new ContextInformation(hostContext, _logger);
 
-      _functionName = hostContext.FunctionDefinition.Name.ToLower();
-      Guard.Argument(_functionName).NotEmpty(nameof(_functionName));
-      _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
+      //var dbContext = hostContext.InstanceServices.GetService(typeof(OLabDBContext)) as OLabDBContext;
+      //Guard.Argument(dbContext).NotNull(nameof(dbContext));
+      //_dbContext = dbContext;
 
-      _headers = hostContext.GetHttpRequestHeaders();
-      Guard.Argument(_headers).NotNull(nameof(_headers));
+      //_functionName = hostContext.FunctionDefinition.Name.ToLower();
+      //Guard.Argument(_functionName).NotEmpty(nameof(_functionName));
+      //_logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
 
-      _bindingData = hostContext.BindingContext.BindingData;
-      Guard.Argument(_bindingData).NotNull(nameof(_bindingData));
-      _logger.LogInformation($"  BindingContext = {JsonSerializer.Serialize(hostContext.BindingContext)}");
+      //_headers = hostContext.GetHttpRequestHeaders();
+      //Guard.Argument(_headers).NotNull(nameof(_headers));
 
-      foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
-        _logger.LogInformation($"  InputBinding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
+      //_bindingData = hostContext.BindingContext.BindingData;
+      //Guard.Argument(_bindingData).NotNull(nameof(_bindingData));
+      //_logger.LogInformation($"  BindingContext = {JsonSerializer.Serialize(hostContext.BindingContext)}");
 
-      foreach (var header in _headers)
-        _logger.LogInformation($"  header: {header.Key} = {header.Value}");
+      //foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
+      //  _logger.LogInformation($"  InputBinding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
 
-      _httpRequestData = hostContext.GetHttpRequestData();
-      if (_httpRequestData != null)
-        _logger.LogInformation($"url: {_httpRequestData.Url}");
+      //foreach (var header in _headers)
+      //  _logger.LogInformation($"  header: {header.Key} = {header.Value}");
+
+      //_httpRequestData = hostContext.GetHttpRequestData();
+      //if (_httpRequestData != null)
+      //  _logger.LogInformation($"url: {_httpRequestData.Url}");
 
       // test for non-authenicated endpoints
-      if (_functionName.ToLower().Contains("login") ||
-          _functionName.ToLower().Contains("health") ||
-          _functionName.ToLower().Contains("testpage") ||
-          _functionName.ToLower().Contains("negotiate") ||
-          hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
+      if (contextInfo.BypassMiddleware)
         await next(hostContext);
 
       // else is auth endpoint, then continue with middleware evaluation

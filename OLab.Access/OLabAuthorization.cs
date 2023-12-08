@@ -6,12 +6,13 @@ using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.BusinessObjects.API;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace OLab.Access
 {
-  public class OLabAuthorization : IOLabAuthorization
+    public class OLabAuthorization : IOLabAuthorization
   {
     private readonly IOLabLogger _logger;
     private readonly OLabDBContext _dbContext;

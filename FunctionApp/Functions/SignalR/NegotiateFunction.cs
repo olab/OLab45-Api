@@ -12,16 +12,17 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
+using System.Text.Json;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
   public partial class OLabSignalRFunction
   {
     [Function("Negotiate")]
-    public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "turktalk/negotiate")] HttpRequestData req,
-        [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
+    public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req,
+            [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
     {
-      Logger.LogInformation("Executing negotiation.");
+      Logger.LogInformation($"Executing negotiation. {JsonSerializer.Serialize(signalRConnectionInfo)}");
       return signalRConnectionInfo;
     }
   }

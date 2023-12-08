@@ -5,6 +5,7 @@ using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
+using OLab.Data.BusinessObjects.API;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;

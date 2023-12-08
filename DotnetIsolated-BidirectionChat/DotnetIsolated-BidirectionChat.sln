@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.FunctionApp", "OLab.FunctionApp.csproj", "{48A53B73-9F2C-446A-A67F-04BB68453B66}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Data", "..\..\Common\Data\OLab.Data.csproj", "{3995B9E9-457C-492E-8F24-BE4BC4382896}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Common", "..\..\Common\Common\OLab.Common.csproj", "{A9BC1908-0007-48CD-BDDB-56E3A6A95B05}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Endpoints", "..\..\Common\Endpoints\OLab.Endpoints.csproj", "{DE3449AB-8F5D-4F17-8214-1D715B2D42E8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Access", "..\OLab.Access\OLab.Access.csproj", "{D67FF7B9-5564-4934-A447-E605C53F07E1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.AzureBlobStorage", "..\OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj", "{FE54E855-9175-45B7-A65A-5C5160DBB4C3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.FileSystem", "..\OLab.Files.FileSystem\OLab.Files.FileSystem.csproj", "{553ADF7F-87B9-4461-B964-2A96E99A543A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3995B9E9-457C-492E-8F24-BE4BC4382896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3995B9E9-457C-492E-8F24-BE4BC4382896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3995B9E9-457C-492E-8F24-BE4BC4382896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3995B9E9-457C-492E-8F24-BE4BC4382896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9BC1908-0007-48CD-BDDB-56E3A6A95B05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9BC1908-0007-48CD-BDDB-56E3A6A95B05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9BC1908-0007-48CD-BDDB-56E3A6A95B05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9BC1908-0007-48CD-BDDB-56E3A6A95B05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE3449AB-8F5D-4F17-8214-1D715B2D42E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE3449AB-8F5D-4F17-8214-1D715B2D42E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE3449AB-8F5D-4F17-8214-1D715B2D42E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE3449AB-8F5D-4F17-8214-1D715B2D42E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D67FF7B9-5564-4934-A447-E605C53F07E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D67FF7B9-5564-4934-A447-E605C53F07E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D67FF7B9-5564-4934-A447-E605C53F07E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D67FF7B9-5564-4934-A447-E605C53F07E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE54E855-9175-45B7-A65A-5C5160DBB4C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE54E855-9175-45B7-A65A-5C5160DBB4C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE54E855-9175-45B7-A65A-5C5160DBB4C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE54E855-9175-45B7-A65A-5C5160DBB4C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{553ADF7F-87B9-4461-B964-2A96E99A543A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{553ADF7F-87B9-4461-B964-2A96E99A543A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{553ADF7F-87B9-4461-B964-2A96E99A543A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{553ADF7F-87B9-4461-B964-2A96E99A543A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {17F67B90-252B-49A0-AEAB-FBB32143204B}
+	EndGlobalSection
+EndGlobal

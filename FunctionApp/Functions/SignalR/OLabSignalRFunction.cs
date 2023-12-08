@@ -2,30 +2,36 @@ using Dawn;
 using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Functions.API;
+using OLab.TurkTalk.Models;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
   public partial class OLabSignalRFunction : OLabFunction
   {
+    private readonly TTalkDBContext ttalkDBContext;
+
     public OLabSignalRFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       OLabDBContext dbContext,
+      TTalkDBContext ttalkDBContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-      IOLabModuleProvider<IFileStorageModule> fileStorageProvider ) : base(
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
         configuration,
         dbContext,
         wikiTagProvider,
         fileStorageProvider)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+      Guard.Argument(ttalkDBContext).NotNull(nameof(ttalkDBContext));
 
       Logger = OLabLogger.CreateNew<Import4Function>(loggerFactory);
+      this.ttalkDBContext = ttalkDBContext;
     }
 
     [Function("OnConnected")]

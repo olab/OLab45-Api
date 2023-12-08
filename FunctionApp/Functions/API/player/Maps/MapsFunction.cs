@@ -18,6 +18,7 @@ using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 

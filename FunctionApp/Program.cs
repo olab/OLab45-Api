@@ -21,6 +21,8 @@ using OLab.FunctionApp;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
 using System.Net;
+using OLab.Data.BusinessObjects.API;
+using OLab.TurkTalk.Models;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>
@@ -43,10 +45,15 @@ var host = new HostBuilder()
 
       var connectionString = Environment.GetEnvironmentVariable("DefaultDatabase");
       var serverVersion = ServerVersion.AutoDetect(connectionString);
+
       services.AddDbContext<OLabDBContext>(options =>
         options.UseMySql(connectionString, serverVersion)
           .EnableDetailedErrors(), ServiceLifetime.Scoped);
       //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
+
+      services.AddDbContext<TTalkDBContext>(options =>
+        options.UseMySql(connectionString, serverVersion)
+          .EnableDetailedErrors(), ServiceLifetime.Scoped);
 
       services.AddOptions<AppSettings>()
         .Configure<IConfiguration>((options, c) =>

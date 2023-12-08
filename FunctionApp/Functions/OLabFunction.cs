@@ -2,7 +2,6 @@ using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Data.Interface;
-using OLab.Api.Model;
 using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -10,6 +9,7 @@ using OLab.Access;
 using System.Net;
 using OLab.FunctionApp.Middleware;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OLab.Data.BusinessObjects.API;
 
 namespace OLab.FunctionApp.Functions;
 

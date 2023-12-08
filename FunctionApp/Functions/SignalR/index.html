@@ -66,10 +66,7 @@
                     <a href="#"
                        v-on:click.prevent="sendToConnection(message.ConnectionId || message.connectionId)">
                       <span class="badge badge-primary">
-                        Connection: {{
- message.ConnectionId ||
-                                                message.connectionId
-                        }}
+                        Connection: {{ message.ConnectionId || message.connectionId }}
                       </span>
                     </a>
                   </span>
@@ -91,6 +88,11 @@
                      v-on:click.prevent="removeConnectionIdFromGroup(message.ConnectionId || message.connectionId)">
                     <span v-if="message.ConnectionId || message.connectionId"
                           class="badge badge-primary">RemoveConnectionFromGroup</span>
+                  </a>
+                  <a href="#"
+                     v-on:click.prevent="transmitRegisterAttendee()">
+                    <span v-if="message.ConnectionId || message.connectionId"
+                          class="badge badge-primary">RegisterAttendee</span>
                   </a>
                   <span v-if="message.IsPrivate || message.isPrivate" class="badge badge-secondary">
                     private message
@@ -183,6 +185,17 @@
           removeUserFromGroup: function (user) {
             confirm('Remove user ' + user + ' from group: ' + this.defaultgroup);
             connection.invoke("leaveUserFromGroup", user, this.defaultgroup);
+          },
+          transmitRegisterAttendee: function () {
+            let payload = {
+              "contextId": "",
+              "mapId": 1965,
+              "nodeId": 0,
+              "questionId": 100,
+              "roomName": "room1",
+              "connectionId": "12345-54332-abcdf"
+            };
+            connection.invoke("registerAttendee", payload);
           }
         }
       });

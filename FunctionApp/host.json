@@ -14,7 +14,7 @@
       "Host.AggregatorInformation": "Trace"
     }
   },
-  "extensions": {
+  "xextensions": {
     "http": {
       "routePrefix": "olab/api/v3"
     }
