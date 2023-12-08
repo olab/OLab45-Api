@@ -18,6 +18,8 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using OLab.Data.Interface;
 using OLab.Api.Data.Interface;
+using DocumentFormat.OpenXml.InkML;
+using System.Text.Json;
 
 namespace OLab.FunctionApp.Middleware;
 
@@ -63,16 +65,20 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
       Guard.Argument(dbContext).NotNull(nameof(dbContext));
       _dbContext = dbContext;
 
+      _functionName = hostContext.FunctionDefinition.Name.ToLower();
+      Guard.Argument(_functionName).NotEmpty(nameof(_functionName));
+      _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
+
       _headers = hostContext.GetHttpRequestHeaders();
       Guard.Argument(_headers).NotNull(nameof(_headers));
 
       _bindingData = hostContext.BindingContext.BindingData;
       Guard.Argument(_bindingData).NotNull(nameof(_bindingData));
+      _logger.LogInformation($"  BindingContext = {JsonSerializer.Serialize(hostContext.BindingContext)}");
 
-      _functionName = hostContext.FunctionDefinition.Name.ToLower();
-      Guard.Argument(_functionName).NotEmpty(nameof(_functionName));
+      foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
+        _logger.LogInformation($"  InputBinding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
 
-      _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
       foreach (var header in _headers)
         _logger.LogInformation($"  header: {header.Key} = {header.Value}");
 
@@ -84,7 +90,8 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
       if (_functionName.ToLower().Contains("login") ||
           _functionName.ToLower().Contains("health") ||
           _functionName.ToLower().Contains("testpage") ||
-          _functionName.ToLower().Contains("negotiate"))
+          _functionName.ToLower().Contains("negotiate") ||
+          hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
         await next(hostContext);
 
       // else is auth endpoint, then continue with middleware evaluation
