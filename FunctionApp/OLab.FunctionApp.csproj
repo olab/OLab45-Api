@@ -43,4 +43,7 @@
     <ProjectReference Include="..\OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj" />
     <ProjectReference Include="..\OLab.Files.FileSystem\OLab.Files.FileSystem.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
 </Project>
