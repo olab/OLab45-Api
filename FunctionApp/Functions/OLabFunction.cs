@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OLab.Data.BusinessObjects.API;
 using System;
 
-namespace IsolatedModel_BidirectionChat.Functions;
+namespace OLab.FunctionApp.Functions;
 
 public class OLabFunction
 {

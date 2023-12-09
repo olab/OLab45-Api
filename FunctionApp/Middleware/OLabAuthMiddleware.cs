@@ -24,10 +24,10 @@ using DocumentFormat.OpenXml.Math;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
-using IsolatedModel_BidirectionChat.Extensions;
-using IsolatedModel_BidirectionChat.Services;
+using OLab.FunctionApp.Extensions;
+using OLab.FunctionApp.Services;
 
-namespace IsolatedModel_BidirectionChat.Middleware;
+namespace OLab.FunctionApp.Middleware;
 
 public class ContextInformation
 {
@@ -38,6 +38,7 @@ public class ContextInformation
   public IReadOnlyDictionary<string, object> BindingData { get; private set; }
   public HttpRequestData RequestData { get; private set; }
 
+  private readonly FunctionContext hostContext;
   private readonly IOLabLogger _logger;
 
   public ContextInformation(FunctionContext hostContext, IOLabLogger logger)
@@ -45,6 +46,7 @@ public class ContextInformation
     FunctionName = hostContext.FunctionDefinition.Name.ToLower();
     Guard.Argument(FunctionName).NotEmpty(nameof(FunctionName));
 
+    this.hostContext = hostContext;
     _logger = logger;
 
     _logger.LogInformation($"ContextInformation");
@@ -73,12 +75,18 @@ public class ContextInformation
 
   private bool EvaluateHostContext()
   {
-    return true;
+    if (hostContext.FunctionDefinition.InputBindings.ContainsKey("invocationContext"))
+    {
+      if (hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
+      {
+        _logger.LogInformation("middleware bypass: turktalk");
+        return true;
+      }
+    }
 
     if (FunctionName.ToLower().Contains("login") ||
         FunctionName.ToLower().Contains("health") ||
         FunctionName.ToLower().Contains("index") ||
-        FunctionName.ToLower().Contains("testpage") ||
         FunctionName.ToLower().Contains("negotiate"))
     {
       _logger.LogInformation("middleware bypass: url");

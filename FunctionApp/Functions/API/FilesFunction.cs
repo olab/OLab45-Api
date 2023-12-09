@@ -23,10 +23,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
-using IsolatedModel_BidirectionChat.Functions;
-using IsolatedModel_BidirectionChat.Extensions;
+using OLab.FunctionApp.Functions;
+using OLab.FunctionApp.Extensions;
 
-namespace IsolatedModel_BidirectionChat.Functions.API
+namespace OLab.FunctionApp.Functions.API
 {
   public class FilesFunction : OLabFunction
   {

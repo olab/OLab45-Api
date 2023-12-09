@@ -1,7 +1,5 @@
 using Dawn;
 using FluentValidation;
-using IsolatedModel_BidirectionChat.Extensions;
-using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -13,11 +11,13 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
+using OLab.FunctionApp.Extensions;
+using OLab.FunctionApp.Functions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IsolatedModel_BidirectionChat.Functions.API
+namespace OLab.FunctionApp.Functions.API
 {
   public class ConstantsFunction : OLabFunction
   {

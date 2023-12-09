@@ -1,7 +1,5 @@
 using Dawn;
 using FluentValidation;
-using IsolatedModel_BidirectionChat.Extensions;
-using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -12,11 +10,13 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
+using OLab.FunctionApp.Extensions;
+using OLab.FunctionApp.Functions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IsolatedModel_BidirectionChat.Functions.API.player
+namespace OLab.FunctionApp.Functions.API.player
 {
   public partial class ServerFunction : OLabFunction
   {
@@ -129,7 +129,7 @@ namespace IsolatedModel_BidirectionChat.Functions.API.player
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-        response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {

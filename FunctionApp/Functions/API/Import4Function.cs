@@ -31,10 +31,10 @@ using System.Net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using IsolatedModel_BidirectionChat.Functions;
-using IsolatedModel_BidirectionChat.Extensions;
+using OLab.FunctionApp.Functions;
+using OLab.FunctionApp.Extensions;
 
-namespace IsolatedModel_BidirectionChat.Functions.API
+namespace OLab.FunctionApp.Functions.API
 {
   public class Import4Function : OLabFunction
   {

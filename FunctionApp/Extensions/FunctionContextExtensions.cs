@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace IsolatedModel_BidirectionChat.Extensions;
+namespace OLab.FunctionApp.Extensions;
 
 /// <summary>
 /// Helper Function for FunctionContext.

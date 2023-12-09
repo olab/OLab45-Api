@@ -14,7 +14,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace IsolatedModel_BidirectionChat.Services;
+namespace OLab.FunctionApp.Services;
 
 public class UserService : IUserService
 {

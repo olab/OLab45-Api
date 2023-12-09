@@ -1,7 +1,5 @@
 using Dawn;
 using Humanizer;
-using IsolatedModel_BidirectionChat.Extensions;
-using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +20,7 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
+using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

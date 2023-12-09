@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionApp\OLab.FunctionApp", "OLab.FunctionApp.csproj", "{48A53B73-9F2C-446A-A67F-04BB68453B66}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Data", "..\Common\Data\OLab.Data.csproj", "{3995B9E9-457C-492E-8F24-BE4BC4382896}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Common", "..\Common\Common\OLab.Common.csproj", "{A9BC1908-0007-48CD-BDDB-56E3A6A95B05}"
@@ -17,16 +15,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.AzureBlobStorage
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.FileSystem", "OLab.Files.FileSystem\OLab.Files.FileSystem.csproj", "{553ADF7F-87B9-4461-B964-2A96E99A543A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.FunctionApp", "FunctionApp\OLab.FunctionApp.csproj", "{879D2799-0D22-405F-A701-D691EAF94F42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48A53B73-9F2C-446A-A67F-04BB68453B66}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3995B9E9-457C-492E-8F24-BE4BC4382896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3995B9E9-457C-492E-8F24-BE4BC4382896}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3995B9E9-457C-492E-8F24-BE4BC4382896}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +47,10 @@ Global
 		{553ADF7F-87B9-4461-B964-2A96E99A543A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{553ADF7F-87B9-4461-B964-2A96E99A543A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{553ADF7F-87B9-4461-B964-2A96E99A543A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{879D2799-0D22-405F-A701-D691EAF94F42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{879D2799-0D22-405F-A701-D691EAF94F42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{879D2799-0D22-405F-A701-D691EAF94F42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{879D2799-0D22-405F-A701-D691EAF94F42}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

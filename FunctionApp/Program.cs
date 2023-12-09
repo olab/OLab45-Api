@@ -17,10 +17,10 @@ using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.Data;
-using IsolatedModel_BidirectionChat.Services;
-using IsolatedModel_BidirectionChat.Middleware;
+using OLab.FunctionApp.Middleware;
+using OLab.FunctionApp.Services;
 
-namespace IsolatedModel_BidirectionChat
+namespace OLab.FunctionApp
 {
   public class Program
   {

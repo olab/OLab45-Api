@@ -1,12 +1,11 @@
 using Dawn;
 using FluentValidation;
-using IsolatedModel_BidirectionChat.Extensions;
-using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Utils;
+using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

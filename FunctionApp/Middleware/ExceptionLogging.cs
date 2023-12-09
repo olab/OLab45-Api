@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace IsolatedModel_BidirectionChat.Middleware;
+namespace OLab.FunctionApp.Middleware;
 
 public class ExceptionLoggingMiddleware : IFunctionsWorkerMiddleware
 {

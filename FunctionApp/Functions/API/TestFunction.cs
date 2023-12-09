@@ -1,5 +1,4 @@
 using Dawn;
-using IsolatedModel_BidirectionChat.Functions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -7,10 +6,11 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
+using OLab.FunctionApp.Functions;
 using System.Linq;
 using System.Net;
 
-namespace IsolatedModel_BidirectionChat.Functions.API;
+namespace OLab.FunctionApp.Functions.API;
 
 public class TestFunction : OLabFunction
 {

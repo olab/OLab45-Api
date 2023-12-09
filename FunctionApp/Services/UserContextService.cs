@@ -12,11 +12,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using IsolatedModel_BidirectionChat.Extensions;
+using OLab.FunctionApp.Extensions;
 
 #nullable disable
 
-namespace IsolatedModel_BidirectionChat.Services
+namespace OLab.FunctionApp.Services
 {
   public class UserContextService : IUserContext
   {
