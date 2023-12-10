@@ -51,3 +51,6 @@ local.settings.json
 Service/appsettings.json
 /FunctionApp/Properties/PublishProfile
 /FunctionApp/Properties/ServiceDependancies
+/FunctionApp/Properties/serviceDependencies.json
+/FunctionApp/Properties/serviceDependencies.olabdevapi - Zip Deploy.json
+/FunctionApp/Properties/ServiceDependencies/olabdevapi - Zip Deploy/storage1.arm.json
