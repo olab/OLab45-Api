@@ -12,6 +12,11 @@
       "Host.Results": "Information",
       "Function": "Information",
       "Host.AggregatorInformation": "Trace"
+    },
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": "olab/api/v3"
     }
   }
 }

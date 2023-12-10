@@ -1,113 +1,26 @@
 ﻿using Dawn;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Model;
 using OLab.Api.Utils;
-using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
 using System.Configuration;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using OLab.Data.Interface;
-using OLab.Api.Data.Interface;
-using DocumentFormat.OpenXml.InkML;
-using System.Text.Json;
 using OLab.Data.BusinessObjects.API;
-using DocumentFormat.OpenXml.Math;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Services;
+using OLab.FunctionApp.Utils;
 
 namespace OLab.FunctionApp.Middleware;
-
-public class ContextInformation
-{
-  public string FunctionName { get; private set; }
-  public bool BypassMiddleware { get; private set; }
-
-  public IReadOnlyDictionary<string, string> Headers { get; private set; }
-  public IReadOnlyDictionary<string, object> BindingData { get; private set; }
-  public HttpRequestData RequestData { get; private set; }
-
-  private readonly FunctionContext hostContext;
-  private readonly IOLabLogger _logger;
-
-  public ContextInformation(FunctionContext hostContext, IOLabLogger logger)
-  {
-    FunctionName = hostContext.FunctionDefinition.Name.ToLower();
-    Guard.Argument(FunctionName).NotEmpty(nameof(FunctionName));
-
-    this.hostContext = hostContext;
-    _logger = logger;
-
-    _logger.LogInformation($"ContextInformation");
-    _logger.LogInformation($"  function name: {FunctionName}");
-
-    Headers = hostContext.GetHttpRequestHeaders();
-    Guard.Argument(Headers).NotNull(nameof(Headers));
-
-    foreach (var header in Headers)
-      logger.LogInformation($"  header: {header.Key} = {header.Value}");
-
-    BindingData = hostContext.BindingContext.BindingData;
-    Guard.Argument(BindingData).NotNull(nameof(BindingData));
-
-    _logger.LogInformation($"  binding context: {JsonSerializer.Serialize(hostContext.BindingContext)}");
-
-    foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
-      _logger.LogInformation($"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
-
-    RequestData = hostContext.GetHttpRequestData();
-    if (RequestData != null)
-      _logger.LogInformation($"  url: {RequestData.Url}");
-
-    BypassMiddleware = EvaluateHostContext();
-  }
-
-  private bool EvaluateHostContext()
-  {
-    if (hostContext.FunctionDefinition.InputBindings.ContainsKey("invocationContext"))
-    {
-      if (hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
-      {
-        _logger.LogInformation("middleware bypass: turktalk");
-        return true;
-      }
-    }
-
-    if (FunctionName.ToLower().Contains("login") ||
-        FunctionName.ToLower().Contains("health") ||
-        FunctionName.ToLower().Contains("index") ||
-        FunctionName.ToLower().Contains("negotiate"))
-    {
-      _logger.LogInformation("middleware bypass: url");
-      return true;
-    }
-
-    // hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
-
-    _logger.LogInformation("middleware active");
-    return false;
-  }
-}
 
 public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 {
   private OLabDBContext _dbContext;
-  private HttpRequestData _httpRequestData;
 
-  private IReadOnlyDictionary<string, string> _headers;
-  private IReadOnlyDictionary<string, object> _bindingData;
-  private string _functionName;
   public IOLabAuthentication _authentication { get; private set; }
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger _logger;
@@ -138,7 +51,11 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     {
       Guard.Argument(hostContext).NotNull(nameof(hostContext));
 
-      var contextInfo = new ContextInformation(hostContext, _logger);
+      var contextInfo = new ContextHelper(hostContext, _logger);
+
+      var dbContext = hostContext.InstanceServices.GetService(typeof(OLabDBContext)) as OLabDBContext;
+      Guard.Argument(dbContext).NotNull(nameof(dbContext));
+      _dbContext = dbContext;
 
       // test for non-authenicated endpoints
       if (contextInfo.BypassMiddleware)
@@ -150,12 +67,12 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         {
           _logger.LogInformation("evaluating REST API method");
 
-          var token = _authentication.ExtractAccessToken(_headers, _bindingData);
+          var token = _authentication.ExtractAccessToken(contextInfo.Headers, contextInfo.BindingData);
 
           _authentication.ValidateToken(token);
 
           // these must be set before building UserContextService 
-          hostContext.Items.Add("headers", _headers);
+          hostContext.Items.Add("headers", contextInfo.Headers);
           hostContext.Items.Add("claims", _authentication.Claims);
 
           // This is added pre-function execution, function will have access to this information

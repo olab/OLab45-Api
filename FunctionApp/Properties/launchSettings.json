@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "OLab.FunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7071 --cores *",
+      "xcommandLineArgs": "--port 7071 --useHttps --cores * --cert D:\\\\Client\\\\olab\\\\devel\\\\repos\\\\certificate.pfx --password 1234"
+    }
+  }
+}

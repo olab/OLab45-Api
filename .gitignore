@@ -50,3 +50,4 @@ Ankh.NoLoad
 local.settings.json
 Service/appsettings.json
 /FunctionApp.org/Properties/serviceDependencies.olabdevapi - Zip Deploy1.json
+/FunctionApp/Properties/PublishProfiles/olabdevapi - Zip Deploy.pubxml

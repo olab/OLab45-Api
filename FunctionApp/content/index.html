@@ -188,7 +188,7 @@
                     .catch(console.error);
             }).catch(alert);
             function getConnectionInfo() {
-                return axios.post(`${apiBaseUrl}/api/negotiate?userid=${data.username}`, null, null)
+                return axios.post(`${apiBaseUrl}/olab/api/v3/negotiate?userid=${data.username}`, null, null)
                     .then(resp => resp.data);
             }
             let counter = 0;
