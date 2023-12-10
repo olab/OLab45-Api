@@ -1,58 +1,32 @@
-using System.IO;
-using System.Net;
+using Dawn;
+using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using OLab.Api.Model;
+using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLab.Data.BusinessObjects.API;
+using OLab.Data.Interface;
+using OLab.FunctionApp.Functions.API;
 
-namespace OLab.FunctionApp.Functions.TurkTalk
+namespace OLab.FunctionApp.Functions.SignalR
 {
-  public class Functions
+  public partial class OnConnectedFunction : OLabFunction
   {
-    private readonly ILogger _logger;
-
-    public Functions(ILoggerFactory loggerFactory)
+    public OnConnectedFunction(
+      ILoggerFactory loggerFactory,
+      IOLabConfiguration configuration,
+      OLabDBContext dbContext,
+      IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+      IOLabModuleProvider<IFileStorageModule> fileStorageProvider ) : base(
+        configuration,
+        dbContext,
+        wikiTagProvider,
+        fileStorageProvider)
     {
-      _logger = loggerFactory.CreateLogger<Functions>();
-    }
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    [Function("index")]
-    public HttpResponseData GetWebPage([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req)
-    {
-      var response = req.CreateResponse(HttpStatusCode.OK);
-      response.WriteString(File.ReadAllText("content/index.html"));
-      response.Headers.Add("Content-Type", "text/html");
-      return response;
-    }
-
-    [Function("Negotiate")]
-    public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req,
-        [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
-    {
-      _logger.LogInformation("Executing negotiation.");
-      return signalRConnectionInfo;
-    }
-
-    [Function("OnConnected")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRMessageAction OnConnected([SignalRTrigger("Hub", "connections", "connected")] SignalRInvocationContext invocationContext)
-    {
-      invocationContext.Headers.TryGetValue("Authorization", out var auth);
-      _logger.LogInformation($"{invocationContext.ConnectionId} has connected");
-      return new SignalRMessageAction("newConnection")
-      {
-        Arguments = new object[] { new NewConnection(invocationContext.ConnectionId, auth) },
-
-      };
-    }
-
-    [Function("Broadcast")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRMessageAction Broadcast([SignalRTrigger("Hub", "messages", "Broadcast", "message")] SignalRInvocationContext invocationContext, string message)
-    {
-      return new SignalRMessageAction("newMessage")
-      {
-        Arguments = new object[] { new NewMessage(invocationContext, message) }
-      };
+      Logger = OLabLogger.CreateNew<Import4Function>(loggerFactory);
     }
 
     [Function("SendToGroup")]
@@ -136,7 +110,7 @@ namespace OLab.FunctionApp.Functions.TurkTalk
     [SignalROutput(HubName = "Hub")]
     public void OnDisconnected([SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext)
     {
-      _logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
+      Logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
     }
 
     public class NewConnection
