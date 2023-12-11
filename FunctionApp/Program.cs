@@ -7,8 +7,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using OLab.Api.Utils;
-using OLab.Data.BusinessObjects.API;
-using OLab.TurkTalk.Models;
 using OLab.Api.Data.Interface;
 using OLab.Access.Interfaces;
 using OLab.Access;
@@ -19,6 +17,8 @@ using OLab.Data.Interface;
 using OLab.Data;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
+using OLab.TurkTalk.Data.BusinessObjects;
+using OLab.Data.BusinessObjects;
 
 namespace OLab.FunctionApp
 {
@@ -79,6 +79,9 @@ namespace OLab.FunctionApp
             services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
             services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
             services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
+
+            services.AddSingleton<TtalkConference>();
+
           })
 
           .ConfigureFunctionsWorkerDefaults(builder =>

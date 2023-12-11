@@ -21,7 +21,6 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data;
-using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using SharpCompress.Compressors.Xz;
@@ -33,10 +32,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Extensions;
+using OLab.Data.BusinessObjects;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class Import4Function : OLabFunction
+    public class Import4Function : OLabFunction
   {
     private readonly Import4Endpoint _endpoint;
 

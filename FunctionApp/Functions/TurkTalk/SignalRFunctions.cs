@@ -5,18 +5,22 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects.API;
+using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Functions.API;
+using OLab.TurkTalk.Data.BusinessObjects;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
-  public partial class OnConnectedFunction : OLabFunction
+    public partial class TurkTalkFunction : OLabFunction
   {
-    public OnConnectedFunction(
+    private readonly TTalkDBContext ttalkDbContext;
+
+    public TurkTalkFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       OLabDBContext dbContext,
+      TTalkDBContext ttalkDbContext,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider ) : base(
         configuration,
@@ -25,105 +29,10 @@ namespace OLab.FunctionApp.Functions.SignalR
         fileStorageProvider)
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+      Guard.Argument(ttalkDbContext).NotNull(nameof(ttalkDbContext));
 
-      Logger = OLabLogger.CreateNew<Import4Function>(loggerFactory);
-    }
-
-    [Function("SendToGroup")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRMessageAction SendToGroup([SignalRTrigger("Hub", "messages", "SendToGroup", "groupName", "message")] SignalRInvocationContext invocationContext, string groupName, string message)
-    {
-      return new SignalRMessageAction("newMessage")
-      {
-        GroupName = groupName,
-        Arguments = new object[] { new NewMessage(invocationContext, message) }
-      };
-    }
-
-    [Function("SendToUser")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRMessageAction SendToUser([SignalRTrigger("Hub", "messages", "SendToUser", "userName", "message")] SignalRInvocationContext invocationContext, string userName, string message)
-    {
-      return new SignalRMessageAction("newMessage")
-      {
-        UserId = userName,
-        Arguments = new object[] { new NewMessage(invocationContext, message) }
-      };
-    }
-
-    [Function("SendToConnection")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRMessageAction SendToConnection([SignalRTrigger("Hub", "messages", "SendToConnection", "connectionId", "message")] SignalRInvocationContext invocationContext, string connectionId, string message)
-    {
-      return new SignalRMessageAction("newMessage")
-      {
-        ConnectionId = connectionId,
-        Arguments = new object[] { new NewMessage(invocationContext, message) }
-      };
-    }
-
-    [Function("JoinGroup")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRGroupAction JoinGroup([SignalRTrigger("Hub", "messages", "JoinGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
-    {
-      return new SignalRGroupAction(SignalRGroupActionType.Add)
-      {
-        GroupName = groupName,
-        ConnectionId = connectionId
-      };
-    }
-
-    [Function("LeaveGroup")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRGroupAction LeaveGroup([SignalRTrigger("Hub", "messages", "LeaveGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
-    {
-      return new SignalRGroupAction(SignalRGroupActionType.Remove)
-      {
-        GroupName = groupName,
-        ConnectionId = connectionId
-      };
-    }
-
-    [Function("JoinUserToGroup")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRGroupAction JoinUserToGroup([SignalRTrigger("Hub", "messages", "JoinUserToGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
-    {
-      return new SignalRGroupAction(SignalRGroupActionType.Add)
-      {
-        GroupName = groupName,
-        UserId = userName
-      };
-    }
-
-    [Function("LeaveUserFromGroup")]
-    [SignalROutput(HubName = "Hub")]
-    public SignalRGroupAction LeaveUserFromGroup([SignalRTrigger("Hub", "messages", "LeaveUserFromGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
-    {
-      return new SignalRGroupAction(SignalRGroupActionType.Remove)
-      {
-        GroupName = groupName,
-        UserId = userName
-      };
-    }
-
-    [Function("OnDisconnected")]
-    [SignalROutput(HubName = "Hub")]
-    public void OnDisconnected([SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext)
-    {
-      Logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
-    }
-
-    public class NewConnection
-    {
-      public string ConnectionId { get; }
-
-      public string Authentication { get; }
-
-      public NewConnection(string connectionId, string auth)
-      {
-        ConnectionId = connectionId;
-        Authentication = auth;
-      }
+      Logger = OLabLogger.CreateNew<TurkTalkFunction>(loggerFactory);
+      this.ttalkDbContext = ttalkDbContext;
     }
 
     public class NewMessage

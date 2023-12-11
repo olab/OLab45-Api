@@ -18,7 +18,7 @@ using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects.API;
+using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 using System;
@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.Player
 {
-  public partial class MapsFunction : OLabFunction
+    public partial class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
 

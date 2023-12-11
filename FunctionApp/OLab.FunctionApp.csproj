@@ -39,6 +39,8 @@
     <ProjectReference Include="..\..\Common\Common\OLab.Common.csproj" />
     <ProjectReference Include="..\..\Common\Data\OLab.Data.csproj" />
     <ProjectReference Include="..\..\Common\Endpoints\OLab.Endpoints.csproj" />
+    <ProjectReference Include="..\..\Turktalk\Data\OLab.TurkTalk.Data.csproj" />
+    <ProjectReference Include="..\..\Turktalk\Endpoints\OLab.TurkTalk.Endpoints.csproj" />
     <ProjectReference Include="..\OLab.Access\OLab.Access.csproj" />
     <ProjectReference Include="..\OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj" />
     <ProjectReference Include="..\OLab.Files.FileSystem\OLab.Files.FileSystem.csproj" />

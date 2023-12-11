@@ -8,7 +8,6 @@ using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects.API;
 using OLab.Data.Interface;
 using System.Net;
 using System;
@@ -16,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Extensions;
+using OLab.Data.BusinessObjects;
 
 namespace OLab.FunctionApp.Functions.API;
 

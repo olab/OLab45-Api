@@ -9,7 +9,7 @@ using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects.API;
+using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Functions;
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class ConstantsFunction : OLabFunction
+    public class ConstantsFunction : OLabFunction
   {
     private readonly ConstantsEndpoint _endpoint;
 

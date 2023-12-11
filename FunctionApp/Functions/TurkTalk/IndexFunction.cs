@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
-  public partial class OnConnectedFunction
+  public partial class TurkTalkFunction
   {
 
     [Function("index")]

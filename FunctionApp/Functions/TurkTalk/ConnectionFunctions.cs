@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects.API;
+using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Functions.API;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
-  public partial class OnConnectedFunction : OLabFunction
+  public partial class TurkTalkFunction : OLabFunction
   {
 
     [Function("OnConnected")]
@@ -28,5 +28,24 @@ namespace OLab.FunctionApp.Functions.SignalR
       };
     }
 
+    [Function("OnDisconnected")]
+    [SignalROutput(HubName = "Hub")]
+    public void OnDisconnected([SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext)
+    {
+      Logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
+    }
+
+    public class NewConnection
+    {
+      public string ConnectionId { get; }
+
+      public string Authentication { get; }
+
+      public NewConnection(string connectionId, string auth)
+      {
+        ConnectionId = connectionId;
+        Authentication = auth;
+      }
+    }
   }
 }

@@ -9,7 +9,7 @@ using OLab.Api.Dto.Designer;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects.API;
+using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Functions;
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.API.designer
 {
-  public class TemplateFunction : OLabFunction
+    public class TemplateFunction : OLabFunction
   {
     private readonly TemplateEndpoint _endpoint;
 

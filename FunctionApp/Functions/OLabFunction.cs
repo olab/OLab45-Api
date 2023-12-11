@@ -8,8 +8,9 @@ using OLab.Data.Interface;
 using OLab.Access;
 using System.Net;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using OLab.Data.BusinessObjects.API;
 using System;
+using OLab.Data.BusinessObjects;
+using OLab.TurkTalk.Data.BusinessObjects;
 
 namespace OLab.FunctionApp.Functions;
 
@@ -25,6 +26,7 @@ public class OLabFunction
   //protected readonly IUserService userService;
   protected IUserContext userContext;
   protected readonly IOLabConfiguration _configuration;
+  protected readonly TTalkDBContext TtalkDbContext;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 
@@ -49,6 +51,21 @@ public class OLabFunction
     Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
     Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
 
+    _wikiTagProvider = wikiTagProvider;
+    _fileStorageProvider = fileStorageProvider;
+
+  }
+
+  public OLabFunction(
+    IOLabConfiguration configuration,
+    OLabDBContext dbContext,
+    TTalkDBContext ttalkDbContext,
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this(configuration, dbContext)
+  {
+    Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
+    Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
+    TtalkDbContext = ttalkDbContext;
     _wikiTagProvider = wikiTagProvider;
     _fileStorageProvider = fileStorageProvider;
 

@@ -15,7 +15,7 @@ using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
-  public partial class OnConnectedFunction
+  public partial class TurkTalkFunction
   {
     [Function("Negotiate")]
     public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "negotiate")] HttpRequestData req,

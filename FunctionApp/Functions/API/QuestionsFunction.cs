@@ -12,14 +12,14 @@ using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects.API;
+using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Functions;
 
 namespace OLab.FunctionApp.Functions.API
 {
-  public class QuestionsFunction : OLabFunction
+    public class QuestionsFunction : OLabFunction
   {
     private readonly QuestionsEndpoint _endpoint;
 
