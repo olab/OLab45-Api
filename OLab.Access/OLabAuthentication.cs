@@ -158,7 +158,7 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     // handler for signalR logins 
-    else if ((bindingData != null) && bindingData.TryGetValue("access_token", out var signalRToken))
+    else if ((bindingData != null) && bindingData.TryGetValue("accessToken", out var signalRToken))
     {
       token = signalRToken as string;
       Logger.LogInformation("Signalr token provided");

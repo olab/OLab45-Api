@@ -21,7 +21,7 @@ namespace OLab.FunctionApp.Functions.SignalR
     public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "negotiate")] HttpRequestData req,
         [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
     {
-      Logger.LogInformation("Executing negotiation.");
+      Logger.LogInformation($"Executing negotiation.");      
       return signalRConnectionInfo;
     }
   }

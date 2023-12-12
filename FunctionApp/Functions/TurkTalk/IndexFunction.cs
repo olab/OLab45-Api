@@ -19,6 +19,7 @@ namespace OLab.FunctionApp.Functions.SignalR
       CancellationToken token)
     {
 
+      // get html file from file module storage
       var fileSystemModuleName = _configuration.GetAppSettings().FileStorageType;
       if (string.IsNullOrEmpty(fileSystemModuleName))
         throw new ConfigurationErrorsException($"missing FileStorageType");

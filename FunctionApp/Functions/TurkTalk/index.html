@@ -66,10 +66,7 @@
                     <a href="#"
                        v-on:click.prevent="sendToConnection(message.ConnectionId || message.connectionId)">
                       <span class="badge badge-primary">
-                        Connection: {{
- message.ConnectionId ||
-                                                message.connectionId
-                        }}
+                        Connection: {{ message.ConnectionId || message.connectionId }}
                       </span>
                     </a>
                   </span>
@@ -91,6 +88,11 @@
                      v-on:click.prevent="removeConnectionIdFromGroup(message.ConnectionId || message.connectionId)">
                     <span v-if="message.ConnectionId || message.connectionId"
                           class="badge badge-primary">RemoveConnectionFromGroup</span>
+                  </a>
+                  <a href="#"
+                     v-on:click.prevent="registerAttendee(message.ConnectionId || message.connectionId)">
+                    <span v-if="message.ConnectionId || message.connectionId"
+                          class="badge badge-primary">RegisterAttendee</span>
                   </a>
                   <span v-if="message.IsPrivate || message.isPrivate" class="badge badge-secondary">
                     private message
@@ -180,6 +182,16 @@
             confirm('Remove connection ' + connectionId + ' from group: ' + this.defaultgroup);
             connection.invoke("leaveGroup", connectionId, this.defaultgroup);
           },
+          registerAttendee: function (connectionId) {
+            connection.invoke("registerAttendee", {
+              "contextId": null,
+              "mapId": 5,
+              "nodeId": 0,
+              "questionId": 1447,
+              "roomName": this.defaultgroup,
+              "connectionId": connectionId
+            });
+          },
           removeUserFromGroup: function (user) {
             confirm('Remove user ' + user + ' from group: ' + this.defaultgroup);
             connection.invoke("leaveUserFromGroup", user, this.defaultgroup);
@@ -204,6 +216,9 @@
           info.accessToken = info.AccessToken || info.accessKey; // pay attention to the case
           info.url = info.Url || info.endpoint; // pay attention to the case
           data.ready = true;
+
+          info.url = `${info.url}&olab_access_token=${data.accessToken}`;
+
           const options = {
             accessTokenFactory: () => info.accessToken
           };

@@ -63,10 +63,20 @@ public class ContextHelper
       }
     }
 
+    if (hostContext.FunctionDefinition.InputBindings.ContainsKey("hostContext"))
+    {
+      if (hostContext.FunctionDefinition.InputBindings["hostContext"].Type == "signalRTrigger")
+      {
+        _logger.LogInformation("middleware bypass: turktalk");
+        return true;
+      }
+    }
+
     if (FunctionName.ToLower().Contains("login") ||
         FunctionName.ToLower().Contains("health") ||
-        FunctionName.ToLower().Contains("index") ||
-        FunctionName.ToLower().Contains("negotiate"))
+        FunctionName.ToLower().Contains("index")
+        //FunctionName.ToLower().Contains("negotiate")
+    )
     {
       _logger.LogInformation("middleware bypass: url");
       return true;
