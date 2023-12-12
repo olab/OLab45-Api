@@ -20,7 +20,7 @@ public class OLabAuthentication : IOLabAuthentication
   public static int defaultTokenExpiryMinutes = 120;
   private static IOLabConfiguration _config;
   private readonly OLabDBContext _dbContext;
-  private readonly IOLabLogger Logger;
+  private readonly IOLabLogger _logger;
   private readonly TokenValidationParameters _tokenParameters;
 
   /// <summary>
@@ -49,9 +49,9 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument(logger).NotNull(nameof(logger));
 
-    Logger = logger;
-    Logger.LogInformation($"Authorization ctor");
-    Logger.LogInformation($"appSetting aud: '{_config.GetAppSettings().Audience}', secret: '{_config.GetAppSettings().Secret[..4]}...'");
+    _logger = logger;
+    _logger.LogInformation($"Authorization ctor");
+    _logger.LogInformation($"appSetting aud: '{_config.GetAppSettings().Audience}', secret: '{_config.GetAppSettings().Secret[..4]}...'");
   }
 
   /// <summary>
@@ -126,7 +126,7 @@ public class OLabAuthentication : IOLabAuthentication
 
     if (string.IsNullOrEmpty(token) && !allowAnonymous)
     {
-      Logger.LogError("Unable to extract authorization token");
+      _logger.LogError("Unable to extract authorization token");
       throw new OLabUnauthorizedException();
     }
 
@@ -146,7 +146,7 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument(headers).NotNull(nameof(headers));
 
-    Logger.LogInformation("Validating token");
+    _logger.LogInformation("Validating token");
 
     var token = string.Empty;
 
@@ -154,21 +154,21 @@ public class OLabAuthentication : IOLabAuthentication
     if ((bindingData != null) && bindingData.TryGetValue("token", out var externalToken))
     {
       token = externalToken as string;
-      Logger.LogInformation("Binding data token provided");
+      _logger.LogInformation("Binding data token provided");
     }
 
     // handler for signalR logins 
     else if ((bindingData != null) && bindingData.TryGetValue("accessToken", out var signalRToken))
     {
       token = signalRToken as string;
-      Logger.LogInformation("Signalr token provided");
+      _logger.LogInformation("Signalr token provided");
     }
 
     // handle Authorization header token
     else if (headers.TryGetValue("authorization", out var authHeader))
     {
       token = authHeader.Replace("Bearer ", "");
-      Logger.LogInformation("Authorization header bearer token provided");
+      _logger.LogInformation("Authorization header bearer token provided");
     }
 
     if (string.IsNullOrEmpty(token))
@@ -204,16 +204,16 @@ public class OLabAuthentication : IOLabAuthentication
       foreach (var claim in claimsPrincipal.Claims)
       {
         var added = Claims.TryAdd(claim.Type, claim.Value);
-        Logger.LogInformation($" claim: {claim.Type} = {claim.Value}. added: {added}");
+        _logger.LogInformation($" claim: {claim.Type} = {claim.Value}. added: {added}");
       }
 
-      Logger.LogInformation("bearer token validated");
+      _logger.LogInformation("bearer token validated");
 
       return true;
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex.Message);
+      _logger.LogError(ex.Message);
       throw;
     }
   }
@@ -230,7 +230,7 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument(user, nameof(user)).NotNull();
 
-    Logger.LogDebug($"generatring token");
+    _logger.LogDebug($"generatring token");
 
     var securityKey =
       new SymmetricSecurityKey(Encoding.Default.GetBytes(_config.GetAppSettings().Secret[..40]));
@@ -286,7 +286,7 @@ public class OLabAuthentication : IOLabAuthentication
 
     // test for 'open' map
     if (map.SecurityId != 1)
-      Logger.LogError($"Map {mapId} is not configured for anonymous map play");
+      _logger.LogError($"Map {mapId} is not configured for anonymous map play");
 
     var user = new Users();
 
@@ -309,12 +309,12 @@ public class OLabAuthentication : IOLabAuthentication
   /// <returns>AuthenticateResponse</returns>
   public AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
   {
-    var externalAuth = new OLabAuthentication(Logger, _config, _dbContext);
+    var externalAuth = new OLabAuthentication(_logger, _config, _dbContext);
     externalAuth.ValidateToken(model.ExternalToken);
 
-    Logger.LogDebug($"External JWT Incoming token claims:");
+    _logger.LogDebug($"External JWT Incoming token claims:");
     foreach (var claim in externalAuth.Claims)
-      Logger.LogDebug($" {claim.Key} = {claim.Value}");
+      _logger.LogDebug($" {claim.Key} = {claim.Value}");
 
     var user = new Users();
 

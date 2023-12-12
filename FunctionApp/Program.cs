@@ -19,6 +19,7 @@ using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
 using OLab.TurkTalk.Data.BusinessObjects;
 using OLab.Data.BusinessObjects;
+using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp
 {
@@ -86,7 +87,10 @@ namespace OLab.FunctionApp
 
           .ConfigureFunctionsWorkerDefaults(builder =>
           {
-            builder.UseMiddleware<OLabAuthMiddleware>();
+            builder.UseMiddleware<BootstrapMiddleware>();
+            builder.UseWhen<OLabAuthMiddleware>(context => OLabAuthMiddleware.CanInvoke(context)); 
+            builder.UseWhen<OpenAuthMiddleware>(context => OpenAuthMiddleware.CanInvoke(context));
+            builder.UseWhen<TTalkAuthMiddleware>(context => TTalkAuthMiddleware.CanInvoke(context));
           })
 
           .Build();

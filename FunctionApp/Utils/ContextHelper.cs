@@ -11,10 +11,9 @@ namespace OLab.FunctionApp.Utils;
 public class ContextHelper
 {
   public string FunctionName { get; private set; }
-  public bool BypassMiddleware { get; private set; }
-
   public IReadOnlyDictionary<string, string> Headers { get; private set; }
   public IReadOnlyDictionary<string, object> BindingData { get; private set; }
+  public IReadOnlyDictionary<string, BindingMetadata> InputBindings{ get; private set; }
   public HttpRequestData RequestData { get; private set; }
 
   private readonly FunctionContext hostContext;
@@ -28,7 +27,7 @@ public class ContextHelper
     this.hostContext = hostContext;
     _logger = logger;
 
-    _logger.LogInformation($"ContextInformation");
+    _logger.LogInformation($"ContextInformation:");
     _logger.LogInformation($"  function name: {FunctionName}");
 
     Headers = hostContext.GetHttpRequestHeaders();
@@ -42,50 +41,19 @@ public class ContextHelper
 
     _logger.LogInformation($"  binding context: {JsonSerializer.Serialize(hostContext.BindingContext)}");
 
-    foreach (var inputBinding in hostContext.FunctionDefinition.InputBindings)
+    InputBindings = hostContext.FunctionDefinition.InputBindings;
+    foreach (var inputBinding in InputBindings)
       _logger.LogInformation($"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})");
 
     RequestData = hostContext.GetHttpRequestData();
     if (RequestData != null)
       _logger.LogInformation($"  url: {RequestData.Url}");
 
-    BypassMiddleware = EvaluateHostContext();
   }
 
-  private bool EvaluateHostContext()
+  public override string ToString()
   {
-    if (hostContext.FunctionDefinition.InputBindings.ContainsKey("invocationContext"))
-    {
-      if (hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
-      {
-        _logger.LogInformation("middleware bypass: turktalk");
-        return true;
-      }
-    }
-
-    if (hostContext.FunctionDefinition.InputBindings.ContainsKey("hostContext"))
-    {
-      if (hostContext.FunctionDefinition.InputBindings["hostContext"].Type == "signalRTrigger")
-      {
-        _logger.LogInformation("middleware bypass: turktalk");
-        return true;
-      }
-    }
-
-    if (FunctionName.ToLower().Contains("login") ||
-        FunctionName.ToLower().Contains("health") ||
-        FunctionName.ToLower().Contains("index")
-        //FunctionName.ToLower().Contains("negotiate")
-    )
-    {
-      _logger.LogInformation("middleware bypass: url");
-      return true;
-    }
-
-    // hostContext.FunctionDefinition.InputBindings["invocationContext"].Type == "signalRTrigger")
-
-    _logger.LogInformation("middleware active");
-    return false;
+    return $"{FunctionName}";
   }
 
 }

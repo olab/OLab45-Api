@@ -122,7 +122,8 @@
         accessToken: '',
         messages: [],
         myConnectionId: '',
-        ready: false
+        ready: false,
+        userInfo: ''
       };
 
       var qs = (function (a) {
@@ -189,7 +190,8 @@
               "nodeId": 0,
               "questionId": 1447,
               "roomName": this.defaultgroup,
-              "connectionId": connectionId
+              "connectionId": connectionId,
+              "userKey": data.userInfo
             });
           },
           removeUserFromGroup: function (user) {
@@ -255,13 +257,15 @@
 
       function onNewConnection(message) {
         data.myConnectionId = message.ConnectionId;
+        data.userInfo = message.UserKey;
+
         authEnabled = false;
         if (message.Authentication) {
           authEnabled = true;
         }
         newConnectionMessage = {
           id: counter++,
-          text: `${message.ConnectionId} has connected`
+          text: `${message.ConnectionId} has connected with user key ${data.userInfo}`
         };
         data.messages.unshift(newConnectionMessage);
       }
