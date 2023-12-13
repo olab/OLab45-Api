@@ -42,6 +42,33 @@
           <input type="text" v-model="newMessage" id="message-box" class="form-control"
                  placeholder="Type message here..." />
         </form>
+        <div>
+          <a href="#"
+             v-on:click.prevent="registerAttendee(data.ConnectionId || data.connectionId)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">RegisterAttendee</span>
+          </a>
+          <table>
+            <tr>
+              <td>contextId</td>
+              <td>mapId</td>
+              <td>nodeId</td>
+              <td>questionId</td>
+              <td>roomName</td>
+              <td>connectionId</td>
+              <td>userKey</td>
+            </tr>
+            <tr>
+              <td><input type="text" v-model="contextId" id="contextId" class="form-control" /></td>
+              <td><input type="text" v-model="mapId" id="mapId" class="form-control" /></td>
+              <td><input type="text" v-model="nodeId" id="nodeId" class="form-control" /></td>
+              <td><input type="text" v-model="questionId" id="questionId" class="form-control" /></td>
+              <td><input type="text" v-model="roomName" id="roomName" class="form-control" /></td>
+              <td><input type="text" v-model="connectionId" id="connectionId" class="form-control" /></td>
+              <td><input type="text" v-model="userKey" id="userKey" class="form-control" /></td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
     <div class="row" v-if="!ready">
@@ -89,11 +116,6 @@
                     <span v-if="message.ConnectionId || message.connectionId"
                           class="badge badge-primary">RemoveConnectionFromGroup</span>
                   </a>
-                  <a href="#"
-                     v-on:click.prevent="registerAttendee(message.ConnectionId || message.connectionId)">
-                    <span v-if="message.ConnectionId || message.connectionId"
-                          class="badge badge-primary">RegisterAttendee</span>
-                  </a>
                   <span v-if="message.IsPrivate || message.isPrivate" class="badge badge-secondary">
                     private message
                   </span>
@@ -123,7 +145,13 @@
         messages: [],
         myConnectionId: '',
         ready: false,
-        userInfo: ''
+        contextId: '8AFB9072-EDB4-4B20-AFBB-14C35CF11628',
+        mapId: 5,
+        nodeId: 0,
+        questionId: 1447,
+        roomName: 'topic1',
+        connectionId: '',
+        userKey: ''
       };
 
       var qs = (function (a) {
@@ -185,13 +213,13 @@
           },
           registerAttendee: function (connectionId) {
             connection.invoke("registerAttendee", {
-              "contextId": null,
-              "mapId": 5,
-              "nodeId": 0,
-              "questionId": 1447,
-              "roomName": this.defaultgroup,
-              "connectionId": connectionId,
-              "userKey": data.userInfo
+              "contextId": data.contextId,
+              "mapId": data.mapId,
+              "nodeId": data.nodeId,
+              "questionId": data.questionId,
+              "roomName": data.roomName,
+              "connectionId": data.connectionId,
+              "userKey": data.userKey
             });
           },
           removeUserFromGroup: function (user) {
@@ -256,8 +284,8 @@
       };
 
       function onNewConnection(message) {
-        data.myConnectionId = message.ConnectionId;
-        data.userInfo = message.UserKey;
+        data.connectionId = message.ConnectionId;
+        data.userKey = message.UserKey;
 
         authEnabled = false;
         if (message.Authentication) {
@@ -265,7 +293,7 @@
         }
         newConnectionMessage = {
           id: counter++,
-          text: `${message.ConnectionId} has connected with user key ${data.userInfo}`
+          text: `connected`
         };
         data.messages.unshift(newConnectionMessage);
       }

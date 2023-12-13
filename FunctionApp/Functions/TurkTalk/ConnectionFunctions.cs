@@ -11,6 +11,7 @@ using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Functions.API;
 using OLab.FunctionApp.Utils;
+using OLab.TurkTalk.Endpoints.Utils;
 using System.Collections.Generic;
 using System.Security.Claims;
 
