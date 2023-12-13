@@ -2,7 +2,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
-using OLab.Api.Model;
+using OLab.Api.Models;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data;

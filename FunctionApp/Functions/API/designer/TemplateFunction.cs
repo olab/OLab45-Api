@@ -8,7 +8,7 @@ using OLab.Api.Endpoints.Designer;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Dtos.Designer;
-using OLab.Data.Dtos.Maps;
+using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using OLab.Data.Models;
 using OLab.FunctionApp.Extensions;

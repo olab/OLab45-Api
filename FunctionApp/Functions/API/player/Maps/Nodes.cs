@@ -4,9 +4,9 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.VisualStudio.Web.CodeGeneration.Templating;
 using OLab.Api.Common;
-using OLab.Api.Model;
-using OLab.Data.Dtos.Maps.Nodes;
-using OLab.Data.Dtos.ScopedObjects;
+using OLab.Api.Models;
+using OLab.Data.Dtos;
+
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;

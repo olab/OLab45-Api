@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Model;
+using OLab.Api.Models;
 using OLab.Common.Interfaces;
 using OLab.Data.Contracts;
 using OLab.Data.Models;

@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Extensions;
 using OLab.Data.Contracts;
-using OLab.Data.Dtos.Maps;
+using OLab.Data.Dtos;
 using OLab.Data.Models;
 
 namespace OLab.FunctionApp.Functions.API

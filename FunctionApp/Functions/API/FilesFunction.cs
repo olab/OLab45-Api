@@ -11,7 +11,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Endpoints;
-using OLab.Api.ObjectMapper;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
@@ -23,8 +22,9 @@ using System.Threading.Tasks;
 using System.IO;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Extensions;
-using OLab.Data.Dtos.ScopedObjects;
+
 using OLab.Data.Models;
+using OLab.Data.Dtos;
 
 namespace OLab.FunctionApp.Functions.API
 {

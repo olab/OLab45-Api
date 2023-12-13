@@ -3,7 +3,7 @@ using DocumentFormat.OpenXml.InkML;
 using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Model;
+using OLab.Api.Models;
 using OLab.Api.TurkTalk.BusinessObjects;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;

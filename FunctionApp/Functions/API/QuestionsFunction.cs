@@ -11,7 +11,7 @@ using OLab.Api.Common;
 using OLab.Api.Endpoints;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Dtos.ScopedObjects;
+using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using OLab.Data.Models;
 using OLab.FunctionApp.Extensions;
