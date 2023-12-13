@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Utils;
+using OLab.Data.Dtos.ScopedObjects;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
@@ -34,7 +35,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -63,7 +64,7 @@ namespace OLab.FunctionApp.Functions.Player
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {

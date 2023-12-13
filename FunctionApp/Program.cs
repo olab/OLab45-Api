@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using OLab.Api.Utils;
-using OLab.Api.Data.Interface;
 using OLab.Access.Interfaces;
 using OLab.Access;
 using OLab.Api.Common;
@@ -17,9 +16,9 @@ using OLab.Data.Interface;
 using OLab.Data;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
-using OLab.TurkTalk.Data.BusinessObjects;
-using OLab.Data.BusinessObjects;
 using OLab.FunctionApp.Extensions;
+using OLab.TurkTalk.Data.Models;
+using OLab.Data.Models;
 
 namespace OLab.FunctionApp
 {

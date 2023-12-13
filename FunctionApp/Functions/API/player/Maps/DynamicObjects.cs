@@ -3,7 +3,7 @@ using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
-using OLab.Api.Dto;
+using OLab.Data.Dtos.ScopedObjects;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;

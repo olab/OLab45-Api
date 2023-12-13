@@ -10,7 +10,6 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.ObjectMapper;
 using OLab.Api.Utils;
@@ -24,11 +23,12 @@ using System.Threading.Tasks;
 using System.IO;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Extensions;
-using OLab.Data.BusinessObjects;
+using OLab.Data.Dtos.ScopedObjects;
+using OLab.Data.Models;
 
 namespace OLab.FunctionApp.Functions.API
 {
-    public class FilesFunction : OLabFunction
+  public class FilesFunction : OLabFunction
   {
     private readonly FilesEndpoint _endpoint;
 

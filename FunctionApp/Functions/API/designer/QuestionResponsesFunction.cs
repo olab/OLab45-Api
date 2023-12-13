@@ -5,13 +5,13 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects;
+using OLab.Data.Dtos.ScopedObjects;
 using OLab.Data.Interface;
+using OLab.Data.Models;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Functions;
 using System;
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.API.designer
 {
-    public class QuestionResponsesFunction : OLabFunction
+  public class QuestionResponsesFunction : OLabFunction
   {
     private readonly QuestionResponsesEndpoint _endpoint;
 

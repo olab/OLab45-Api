@@ -6,13 +6,14 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Dto;
 using OLab.Api.Endpoints.Designer;
-using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects;
+using OLab.Data.Contracts;
+using OLab.Data.Dtos.Maps.Nodes;
+using OLab.Data.Dtos.Maps.Nodes.Links;
 using OLab.Data.Interface;
+using OLab.Data.Models;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Functions;
 using System;
@@ -21,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.API.designer
 {
-    public class MapsFunction : OLabFunction
+  public class MapsFunction : OLabFunction
   {
     private readonly MapsEndpoint _endpoint;
 
@@ -277,7 +278,7 @@ namespace OLab.FunctionApp.Functions.API.designer
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsRawAsync(auth, mapId);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<Data.Dtos.Designer.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
@@ -309,7 +310,7 @@ namespace OLab.FunctionApp.Functions.API.designer
         var auth = GetAuthorization(hostContext);
 
         var dto = await _endpoint.GetScopedObjectsAsync(auth, mapId);
-        response = request.CreateResponse(OLabObjectResult<Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
+        response = request.CreateResponse(OLabObjectResult<Data.Dtos.Designer.ScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {

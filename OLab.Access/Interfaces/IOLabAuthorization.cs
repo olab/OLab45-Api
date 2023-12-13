@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using OLab.Api.Dto;
+using OLab.Data.Dtos.ScopedObjects;
+using OLab.Data.Interface;
 
 namespace OLab.Api.Data.Interface
 {

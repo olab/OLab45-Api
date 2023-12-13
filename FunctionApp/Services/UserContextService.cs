@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Data;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -13,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using OLab.FunctionApp.Extensions;
+using OLab.Data.Interface;
 
 #nullable disable
 

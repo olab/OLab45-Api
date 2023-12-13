@@ -2,7 +2,7 @@
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
-using OLab.Common.Utils;
+using OLab.Data;
 using OLab.Data.Interface;
 using System.Configuration;
 using System.IO.Compression;

@@ -14,10 +14,7 @@ using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Dto;
 using OLab.Api.Importer;
-
-using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data;
@@ -32,11 +29,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Extensions;
-using OLab.Data.BusinessObjects;
+using OLab.Data.Contracts;
+using OLab.Data.Dtos.Maps;
+using OLab.Data.Models;
 
 namespace OLab.FunctionApp.Functions.API
 {
-    public class Import4Function : OLabFunction
+  public class Import4Function : OLabFunction
   {
     private readonly Import4Endpoint _endpoint;
 

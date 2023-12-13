@@ -8,17 +8,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Data;
-using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects;
+using OLab.Data.Dtos.ScopedObjects;
 using OLab.Data.Interface;
+using OLab.Data.Models;
 using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API.player
 {
-    public partial class QuestionResponsesFunction : OLabFunction
+  public partial class QuestionResponsesFunction : OLabFunction
   {
     private readonly ResponseEndpoint _endpoint;
 

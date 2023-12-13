@@ -5,7 +5,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -15,7 +14,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using OLab.FunctionApp.Functions;
 using OLab.FunctionApp.Extensions;
-using OLab.Data.BusinessObjects;
+using OLab.Data.Contracts;
+using OLab.Data.Models;
 
 namespace OLab.FunctionApp.Functions.API;
 

@@ -9,8 +9,8 @@ using OLab.Access;
 using System.Net;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
-using OLab.Data.BusinessObjects;
-using OLab.TurkTalk.Data.BusinessObjects;
+using OLab.TurkTalk.Data.Models;
+using OLab.Data.Models;
 
 namespace OLab.FunctionApp.Functions;
 

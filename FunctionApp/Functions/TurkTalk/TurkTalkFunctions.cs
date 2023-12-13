@@ -7,16 +7,16 @@ using OLab.Api.Model;
 using OLab.Api.TurkTalk.BusinessObjects;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects;
 using OLab.Data.Interface;
+using OLab.Data.Models;
 using OLab.FunctionApp.Functions.API;
-using OLab.TurkTalk.Data.BusinessObjects;
+using OLab.TurkTalk.Data.Models;
 using System.Net;
 using System.Security.Claims;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
-    public partial class TurkTalkFunction : OLabFunction
+  public partial class TurkTalkFunction : OLabFunction
   {
     private readonly TTalkDBContext _ttalkDbContext;
 

@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using OLab.Api.Common.Contracts;
 using OLab.Api.TurkTalk.BusinessObjects;
 using OLab.FunctionApp.Utils;
-using OLab.TurkTalk.Data.BusinessObjects;
+using OLab.TurkTalk.Data.Models;
 using OLab.TurkTalk.Endpoints;
 using System.Threading.Tasks;
 

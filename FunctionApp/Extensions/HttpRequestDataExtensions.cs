@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using NuGet.Protocol;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Data.Exceptions;
+using OLab.Data.Exceptions;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Diagnostics.CodeAnalysis;

@@ -2,17 +2,18 @@ using Dawn;
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
-using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.BusinessObjects;
+using OLab.Data.Dtos.ScopedObjects;
+using OLab.Data.Interface;
+using OLab.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace OLab.Access
 {
-    public class OLabAuthorization : IOLabAuthorization
+  public class OLabAuthorization : IOLabAuthorization
   {
     private readonly IOLabLogger _logger;
     private readonly OLabDBContext _dbContext;
