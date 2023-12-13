@@ -4,16 +4,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Data;
-using OLab.Api.Dto;
+using OLab.Data.Dtos;
 using OLab.Api.Endpoints.Player;
-using OLab.Api.Model;
+using OLab.Data.Models;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
+using OLab.Data;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 

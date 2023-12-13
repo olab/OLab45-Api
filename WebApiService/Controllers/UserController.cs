@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Model;
+using OLab.Data.Models;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
+using OLab.Data.Contracts;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 

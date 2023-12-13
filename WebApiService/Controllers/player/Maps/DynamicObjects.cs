@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
-using OLab.Api.Dto;
-using OLab.Api.Model;
+using OLab.Data.Models;
+using OLab.Data.Dtos;
 using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
+using OLab.Api.Models;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {

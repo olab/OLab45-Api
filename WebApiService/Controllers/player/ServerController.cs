@@ -5,13 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Endpoints.Player;
-using OLab.Api.Model;
+using OLab.Data.Models;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
+using OLab.Data.Dtos;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
@@ -84,7 +85,7 @@ public partial class ServerController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsRawAsync(serverId);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -107,7 +108,7 @@ public partial class ServerController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsTranslatedAsync(serverId);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {

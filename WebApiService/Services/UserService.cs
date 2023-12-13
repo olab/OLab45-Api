@@ -1,6 +1,6 @@
 using Dawn;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Model;
+using OLab.Data.Models;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using OLab.Api.Models;
+using OLab.Data.Contracts;
 
 namespace OLabWebAPI.Services;
 

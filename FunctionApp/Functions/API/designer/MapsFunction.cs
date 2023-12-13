@@ -14,7 +14,6 @@ using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using OLab.Data.Models;
 using OLab.FunctionApp.Extensions;
-using OLab.FunctionApp.Functions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

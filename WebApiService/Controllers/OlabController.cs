@@ -5,19 +5,20 @@ using Microsoft.EntityFrameworkCore;
 using OLab.Access;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Data.Exceptions;
 using OLab.Api.Data.Interface;
-using OLab.Api.Dto;
-using OLab.Api.Model;
-using OLab.Api.ObjectMapper;
+using OLab.Data.Models;
 using OLab.Common.Interfaces;
+using OLab.Data.Dtos;
+using OLab.Data.Exceptions;
 using OLab.Data.Interface;
+using OLab.Data.Mappers;
 using OLabWebAPI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OLab.Api.Models;
 
 namespace OLabWebAPI.Endpoints.WebApi
 {

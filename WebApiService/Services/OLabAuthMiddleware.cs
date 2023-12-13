@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Model;
+using OLab.Data.Models;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;

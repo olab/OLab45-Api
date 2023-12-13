@@ -13,7 +13,7 @@ using Newtonsoft.Json.Serialization;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Model;
+using OLab.Data.Models;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
@@ -87,7 +87,7 @@ namespace OLabWebAPI
       // configure strongly typed settings object
       services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-      var connectionString = Configuration.GetConnectionString(Constants.DefaultConnectionStringName);
+      var connectionString = Configuration.GetConnectionString(ConstantStrings.DefaultConnectionStringName);
       var serverVersion = ServerVersion.AutoDetect(connectionString);
       services.AddDbContext<OLabDBContext>(options =>
         options.UseMySql(connectionString, serverVersion)

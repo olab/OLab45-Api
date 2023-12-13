@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Data.Exceptions;
-using OLab.Api.Dto;
 using OLab.Api.Endpoints.Designer;
-using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.Contracts;
+using OLab.Data.Dtos;
+using OLab.Data.Exceptions;
 using OLab.Data.Interface;
+using OLab.Data.Models;
 using OLabWebAPI.Endpoints.WebApi.Player;
 using OLabWebAPI.Extensions;
 using System;
@@ -289,7 +290,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Data.Dtos.Designer.ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -314,7 +315,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Data.Dtos.Designer.ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -368,14 +369,14 @@ public partial class MapsController : OLabController
       var map = DbContext.Maps.Find(mapId);
 
       if (map == null)
-        throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
+        throw new OLabObjectNotFoundException(ConstantStrings.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list olab users users from this endpoint
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
-        throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
+      if (!auth.HasAccess("W", ConstantStrings.ScopeLevelMap, map.Id))
+        throw new OLabUnauthorizedException(ConstantStrings.ScopeLevelMap, map.Id);
 
       var dtos = _endpoint.GetMapAccessCandidates(map, search ?? "");
 
@@ -414,14 +415,14 @@ public partial class MapsController : OLabController
       var map = DbContext.Maps.Find(mapId);
 
       if (map == null)
-        throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
+        throw new OLabObjectNotFoundException(ConstantStrings.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list olab users users from this endpoint
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
-        throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
+      if (!auth.HasAccess("W", ConstantStrings.ScopeLevelMap, map.Id))
+        throw new OLabUnauthorizedException(ConstantStrings.ScopeLevelMap, map.Id);
 
       body.MapId = map.Id;
 
@@ -449,14 +450,14 @@ public partial class MapsController : OLabController
       var map = DbContext.Maps.Find(mapId);
 
       if (map == null)
-        throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
+        throw new OLabObjectNotFoundException(ConstantStrings.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
-        throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
+      if (!auth.HasAccess("W", ConstantStrings.ScopeLevelMap, map.Id))
+        throw new OLabUnauthorizedException(ConstantStrings.ScopeLevelMap, map.Id);
 
       var dtos = _endpoint.GetSecurityUsersRaw(map);
 
@@ -503,14 +504,14 @@ public partial class MapsController : OLabController
       var map = DbContext.Maps.Find(mapId);
 
       if (map == null)
-        throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
+        throw new OLabObjectNotFoundException(ConstantStrings.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
-        throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
+      if (!auth.HasAccess("W", ConstantStrings.ScopeLevelMap, map.Id))
+        throw new OLabUnauthorizedException(ConstantStrings.ScopeLevelMap, map.Id);
 
       var result = await _endpoint.SetMapSecurityUserAsync(map, body);
 
@@ -537,14 +538,14 @@ public partial class MapsController : OLabController
       var map = DbContext.Maps.Find(mapId);
 
       if (map == null)
-        throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
+        throw new OLabObjectNotFoundException(ConstantStrings.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
-        throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
+      if (!auth.HasAccess("W", ConstantStrings.ScopeLevelMap, map.Id))
+        throw new OLabUnauthorizedException(ConstantStrings.ScopeLevelMap, map.Id);
 
       var result = await _endpoint.UnsetMapSecurityUserAsync(map, userId);
 
@@ -560,7 +561,7 @@ public partial class MapsController : OLabController
   /// 
   /// </summary>
   /// <param name="dto"></param>
-  private void DecorateDto(OLab.Api.Dto.Designer.ScopedObjectsDto dto)
+  private void DecorateDto(OLab.Data.Dtos.Designer.ScopedObjectsDto dto)
   {
     var t = typeof(QuestionsController);
     var attribute =

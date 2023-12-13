@@ -1,12 +1,14 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
 using OLab.Api.Data.Interface;
-using OLab.Api.Model;
+using OLab.Data.Models;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using OLab.Data.Interface;
+using OLab.Api.Models;
 
 #nullable disable
 
