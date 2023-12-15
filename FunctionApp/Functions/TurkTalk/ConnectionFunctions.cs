@@ -1,17 +1,9 @@
-using Dawn;
-using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
-using OLab.Api.Models;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Interface;
-using OLab.FunctionApp.Functions.API;
-using OLab.FunctionApp.Utils;
+using OLab.TurkTalk.Endpoints.MessagePayloads;
 using OLab.TurkTalk.Endpoints.Utils;
-using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace OLab.FunctionApp.Functions.SignalR
@@ -31,13 +23,18 @@ namespace OLab.FunctionApp.Functions.SignalR
         var auth = new OLabAuthentication(Logger, _configuration, DbContext);
         auth.ValidateToken(accessToken);
 
-        return new SignalRMessageAction("newConnection")
-        {
-          Arguments = new object[] { new NewConnection(
-            _configuration, 
-            invocationContext.ConnectionId, 
-            auth) },
-        };
+        return new NewConnectionMethod(
+            _configuration,
+            invocationContext.ConnectionId,
+            auth).Message();
+
+        //return new SignalRMessageAction("newConnection")
+        //{
+        //  Arguments = new object[] { new NewConnectionPayload(
+        //    _configuration,
+        //    invocationContext.ConnectionId,
+        //    auth) },
+        //};
 
       }
 
@@ -45,27 +42,6 @@ namespace OLab.FunctionApp.Functions.SignalR
       {
         Arguments = new object[] { "fail" }
       };
-    }
-
-    public class NewConnection
-    {
-      public string ConnectionId { get; }
-
-      public string UserKey { get; }
-
-      public NewConnection(
-        IOLabConfiguration configuration,
-        string connectionId, 
-        IOLabAuthentication auth)
-      {
-        ConnectionId = connectionId;
-        UserKey = new UserInfoEncoder().EncryptUser(
-          configuration.GetAppSettings().Secret,
-          auth.Claims["id"],
-          auth.Claims[ClaimTypes.Name],
-          auth.Claims["name"],
-          auth.Claims["iss"]);
-      }
     }
 
     [Function("OnDisconnected")]

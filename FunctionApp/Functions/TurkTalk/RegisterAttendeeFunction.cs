@@ -5,6 +5,8 @@ using OLab.Api.TurkTalk.BusinessObjects;
 using OLab.FunctionApp.Utils;
 using OLab.TurkTalk.Data.Models;
 using OLab.TurkTalk.Endpoints;
+using OLab.TurkTalk.Endpoints.Interface;
+using OLab.TurkTalk.Endpoints.MessagePayloads;
 using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.SignalR
@@ -13,23 +15,25 @@ namespace OLab.FunctionApp.Functions.SignalR
   {
     [Function("RegisterAttendee")]
     [SignalROutput(HubName = "Hub")]
-    public async Task RegisterAttendeeAsync(
-      [SignalRTrigger("Hub", "messages", "RegisterAttendee", "payload")] SignalRInvocationContext hostContext,
-      TtalkConference conference,
+    public async Task<SignalRMessageAction> RegisterAttendee(
+      [SignalRTrigger("Hub", "messages", "RegisterAttendee", "payload")] SignalRInvocationContext invocationContext,
       RegisterAttendeePayload payload)
     {
-      payload.ConnectionId = hostContext.ConnectionId;
+      payload.ConnectionId = invocationContext.ConnectionId;
 
       var endpoint = new TurkTalkEndpoint(
         Logger,
         _configuration,
         DbContext,
         _ttalkDbContext,
-        conference);
+        _conference);
 
       await endpoint.RegisterAttendeeAsync(payload);
 
-      return;
+      return new AtriumAcceptedMethod(
+          _configuration,
+          invocationContext.ConnectionId,
+          payload.RoomName).Message();
     }
   }
 }

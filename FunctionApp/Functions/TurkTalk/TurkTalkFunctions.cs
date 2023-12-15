@@ -11,6 +11,7 @@ using OLab.Data.Interface;
 using OLab.Data.Models;
 using OLab.FunctionApp.Functions.API;
 using OLab.TurkTalk.Data.Models;
+using OLab.TurkTalk.Endpoints.Interface;
 using System.Net;
 using System.Security.Claims;
 
@@ -19,12 +20,14 @@ namespace OLab.FunctionApp.Functions.SignalR
   public partial class TurkTalkFunction : OLabFunction
   {
     private readonly TTalkDBContext _ttalkDbContext;
+    private readonly IConference _conference;
 
     public TurkTalkFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       OLabDBContext dbContext,
       TTalkDBContext ttalkDbContext,
+      IConference conference,
       IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
       IOLabModuleProvider<IFileStorageModule> fileStorageProvider ) : base(
         configuration,
@@ -34,23 +37,11 @@ namespace OLab.FunctionApp.Functions.SignalR
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
       Guard.Argument(ttalkDbContext).NotNull(nameof(ttalkDbContext));
+      Guard.Argument(conference).NotNull(nameof(conference));
 
       Logger = OLabLogger.CreateNew<TurkTalkFunction>(loggerFactory);
       _ttalkDbContext = ttalkDbContext;
-    }
-
-    public class NewMessage
-    {
-      public string ConnectionId { get; }
-      public string Sender { get; }
-      public string Text { get; }
-
-      public NewMessage(SignalRInvocationContext invocationContext, string message)
-      {
-        Sender = string.IsNullOrEmpty(invocationContext.UserId) ? string.Empty : invocationContext.UserId;
-        ConnectionId = invocationContext.ConnectionId;
-        Text = message;
-      }
+      _conference = conference;
     }
 
     public Learner CreateFromContext(SignalRInvocationContext hostContext)

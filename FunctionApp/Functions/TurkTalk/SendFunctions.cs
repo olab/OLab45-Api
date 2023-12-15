@@ -7,6 +7,7 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Functions.API;
+using OLab.TurkTalk.Endpoints.MessagePayloads;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
@@ -18,7 +19,21 @@ namespace OLab.FunctionApp.Functions.SignalR
     {
       return new SignalRMessageAction("newMessage")
       {
-        Arguments = new object[] { new NewMessage(invocationContext, message) }
+        Arguments = new object[] { new NewMessagePayload(invocationContext, message) }
+      };
+    }
+
+    [Function("SendToGroup")]
+    [SignalROutput(HubName = "Hub")]
+    public SignalRMessageAction SendToGroup(
+      [SignalRTrigger("Hub", "messages", "SendToGroup", "groupName", "message")] SignalRInvocationContext invocationContext, 
+      string groupName, 
+      string message)
+    {
+      return new SignalRMessageAction("newMessage")
+      {
+        GroupName = groupName,
+        Arguments = new object[] { new NewMessagePayload(invocationContext, message) }
       };
     }
 
@@ -29,7 +44,7 @@ namespace OLab.FunctionApp.Functions.SignalR
       return new SignalRMessageAction("newMessage")
       {
         UserId = userName,
-        Arguments = new object[] { new NewMessage(invocationContext, message) }
+        Arguments = new object[] { new NewMessagePayload(invocationContext, message) }
       };
     }
 
@@ -40,7 +55,7 @@ namespace OLab.FunctionApp.Functions.SignalR
       return new SignalRMessageAction("newMessage")
       {
         ConnectionId = connectionId,
-        Arguments = new object[] { new NewMessage(invocationContext, message) }
+        Arguments = new object[] { new NewMessagePayload(invocationContext, message) }
       };
     }
   }

@@ -73,7 +73,7 @@ namespace OLab.FunctionApp.Functions.API
       FunctionContext hostContext,
       CancellationToken cancel)
     {
-      Logger.LogDebug($"FilePostAsync");
+      Logger.LogDebug($"ImportAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
@@ -92,12 +92,14 @@ namespace OLab.FunctionApp.Functions.API
 
       Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
 
-      await _endpoint.ImportAsync(stream, parser.Files[0].FileName, cancel);
+      var mapId = await _endpoint.ImportAsync(stream, parser.Files[0].FileName, cancel);
 
       var dto = new ImportResponse
       {
-        Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+        Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info),
+        MapId = mapId
       };
+
       response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
       return response;
 
@@ -112,10 +114,12 @@ namespace OLab.FunctionApp.Functions.API
     {
       try
       {
+        Logger.LogDebug($"ExportAsJsonAsync");
+
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
-        if (!auth.HasAccess("X", "ExportAsync", 0))
+        if (!auth.HasAccess("X", "Export", 0))
           throw new OLabUnauthorizedException();
 
         var dto = await _endpoint.ExportAsync(id, token);
@@ -132,7 +136,7 @@ namespace OLab.FunctionApp.Functions.API
 
     }
 
-    [Function("ExportAsync")]
+    [Function("Export")]
     public async Task<HttpResponseData> ExportAsync(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}")] HttpRequestData request,
       FunctionContext hostContext,
@@ -141,10 +145,12 @@ namespace OLab.FunctionApp.Functions.API
     {
       try
       {
+        Logger.LogDebug($"Export");
+
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
-        if (!auth.HasAccess("X", "ExportAsync", 0))
+        if (!auth.HasAccess("X", "Export", 0))
           throw new OLabUnauthorizedException();
 
         using (var memoryStream = new MemoryStream())

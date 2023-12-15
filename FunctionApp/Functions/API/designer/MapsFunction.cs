@@ -67,6 +67,8 @@ namespace OLab.FunctionApp.Functions.API.designer
         Guard.Argument(mapId, nameof(mapId)).NotZero();
         Guard.Argument(request).NotNull(nameof(request));
 
+        Logger.LogDebug($"MapNodeGetDesignerAsync");
+
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);
 
@@ -98,6 +100,8 @@ namespace OLab.FunctionApp.Functions.API.designer
       {
         Guard.Argument(mapId, nameof(mapId)).NotZero();
         Guard.Argument(request).NotNull(nameof(request));
+
+        Logger.LogDebug($"MapNodesGetDesignerAsync");
 
         // validate token/setup up common properties
         var auth = GetAuthorization(hostContext);

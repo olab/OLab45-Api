@@ -137,21 +137,23 @@
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@3.1.9-1/enc-base64.js"></script>
     <script>
       const data = {
-        username: '',
-        defaultgroup: 'AzureSignalR',
-        checked: false,
-        newMessage: '',
         accessToken: '',
+        checked: false,
+        command: null,
+        connectionId: '',
+        contextId: '8AFB9072-EDB4-4B20-AFBB-14C35CF11628',
+        defaultgroup: 'AzureSignalR',
+        mapId: 5,
         messages: [],
         myConnectionId: '',
-        ready: false,
-        contextId: '8AFB9072-EDB4-4B20-AFBB-14C35CF11628',
-        mapId: 5,
+        newMessage: '',
         nodeId: 0,
+        payload: {},
         questionId: 1447,
+        ready: false,
         roomName: 'topic1',
-        connectionId: '',
-        userKey: ''
+        userKey: '',
+        username: '',
       };
 
       var qs = (function (a) {
@@ -258,7 +260,11 @@
             .build();
           connection.on('newMessage', onNewMessage);
           connection.on('newConnection', onNewConnection)
-          connection.onclose(() => console.log('disconnected'));
+          connection.on('onCommand', onCommand)
+          connection.on('atriumaccepted', onAtriumAccepted)
+          
+          //connection.onclose(() => console.log('disconnected'));
+          connection.onclose(onDisconnected);
           console.log('connecting...');
           connection.start()
             .then(() => {
@@ -272,6 +278,22 @@
       else
         data.ready = true;
 
+      function onAtriumAccepted(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `Accepted to '${message.RoomName}' atrium`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
+      function onDisconnected() {
+        newConnectionMessage = {
+          id: counter++,
+          text: `disconnected`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
       function getConnectionInfo() {
         return axios.post(`${apiBaseUrl}/olab/api/v3/negotiate?userid=${data.username}&accessToken=${data.accessToken}`, null, null)
           .then(resp => resp.data);
@@ -284,6 +306,7 @@
       };
 
       function onNewConnection(message) {
+
         data.connectionId = message.ConnectionId;
         data.userKey = message.UserKey;
 
@@ -296,6 +319,16 @@
           text: `connected`
         };
         data.messages.unshift(newConnectionMessage);
+      }
+
+      function onCommand(message) {
+
+        newCommandMessage = {
+          id: counter++,
+          text: `${message.command}: ${JSON.stringify(message.payload)}`
+        };
+
+        data.messages.unshift(newCommandMessage);
       }
 
       function base64url(source) {
