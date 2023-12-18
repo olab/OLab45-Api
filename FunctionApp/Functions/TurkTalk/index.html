@@ -258,10 +258,12 @@
             .withUrl(info.url, options)
             .configureLogging(signalR.LogLevel.Information)
             .build();
+
           connection.on('newMessage', onNewMessage);
           connection.on('newConnection', onNewConnection)
           connection.on('onCommand', onCommand)
           connection.on('atriumaccepted', onAtriumAccepted)
+          connection.on('roomaccepted', onRoomAccepted)
           
           //connection.onclose(() => console.log('disconnected'));
           connection.onclose(onDisconnected);
@@ -277,6 +279,15 @@
       }
       else
         data.ready = true;
+
+      
+      function onRoomAccepted(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `Accepted to '${message.RoomName}' room. moderator '${message.ModeratorName}'`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
 
       function onAtriumAccepted(message) {
         newConnectionMessage = {
