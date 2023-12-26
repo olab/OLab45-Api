@@ -20,6 +20,7 @@ using OLab.TurkTalk.Data.Models;
 using OLab.Data.Models;
 using OLab.TurkTalk.Endpoints.BusinessObjects;
 using OLab.TurkTalk.Endpoints.Interface;
+using Microsoft.IdentityModel.Logging;
 
 namespace OLab.FunctionApp
 {
@@ -81,7 +82,7 @@ namespace OLab.FunctionApp
         services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
 
         services.AddSingleton<IConference, Conference>();
-
+        IdentityModelEventSource.ShowPII = true;
       })
 
       .ConfigureFunctionsWorkerDefaults(builder =>

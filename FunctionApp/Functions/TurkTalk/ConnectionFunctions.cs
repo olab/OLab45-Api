@@ -27,15 +27,6 @@ namespace OLab.FunctionApp.Functions.SignalR
             _configuration,
             invocationContext.ConnectionId,
             auth).MessageAction();
-
-        //return new SignalRMessageAction("newConnection")
-        //{
-        //  Arguments = new object[] { new NewConnectionPayload(
-        //    _configuration,
-        //    invocationContext.ConnectionId,
-        //    auth) },
-        //};
-
       }
 
       return new SignalRMessageAction("newConnection")

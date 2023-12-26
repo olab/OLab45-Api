@@ -44,9 +44,14 @@
         </form>
         <div>
           <a href="#"
-             v-on:click.prevent="registerAttendee(data.ConnectionId || data.connectionId)">
+             v-on:click.prevent="registerLearner(data.ConnectionId || data.connectionId)">
             <span v-if="data.ConnectionId || data.connectionId"
-                  class="badge badge-primary">RegisterAttendee</span>
+                  class="badge badge-primary">registerLearner</span>
+          </a>
+          <a href="#"
+             v-on:click.prevent="registerModerator(data.ConnectionId || data.connectionId)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">RegisterModerator</span>
           </a>
           <table>
             <tr>
@@ -54,7 +59,6 @@
               <td>mapId</td>
               <td>nodeId</td>
               <td>questionId</td>
-              <td>roomName</td>
               <td>connectionId</td>
               <td>userKey</td>
             </tr>
@@ -63,7 +67,6 @@
               <td><input type="text" v-model="mapId" id="mapId" class="form-control" /></td>
               <td><input type="text" v-model="nodeId" id="nodeId" class="form-control" /></td>
               <td><input type="text" v-model="questionId" id="questionId" class="form-control" /></td>
-              <td><input type="text" v-model="roomName" id="roomName" class="form-control" /></td>
               <td><input type="text" v-model="connectionId" id="connectionId" class="form-control" /></td>
               <td><input type="text" v-model="userKey" id="userKey" class="form-control" /></td>
             </tr>
@@ -141,7 +144,7 @@
         checked: false,
         command: null,
         connectionId: '',
-        contextId: '8AFB9072-EDB4-4B20-AFBB-14C35CF11628',
+        contextId: 'cb51685f-3a8c-452d-a5e1-93551c7844c9',
         defaultgroup: 'AzureSignalR',
         mapId: 5,
         messages: [],
@@ -149,9 +152,8 @@
         newMessage: '',
         nodeId: 0,
         payload: {},
-        questionId: 1447,
+        questionId: 3900,
         ready: false,
-        roomName: 'topic1',
         userKey: '',
         username: '',
       };
@@ -213,13 +215,24 @@
             confirm('Remove connection ' + connectionId + ' from group: ' + this.defaultgroup);
             connection.invoke("leaveGroup", connectionId, this.defaultgroup);
           },
-          registerAttendee: function (connectionId) {
-            connection.invoke("registerAttendee", {
+          registerLearner: async function (connectionId) {
+            var result = await 
+            connection.invoke("registerLearner", {
               "contextId": data.contextId,
               "mapId": data.mapId,
               "nodeId": data.nodeId,
               "questionId": data.questionId,
-              "roomName": data.roomName,
+              "connectionId": data.connectionId,
+              "userKey": data.userKey
+            });
+            console.log(JSON.stringify(result));
+          },
+          registerModerator: function (connectionId) {
+            connection.invoke("registerModerator", {
+              "contextId": data.contextId,
+              "mapId": data.mapId,
+              "nodeId": data.nodeId,
+              "questionId": data.questionId,
               "connectionId": data.connectionId,
               "userKey": data.userKey
             });
@@ -272,6 +285,11 @@
             .then(() => {
               data.ready = true;
               console.log('connected!');
+              newConnectionMessage = {
+                id: counter++,
+                text: `connected to signalr`
+              };
+              data.messages.unshift(newConnectionMessage);
             })
             .catch(console.error);
         }).catch(alert);
@@ -290,9 +308,10 @@
       }
 
       function onAtriumAccepted(message) {
+        let action = message.WasAdded ? "Added to" : "Rejoined";
         newConnectionMessage = {
           id: counter++,
-          text: `Accepted to '${message.RoomName}' atrium`
+          text: `${action} '${message.TopicName}' atrium`
         };
         data.messages.unshift(newConnectionMessage);
       }
@@ -312,8 +331,11 @@
 
       let counter = 0;
       function onNewMessage(message) {
-        message.id = counter++; // vue transitions need an id
-        data.messages.unshift(message);
+        newConnectionMessage = {
+          id: counter++,
+          text: message
+        };
+        data.messages.unshift(newConnectionMessage);
       };
 
       function onNewConnection(message) {

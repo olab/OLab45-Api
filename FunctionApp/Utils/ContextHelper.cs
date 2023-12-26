@@ -39,7 +39,7 @@ public class ContextHelper
     BindingData = hostContext.BindingContext.BindingData;
     Guard.Argument(BindingData).NotNull(nameof(BindingData));
 
-    _logger.LogInformation($"  binding context: {JsonSerializer.Serialize(hostContext.BindingContext)}");
+    _logger.LogInformation($"  binding context: {JsonSerializer.Serialize(hostContext.BindingContext).Replace("\u0022", "\"")}");
 
     InputBindings = hostContext.FunctionDefinition.InputBindings;
     foreach (var inputBinding in InputBindings)
