@@ -28,7 +28,7 @@ namespace OLab.FunctionApp
   {
     public static void Main()
     {
-      var host = new HostBuilder()
+      var host = new HostBuilder()      
       .ConfigureAppConfiguration(builder =>
       {
         builder.AddJsonFile(

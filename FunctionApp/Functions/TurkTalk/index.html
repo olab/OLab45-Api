@@ -249,12 +249,14 @@
 
       if (data.accessToken != null) {
 
-        data.username = prompt("Enter your username");
+        //data.username = prompt("Enter your username");
 
-        if (!data.username) {
-          alert("No username entered. Reload page and try again.");
-          throw "No username entered";
-        }
+        //if (!data.username) {
+        //  alert("No username entered. Reload page and try again.");
+        //  throw "No username entered";
+        //}
+
+        data.userName = "";
 
         getConnectionInfo().then(info => {
           // make compatible with old and new SignalRConnectionInfo
@@ -273,10 +275,11 @@
             .build();
 
           connection.on('newMessage', onNewMessage);
-          connection.on('newConnection', onNewConnection)
-          connection.on('onCommand', onCommand)
-          connection.on('atriumaccepted', onAtriumAccepted)
-          connection.on('roomaccepted', onRoomAccepted)
+          connection.on('newConnection', onNewConnection);
+          connection.on('onCommand', onCommand);
+          connection.on('atriumaccepted', onAtriumAccepted);
+          connection.on('roomaccepted', onRoomAccepted);
+          connection.on('atriumupdate', onAtriumUpdate);
           
           //connection.onclose(() => console.log('disconnected'));
           connection.onclose(onDisconnected);
@@ -298,7 +301,15 @@
       else
         data.ready = true;
 
-      
+
+      function onAtriumUpdate(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `Atrium update`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
       function onRoomAccepted(message) {
         newConnectionMessage = {
           id: counter++,
