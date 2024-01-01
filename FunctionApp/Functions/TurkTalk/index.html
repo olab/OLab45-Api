@@ -53,6 +53,11 @@
             <span v-if="data.ConnectionId || data.connectionId"
                   class="badge badge-primary">RegisterModerator</span>
           </a>
+          <a href="#"
+             v-on:click.prevent="assignLearner(data.newMessage)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">AssignLearner</span>
+          </a>
           <table>
             <tr>
               <td>contextId</td>
@@ -144,7 +149,7 @@
         checked: false,
         command: null,
         connectionId: '',
-        contextId: 'cb51685f-3a8c-452d-a5e1-93551c7844c9',
+        contextId: generateUUID(),
         defaultgroup: 'AzureSignalR',
         mapId: 5,
         messages: [],
@@ -222,7 +227,6 @@
               "mapId": data.mapId,
               "nodeId": data.nodeId,
               "questionId": data.questionId,
-              "connectionId": data.connectionId,
               "userKey": data.userKey
             });
             console.log(JSON.stringify(result));
@@ -233,7 +237,13 @@
               "mapId": data.mapId,
               "nodeId": data.nodeId,
               "questionId": data.questionId,
-              "connectionId": data.connectionId,
+              "userKey": data.userKey
+            });
+          },
+          assignLearner: function (learnerSessionId) {
+            connection.invoke("assignLearner", {
+              "learnerSessionId": learnerSessionId,
+              "moderatorSessionId": data.contextId,
               "userKey": data.userKey
             });
           },
@@ -303,9 +313,13 @@
 
 
       function onAtriumUpdate(message) {
+        let text = `Atrium update`;
+        for (var i = 0; i < message.Attendees.length; i++) {
+          text += ` ${message.Attendees[i].NickName} ${message.Attendees[i].SessionId}`;
+        }
         newConnectionMessage = {
           id: counter++,
-          text: `Atrium update`
+          text: text
         };
         data.messages.unshift(newConnectionMessage);
       }
@@ -373,6 +387,22 @@
         };
 
         data.messages.unshift(newCommandMessage);
+      }
+
+      function generateUUID() { // Public Domain/MIT
+        var d = new Date().getTime();//Timestamp
+        var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = Math.random() * 16;//random number between 0 and 16
+          if (d > 0) {//Use timestamp until depleted
+            r = (d + r) % 16 | 0;
+            d = Math.floor(d / 16);
+          } else {//Use microseconds since page-load if supported
+            r = (d2 + r) % 16 | 0;
+            d2 = Math.floor(d2 / 16);
+          }
+          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
       }
 
       function base64url(source) {

@@ -11,7 +11,10 @@
       "default": "Information",
       "Host.Results": "Warning",
       "Function": "Information",
-      "Host.AggregatorInformation": "Trace"
+      "Host.AggregatorInformation": "Trace",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information",
+      "System.Net.Http.HttpClient": "Warning"
     },
   },
   "extensions": {

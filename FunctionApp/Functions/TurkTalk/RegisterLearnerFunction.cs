@@ -15,7 +15,7 @@ namespace OLab.FunctionApp.Functions.SignalR
     [SignalROutput(HubName = "Hub")]
     public async Task<IList<object>> RegisterLearner(
       [SignalRTrigger("Hub", "messages", "RegisterLearner", "payload")] SignalRInvocationContext invocationContext,
-      RegisterParticipantPayload payload)
+      RegisterParticipantRequest payload)
     {
       payload.ConnectionId = invocationContext.ConnectionId;
       // decrypt the user token from the payload
@@ -32,28 +32,6 @@ namespace OLab.FunctionApp.Functions.SignalR
 
       Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
       return endpoint.MessageQueue.Messages;
-
-      //var actions = new List<object>
-      //  {
-      //    new SignalRMessageAction("newMessage")
-      //    {
-      //      Arguments = new[] { "Lulz" },
-      //      ConnectionId = invocationContext.ConnectionId
-      //    },
-      //    new SignalRMessageAction("newMessage")
-      //    {
-      //      Arguments = new[] { "Lulz2" },
-      //      ConnectionId = invocationContext.ConnectionId
-      //    },
-      //    new Microsoft.Azure.Functions.Worker.SignalRGroupAction(SignalRGroupActionType.Add)
-      //    {
-      //      GroupName = "TestGroup",
-      //      ConnectionId = invocationContext.ConnectionId
-      //    }
-      //  };
-
-      //Logger.LogInformation(JsonSerializer.Serialize(actions));
-      //return actions;
     }
   }
 }
