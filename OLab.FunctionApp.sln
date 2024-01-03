@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Import", "..\Common\Im
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.WikiTags", "..\Common\WikiTags\OLab.WikiTags.csproj", "{20EABEF9-7686-4303-9926-DAD9ECB58C3C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OLab.TurkTalk.Test", "..\Turktalk\OLab.TurkTalk.Test\OLab.TurkTalk.Test.csproj", "{C480A26B-0E94-42F6-944A-B95DE12584C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{20EABEF9-7686-4303-9926-DAD9ECB58C3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20EABEF9-7686-4303-9926-DAD9ECB58C3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20EABEF9-7686-4303-9926-DAD9ECB58C3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C480A26B-0E94-42F6-944A-B95DE12584C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C480A26B-0E94-42F6-944A-B95DE12584C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C480A26B-0E94-42F6-944A-B95DE12584C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C480A26B-0E94-42F6-944A-B95DE12584C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
