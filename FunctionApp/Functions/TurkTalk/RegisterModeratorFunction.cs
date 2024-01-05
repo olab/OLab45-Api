@@ -17,7 +17,7 @@ namespace OLab.FunctionApp.Functions.SignalR
     {
       payload.ConnectionId = invocationContext.ConnectionId;
       // decrypt the user token from the payload
-      payload.RefreshUserToken(_configuration.GetAppSettings().Secret);
+      payload.DecryptAndRefreshUserToken(_configuration.GetAppSettings().Secret);
 
       var endpoint = new TurkTalkEndpoint(
         Logger,
