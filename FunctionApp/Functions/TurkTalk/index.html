@@ -38,10 +38,10 @@
           <input type="checkbox" id="checkbox" v-model="checked">
           <label for="checkbox">Send To Default Group: {{ this.defaultgroup }}</label>
         </div>
-        <form v-on:submit.prevent="sendNewMessage(checked)">
+        <div>
           <input type="text" v-model="newMessage" id="message-box" class="form-control"
-                 placeholder="Type message here..." />
-        </form>
+                 placeholder="Type text here..." />
+        </div>
         <div>
           <a href="#"
              v-on:click.prevent="registerLearner(data.ConnectionId || data.connectionId)">
@@ -244,6 +244,8 @@
             connection.invoke("assignLearner", {
               "learnerSessionId": learnerSessionId,
               "moderatorSessionId": data.contextId,
+              "questionId": data.questionId,
+              "seatNumber": null,
               "userKey": data.userKey
             });
           },
@@ -313,10 +315,15 @@
 
 
       function onAtriumUpdate(message) {
-        let text = `Atrium update`;
+        let text = `Atrium update: `;
+        if (message.Attendees.length == 0) {
+          text += 'none';
+        }
+
         for (var i = 0; i < message.Attendees.length; i++) {
           text += ` ${message.Attendees[i].NickName} ${message.Attendees[i].SessionId}`;
         }
+
         newConnectionMessage = {
           id: counter++,
           text: text
