@@ -292,6 +292,7 @@
           connection.on('atriumaccepted', onAtriumAccepted);
           connection.on('roomaccepted', onRoomAccepted);
           connection.on('atriumupdate', onAtriumUpdate);
+          connection.on('sendmessage', onSendMessage);
           
           //connection.onclose(() => console.log('disconnected'));
           connection.onclose(onDisconnected);
@@ -313,6 +314,13 @@
       else
         data.ready = true;
 
+      function onSendMessage(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `Message recv'd' '${JSON.stringify(message)}'`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
 
       function onAtriumUpdate(message) {
         let text = `Atrium update: `;

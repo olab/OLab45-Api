@@ -29,7 +29,7 @@ namespace OLab.FunctionApp.Functions.SignalR
         TtalkDbContext,
         _conference);
 
-      await endpoint.SendMessageAsync(payload);
+      endpoint.SendMessage(payload);
 
       Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
       return endpoint.MessageQueue.Messages;
