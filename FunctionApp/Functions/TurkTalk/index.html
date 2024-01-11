@@ -83,22 +83,119 @@
             </tr>
           </table>
 
-          <table>
-            <tr>
-              <td>topicId</td>
-              <td>roomId</td>
-              <td>roomName</td>
-              <td>seatNumber</td>
-              <td>groupName</td>
-            </tr>
-            <tr>
-              <td><input type="text" v-model="topicId" id="topicId" class="form-control" /></td>
-              <td><input type="text" v-model="roomId" id="roomId" class="form-control" /></td>
-              <td><input type="text" v-model="roomName" id="roomName" class="form-control" /></td>
-              <td><input type="text" v-model="seatNumber" id="seatNumber" class="form-control" /></td>
-              <td><input type="text" v-model="groupName" id="groupName" class="form-control" /></td>
-            </tr>
-          </table>
+          <hr />
+
+          <div v-if="data.seatNumber > 0">
+
+            <table>
+              <tr>
+                <td>topicId</td>
+                <td>roomId</td>
+                <td>roomName</td>
+                <td>seatNumber</td>
+                <td>groupName</td>
+              </tr>
+              <tr>
+                <td><input type="text" v-model="topicId" id="topicId" class="form-control" /></td>
+                <td><input type="text" v-model="roomId" id="roomId" class="form-control" /></td>
+                <td><input type="text" v-model="roomName" id="roomName" class="form-control" /></td>
+                <td><input type="text" v-model="seatNumber" id="seatNumber" class="form-control" /></td>
+                <td><input type="text" v-model="groupName" id="groupName" class="form-control" /></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td>
+                  <table>
+                    <tr>
+                      <td>
+                        <div v-for="msg in data.seats[data.seatNumber].messages">
+                          {{ msg }}<br />
+                        </div>
+                      </td>
+                      <td>
+                        <input type="text" v-model="data.seats[data.seatNumber].text" id="seat1" class="form-control" />
+                      </td>
+                      <td>
+                        <a href="#"
+                           v-on:click.prevent="sendMessage(n, data.seats[data.seatNumber].text)">
+                          <span v-if="data.ConnectionId || data.connectionId"
+                                class="badge badge-primary">Send</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="3"><center>{{ data.seats[data.seatNumber].sessionId }}</center></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+          </div>
+
+          <div v-if="data.seatNumber == 0">
+
+
+            <table>
+              <tr>
+                <td v-for="n in 4">
+                  <table>
+                    <tr>
+                      <td>
+                        <div v-for="msg in data.seats[n].messages">
+                          {{ msg }}<br />
+                        </div>
+                      </td>
+                      <td>
+                        <input type="text" v-model="data.seats[n].text" id="seat1" class="form-control" />
+                      </td>
+                      <td>
+                        <a href="#"
+                           v-on:click.prevent="sendMessage(n, data.seats[n].text)">
+                          <span v-if="data.ConnectionId || data.connectionId"
+                                class="badge badge-primary">Send</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="3"><center>{{ data.seats[n].sessionId }}</center></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td v-for="n in 4">
+                  <table>
+                    <tr>
+                      <td>
+                        <div v-for="msg in data.seats[n+4].messages">
+                          {{ msg }}<br />
+                        </div>
+                      </td>
+                      <td>
+                        <input type="text" v-model="data.seats[n+4].text" id="seat1" class="form-control" />
+                      </td>
+                      <td>
+                        <a href="#"
+                           v-on:click.prevent="sendMessage(n+4, data.seats[n+4].text)">
+                          <span v-if="data.ConnectionId || data.connectionId"
+                                class="badge badge-primary">Send</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="3"><center>{{ data.seats[n+4].sessionId }}</center></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
 
         </div>
       </div>
@@ -115,43 +212,6 @@
             <hr />
             <div>
               <div style="display: inline-block; padding-left: 12px;">
-                <div>
-                  <a href="#" v-on:click.prevent="sendPrivateMessage(message.Sender)">
-                    <span class="text-info small">
-                      <strong>{{ message.Sender || message.sender }}</strong>
-                    </span>
-                  </a>
-                  <span v-if="message.ConnectionId || message.connectionId">
-                    <a href="#"
-                       v-on:click.prevent="sendToConnection(message.ConnectionId || message.connectionId)">
-                      <span class="badge badge-primary">
-                        Connection: {{ message.ConnectionId || message.connectionId }}
-                      </span>
-                    </a>
-                  </span>
-                  <a href="#" v-on:click.prevent="addUserToGroup(message.Sender || message.sender)">
-                    <span v-if="message.Sender || message.sender"
-                          class="badge badge-primary">AddUserToGroup</span>
-                  </a>
-                  <a href="#"
-                     v-on:click.prevent="removeUserFromGroup(message.Sender || message.sender)">
-                    <span v-if="message.Sender || message.sender"
-                          class="badge badge-primary">RemoveUserFromGroup</span>
-                  </a>
-                  <a href="#"
-                     v-on:click.prevent="addConnectionToGroup(message.ConnectionId || message.connectionId)">
-                    <span v-if="message.ConnectionId || message.connectionId"
-                          class="badge badge-primary">AddConnectionToGroup</span>
-                  </a>
-                  <a href="#"
-                     v-on:click.prevent="removeConnectionIdFromGroup(message.ConnectionId || message.connectionId)">
-                    <span v-if="message.ConnectionId || message.connectionId"
-                          class="badge badge-primary">RemoveConnectionFromGroup</span>
-                  </a>
-                  <span v-if="message.IsPrivate || message.isPrivate" class="badge badge-secondary">
-                    private message
-                  </span>
-                </div>
                 <div>
                   {{ message.Text || message.text }}
                 </div>
@@ -189,9 +249,14 @@
         topicId: '',
         roomId: '',
         roomName: '',
-        seatNumber: '',
-        groupName: ''
+        seatNumber: null,
+        groupName: '',
+        seats: []
       };
+
+      for (var i = 0; i <= 8; i++) {
+        data.seats.push({ sessionId: '-', messages: ['-'], text: '' })
+      }
 
       var qs = (function (a) {
         if (a == "") return {};
@@ -222,32 +287,7 @@
             });
             this.newMessage = '';
           },
-          //sendPrivateMessage: function (user) {
-          //  const messageText = prompt('Send private message to ' + user);
 
-          //  if (messageText) {
-          //    connection.invoke("sendToUser", user, messageText);
-          //  }
-          //},
-          //sendToConnection: function (connectionId) {
-          //  const messageText = prompt('Send private message to connection ' + connectionId);
-
-          //  if (messageText) {
-          //    connection.invoke("sendToConnection", connectionId, messageText);
-          //  }
-          //},
-          //addConnectionToGroup: function (connectionId) {
-          //  confirm('Add connection ' + connectionId + ' to group: ' + this.defaultgroup);
-          //  connection.invoke("joinGroup", connectionId, this.defaultgroup);
-          //},
-          //addUserToGroup: function (user) {
-          //  r = confirm('Add user ' + user + ' to group: ' + this.defaultgroup);
-          //  connection.invoke("joinUserToGroup", user, this.defaultgroup);
-          //},
-          //removeConnectionIdFromGroup: function (connectionId) {
-          //  confirm('Remove connection ' + connectionId + ' from group: ' + this.defaultgroup);
-          //  connection.invoke("leaveGroup", connectionId, this.defaultgroup);
-          //},
           registerLearner: async function (connectionId) {
             var result = await
               connection.invoke("registerLearner", {
@@ -321,6 +361,7 @@
           connection.on('roomaccepted', onRoomAccepted);
           connection.on('atriumupdate', onAtriumUpdate);
           connection.on('sendmessage', onSendMessage);
+          connection.on('learnerassigned', learnerAssigned);
 
           //connection.onclose(() => console.log('disconnected'));
           connection.onclose(onDisconnected);
@@ -342,6 +383,16 @@
       else
         data.ready = true;
 
+      function learnerAssigned(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `learner assigned '${JSON.stringify(message)}'`
+        };
+        data.messages.unshift(newConnectionMessage);
+
+        data.seats[message.SeatNumber].sessionId = message.DtoLearner.SessionId;
+      }
+
       function onSendMessage(message) {
         newConnectionMessage = {
           id: counter++,
@@ -357,7 +408,8 @@
         }
 
         for (var i = 0; i < message.Attendees.length; i++) {
-          text += ` ${message.Attendees[i].NickName} ${message.Attendees[i].SessionId}`;
+          text += `\
+          ${message.Attendees[i].NickName} ${message.Attendees[i].SessionId}`;
         }
 
         newConnectionMessage = {
@@ -378,6 +430,8 @@
         data.roomName = message.RoomName;
         data.seatNumber = message.SeatNumber;
         data.groupName = message.Destination;
+
+        data.seats[message.SeatNumber].sessionId = message.SessionId;
 
         data.messages.unshift(newConnectionMessage);
       }
@@ -440,9 +494,16 @@
       }
 
       function generateUUID() { // Public Domain/MIT
+
+        let contextId = localStorage.getItem('contextId');
+        if (contextId != null) {
+          return contextId;
+        }
+
         var d = new Date().getTime();//Timestamp
         var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+
+        contextId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
           var r = Math.random() * 16;//random number between 0 and 16
           if (d > 0) {//Use timestamp until depleted
             r = (d + r) % 16 | 0;
@@ -453,6 +514,10 @@
           }
           return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
+
+        localStorage.setItem('contextId', contextId);
+
+        return contextId;
       }
 
       function base64url(source) {
@@ -469,6 +534,7 @@
         return encodedSource;
       }
     </script>
+  </div>
 </body>
 
 </html>
