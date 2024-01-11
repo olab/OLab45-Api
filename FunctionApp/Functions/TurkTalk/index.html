@@ -58,6 +58,12 @@
             <span v-if="data.ConnectionId || data.connectionId"
                   class="badge badge-primary">AssignLearner</span>
           </a>
+          <a href="#"
+             v-on:click.prevent="sendMessage(data.newMessage)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">SendMessage</span>
+          </a>
+
           <table>
             <tr>
               <td>contextId</td>
@@ -76,6 +82,24 @@
               <td><input type="text" v-model="userKey" id="userKey" class="form-control" /></td>
             </tr>
           </table>
+
+          <table>
+            <tr>
+              <td>topicId</td>
+              <td>roomId</td>
+              <td>roomName</td>
+              <td>seatNumber</td>
+              <td>groupName</td>
+            </tr>
+            <tr>
+              <td><input type="text" v-model="topicId" id="topicId" class="form-control" /></td>
+              <td><input type="text" v-model="roomId" id="roomId" class="form-control" /></td>
+              <td><input type="text" v-model="roomName" id="roomName" class="form-control" /></td>
+              <td><input type="text" v-model="seatNumber" id="seatNumber" class="form-control" /></td>
+              <td><input type="text" v-model="groupName" id="groupName" class="form-control" /></td>
+            </tr>
+          </table>
+
         </div>
       </div>
     </div>
@@ -161,6 +185,12 @@
         ready: false,
         userKey: '',
         username: '',
+
+        topicId: '',
+        roomId: '',
+        roomName: '',
+        seatNumber: '',
+        groupName: ''
       };
 
       var qs = (function (a) {
@@ -185,50 +215,48 @@
         el: '#app',
         data: data,
         methods: {
-          sendNewMessage: function (isToGroup) {
-            if (isToGroup) {
-              connection.invoke("sendToGroup", this.defaultgroup, this.newMessage);
-            }
-            else {
-              connection.invoke("broadcast", this.newMessage);
-            }
-            this.newMessage = '';
-          },
-          sendPrivateMessage: function (user) {
-            const messageText = prompt('Send private message to ' + user);
-
-            if (messageText) {
-              connection.invoke("sendToUser", user, messageText);
-            }
-          },
-          sendToConnection: function (connectionId) {
-            const messageText = prompt('Send private message to connection ' + connectionId);
-
-            if (messageText) {
-              connection.invoke("sendToConnection", connectionId, messageText);
-            }
-          },
-          addConnectionToGroup: function (connectionId) {
-            confirm('Add connection ' + connectionId + ' to group: ' + this.defaultgroup);
-            connection.invoke("joinGroup", connectionId, this.defaultgroup);
-          },
-          addUserToGroup: function (user) {
-            r = confirm('Add user ' + user + ' to group: ' + this.defaultgroup);
-            connection.invoke("joinUserToGroup", user, this.defaultgroup);
-          },
-          removeConnectionIdFromGroup: function (connectionId) {
-            confirm('Remove connection ' + connectionId + ' from group: ' + this.defaultgroup);
-            connection.invoke("leaveGroup", connectionId, this.defaultgroup);
-          },
-          registerLearner: async function (connectionId) {
-            var result = await 
-            connection.invoke("registerLearner", {
-              "contextId": data.contextId,
-              "mapId": data.mapId,
-              "nodeId": data.nodeId,
-              "questionId": data.questionId,
+          sendMessage: function (message) {
+            connection.invoke("message", {
+              "message": data.newMessage,
               "userKey": data.userKey
             });
+            this.newMessage = '';
+          },
+          //sendPrivateMessage: function (user) {
+          //  const messageText = prompt('Send private message to ' + user);
+
+          //  if (messageText) {
+          //    connection.invoke("sendToUser", user, messageText);
+          //  }
+          //},
+          //sendToConnection: function (connectionId) {
+          //  const messageText = prompt('Send private message to connection ' + connectionId);
+
+          //  if (messageText) {
+          //    connection.invoke("sendToConnection", connectionId, messageText);
+          //  }
+          //},
+          //addConnectionToGroup: function (connectionId) {
+          //  confirm('Add connection ' + connectionId + ' to group: ' + this.defaultgroup);
+          //  connection.invoke("joinGroup", connectionId, this.defaultgroup);
+          //},
+          //addUserToGroup: function (user) {
+          //  r = confirm('Add user ' + user + ' to group: ' + this.defaultgroup);
+          //  connection.invoke("joinUserToGroup", user, this.defaultgroup);
+          //},
+          //removeConnectionIdFromGroup: function (connectionId) {
+          //  confirm('Remove connection ' + connectionId + ' from group: ' + this.defaultgroup);
+          //  connection.invoke("leaveGroup", connectionId, this.defaultgroup);
+          //},
+          registerLearner: async function (connectionId) {
+            var result = await
+              connection.invoke("registerLearner", {
+                "contextId": data.contextId,
+                "mapId": data.mapId,
+                "nodeId": data.nodeId,
+                "questionId": data.questionId,
+                "userKey": data.userKey
+              });
             console.log(JSON.stringify(result));
           },
           registerModerator: function (connectionId) {
@@ -293,7 +321,7 @@
           connection.on('roomaccepted', onRoomAccepted);
           connection.on('atriumupdate', onAtriumUpdate);
           connection.on('sendmessage', onSendMessage);
-          
+
           //connection.onclose(() => console.log('disconnected'));
           connection.onclose(onDisconnected);
           console.log('connecting...');
@@ -323,7 +351,7 @@
       }
 
       function onAtriumUpdate(message) {
-        let text = `Atrium update: `;
+        let text = `Atrium update: ${JSON.stringify(message)} `;
         if (message.Attendees.length == 0) {
           text += 'none';
         }
@@ -342,8 +370,15 @@
       function onRoomAccepted(message) {
         newConnectionMessage = {
           id: counter++,
-          text: `Accepted to '${message.RoomName}' room. moderator '${message.ModeratorName}'`
+          text: `Accepted to '${message.RoomName}' room. ${JSON.stringify(message)}'`
         };
+
+        data.topicId = message.TopicId;
+        data.roomId = message.RoomId;
+        data.roomName = message.RoomName;
+        data.seatNumber = message.SeatNumber;
+        data.groupName = message.Destination;
+
         data.messages.unshift(newConnectionMessage);
       }
 
@@ -351,7 +386,7 @@
         let action = message.WasAdded ? "Added to" : "Rejoined";
         newConnectionMessage = {
           id: counter++,
-          text: `${action} '${message.TopicName}' atrium`
+          text: `${action} '${message.TopicName}' atrium ${JSON.stringify(message)}`
         };
         data.messages.unshift(newConnectionMessage);
       }
@@ -389,7 +424,7 @@
         }
         newConnectionMessage = {
           id: counter++,
-          text: `connected`
+          text: `connected: ${JSON.stringify(message)}`
         };
         data.messages.unshift(newConnectionMessage);
       }

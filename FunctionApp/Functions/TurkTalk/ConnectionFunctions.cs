@@ -1,10 +1,6 @@
 using Microsoft.Azure.Functions.Worker;
 using OLab.Access;
-using OLab.Access.Interfaces;
-using OLab.Common.Interfaces;
-using OLab.TurkTalk.Endpoints.MessagePayloads;
-using OLab.TurkTalk.Endpoints.Utils;
-using System.Security.Claims;
+using OLab.TurkTalk.Endpoints;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
@@ -23,10 +19,17 @@ namespace OLab.FunctionApp.Functions.SignalR
         var auth = new OLabAuthentication(Logger, _configuration, DbContext);
         auth.ValidateToken(accessToken);
 
-        return new NewConnectionMethod(
-            _configuration,
-            invocationContext.ConnectionId,
-            auth).MessageAction();
+        var endpoint = new TurkTalkEndpoint(
+          Logger,
+          _configuration,
+          DbContext,
+          TtalkDbContext,
+          _conference);
+
+        return endpoint.OnConnected(
+          _configuration,
+          invocationContext.ConnectionId,
+          auth);
       }
 
       return new SignalRMessageAction("newConnection")
