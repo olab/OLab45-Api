@@ -3,6 +3,7 @@ using OLab.Api.Common.Contracts;
 using OLab.TurkTalk.Data.Contracts;
 using OLab.TurkTalk.Endpoints;
 using OLab.TurkTalk.Endpoints.MessagePayloads;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -18,21 +19,30 @@ namespace OLab.FunctionApp.Functions.SignalR
       [SignalRTrigger("Hub", "messages", "AssignLearner", "payload")] SignalRInvocationContext invocationContext,
       AssignLearnerRequest payload)
     {
-      payload.ConnectionId = invocationContext.ConnectionId;
-      // decrypt the user token from the payload
-      payload.DecryptAndRefreshUserToken(_configuration.GetAppSettings().Secret);
+      try
+      {
+        payload.ConnectionId = invocationContext.ConnectionId;
+        // decrypt the user token from the payload
+        payload.DecryptAndRefreshUserToken(_configuration.GetAppSettings().Secret);
 
-      var endpoint = new TurkTalkEndpoint(
-        Logger,
-        _configuration,
-        DbContext,
-        TtalkDbContext,
-        _conference);
+        var endpoint = new TurkTalkEndpoint(
+          Logger,
+          _configuration,
+          DbContext,
+          TtalkDbContext,
+          _conference);
 
-      await endpoint.AssignLearnerAsync(payload);
+        await endpoint.AssignLearnerAsync(payload);
 
-      Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
-      return endpoint.MessageQueue.Messages;
+        Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
+        return endpoint.MessageQueue.Messages;
+      }
+      catch (Exception ex)
+      {
+        ProcessException(ex);
+        throw;
+      }
+
     }
   }
 }

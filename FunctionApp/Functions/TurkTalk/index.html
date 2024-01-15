@@ -360,11 +360,12 @@
           connection.on('atriumaccepted', onAtriumAccepted);
           connection.on('roomaccepted', onRoomAccepted);
           connection.on('atriumupdate', onAtriumUpdate);
-          connection.on('sendmessage', onSendMessage);
+          connection.on('message', onMessage);
           connection.on('learnerassigned', learnerAssigned);
 
           //connection.onclose(() => console.log('disconnected'));
           connection.onclose(onDisconnected);
+
           console.log('connecting...');
           connection.start()
             .then(() => {
@@ -393,7 +394,7 @@
         data.seats[message.SeatNumber].sessionId = message.DtoLearner.SessionId;
       }
 
-      function onSendMessage(message) {
+      function onMessage(message) {
         newConnectionMessage = {
           id: counter++,
           text: `Message recv'd' '${JSON.stringify(message)}'`

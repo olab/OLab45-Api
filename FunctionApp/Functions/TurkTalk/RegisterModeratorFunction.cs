@@ -1,6 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using OLab.TurkTalk.Endpoints;
 using OLab.TurkTalk.Endpoints.MessagePayloads;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -15,21 +16,30 @@ namespace OLab.FunctionApp.Functions.SignalR
       [SignalRTrigger("Hub", "messages", "RegisterModerator", "payload")] SignalRInvocationContext invocationContext,
       RegisterParticipantRequest payload)
     {
-      payload.ConnectionId = invocationContext.ConnectionId;
-      // decrypt the user token from the payload
-      payload.DecryptAndRefreshUserToken(_configuration.GetAppSettings().Secret);
+      try
+      {
+        payload.ConnectionId = invocationContext.ConnectionId;
+        // decrypt the user token from the payload
+        payload.DecryptAndRefreshUserToken(_configuration.GetAppSettings().Secret);
 
-      var endpoint = new TurkTalkEndpoint(
-        Logger,
-        _configuration,
-        DbContext,
-        TtalkDbContext,
-        _conference);
+        var endpoint = new TurkTalkEndpoint(
+          Logger,
+          _configuration,
+          DbContext,
+          TtalkDbContext,
+          _conference);
 
-      await endpoint.RegisterModeratorAsync(payload);
+        await endpoint.RegisterModeratorAsync(payload);
 
-      Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
-      return endpoint.MessageQueue.Messages;
+        Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
+        return endpoint.MessageQueue.Messages;
+      }
+      catch (Exception ex)
+      {
+        ProcessException(ex);
+        throw;
+      }
+
     }
   }
 }
