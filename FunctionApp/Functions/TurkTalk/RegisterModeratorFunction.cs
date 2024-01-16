@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using OLab.Common.Exceptions;
 
 namespace OLab.FunctionApp.Functions.SignalR
 {
@@ -36,7 +37,7 @@ namespace OLab.FunctionApp.Functions.SignalR
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         throw;
       }
 

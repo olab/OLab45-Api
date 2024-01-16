@@ -10,6 +10,7 @@ using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using OLab.Common.Exceptions;
 
 namespace OLab.FunctionApp.Functions.Player
 {
@@ -39,7 +40,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -68,7 +69,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 

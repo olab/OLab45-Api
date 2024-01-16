@@ -32,6 +32,7 @@ using OLab.FunctionApp.Extensions;
 using OLab.Data.Contracts;
 using OLab.Data.Dtos;
 using OLab.Data.Models;
+using OLab.Common.Exceptions;
 
 namespace OLab.FunctionApp.Functions.API
 {
@@ -52,7 +53,7 @@ namespace OLab.FunctionApp.Functions.API
     {
       Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      Logger = OLabLogger.CreateNew<Import4Function>(loggerFactory);
+      Logger = OLabLogger.CreateNew<Import4Function>(loggerFactory, true);
 
       _endpoint = new Import4Endpoint(
         Logger,
@@ -73,34 +74,45 @@ namespace OLab.FunctionApp.Functions.API
       FunctionContext hostContext,
       CancellationToken cancel)
     {
-      Logger.LogDebug($"ImportAsync");
-
-      // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
-
-      if (!auth.HasAccess("X", "Import", 0))
-        throw new OLabUnauthorizedException();
-
-      if (request.Body == null)
-        throw new ArgumentNullException(nameof(request.Body));
-
-      var parser = await MultipartFormDataParser.ParseAsync(request.Body);
-      if (parser.Files.Count == 0)
-        throw new Exception("No files were uploaded");
-
-      var stream = parser.Files[0].Data;
-
-      Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
-
-      var mapId = await _endpoint.ImportAsync(stream, parser.Files[0].FileName, cancel);
-
-      var dto = new ImportResponse
+      try
       {
-        Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info),
-        MapId = mapId
-      };
+        Logger.LogDebug($"ImportAsync");
 
-      response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
+        // validate token/setup up common properties
+        var auth = GetAuthorization(hostContext);
+
+        if (!auth.HasAccess("X", "Import", 0))
+          throw new OLabUnauthorizedException();
+
+        if (request.Body == null)
+          throw new ArgumentNullException(nameof(request.Body));
+
+        var parser = await MultipartFormDataParser.ParseAsync(request.Body);
+        if (parser.Files.Count == 0)
+          throw new Exception("No files were uploaded");
+
+        var stream = parser.Files[0].Data;
+
+        Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
+
+        var mapId = await _endpoint.ImportAsync(stream, parser.Files[0].FileName, cancel);
+
+        var dto = new ImportResponse
+        {          
+          MapId = mapId,
+          LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+        };
+
+        response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto, HttpStatusCode.BadRequest));
+
+        return response;
+      }
+      catch (Exception ex)
+      {
+        Logger.LogError(ex);
+        response = request.CreateResponse(ex);
+      }
+
       return response;
 
     }
@@ -128,7 +140,7 @@ namespace OLab.FunctionApp.Functions.API
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -172,7 +184,7 @@ namespace OLab.FunctionApp.Functions.API
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 

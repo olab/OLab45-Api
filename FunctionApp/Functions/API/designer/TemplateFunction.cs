@@ -16,6 +16,7 @@ using OLab.FunctionApp.Functions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using OLab.Common.Exceptions;
 
 namespace OLab.FunctionApp.Functions.API.designer
 {
@@ -79,7 +80,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -108,7 +109,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -137,7 +138,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 

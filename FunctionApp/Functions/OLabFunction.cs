@@ -61,7 +61,7 @@ public class OLabFunction
   /// </summary>
   /// <param name="ex"></param>
   /// <exception cref="NotImplementedException"></exception>
-  protected void ProcessException(Exception ex)
+  protected void Log(Exception ex)
   {
     Logger.LogError($"{ex.Message}");
 

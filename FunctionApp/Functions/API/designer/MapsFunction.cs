@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Utils;
+using OLab.Common.Exceptions;
 using OLab.Common.Interfaces;
 using OLab.Data.Contracts;
 using OLab.Data.Dtos;
@@ -77,7 +78,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -111,7 +112,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -147,7 +148,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -252,7 +253,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -284,7 +285,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -316,7 +317,7 @@ namespace OLab.FunctionApp.Functions.API.designer
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 

@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.Web.CodeGeneration.Templating;
 using OLab.Api.Common;
 using OLab.Api.Models;
 using OLab.Data.Dtos;
-
+using OLab.Common.Exceptions;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
@@ -44,7 +44,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -78,7 +78,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
@@ -115,7 +115,7 @@ namespace OLab.FunctionApp.Functions.Player
       }
       catch (Exception ex)
       {
-        ProcessException(ex);
+        Logger.LogError(ex);
         response = request.CreateResponse(ex);
       }
 
