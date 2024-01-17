@@ -15,8 +15,8 @@ namespace OLab.FunctionApp.Middleware;
 /// </summary>
 public class OpenAuthMiddleware : IFunctionsWorkerMiddleware
 {
-  private IOLabLogger _logger;
-  private IOLabConfiguration _config;
+  private readonly IOLabLogger _logger;
+  private readonly IOLabConfiguration _config;
 
   public OpenAuthMiddleware(
     IOLabConfiguration configuration,

@@ -4,9 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Interface;
 using OLab.Data.Models;
-using OLab.FunctionApp.Functions;
 using System.Linq;
 using System.Net;
 

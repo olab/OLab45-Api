@@ -2,9 +2,9 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Common.Interfaces;
-using System.Text.Json;
-using System.Collections.Generic;
 using OLab.FunctionApp.Extensions;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace OLab.FunctionApp.Utils;
 
@@ -13,7 +13,7 @@ public class ContextHelper
   public string FunctionName { get; private set; }
   public IReadOnlyDictionary<string, string> Headers { get; private set; }
   public IReadOnlyDictionary<string, object> BindingData { get; private set; }
-  public IReadOnlyDictionary<string, BindingMetadata> InputBindings{ get; private set; }
+  public IReadOnlyDictionary<string, BindingMetadata> InputBindings { get; private set; }
   public HttpRequestData RequestData { get; private set; }
 
   private readonly FunctionContext hostContext;

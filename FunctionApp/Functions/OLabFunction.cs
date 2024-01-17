@@ -1,16 +1,12 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using OLab.Access;
 using OLab.Api.Data.Interface;
-using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using OLab.Access;
-using System.Net;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using OLab.TurkTalk.Data.Models;
 using OLab.Data.Models;
+using System;
 
 namespace OLab.FunctionApp.Functions;
 

@@ -2,20 +2,17 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common.Exceptions;
-using OLab.Api.Utils;
+using OLab.Access;
 using OLab.Access.Interfaces;
+using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using System.Configuration;
-using System.Net;
-using System.Threading.Tasks;
-using System;
+using OLab.Data.Models;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Services;
 using OLab.FunctionApp.Utils;
-using OLab.Access;
-using System.Security.Cryptography.Pkcs;
-using OLab.Data.Models;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Middleware;
 
@@ -23,7 +20,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 {
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger _logger;
-  private OLabDBContext _dbContext;
+  private readonly OLabDBContext _dbContext;
 
   public OLabAuthMiddleware(
     IOLabConfiguration configuration,

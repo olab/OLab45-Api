@@ -1,13 +1,3 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Logging;
-using OLab.TurkTalk.Endpoints;
-using OLab.TurkTalk.Endpoints.Mappers;
-using OLab.TurkTalk.Endpoints.MessagePayloads;
-
 namespace OLab.FunctionApp.Functions.SignalR;
 
 public partial class TurkTalkFunction : OLabFunction

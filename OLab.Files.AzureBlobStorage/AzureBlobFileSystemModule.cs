@@ -2,15 +2,11 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
-using OLab.Api.Models;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Data;
-using OLab.Data.Interface;
 using System.Configuration;
 using System.IO.Compression;
-using System.Reflection.Metadata;
-using System.Text;
 
 namespace OLab.Files.AzureBlobStorage;
 
@@ -44,14 +40,14 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       throw new ConfigurationErrorsException("missing FileStorageConnectionString parameter");
     _blobServiceClient = new BlobServiceClient(connectionString);
 
-    _containerName = Path.GetDirectoryName( cfg.GetAppSettings().FileStorageRoot );
+    _containerName = Path.GetDirectoryName(cfg.GetAppSettings().FileStorageRoot);
     if (string.IsNullOrEmpty(_containerName))
       throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
 
     logger.LogInformation($"Container: {_containerName}");
 
     // need to prevent container name from being part of the file root
-    cfg.GetAppSettings().FileStorageRoot = Path.GetFileName(cfg.GetAppSettings().FileStorageRoot );
+    cfg.GetAppSettings().FileStorageRoot = Path.GetFileName(cfg.GetAppSettings().FileStorageRoot);
   }
 
   public override char GetFolderSeparator() { return '/'; }
@@ -263,7 +259,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   {
     await DeleteImportFilesAsync(
       _blobServiceClient.GetBlobContainerClient(_containerName),
-      GetPhysicalPath( folderName ),
+      GetPhysicalPath(folderName),
       null);
   }
 
@@ -297,18 +293,18 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
           cfg);
 
         await ReadFileAsync(
-          stream, 
-          sourceFolderName, 
-          sourceFileName, 
+          stream,
+          sourceFolderName,
+          sourceFileName,
           token);
 
         var extractPath = GetPhysicalPath(
-          sourceFolderName, 
+          sourceFolderName,
           Path.GetFileNameWithoutExtension(sourceFileName));
 
         await fileProcessor.ProcessFileAsync(
-          stream, 
-          extractPath, 
+          stream,
+          extractPath,
           token);
       }
 

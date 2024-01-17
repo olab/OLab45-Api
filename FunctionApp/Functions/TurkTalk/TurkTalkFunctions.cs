@@ -8,35 +8,34 @@ using OLab.Data.Models;
 using OLab.TurkTalk.Data.Models;
 using OLab.TurkTalk.Endpoints.Interface;
 
-namespace OLab.FunctionApp.Functions.SignalR
+namespace OLab.FunctionApp.Functions.SignalR;
+
+public partial class TurkTalkFunction : OLabFunction
 {
-  public partial class TurkTalkFunction : OLabFunction
+  protected readonly TTalkDBContext TtalkDbContext;
+  private readonly IConference _conference;
+
+  public TurkTalkFunction(
+    ILoggerFactory loggerFactory,
+    IOLabConfiguration configuration,
+    OLabDBContext dbContext,
+    TTalkDBContext ttalkDbContext,
+    IConference conference,
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+      configuration,
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider)
   {
-    protected readonly TTalkDBContext TtalkDbContext;
-    private readonly IConference _conference;
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+    Guard.Argument(ttalkDbContext).NotNull(nameof(ttalkDbContext));
+    Guard.Argument(conference).NotNull(nameof(conference));
 
-    public TurkTalkFunction(
-      ILoggerFactory loggerFactory,
-      IOLabConfiguration configuration,
-      OLabDBContext dbContext,
-      TTalkDBContext ttalkDbContext,
-      IConference conference,
-      IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
-        configuration,
-        dbContext,
-        wikiTagProvider,
-        fileStorageProvider)
-    {
-      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
-      Guard.Argument(ttalkDbContext).NotNull(nameof(ttalkDbContext));
-      Guard.Argument(conference).NotNull(nameof(conference));
+    Logger = OLabLogger.CreateNew<TurkTalkFunction>(loggerFactory);
 
-      Logger = OLabLogger.CreateNew<TurkTalkFunction>(loggerFactory);
-
-      TtalkDbContext = ttalkDbContext;
-      _conference = conference;
-    }
-
+    TtalkDbContext = ttalkDbContext;
+    _conference = conference;
   }
+
 }

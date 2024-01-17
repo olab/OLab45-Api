@@ -2,13 +2,11 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Utils;
 using OLab.Access.Interfaces;
+using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using System.Threading.Tasks;
 using OLab.FunctionApp.Utils;
-using OLab.FunctionApp.Extensions;
-using DocumentFormat.OpenXml.InkML;
+using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Middleware;
 

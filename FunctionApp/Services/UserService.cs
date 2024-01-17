@@ -1,8 +1,5 @@
 using Dawn;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OLab.Access;
-using OLab.Access.Interfaces;
 using OLab.Api.Models;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -21,7 +18,7 @@ public class UserService : IUserService
 {
   public static int defaultTokenExpiryMinutes = 120;
   private readonly OLabDBContext _dbContext;
-  private IOLabConfiguration _config;
+  private readonly IOLabConfiguration _config;
   private readonly IOLabLogger Logger;
 
   public bool IsValid { get; private set; }

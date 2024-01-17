@@ -6,10 +6,6 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Models;
 using OLab.FunctionApp.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Middleware;
@@ -17,7 +13,7 @@ public class BootstrapMiddleware : IFunctionsWorkerMiddleware
 {
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger _logger;
-  private OLabDBContext _dbContext;
+  private readonly OLabDBContext _dbContext;
 
   public BootstrapMiddleware(
     IOLabConfiguration configuration,
