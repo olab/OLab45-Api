@@ -26,8 +26,6 @@ public partial class TurkTalkFunction : OLabFunction
       var endpoint = new TurkTalkEndpoint(
         Logger,
         _configuration,
-        DbContext,
-        TtalkDbContext,
         _conference);
 
       await endpoint.AssignLearnerAsync(payload);
