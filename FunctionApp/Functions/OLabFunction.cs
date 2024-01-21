@@ -1,12 +1,17 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
 using OLab.Access;
 using OLab.Api.Data.Interface;
+using OLab.Api.Models;
 using OLab.Common.Interfaces;
+using OLab.Data.Exceptions;
 using OLab.Data.Interface;
 using OLab.Data.Models;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions;
 
@@ -52,25 +57,28 @@ public class OLabFunction
 
   }
 
-  /// <summary>
-  /// Centralized processing of exceptions
-  /// </summary>
-  /// <param name="ex"></param>
-  /// <exception cref="NotImplementedException"></exception>
-  protected void Log(Exception ex)
+  public async Task<uint> GetRootNodeId(uint mapId)
   {
-    Logger.LogError($"{ex.Message}");
+    var phys = await DbContext
+      .MapNodes
+      .FirstOrDefaultAsync(x => x.MapId == mapId && x.TypeId.Value == (int)MapNodes.NodeType.RootNode);
 
-    var inner = ex.InnerException;
-    while (inner != null)
+    if (phys == null)
     {
-      Logger.LogError($"  {inner.Message}");
-      inner = inner.InnerException;
+      // if no map node by this point, then the map doesn't have a root node
+      // defined so take the first one (by id)        
+      phys = await DbContext.MapNodes
+        .Where(x => x.MapId == mapId)
+        .OrderBy(x => x.Id)
+        .FirstOrDefaultAsync();
     }
 
-    Logger.LogError($"{ex.StackTrace}");
+    if (phys == null)
+      throw new OLabObjectNotFoundException("MapNodes", mapId);
 
+    return phys.Id;
   }
+
 
   /// <summary>
   /// Builds the authentication context from the host context
