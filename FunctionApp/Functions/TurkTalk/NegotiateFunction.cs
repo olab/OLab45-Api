@@ -7,7 +7,7 @@ public partial class TurkTalkFunction
 {
   [Function("Negotiate")]
   public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "negotiate")] HttpRequestData req,
-      [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
+      [SignalRConnectionInfoInput(HubName = "Hub")] SignalRConnectionInfo signalRConnectionInfo)
   {
     Logger.LogInformation($"Executing negotiation.");
     return signalRConnectionInfo;
