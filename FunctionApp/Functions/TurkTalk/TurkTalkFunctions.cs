@@ -7,6 +7,7 @@ using OLab.Data.Interface;
 using OLab.Data.Models;
 using OLab.TurkTalk.Data.Models;
 using OLab.TurkTalk.Endpoints.Interface;
+using System.Threading;
 
 namespace OLab.FunctionApp.Functions.SignalR;
 

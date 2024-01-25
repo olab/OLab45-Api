@@ -76,7 +76,7 @@ public class Program
       services.AddSingleton<IOLabLogger, OLabLogger>();
       services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
       services.AddScoped<IOLabAuthentication, OLabAuthentication>();
-      services.AddSingleton<IUserService, UserService>();
+      services.AddScoped<IUserService, UserService>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
       services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
       services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();

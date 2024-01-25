@@ -1,9 +1,14 @@
+using Azure.Messaging.EventGrid;
 using Common.Utils;
 using Microsoft.Azure.Functions.Worker;
 using OLab.Access;
 using OLab.TurkTalk.Data.Contracts;
 using OLab.TurkTalk.Endpoints;
 using OLab.TurkTalk.Endpoints.MessagePayloads;
+using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.SignalR;
@@ -11,24 +16,28 @@ namespace OLab.FunctionApp.Functions.SignalR;
 public partial class TurkTalkFunction : OLabFunction
 {
 
+#if DEBUG
+
   [Function("OnDisconnected")]
   [SignalROutput(HubName = "Hub")]
-  public async Task<DispatchedMessages> OnDisconnected(
+  public async Task<DispatchedMessages> OnDisconnectedSignalR(
     [SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext)
   {
     Logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
 
+    var status = new SignalRConnectionStatus
+    {
+      ConnectionId = invocationContext.ConnectionId
+    };
+
+    var eventGridEvent = new EventGridEvent("", "", "", status );
+
     var payload = new OnDisconnectedRequest();
     payload.ConnectionId = invocationContext.ConnectionId;
 
-    var endpoint = new TurkTalkEndpoint(
-      Logger,
-      _configuration,
-      _conference);
-
-    return await endpoint.OnDisconnectedAsync(
-      _configuration,
-      payload);
-
+    return await OnDisconnectedEvent(eventGridEvent);
   }
+
+#endif
+
 }

@@ -13,7 +13,7 @@ public partial class TurkTalkFunction : OLabFunction
 
   [Function("OnConnected")]
   [SignalROutput(HubName = "Hub")]
-  public async Task<SignalRMessageAction> OnConnected(
+  public async Task<SignalRMessageAction> OnSignalRConnected(
     [SignalRTrigger("Hub", "connections", "connected")] SignalRInvocationContext invocationContext)
   {
     //invocationContext.Headers.TryGetValue("Authorization", out var auth);
