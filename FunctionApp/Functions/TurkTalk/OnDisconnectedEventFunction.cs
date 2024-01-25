@@ -10,6 +10,7 @@ using OLab.TurkTalk.Endpoints.MessagePayloads;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -42,13 +43,14 @@ public partial class TurkTalkFunction : OLabFunction
   /// <returns>DispatchedMessages</returns>
   [Function(nameof(OnDisconnectedEvent))]
   [SignalROutput(HubName = "Hub")]
-  public async Task<IList<object>> OnDisconnectedEvent(
-    [EventGridTrigger] EventGridEvent eventGridEvent)
+  public async Task<SignalRMessageAction> OnDisconnectedEvent(
+    /* [EventGridTrigger] */ EventGridEvent eventGridEvent)
   {
     Logger.LogInformation($"Event type: {JsonSerializer.Serialize(eventGridEvent)}");
 
     var signalRDataString = Encoding.ASCII.GetString(eventGridEvent.Data);
-    var signalRData = JsonSerializer.Deserialize<SignalRConnectionStatus>(signalRDataString);
+    var signalRData = 
+      JsonSerializer.Deserialize<SignalRConnectionStatus>(signalRDataString);
 
     var payload = new OnDisconnectedRequest();
     payload.ConnectionId = signalRData.ConnectionId;
@@ -63,7 +65,11 @@ public partial class TurkTalkFunction : OLabFunction
       payload);
 
     Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
-    return endpoint.MessageQueue.Messages;
+
+    var action = 
+      endpoint.MessageQueue.Messages.FirstOrDefault() as SignalRMessageAction;
+
+    return action;
   }
 
 }

@@ -57,29 +57,6 @@ public class OLabFunction
 
   }
 
-  public async Task<uint> GetRootNodeId(uint mapId)
-  {
-    var phys = await DbContext
-      .MapNodes
-      .FirstOrDefaultAsync(x => x.MapId == mapId && x.TypeId.Value == (int)MapNodes.NodeType.RootNode);
-
-    if (phys == null)
-    {
-      // if no map node by this point, then the map doesn't have a root node
-      // defined so take the first one (by id)        
-      phys = await DbContext.MapNodes
-        .Where(x => x.MapId == mapId)
-        .OrderBy(x => x.Id)
-        .FirstOrDefaultAsync();
-    }
-
-    if (phys == null)
-      throw new OLabObjectNotFoundException("MapNodes", mapId);
-
-    return phys.Id;
-  }
-
-
   /// <summary>
   /// Builds the authentication context from the host context
   /// </summary>

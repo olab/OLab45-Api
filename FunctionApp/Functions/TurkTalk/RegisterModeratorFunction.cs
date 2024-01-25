@@ -28,10 +28,6 @@ public partial class TurkTalkFunction : OLabFunction
         _configuration,
         _conference);
 
-      // translate '0' to root node id for map
-      if (payload.NodeId == 0)
-        payload.NodeId = await GetRootNodeId(payload.MapId);
-
       await endpoint.RegisterModeratorAsync(payload);
 
       Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));

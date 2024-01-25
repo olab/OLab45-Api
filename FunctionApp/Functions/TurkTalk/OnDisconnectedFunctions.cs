@@ -20,7 +20,7 @@ public partial class TurkTalkFunction : OLabFunction
 
   [Function("OnDisconnected")]
   [SignalROutput(HubName = "Hub")]
-  public async Task<DispatchedMessages> OnDisconnectedSignalR(
+  public async Task<SignalRMessageAction> OnDisconnectedSignalR(
     [SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext)
   {
     Logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
@@ -30,6 +30,7 @@ public partial class TurkTalkFunction : OLabFunction
       ConnectionId = invocationContext.ConnectionId
     };
 
+    // pass thru the event to the EventGridEvent-aware message
     var eventGridEvent = new EventGridEvent("", "", "", status );
 
     var payload = new OnDisconnectedRequest();
