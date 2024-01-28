@@ -57,13 +57,13 @@ public class AuthController : OLabController
 
     Logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
-    var user = _userService.Authenticate(model);
-    if (user == null)
-      return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
+      AuthenticateResponse data = _userService.Authenticate(model);
+      if (data == null)
+        return OLabUnauthorizedObjectResult<string>.Result("Username or password is incorrect");
 
-    var response = _authentication.GenerateJwtToken(user);
-    return HttpContext.Request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
-  }
+      var response =  OLabObjectResult<AuthenticateResponse>.Result(data);
+      return response;
+    }
 
   /// <summary>
   /// Interactive login
