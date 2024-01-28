@@ -1,16 +1,17 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OLabWebAPI.Common;
-using OLabWebAPI.Common.Exceptions;
-using OLabWebAPI.Dto;
-using OLabWebAPI.Services;
+using OLab.Api.Common;
+using OLab.Api.Dto;
+using OLab.Api.Model;
+using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player
 {
-  public partial class MapsController : OlabController
+  public partial class MapsController : OLabController
   {
 
     /// <summary>
@@ -26,15 +27,18 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
-        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
+        Guard.Argument(mapId, nameof(mapId)).NotZero();
+        Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
+
+        var dto = await _endpoint.GetDynamicScopedObjectsRawAsync(auth, mapId, nodeId, sinceTime);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        return ProcessException(ex, HttpContext.Request);
       }
 
     }
@@ -52,15 +56,18 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     {
       try
       {
-        var auth = new OLabWebApiAuthorization(logger, dbContext, HttpContext);
-        DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
-        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
+        Guard.Argument(mapId, nameof(mapId)).NotZero();
+        Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
+
+        var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync(auth, mapId, nodeId, sinceTime);
+        return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        return ProcessException(ex, HttpContext.Request);
       }
     }
 
@@ -74,20 +81,24 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
     /// <returns></returns>
     public async Task<IActionResult> GetDynamicScopedObjectsAsync(
       uint serverId,
-      Model.MapNodes node,
+      MapNodes node,
       uint sinceTime,
       bool enableWikiTranslation)
     {
       try
       {
-        DynamicScopedObjectsDto dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation); ;
-        return OLabObjectResult<DynamicScopedObjectsDto>.Result(dto);
+        Guard.Argument(serverId, nameof(serverId)).NotZero();
+        Guard.Argument(node).NotNull(nameof(node));
+
+        // validate token/setup up common properties
+        var auth = GetAuthorization(HttpContext);
+
+        var dto = await _endpoint.GetDynamicScopedObjectsAsync(serverId, node, sinceTime, enableWikiTranslation); ;
+        return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(dto));
       }
       catch (Exception ex)
       {
-        if (ex is OLabUnauthorizedException)
-          return OLabUnauthorizedObjectResult<string>.Result(ex.Message);
-        return OLabServerErrorResult.Result(ex.Message);
+        return ProcessException(ex, HttpContext.Request);
       }
     }
 
