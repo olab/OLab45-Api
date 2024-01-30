@@ -166,7 +166,7 @@ public class UserService : IUserService
     }
   }
 
-  private async Task<AddUserResponse> ProcessUserRequest(AddUserRequest userRequest)
+  public async Task<AddUserResponse> ProcessUserRequest(AddUserRequest userRequest)
   {
     Users user = GetByUserName(userRequest.Username);
     if (user != null)
@@ -196,12 +196,6 @@ public class UserService : IUserService
     };
 
     return response;
-  }
-
-
-  public void AddUsers()
-  {
-
   }
 
 }

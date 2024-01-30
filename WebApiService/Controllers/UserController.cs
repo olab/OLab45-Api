@@ -19,6 +19,7 @@ using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.IO;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
@@ -137,14 +138,14 @@ public class AuthController : OLabController
     try
     {
       var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
+      var auth = GetAuthorization(HttpContext);
 
-      // test if user has access to add users.
-      var userContext = new UserContext(logger, dbContext, HttpContext);
-      if (!userContext.HasAccess("X", "UserAdmin", 0))
+      if (!auth.HasAccess("X", "UserAdmin", 0))
         return OLabUnauthorizedResult.Result();
 
-      var responses = await _userService.AddUserAsync(userContext, items);
-      return OLabObjectListResult<AddUserResponse>.Result(responses);
+      var responses = await _userService.AddUserAsync(items);
+      return HttpContext.Request.CreateResponse(
+        OLabObjectListResult<AddUserResponse>.Result(responses));
     }
     catch (Exception ex)
     {
@@ -153,4 +154,43 @@ public class AuthController : OLabController
 
   }
 
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <returns></returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> AddUsers(IFormFile file)
+  {
+    try
+    {
+      var responses = new List<AddUserResponse>();
+      var auth = GetAuthorization(HttpContext);
+
+      // test if user has access to add users.
+      if (!auth.HasAccess("X", "UserAdmin", 0))
+        return OLabUnauthorizedResult.Result();
+
+      var result = new List<string>();
+      using (var reader = new StreamReader(file.OpenReadStream()))
+      {
+        while (reader.Peek() >= 0)
+        {
+          var userRequestText = reader.ReadLine();
+          var userRequest = new AddUserRequest(userRequestText);
+
+          var response = await _userService.ProcessUserRequest(userRequest);
+          responses.Add(response);
+        }
+      }
+
+      return HttpContext.Request.CreateResponse(
+        OLabObjectListResult<AddUserResponse>.Result(responses));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+  }
 }

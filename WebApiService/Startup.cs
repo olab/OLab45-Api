@@ -13,6 +13,7 @@ using Newtonsoft.Json.Serialization;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
+using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -119,6 +120,7 @@ namespace OLabWebAPI
       //services.AddScoped<IOLabSession, OLabSession>();
       services.AddScoped<IUserService, UserService>();
       services.AddScoped<IOLabAuthentication, OLabAuthentication>();
+      services.AddScoped<IOLabAuthorization, OLabAuthorization>();
 
       // define instances of application services
       services.AddSingleton<IOLabLogger, OLabLogger>();
