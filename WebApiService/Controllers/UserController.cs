@@ -1,16 +1,24 @@
 using Dawn;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
@@ -115,6 +123,34 @@ public class AuthController : OLabController
     {
       return ProcessException(ex, HttpContext.Request);
     }
+  }
+
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="model"></param>
+  /// <returns></returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> AddUser([FromBody] JArray jsonStringData)
+  {
+    try
+    {
+      var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
+
+      // test if user has access to add users.
+      var userContext = new UserContext(logger, dbContext, HttpContext);
+      if (!userContext.HasAccess("X", "UserAdmin", 0))
+        return OLabUnauthorizedResult.Result();
+
+      var responses = await _userService.AddUserAsync(userContext, items);
+      return OLabObjectListResult<AddUserResponse>.Result(responses);
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
   }
 
 }

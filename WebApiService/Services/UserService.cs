@@ -1,5 +1,11 @@
 using Dawn;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Common;
+using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -9,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services;
 
@@ -136,9 +143,65 @@ public class UserService : IUserService
     return epoch.AddSeconds(unixTime);
   }
 
-  public void AddUser(Users newUser)
+  public async Task<List<AddUserResponse>> AddUserAsync(List<AddUserRequest> items)
   {
-    throw new NotImplementedException();
+    try
+    {
+      var responses = new List<AddUserResponse>();
+
+      Logger.LogDebug($"AddUser(items count '{items.Count}')");
+
+      foreach (AddUserRequest item in items)
+      {
+        AddUserResponse response = await ProcessUserRequest(item);
+        responses.Add(response);
+      }
+
+      return responses;
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError($"AddUser exception {ex.Message}");
+      throw;
+    }
+  }
+
+  private async Task<AddUserResponse> ProcessUserRequest(AddUserRequest userRequest)
+  {
+    Users user = GetByUserName(userRequest.Username);
+    if (user != null)
+    {
+      return new AddUserResponse
+      {
+        Username = userRequest.Username.ToLower(),
+        Message = $"Already exists"
+      };
+    }
+
+    var newUser = Users.CreateDefault(userRequest);
+    var newPassword = newUser.Password;
+
+    ChangePassword(newUser, new ChangePasswordRequest
+    {
+      NewPassword = newUser.Password
+    });
+
+    await _dbContext.Users.AddAsync(newUser);
+    await _dbContext.SaveChangesAsync();
+
+    var response = new AddUserResponse
+    {
+      Username = newUser.Username,
+      Password = newPassword
+    };
+
+    return response;
+  }
+
+
+  public void AddUsers()
+  {
+
   }
 
 }
