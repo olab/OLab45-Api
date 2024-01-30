@@ -143,7 +143,35 @@ public class AuthController : OLabController
       if (!auth.HasAccess("X", "UserAdmin", 0))
         return OLabUnauthorizedResult.Result();
 
-      var responses = await _userService.AddUserAsync(items);
+      var responses = await _userService.AddUsersAsync(items);
+      return HttpContext.Request.CreateResponse(
+        OLabObjectListResult<AddUserResponse>.Result(responses));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+    /// <summary>
+  /// Adds users from posted json records
+  /// </summary>
+  /// <param name="jsonStringData">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> DeleteUser([FromBody] JArray jsonStringData)
+  {
+    try
+    {
+      var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
+      var auth = GetAuthorization(HttpContext);
+
+      if (!auth.HasAccess("X", "UserAdmin", 0))
+        return OLabUnauthorizedResult.Result();
+
+      var responses = await _userService.DeleteUsersAsync(items);
       return HttpContext.Request.CreateResponse(
         OLabObjectListResult<AddUserResponse>.Result(responses));
     }
@@ -180,7 +208,7 @@ public class AuthController : OLabController
           var userRequestText = reader.ReadLine();
           var userRequest = new AddUserRequest(userRequestText);
 
-          var response = await _userService.ProcessUserRequest(userRequest);
+          var response = await _userService.AddUserAsync(userRequest);
           responses.Add(response);
         }
       }

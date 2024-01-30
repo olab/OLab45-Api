@@ -143,17 +143,17 @@ public class UserService : IUserService
     return epoch.AddSeconds(unixTime);
   }
 
-  public async Task<List<AddUserResponse>> AddUserAsync(List<AddUserRequest> items)
+  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<AddUserRequest> items)
   {
     try
     {
       var responses = new List<AddUserResponse>();
 
-      Logger.LogDebug($"AddUser(items count '{items.Count}')");
+      Logger.LogDebug($"DeleteUserAsync(items count '{items.Count}')");
 
       foreach (AddUserRequest item in items)
       {
-        AddUserResponse response = await ProcessUserRequest(item);
+        AddUserResponse response = await DeleteUserAsync(item);
         responses.Add(response);
       }
 
@@ -161,12 +161,62 @@ public class UserService : IUserService
     }
     catch (Exception ex)
     {
-      Logger.LogError($"AddUser exception {ex.Message}");
+      Logger.LogError($"DeleteUserAsync exception {ex.Message}");
       throw;
     }
   }
 
-  public async Task<AddUserResponse> ProcessUserRequest(AddUserRequest userRequest)
+  public async Task<AddUserResponse> DeleteUserAsync(AddUserRequest userRequest)
+  {
+    Users user = GetByUserName(userRequest.Username);
+    if (user == null)
+    {
+      return new AddUserResponse
+      {
+        Username = userRequest.Username.ToLower(),
+        Message = $"User does not exist"
+      };
+    }
+
+    var physUser = 
+      await _dbContext.Users.FirstOrDefaultAsync( x => x.Username == userRequest.Username );
+
+    _dbContext.Users.Remove(physUser);
+    await _dbContext.SaveChangesAsync();
+
+    var response = new AddUserResponse
+    {
+      Username = physUser.Username,
+      Message = "Deleted"
+    };
+
+    return response;
+  }
+
+  public async Task<List<AddUserResponse>> AddUsersAsync(List<AddUserRequest> items)
+  {
+    try
+    {
+      var responses = new List<AddUserResponse>();
+
+      Logger.LogDebug($"AddUserAsync(items count '{items.Count}')");
+
+      foreach (AddUserRequest item in items)
+      {
+        AddUserResponse response = await AddUserAsync(item);
+        responses.Add(response);
+      }
+
+      return responses;
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError($"AddUserAsync exception {ex.Message}");
+      throw;
+    }
+  }
+
+  public async Task<AddUserResponse> AddUserAsync(AddUserRequest userRequest)
   {
     Users user = GetByUserName(userRequest.Username);
     if (user != null)
