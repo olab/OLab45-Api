@@ -127,10 +127,10 @@ public class AuthController : OLabController
   }
 
   /// <summary>
-  /// 
+  /// Adds users from posted json records
   /// </summary>
-  /// <param name="model"></param>
-  /// <returns></returns>
+  /// <param name="jsonStringData">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> AddUser([FromBody] JArray jsonStringData)
@@ -155,9 +155,10 @@ public class AuthController : OLabController
   }
 
   /// <summary>
-  /// 
+  /// Adds users from CSV file
   /// </summary>
-  /// <returns></returns>
+  /// <param name="file">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> AddUsers(IFormFile file)
