@@ -92,7 +92,7 @@ public class OLabAuthMiddleware
           // SignalR has it's own
           var path = context.HttpContext.Request.Path;
 
-          var accessToken = authentication.ExtractAccessToken(
+          var accessToken = OLabAuthentication.ExtractAccessToken(
             context.Request,
             path.Value.Contains("/login"));
 
