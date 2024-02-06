@@ -63,6 +63,8 @@ namespace OLabWebAPI.Endpoints.WebApi
     {
       try
       {
+        uint mapId = 0;
+
         // validate token/setup up common properties
         var auth = GetAuthorization(HttpContext);
 
@@ -88,19 +90,20 @@ namespace OLabWebAPI.Endpoints.WebApi
 
           Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {stream.Length}");
 
-          await _endpoint.ImportAsync(
+          mapId = await _endpoint.ImportAsync(
             stream,
             Request.Form.Files[0].FileName,
             token);
-
         }
 
         var dto = new ImportResponse
         {
-          Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+          MapId = mapId,
+          LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
         };
 
-        return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
+        return HttpContext.Request.CreateResponse(
+          OLabObjectResult<ImportResponse>.Result(dto));
 
       }
       catch (Exception ex)

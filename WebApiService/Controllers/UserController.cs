@@ -1,8 +1,12 @@
 using Dawn;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
 using OLab.Data.Models;
@@ -118,4 +122,100 @@ public class AuthController : OLabController
     }
   }
 
+  /// <summary>
+  /// Adds users from posted json records
+  /// </summary>
+  /// <param name="jsonStringData">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> AddUser([FromBody] JArray jsonStringData)
+  {
+    try
+    {
+      var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
+      var auth = GetAuthorization(HttpContext);
+
+      if (!auth.HasAccess("X", "UserAdmin", 0))
+        return OLabUnauthorizedResult.Result();
+
+      var responses = await _userService.AddUsersAsync(items);
+      return HttpContext.Request.CreateResponse(
+        OLabObjectListResult<AddUserResponse>.Result(responses));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+    /// <summary>
+  /// Adds users from posted json records
+  /// </summary>
+  /// <param name="jsonStringData">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> DeleteUser([FromBody] JArray jsonStringData)
+  {
+    try
+    {
+      var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
+      var auth = GetAuthorization(HttpContext);
+
+      if (!auth.HasAccess("X", "UserAdmin", 0))
+        return OLabUnauthorizedResult.Result();
+
+      var responses = await _userService.DeleteUsersAsync(items);
+      return HttpContext.Request.CreateResponse(
+        OLabObjectListResult<AddUserResponse>.Result(responses));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+  /// <summary>
+  /// Adds users from CSV file
+  /// </summary>
+  /// <param name="file">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> AddUsers(IFormFile file)
+  {
+    try
+    {
+      var responses = new List<AddUserResponse>();
+      var auth = GetAuthorization(HttpContext);
+
+      // test if user has access to add users.
+      if (!auth.HasAccess("X", "UserAdmin", 0))
+        return OLabUnauthorizedResult.Result();
+
+      var result = new List<string>();
+      using (var reader = new StreamReader(file.OpenReadStream()))
+      {
+        while (reader.Peek() >= 0)
+        {
+          var userRequestText = reader.ReadLine();
+          var userRequest = new AddUserRequest(userRequestText);
+
+          var response = await _userService.AddUserAsync(userRequest);
+          responses.Add(response);
+        }
+      }
+
+      return HttpContext.Request.CreateResponse(
+        OLabObjectListResult<AddUserResponse>.Result(responses));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+  }
 }

@@ -107,7 +107,7 @@ public class OLabAuthentication : IOLabAuthentication
   /// <param name="allowAnonymous">Flag is anonymous is allowed when no token available</param>
   /// <returns>Bearer token</returns>
   /// <exception cref="OLabUnauthorizedException"></exception>
-  public string ExtractAccessToken(HttpRequest request, bool allowAnonymous = false)
+  public static string ExtractAccessToken(HttpRequest request, bool allowAnonymous = false)
   {
     var token = "";
 
@@ -231,10 +231,12 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument(user, nameof(user)).NotNull();
 
-    _logger.LogDebug($"generatring token");
+    Logger.LogDebug($"generatring token");
+
+    var secretBytes = Encoding.Default.GetBytes(_config.GetAppSettings().Secret[..40]);
 
     var securityKey =
-      new SymmetricSecurityKey(Encoding.Default.GetBytes(_config.GetAppSettings().Secret[..40]));
+      new SymmetricSecurityKey(secretBytes);
 
     var tokenDescriptor = new SecurityTokenDescriptor
     {

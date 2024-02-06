@@ -16,6 +16,7 @@ using OLabWebAPI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -92,7 +93,7 @@ public class OLabAuthMiddleware
           // SignalR has it's own
           var path = context.HttpContext.Request.Path;
 
-          var accessToken = authentication.ExtractAccessToken(
+          var accessToken = OLabAuthentication.ExtractAccessToken(
             context.Request,
             path.Value.Contains("/login"));
 
@@ -102,6 +103,27 @@ public class OLabAuthMiddleware
         }
       };
     });
+  }
+
+  private string GetFunctionName(HttpContext hostContext)
+  {
+    if (!hostContext.Request.Path.HasValue)
+      return string.Empty;
+
+    // split the url into parts and reverse the list
+    // and return the first part that's not a number
+    // (in case there are params in the url)
+    var urlParts = hostContext.Request.Path.Value.Split("/").ToList();
+    urlParts.Reverse();
+
+    foreach (var part in urlParts)
+    {
+      int i = 0;
+      if (!int.TryParse(part, out i))
+        return part.ToLower();
+    }
+
+    return string.Empty;
   }
 
   public async Task InvokeAsync(
@@ -116,15 +138,15 @@ public class OLabAuthMiddleware
     try
     {
       _headers = hostContext.GetHttpRequestHeaders();
-      _functionName = hostContext.Request.Path.HasValue ?
-          Path.GetFileName(hostContext.Request.Path.Value) :
-          string.Empty;
+      _functionName = GetFunctionName(hostContext);
 
       _httpRequest = hostContext.GetHttpRequest();
 
-      _logger.LogInformation($"Middleware Invoke. function '{_functionName}'");
+      _logger.LogInformation($"Middleware Invoke. url '{hostContext.Request.Path.Value}'");
 
-      if (_functionName.ToLower().Contains("login") || _functionName.ToLower().Contains("health"))
+      if (_functionName.Contains("login") ||
+           _functionName.Contains("health") ||
+           _functionName.Contains("loginanonymous"))
         await _next(hostContext);
 
       // if not login endpoint, then continue with middleware evaluation

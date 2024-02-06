@@ -1,4 +1,6 @@
 using Dawn;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Data.Models;
 using OLab.Api.Utils;
@@ -138,9 +140,109 @@ public class UserService : IUserService
     return epoch.AddSeconds(unixTime);
   }
 
-  public void AddUser(Users newUser)
+  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<AddUserRequest> items)
   {
-    throw new NotImplementedException();
+    try
+    {
+      var responses = new List<AddUserResponse>();
+
+      Logger.LogDebug($"DeleteUserAsync(items count '{items.Count}')");
+
+      foreach (AddUserRequest item in items)
+      {
+        AddUserResponse response = await DeleteUserAsync(item);
+        responses.Add(response);
+      }
+
+      return responses;
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError($"DeleteUserAsync exception {ex.Message}");
+      throw;
+    }
+  }
+
+  public async Task<AddUserResponse> DeleteUserAsync(AddUserRequest userRequest)
+  {
+    Users user = GetByUserName(userRequest.Username);
+    if (user == null)
+    {
+      return new AddUserResponse
+      {
+        Username = userRequest.Username.ToLower(),
+        Message = $"User does not exist"
+      };
+    }
+
+    var physUser = 
+      await _dbContext.Users.FirstOrDefaultAsync( x => x.Username == userRequest.Username );
+
+    _dbContext.Users.Remove(physUser);
+    await _dbContext.SaveChangesAsync();
+
+    var response = new AddUserResponse
+    {
+      Username = physUser.Username,
+      Message = "Deleted"
+    };
+
+    return response;
+  }
+
+  public async Task<List<AddUserResponse>> AddUsersAsync(List<AddUserRequest> items)
+  {
+    try
+    {
+      var responses = new List<AddUserResponse>();
+
+      Logger.LogDebug($"AddUserAsync(items count '{items.Count}')");
+
+      foreach (AddUserRequest item in items)
+      {
+        AddUserResponse response = await AddUserAsync(item);
+        responses.Add(response);
+      }
+
+      return responses;
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError($"AddUserAsync exception {ex.Message}");
+      throw;
+    }
+  }
+
+  public async Task<AddUserResponse> AddUserAsync(AddUserRequest userRequest)
+  {
+    Users user = GetByUserName(userRequest.Username);
+    if (user != null)
+    {
+      return new AddUserResponse
+      {
+        Username = userRequest.Username.ToLower(),
+        Message = $"Already exists"
+      };
+    }
+
+    var newUser = Users.CreateDefault(userRequest);
+    var newPassword = newUser.Password;
+
+    ChangePassword(newUser, new ChangePasswordRequest
+    {
+      NewPassword = newUser.Password
+    });
+
+    await _dbContext.Users.AddAsync(newUser);
+    await _dbContext.SaveChangesAsync();
+
+    var response = new AddUserResponse
+    {
+      Username = newUser.Username,
+      Password = newPassword
+    };
+
+    return response;
   }
 
 }

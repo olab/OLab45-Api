@@ -85,7 +85,8 @@ namespace OLabWebAPI.Endpoints.WebApi
 
       var dto = new ImportResponse
       {
-        Messages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+        MapId = 0,
+        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
       };
 
       return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
