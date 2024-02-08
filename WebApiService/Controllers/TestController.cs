@@ -51,6 +51,11 @@ public class TestController : Controller
     var exeFvi = FileVersionInfo.GetVersionInfo(assembly.Location);
     var exeFileName = Path.GetFileNameWithoutExtension(exeFvi.FileName);
 
+    var mainMetadata = AssemblyMetadata.CreateFromFile(exeFvi.FileName);
+    var mainModule = mainMetadata.GetModules().First();
+    var mainReader = mainModule.GetMetadataReader();
+    var mainAssemblyDef = mainReader.GetAssemblyDefinition();
+
     foreach (var olabAsm in olabAsms)
     {
       var fvi = FileVersionInfo.GetVersionInfo(olabAsm.Location);
@@ -68,7 +73,7 @@ public class TestController : Controller
     return Ok(new
     {
       statusCode = 200,
-      main = exeFvi.FileVersion,
+      main = mainAssemblyDef.Version,
       modules = expando,
       message = "Hello there!"
     });
