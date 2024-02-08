@@ -1,6 +1,7 @@
 ﻿using Dawn;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Utils;
@@ -55,8 +56,13 @@ public class TestController : Controller
       var fvi = FileVersionInfo.GetVersionInfo(olabAsm.Location);
       var fileName = Path.GetFileName(fvi.FileName);
 
-      Logger.LogInformation($"  {fileName} {fvi.FileVersion}");
-      expando.TryAdd(fileName, fvi.FileVersion);
+      var metadata = AssemblyMetadata.CreateFromFile(fvi.FileName);
+      var module = metadata.GetModules().First();
+      var reader = module.GetMetadataReader();
+      var assemblyDef = reader.GetAssemblyDefinition();
+
+      Logger.LogInformation($"  {fileName} {assemblyDef.Version}");
+      expando.TryAdd(fileName, assemblyDef.Version);
     }
 
     return Ok(new
