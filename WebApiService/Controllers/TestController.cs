@@ -1,5 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Dawn;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+using Microsoft.Extensions.Logging;
+using OLab.Api.Utils;
+using OLab.Common.Interfaces;
+using OLabWebAPI.Endpoints.WebApi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +20,17 @@ namespace OLabWebAPI.Controllers;
 [ApiController]
 public class TestController : Controller
 {
+  protected IOLabLogger Logger = null;
+
+  public TestController(
+    ILoggerFactory loggerFactory
+  )
+  {
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+
+    Logger = OLabLogger.CreateNew<AuthController>(loggerFactory);
+  }
+
   public IActionResult Index()
   {
     return View();
@@ -38,15 +55,16 @@ public class TestController : Controller
       var fvi = FileVersionInfo.GetVersionInfo(olabAsm.Location);
       var fileName = Path.GetFileName(fvi.FileName);
 
+      Logger.LogInformation($"  {fileName} {fvi.FileVersion}");
       expando.TryAdd(fileName, fvi.FileVersion);
     }
 
-    return Ok(new 
-    { 
-      statusCode = 200, 
+    return Ok(new
+    {
+      statusCode = 200,
       main = exeFvi.FileVersion,
       modules = expando,
-      message = "Hello there!" 
+      message = "Hello there!"
     });
   }
 }
