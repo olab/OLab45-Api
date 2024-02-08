@@ -38,7 +38,7 @@ public class TestController : Controller
       var fvi = FileVersionInfo.GetVersionInfo(olabAsm.Location);
       var fileName = Path.GetFileName(fvi.FileName);
 
-      expando.Add(fileName, fvi.FileVersion);
+      expando.TryAdd(fileName, fvi.FileVersion);
     }
 
     return Ok(new 
