@@ -59,7 +59,9 @@ public partial class QuestionResponseController : OLabController
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
+
       var session = new OLabSession(Logger, DbContext, auth.UserContext);
+      session.SetMapId(body.MapId);
 
       var question = await GetQuestionAsync(body.QuestionId);
       if (question == null)
@@ -69,7 +71,6 @@ public partial class QuestionResponseController : OLabController
         await _endpoint.PostQuestionResponseAsync(question, body);
 
       session.OnQuestionResponse(
-        body.MapId,
         body.NodeId,
         question.Id,
         body.Value);

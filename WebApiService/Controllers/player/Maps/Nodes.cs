@@ -29,7 +29,6 @@ namespace OLabWebAPI.Endpoints.WebApi.Player
       {
         // validate token/setup up common properties
         var auth = GetAuthorization(HttpContext);
-
         var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
 
         return HttpContext.Request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
