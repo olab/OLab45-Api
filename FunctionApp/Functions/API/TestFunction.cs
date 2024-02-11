@@ -7,8 +7,27 @@ using OLab.Common.Interfaces;
 using OLab.Api.Model;
 using System.Linq;
 using System.Net;
+using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
+using System.Reflection;
+using System;
+using System.IO;
+using Humanizer;
+using OLab.Api.Common;
+using OLab.Api.Dto;
+using OLab.FunctionApp.Extensions;
 
 namespace OLab.FunctionApp.Functions.API;
+
+public class HealthResult
+{
+  public HttpStatusCode statusCode;
+  public System.Version main;
+  public object modules;
+  public string message;
+}
 
 public class TestFunction : OLabFunction
 {
@@ -36,12 +55,44 @@ public class TestFunction : OLabFunction
     [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData request,
     FunctionContext hostContext)
   {
-    //Logger.LogInformation("LogInformation set");
-    //Logger.LogWarning("LogWarning set");
-    //Logger.LogError("LogError set");
-    //Logger.LogFatal("LogFatal set");
+    var asms = AppDomain.CurrentDomain.GetAssemblies().ToList();
+    var olabAsms = asms.Where(x => x.FullName.ToLower().Contains("olab"));
 
-    var response = request.CreateResponse(HttpStatusCode.OK);
+    var expando = new ExpandoObject() as IDictionary<string, Object>;
+    // x.Add("NewProp", string.Empty);
+
+    var assembly = Assembly.GetEntryAssembly(); // Assembly.GetExecutingAssembly();
+    var exeFvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+    var exeFileName = Path.GetFileNameWithoutExtension(exeFvi.FileName);
+
+    var mainMetadata = AssemblyMetadata.CreateFromFile(exeFvi.FileName);
+    var mainModule = mainMetadata.GetModules().First();
+    var mainReader = mainModule.GetMetadataReader();
+    var mainAssemblyDef = mainReader.GetAssemblyDefinition();
+
+    foreach (var olabAsm in olabAsms)
+    {
+      var fvi = FileVersionInfo.GetVersionInfo(olabAsm.Location);
+      var fileName = Path.GetFileName(fvi.FileName);
+
+      var metadata = AssemblyMetadata.CreateFromFile(fvi.FileName);
+      var module = metadata.GetModules().First();
+      var reader = module.GetMetadataReader();
+      var assemblyDef = reader.GetAssemblyDefinition();
+
+      Logger.LogInformation($"  {fileName} {assemblyDef.Version}");
+      expando.TryAdd(fileName, assemblyDef.Version);
+    }
+
+    var dto = new HealthResult
+    {
+      statusCode = HttpStatusCode.OK,
+      main = mainAssemblyDef.Version,
+      modules = expando,
+      message = "Hello there!"
+    };
+
+    response = request.CreateResponse(OLabObjectResult<HealthResult>.Result(dto));
     return response;
   }
 
