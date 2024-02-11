@@ -5,13 +5,6 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
     <ImplicitUsings>enabled</ImplicitUsings>
-    <Deterministic>False</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -33,10 +26,6 @@
     <PackageReference Include="Azure.Identity" Version="1.10.4" />
     <PackageReference Include="Dawn.Guard" Version="1.12.0" />
     <PackageReference Include="FluentValidation" Version="11.8.1" />
-    <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="HttpMultipartParser" Version="8.3.0" />
     <PackageReference Include="JsonDiffPatch.Net" Version="2.3.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.0" />
