@@ -112,15 +112,13 @@ public partial class FilesController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      using (var stream = new MemoryStream())
-      {
-        var formHelper = await GetFormFieldHelperAsync(stream, Request.Form);
+      using var stream = new MemoryStream();
+      var formHelper = await GetFormFieldHelperAsync(stream, Request.Form);
 
-        var dto = new FilesFullDto(formHelper);
-        dto = await _endpoint.PostAsync(auth, dto, cancel);
+      var dto = new FilesFullDto(formHelper);
+      dto = await _endpoint.PostAsync(auth, dto, cancel);
 
-        return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
-      }
+      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
 
     }
     catch (Exception ex)

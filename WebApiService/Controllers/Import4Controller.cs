@@ -19,156 +19,152 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi
+namespace OLabWebAPI.Endpoints.WebApi;
+
+[Route("olab/api/v3/import4")]
+[ApiController]
+public class Import4Controller : OLabController
 {
-  [Route("olab/api/v3/import4")]
-  [ApiController]
-  public class Import4Controller : OLabController
+  private readonly Import4Endpoint _endpoint;
+
+  public Import4Controller(
+    ILoggerFactory loggerFactory,
+    IOLabConfiguration configuration,
+    OLabDBContext dbContext,
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+      configuration,
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider)
   {
-    private readonly Import4Endpoint _endpoint;
+    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    public Import4Controller(
-      ILoggerFactory loggerFactory,
-      IOLabConfiguration configuration,
-      OLabDBContext dbContext,
-      IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-      IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
-        configuration,
-        dbContext,
-        wikiTagProvider,
-        fileStorageProvider)
+    Logger = OLabLogger.CreateNew<Import4Controller>(loggerFactory, true);
+
+    _endpoint = new Import4Endpoint(
+      Logger,
+      configuration,
+      DbContext,
+      wikiTagProvider,
+      fileStorageProvider);
+  }
+
+  /// <summary>
+  /// Runs an import
+  /// </summary>
+  /// <param name="request">ImportRequest</param>
+  /// <returns>IActionResult</returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> Import(
+    CancellationToken token)
+  {
+    try
     {
-      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+      uint mapId = 0;
 
-      Logger = OLabLogger.CreateNew<Import4Controller>(loggerFactory, true);
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
 
-      _endpoint = new Import4Endpoint(
-        Logger,
-        configuration,
-        DbContext,
-        wikiTagProvider,
-        fileStorageProvider);
-    }
+      if (!auth.HasAccess("X", "Import", 0))
+        throw new OLabUnauthorizedException();
 
-    /// <summary>
-    /// Runs an import
-    /// </summary>
-    /// <param name="request">ImportRequest</param>
-    /// <returns>IActionResult</returns>
-    [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> Import(
-      CancellationToken token)
-    {
-      try
+      if (Request.Form == null)
+        throw new ArgumentNullException(nameof(Request.Form));
+
+      var form = Request.Form;
+
+      if (form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
+        throw new Exception("Invalid file name");
+
+      using (var stream = new MemoryStream())
       {
-        uint mapId = 0;
+        var helper = new OLabFormFieldHelper(stream);
 
-        // validate token/setup up common properties
-        var auth = GetAuthorization(HttpContext);
+        var file = Request.Form.Files[0];
+        await file.CopyToAsync(helper.Stream);
 
-        if (!auth.HasAccess("X", "Import", 0))
-          throw new OLabUnauthorizedException();
+        helper.Stream.Position = 0;
 
-        if (Request.Form == null)
-          throw new ArgumentNullException(nameof(Request.Form));
+        Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {stream.Length}");
 
-        var form = Request.Form;
-
-        if (form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
-          throw new Exception("Invalid file name");
-
-        using (var stream = new MemoryStream())
-        {
-          var helper = new OLabFormFieldHelper(stream);
-
-          var file = Request.Form.Files[0];
-          await file.CopyToAsync(helper.Stream);
-
-          helper.Stream.Position = 0;
-
-          Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {stream.Length}");
-
-          mapId = await _endpoint.ImportAsync(
-            stream,
-            Request.Form.Files[0].FileName,
-            token);
-        }
-
-        var dto = new ImportResponse
-        {
-          MapId = mapId,
-          LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
-        };
-
-        return HttpContext.Request.CreateResponse(
-          OLabObjectResult<ImportResponse>.Result(dto));
-
+        mapId = await _endpoint.ImportAsync(
+          stream,
+          Request.Form.Files[0].FileName,
+          token);
       }
-      catch (Exception ex)
+
+      var dto = new ImportResponse
       {
-        return ProcessException(ex, HttpContext.Request);
-      }
+        MapId = mapId,
+        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+      };
+
+      return HttpContext.Request.CreateResponse(
+        OLabObjectResult<ImportResponse>.Result(dto));
 
     }
-
-    [HttpGet("export/{id}/json")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> ExportAsJson(
-      uint id,
-      CancellationToken token)
+    catch (Exception ex)
     {
-      try
-      {
-        // validate token/setup up common properties
-        var auth = GetAuthorization(HttpContext);
-
-        if (!auth.HasAccess("X", "Export", 0))
-          throw new OLabUnauthorizedException();
-
-        var dto = await _endpoint.ExportAsync(id, token);
-        return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
-
-      }
-      catch (Exception ex)
-      {
-        return ProcessException(ex, HttpContext.Request);
-      }
-
+      return ProcessException(ex, HttpContext.Request);
     }
 
-    [HttpGet("export/{id}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> Export(
-      uint id,
-      CancellationToken token)
+  }
+
+  [HttpGet("export/{id}/json")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> ExportAsJson(
+    uint id,
+    CancellationToken token)
+  {
+    try
     {
-      try
-      {
-        // validate token/setup up common properties
-        var auth = GetAuthorization(HttpContext);
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
 
-        if (!auth.HasAccess("X", "Export", 0))
-          throw new OLabUnauthorizedException();
+      if (!auth.HasAccess("X", "Export", 0))
+        throw new OLabUnauthorizedException();
 
-        using (var memoryStream = new MemoryStream())
-        {
-          await _endpoint.ExportAsync(memoryStream, id, token);
+      var dto = await _endpoint.ExportAsync(id, token);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
 
-          memoryStream.Position = 0;
-          var now = DateTime.UtcNow;
-          return File(
-            memoryStream.ToArray(),
-            "application/zip",
-            $"OLab4Export.map{id}.{now.ToString("yyyyMMddHHmm")}.zip");
-        }
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
 
-      }
-      catch (Exception ex)
-      {
-        return ProcessException(ex, HttpContext.Request);
-      }
+  }
 
+  [HttpGet("export/{id}")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> Export(
+    uint id,
+    CancellationToken token)
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      if (!auth.HasAccess("X", "Export", 0))
+        throw new OLabUnauthorizedException();
+
+      using var memoryStream = new MemoryStream();
+      await _endpoint.ExportAsync(memoryStream, id, token);
+
+      memoryStream.Position = 0;
+      var now = DateTime.UtcNow;
+      return File(
+        memoryStream.ToArray(),
+        "application/zip",
+        $"OLab4Export.map{id}.{now.ToString("yyyyMMddHHmm")}.zip");
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
     }
 
   }
