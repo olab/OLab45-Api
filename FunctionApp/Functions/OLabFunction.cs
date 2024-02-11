@@ -1,14 +1,13 @@
 using Dawn;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using OLab.Access;
 using OLab.Api.Data.Interface;
-using OLab.Api.Models;
+using OLab.Api.Model;
 using OLab.Common.Interfaces;
-using OLab.Data.Exceptions;
 using OLab.Data.Interface;
-using OLab.Data.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -78,5 +77,19 @@ public class OLabFunction
 
     throw new Exception("unable to get auth RequestContext");
 
+  }
+
+  /// <summary>
+  /// ReadAsync question with responses
+  /// </summary>
+  /// <param name="id">question id</param>
+  /// <returns></returns>
+  [NonAction]
+  protected async ValueTask<SystemQuestions> GetQuestionAsync(uint id)
+  {
+    var item = await DbContext.SystemQuestions
+        .Include(x => x.SystemQuestionResponses)
+        .FirstOrDefaultAsync(x => x.Id == id);
+    return item;
   }
 }

@@ -9,9 +9,9 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Contracts;
-using OLab.Data.Dtos;
+using OLab.Api.Dto;
 using OLab.Data.Interface;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.Endpoints;
 using OLab.FunctionApp.Extensions;
 using System;
@@ -19,7 +19,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Linq;
 
 namespace OLab.FunctionApp.Functions.API;
 
@@ -87,10 +87,10 @@ public class Import4Function : OLabFunction
       var dto = new ImportResponse
       {
         MapId = mapId,
-        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
       };
 
-      response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto, HttpStatusCode.BadRequest));
+      response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
 
       return response;
     }

@@ -3,7 +3,7 @@ using FluentValidation;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
-using OLab.Data.Dtos;
+using OLab.Api.Dto;
 
 using OLab.FunctionApp.Extensions;
 using System;

@@ -1,7 +1,7 @@
 ﻿using Dawn;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
-using OLab.Data;
+using OLab.Common.Utils;
 using System.Configuration;
 using System.IO.Compression;
 
@@ -181,13 +181,11 @@ public class FilesFilesystemModule : OLabFileStorageModule
       var physicalFilePath = GetPhysicalPath(folderName, fileName);
       logger.LogInformation($"ReadFileAsync reading file '{physicalFilePath}'");
 
-      using (var inputStream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read))
-      {
-        inputStream.CopyTo(stream);
+      using var inputStream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read);
+      inputStream.CopyTo(stream);
 
-        stream.Position = 0;
-        logger.LogInformation($"  read '{inputStream.Length}' bytes");
-      }
+      stream.Position = 0;
+      logger.LogInformation($"  read '{inputStream.Length}' bytes");
 
     }
     catch (Exception ex)
@@ -299,22 +297,17 @@ public class FilesFilesystemModule : OLabFileStorageModule
       {
         var physicalFilePath = GetPhysicalPath(file);
 
-        using (var fileStream = new FileStream(physicalFilePath, FileMode.Open))
-        {
-          var entryPath = BuildPath(zipEntryFolderName, Path.GetFileName(file));
-          // normalize to standard folder separator
-          entryPath = entryPath.Replace('\\', '/');
+        using var fileStream = new FileStream(physicalFilePath, FileMode.Open);
+        var entryPath = BuildPath(zipEntryFolderName, Path.GetFileName(file));
+        // normalize to standard folder separator
+        entryPath = entryPath.Replace('\\', '/');
 
-          logger.LogInformation($"  adding '{file}' to archive '{entryPath}'. size = {fileStream.Length}");
+        logger.LogInformation($"  adding '{file}' to archive '{entryPath}'. size = {fileStream.Length}");
 
-          var entry = archive.CreateEntry(entryPath);
-          using (var entryStream = entry.Open())
-          {
-            fileStream.CopyTo(entryStream);
-            entryStream.Close();
-          }
-
-        }
+        var entry = archive.CreateEntry(entryPath);
+        using var entryStream = entry.Open();
+        fileStream.CopyTo(entryStream);
+        entryStream.Close();
 
       }
 

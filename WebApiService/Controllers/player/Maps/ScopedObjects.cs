@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
-using OLab.Data.Dtos;
 using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
@@ -26,7 +25,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsRawAsync(auth, id);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -50,7 +49,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<ScopedObjectsDto>.Result(dto));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {

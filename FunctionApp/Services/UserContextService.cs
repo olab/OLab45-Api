@@ -1,7 +1,8 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using OLab.Api.Models;
+using OLab.Api.Data.Interface;
+using OLab.Api.Model;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;

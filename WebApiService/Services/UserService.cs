@@ -1,8 +1,7 @@
 using Dawn;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
@@ -11,8 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using OLab.Api.Models;
-using OLab.Data.Contracts;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Services;
 
@@ -175,8 +173,8 @@ public class UserService : IUserService
       };
     }
 
-    var physUser = 
-      await _dbContext.Users.FirstOrDefaultAsync( x => x.Username == userRequest.Username );
+    var physUser =
+      await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == userRequest.Username);
 
     _dbContext.Users.Remove(physUser);
     await _dbContext.SaveChangesAsync();

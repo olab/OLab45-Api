@@ -2,12 +2,10 @@ using Dawn;
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
-using OLab.Api.Models;
+using OLab.Api.Dto;
+using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Dtos;
-using OLab.Data.Interface;
-using OLab.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -69,7 +67,7 @@ public class OLabAuthorization : IOLabAuthorization
           {
             Id = item.Id,
             ImageableId = item.Id,
-            ImageableType = ConstantStrings.ScopeLevelMap,
+            ImageableType = Constants.ScopeLevelMap,
             Acl = "RX"
           });
       }
@@ -79,14 +77,14 @@ public class OLabAuthorization : IOLabAuthorization
   public IActionResult HasAccess(string acl, ScopedObjectDto dto)
   {
     // test if user has access to write to parent.
-    if (dto.ImageableType == ConstantStrings.ScopeLevelMap)
-      if (!HasAccess("W", ConstantStrings.ScopeLevelMap, dto.ImageableId))
+    if (dto.ImageableType == Constants.ScopeLevelMap)
+      if (!HasAccess("W", Constants.ScopeLevelMap, dto.ImageableId))
         return OLabUnauthorizedResult.Result();
-    if (dto.ImageableType == ConstantStrings.ScopeLevelServer)
-      if (!HasAccess("W", ConstantStrings.ScopeLevelServer, dto.ImageableId))
+    if (dto.ImageableType == Constants.ScopeLevelServer)
+      if (!HasAccess("W", Constants.ScopeLevelServer, dto.ImageableId))
         return OLabUnauthorizedResult.Result();
-    if (dto.ImageableType == ConstantStrings.ScopeLevelNode)
-      if (!HasAccess("W", ConstantStrings.ScopeLevelNode, dto.ImageableId))
+    if (dto.ImageableType == Constants.ScopeLevelNode)
+      if (!HasAccess("W", Constants.ScopeLevelNode, dto.ImageableId))
         return OLabUnauthorizedResult.Result();
 
     return new NoContentResult();

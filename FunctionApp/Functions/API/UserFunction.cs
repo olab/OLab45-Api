@@ -9,7 +9,7 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Contracts;
 using OLab.Data.Interface;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;

@@ -6,7 +6,7 @@ using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 using OLab.FunctionApp.Services;
 using OLab.FunctionApp.Utils;

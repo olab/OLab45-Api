@@ -7,15 +7,14 @@ using OLab.Api.Common;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Dtos;
-using OLab.Data.Dtos.Designer;
 using OLab.Data.Interface;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
+using OLab.Api.Dto;
+using OLab.Api.Dto.Designer;
 
 namespace OLab.FunctionApp.Functions.API.designer;
 

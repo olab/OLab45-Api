@@ -4,7 +4,7 @@ using Azure.Storage.Blobs.Models;
 using Dawn;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
-using OLab.Data;
+using OLab.Common.Utils;
 using System.Configuration;
 using System.IO.Compression;
 
@@ -128,12 +128,10 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       logger.LogInformation($"MoveFileAsync '{fileName}' {sourceFolder} -> {destinationFolder}");
 
-      using (var stream = new MemoryStream())
-      {
-        await ReadFileAsync(stream, sourceFolder, fileName, token);
-        await WriteFileAsync(stream, destinationFolder, fileName, token);
-        await DeleteFileAsync(sourceFolder, fileName);
-      }
+      using var stream = new MemoryStream();
+      await ReadFileAsync(stream, sourceFolder, fileName, token);
+      await WriteFileAsync(stream, destinationFolder, fileName, token);
+      await DeleteFileAsync(sourceFolder, fileName);
 
     }
     catch (Exception ex)
@@ -285,28 +283,26 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       logger.LogInformation($"extracting '{sourceFolderName}' {sourceFileName} -> {targetDirectoryName}");
 
-      using (var stream = new MemoryStream())
-      {
-        var fileProcessor = new ZipFileProcessor(
-          _blobServiceClient.GetBlobContainerClient(_containerName),
-          logger,
-          cfg);
+      using var stream = new MemoryStream();
+      var fileProcessor = new ZipFileProcessor(
+        _blobServiceClient.GetBlobContainerClient(_containerName),
+        logger,
+        cfg);
 
-        await ReadFileAsync(
-          stream,
-          sourceFolderName,
-          sourceFileName,
-          token);
+      await ReadFileAsync(
+        stream,
+        sourceFolderName,
+        sourceFileName,
+        token);
 
-        var extractPath = GetPhysicalPath(
-          sourceFolderName,
-          Path.GetFileNameWithoutExtension(sourceFileName));
+      var extractPath = GetPhysicalPath(
+        sourceFolderName,
+        Path.GetFileNameWithoutExtension(sourceFileName));
 
-        await fileProcessor.ProcessFileAsync(
-          stream,
-          extractPath,
-          token);
-      }
+      await fileProcessor.ProcessFileAsync(
+        stream,
+        extractPath,
+        token);
 
       return true;
     }
@@ -363,11 +359,9 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
         logger.LogInformation($"  adding '{blob.Name}' to archive '{entryPath}'. size = {blobStream.Length}");
 
         var entry = archive.CreateEntry(entryPath);
-        using (var entryStream = entry.Open())
-        {
-          blobStream.CopyTo(entryStream);
-          entryStream.Close();
-        }
+        using var entryStream = entry.Open();
+        blobStream.CopyTo(entryStream);
+        entryStream.Close();
 
       }
 

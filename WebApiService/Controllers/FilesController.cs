@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Dto;
 using OLab.Api.Endpoints;
+using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
@@ -15,8 +17,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using OLab.Data.Models;
-using OLab.Data.Dtos;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
@@ -112,15 +112,13 @@ public partial class FilesController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      using (var stream = new MemoryStream())
-      {
-        var formHelper = await GetFormFieldHelperAsync(stream, Request.Form);
+      using var stream = new MemoryStream();
+      var formHelper = await GetFormFieldHelperAsync(stream, Request.Form);
 
-        var dto = new FilesFullDto(formHelper);
-        dto = await _endpoint.PostAsync(auth, dto, cancel);
+      var dto = new FilesFullDto(formHelper);
+      dto = await _endpoint.PostAsync(auth, dto, cancel);
 
-        return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
-      }
+      return HttpContext.Request.CreateResponse(OLabObjectResult<FilesFullDto>.Result(dto));
 
     }
     catch (Exception ex)

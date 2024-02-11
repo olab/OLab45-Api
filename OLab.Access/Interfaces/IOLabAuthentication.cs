@@ -1,6 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using OLab.Api.Models;
-using OLab.Data.Contracts;
+using OLab.Api.Model;
 using System.Collections.Generic;
 
 namespace OLab.Access.Interfaces;

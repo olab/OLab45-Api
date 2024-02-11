@@ -4,7 +4,7 @@ using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.FunctionApp.Utils;
 using System.Threading.Tasks;
 

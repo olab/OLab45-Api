@@ -10,9 +10,9 @@ using OLab.Api.Utils;
 
 using OLab.Common.Interfaces;
 using OLab.Data.Contracts;
-using OLab.Data.Dtos;
+using OLab.Api.Dto;
 using OLab.Data.Interface;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
@@ -280,7 +280,7 @@ public class MapsFunction : OLabFunction
       var auth = GetAuthorization(hostContext);
 
       var dto = await _endpoint.GetScopedObjectsRawAsync(auth, mapId);
-      response = request.CreateResponse(OLabObjectResult<Data.Dtos.Designer.ScopedObjectsDto>.Result(dto));
+      response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -312,7 +312,7 @@ public class MapsFunction : OLabFunction
       var auth = GetAuthorization(hostContext);
 
       var dto = await _endpoint.GetScopedObjectsAsync(auth, mapId);
-      response = request.CreateResponse(OLabObjectResult<Data.Dtos.Designer.ScopedObjectsDto>.Result(dto));
+      response = request.CreateResponse(OLabObjectResult<OLab.Api.Dto.Designer.ScopedObjectsDto>.Result(dto));
     }
     catch (Exception ex)
     {

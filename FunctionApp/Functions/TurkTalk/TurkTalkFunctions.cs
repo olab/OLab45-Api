@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.TurkTalk.Data.Models;
 using OLab.TurkTalk.Endpoints.Interface;
 using System.Threading;

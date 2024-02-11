@@ -7,14 +7,13 @@ using OLab.Api.Endpoints.Player;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Contracts;
-using OLab.Data.Dtos;
+using OLab.Api.Dto;
 using OLab.Data.Interface;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 
 namespace OLab.FunctionApp.Functions.Player;
 

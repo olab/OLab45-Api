@@ -14,13 +14,14 @@ using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data;
 using OLab.Data.Interface;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
 using OLab.TurkTalk.Data.Models;
 using OLab.TurkTalk.Endpoints.BusinessObjects;
 using OLab.TurkTalk.Endpoints.Interface;
 using System;
+using OLab.Api.Data.Interface;
 
 namespace OLab.FunctionApp;
 

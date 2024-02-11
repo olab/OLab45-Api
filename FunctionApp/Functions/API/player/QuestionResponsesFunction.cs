@@ -8,12 +8,13 @@ using OLab.Api.Endpoints.Player;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data;
-using OLab.Data.Dtos;
-using OLab.Data.Models;
+using OLab.Api.Dto;
+using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using OLab.Api.Data;
 
 namespace OLab.FunctionApp.Functions.API.player;
 
@@ -51,20 +52,20 @@ public partial class QuestionResponsesFunction : OLabFunction
     {
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
-      var session = new OLabSession(Logger, DbContext, auth.UserContext);
 
       body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>();
 
-      var question = await DbContext.SystemQuestions
-        .Include(x => x.SystemQuestionResponses)
-        .FirstOrDefaultAsync(x => x.Id == body.QuestionId)
-        ?? throw new Exception($"Question {body.QuestionId} not found");
+      var session = new OLabSession(Logger, DbContext, auth.UserContext);
+      session.SetMapId(body.MapId);
+
+      var question = await GetQuestionAsync(body.QuestionId);
+      if (question == null)
+        throw new Exception($"Question {body.QuestionId} not found");
 
       var result =
         await _endpoint.PostQuestionResponseAsync(question, body);
 
       session.OnQuestionResponse(
-        body.MapId,
         body.NodeId,
         question.Id,
         body.Value);

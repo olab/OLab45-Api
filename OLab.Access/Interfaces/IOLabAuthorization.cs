@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using OLab.Data.Dtos;
-using OLab.Data.Interface;
+using OLab.Api.Dto;
 
 namespace OLab.Api.Data.Interface;
 

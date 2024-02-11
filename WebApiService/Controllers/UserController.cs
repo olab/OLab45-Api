@@ -3,19 +3,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Data.Models;
+using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
-using OLab.Data.Contracts;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
@@ -150,7 +151,7 @@ public class AuthController : OLabController
 
   }
 
-    /// <summary>
+  /// <summary>
   /// Adds users from posted json records
   /// </summary>
   /// <param name="jsonStringData">User records</param>
