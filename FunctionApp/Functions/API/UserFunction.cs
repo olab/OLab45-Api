@@ -140,7 +140,7 @@ public class UserFunction : OLabFunction
   /// <returns>AddUserResponse</returns>
   [Function("AddUser")]
   public async Task<HttpResponseData> AddUserAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/adduser")] HttpRequestData request,
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/adduser")] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken)
   {
     try
@@ -172,7 +172,7 @@ public class UserFunction : OLabFunction
   /// <returns>List of AddUserResponse</returns>
   [Function("DeleteUser")]
   public async Task<HttpResponseData> DeleteUserAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/deleteuser")] HttpRequestData request,
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/deleteuser")] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken)
   {
     try
