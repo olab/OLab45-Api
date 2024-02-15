@@ -4,6 +4,7 @@ using OLab.TurkTalk.Endpoints.MessagePayloads;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -15,7 +16,8 @@ public partial class TurkTalkFunction : OLabFunction
   [SignalROutput(HubName = "Hub")]
   public async Task<IList<object>> RegisterModerator(
     [SignalRTrigger("Hub", "messages", "RegisterModerator", "payload")] SignalRInvocationContext invocationContext,
-    RegisterParticipantRequest payload)
+    RegisterParticipantRequest payload,
+    CancellationToken cancellation)
   {
     try
     {
@@ -28,7 +30,7 @@ public partial class TurkTalkFunction : OLabFunction
         _configuration,
         _conference);
 
-      await endpoint.RegisterModeratorAsync(payload);
+      await endpoint.RegisterModeratorAsync(payload, cancellation);
 
       Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
       return endpoint.MessageQueue.Messages;

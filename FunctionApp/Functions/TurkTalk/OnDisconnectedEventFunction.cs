@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.SignalR;
@@ -44,7 +45,8 @@ public partial class TurkTalkFunction : OLabFunction
   [Function(nameof(OnDisconnectedEvent))]
   [SignalROutput(HubName = "Hub")]
   public async Task<SignalRMessageAction> OnDisconnectedEvent(
-    /* [EventGridTrigger] */ EventGridEvent eventGridEvent)
+    /* [EventGridTrigger] */ EventGridEvent eventGridEvent,
+    CancellationToken cancellation)
   {
     Logger.LogInformation($"Event type: {JsonSerializer.Serialize(eventGridEvent)}");
 
@@ -62,7 +64,8 @@ public partial class TurkTalkFunction : OLabFunction
 
     await endpoint.OnDisconnectedAsync(
       _configuration,
-      payload);
+      payload,
+      cancellation);
 
     Logger.LogInformation(JsonSerializer.Serialize(endpoint.MessageQueue.Messages));
 

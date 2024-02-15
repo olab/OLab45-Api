@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Functions.SignalR;
@@ -21,7 +22,8 @@ public partial class TurkTalkFunction : OLabFunction
   [Function("OnDisconnected")]
   [SignalROutput(HubName = "Hub")]
   public async Task<SignalRMessageAction> OnDisconnectedSignalR(
-    [SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext)
+    [SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext,
+    CancellationToken cancellation)
   {
     Logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
 
@@ -36,7 +38,7 @@ public partial class TurkTalkFunction : OLabFunction
     var payload = new OnDisconnectedRequest();
     payload.ConnectionId = invocationContext.ConnectionId;
 
-    return await OnDisconnectedEvent(eventGridEvent);
+    return await OnDisconnectedEvent(eventGridEvent, cancellation);
   }
 
 #endif
