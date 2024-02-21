@@ -14,12 +14,13 @@ using OLab.Endpoints;
 using OLabWebAPI.Extensions;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
-[Route("olab/api/v3/[controller]/[action]")]
+[Route("olab/api/v3/import3")]
 [ApiController]
 public class Import3Controller : OLabController
 {
@@ -57,6 +58,8 @@ public class Import3Controller : OLabController
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> Import(CancellationToken token)
   {
+    uint mapId = 0;
+
     // validate token/setup up common properties
     var auth = GetAuthorization(HttpContext);
 
@@ -76,7 +79,7 @@ public class Import3Controller : OLabController
       if (Request.Form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
         Logger.LogError("Invalid file name");
       else
-        await _endpoint.ImportAsync(
+        mapId = await _endpoint.ImportAsync(
           archiveFileStream,
           Request.Form.Files[0].FileName,
           token);
@@ -84,8 +87,8 @@ public class Import3Controller : OLabController
 
     var dto = new ImportResponse
     {
-      MapId = 0,
-      LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+      MapId = mapId,
+      LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select( x => x.Message ).ToList()
     };
 
     return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));

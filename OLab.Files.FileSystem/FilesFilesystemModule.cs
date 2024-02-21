@@ -148,7 +148,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
         logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
       }
 
-      return physicalPath;
+      return physicalFileName;
     }
     catch (Exception ex)
     {
@@ -232,6 +232,15 @@ public class FilesFilesystemModule : OLabFileStorageModule
       Directory.Delete(folderName, true);
   }
 
+  /// Create folder
+  /// </summary>
+  /// <param name="folderName">Folder to create</param>
+  private void CreateFolder(string folderName)
+  {
+    if (!Directory.Exists(folderName))
+      Directory.CreateDirectory(folderName);
+  }
+
   /// <summary>
   /// Extract archive file to folder
   /// </summary>
@@ -253,10 +262,12 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
       logger.LogInformation($"extracting '{folderName}' {fileName} -> {extractDirectoryName}");
 
+      // build archive file dir 
       var archiveFilePath = GetPhysicalPath(folderName, fileName);
       var extractPath = GetPhysicalPath(extractDirectoryName);
 
       await DeleteFolderAsync(extractPath);
+      CreateFolder(extractPath);
 
       ZipFile.ExtractToDirectory(archiveFilePath, extractPath);
       return true;
