@@ -99,7 +99,7 @@ public class Import4Controller : OLabController
       var dto = new ImportResponse
       {
         MapId = mapId,
-        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
+        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select( x => x.Message ).ToList()
       };
 
       return HttpContext.Request.CreateResponse(
