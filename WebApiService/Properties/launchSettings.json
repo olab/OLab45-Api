@@ -3,12 +3,20 @@
   "profiles": {
     "olabwebapi": {
       "commandName": "Project",
-      "launchUrl": "weatherforecast",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "enableStepFiltering": false,
+      "applicationUrl": "https://localhost:5001"
+    },
+    "local": {
+      "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "enableStepFiltering": false,
-      "applicationUrl": "https://localhost:5001"
+      "applicationUrl": "https://localhost:7071"
     }
+
   }
 }
