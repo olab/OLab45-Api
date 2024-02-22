@@ -7,8 +7,13 @@ using NuGet.Protocol;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Exceptions;
+using OLab.FunctionApp.Extensions;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Extensions;
 
@@ -76,7 +81,7 @@ public static class HttpRequestDataExtensions
   }
 
   public static HttpResponseData CreateResponse<T>(
-    this HttpRequestData request, 
+    this HttpRequestData request,
     ObjectResult objectResult)
   {
     var olabResponse = objectResult as OLabAPIResponse<T>;
@@ -92,7 +97,7 @@ public static class HttpRequestDataExtensions
   }
 
   public static HttpResponseData CreateResponse<T>(
-    this HttpRequestData request, 
+    this HttpRequestData request,
     OLabAPIResponse<T> apiResponse)
   {
     var response = request.CreateResponse(apiResponse.ErrorCode);
@@ -116,8 +121,8 @@ public static class HttpRequestDataExtensions
   }
 
   public static async Task<(
-    bool IsSuccess, 
-    T Value, 
+    bool IsSuccess,
+    T Value,
     Exception Exception)> TryReadBodyAsAsync<T>(
       [NotNull] this HttpRequestData request)
       where T : class

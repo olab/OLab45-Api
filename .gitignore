@@ -49,3 +49,5 @@ Ankh.NoLoad
 .vs
 local.settings.json
 Service/appsettings.json
+[Ss]erviceDependencies.*
+ServiceDependencies/

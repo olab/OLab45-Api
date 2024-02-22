@@ -16,6 +16,7 @@ using OLab.Endpoints;
 using OLabWebAPI.Extensions;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -98,7 +99,7 @@ public class Import4Controller : OLabController
       var dto = new ImportResponse
       {
         MapId = mapId,
-        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
       };
 
       return HttpContext.Request.CreateResponse(
