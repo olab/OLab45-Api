@@ -23,11 +23,11 @@ using System.Linq;
 
 namespace OLab.FunctionApp.Functions.API;
 
-public class Import4Function : OLabFunction
+public class Import3Function : OLabFunction
 {
-  private readonly Import4Endpoint _endpoint;
+  private readonly Import3Endpoint _endpoint;
 
-  public Import4Function(
+  public Import3Function(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -42,7 +42,7 @@ public class Import4Function : OLabFunction
 
     Logger = OLabLogger.CreateNew<Import4Function>(loggerFactory, true);
 
-    _endpoint = new Import4Endpoint(
+    _endpoint = new Import3Endpoint(
       Logger,
       configuration,
       DbContext,
@@ -55,9 +55,9 @@ public class Import4Function : OLabFunction
   /// </summary>
   /// <param name="request">ImportRequest</param>
   /// <returns>IActionResult</returns>
-  [Function("Import4")]
+  [Function("Import3")]
   public async Task<HttpResponseData> ImportAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import4")] HttpRequestData request,
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import3")] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancel)
   {
@@ -104,79 +104,5 @@ public class Import4Function : OLabFunction
 
   }
 
-  [Function("Export4AsJson")]
-  public async Task<HttpResponseData> ExportAsJsonAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}/json")] HttpRequestData request,
-    FunctionContext hostContext,
-    uint id,
-    CancellationToken token)
-  {
-    try
-    {
-      Logger.LogDebug($"ExportAsJsonAsync");
-
-      // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
-
-      if (!auth.HasAccess("X", "Export", 0))
-        throw new OLabUnauthorizedException();
-
-      var dto = await _endpoint.ExportAsync(id, token);
-      response = request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
-
-    }
-    catch (Exception ex)
-    {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
-    }
-
-    return response;
-
-  }
-
-  [Function("Export4")]
-  public async Task<HttpResponseData> ExportAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}")] HttpRequestData request,
-    FunctionContext hostContext,
-    uint id,
-    CancellationToken token)
-  {
-    try
-    {
-      Logger.LogDebug($"Export");
-
-      // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
-
-      if (!auth.HasAccess("X", "Export", 0))
-        throw new OLabUnauthorizedException();
-
-      using (var memoryStream = new MemoryStream())
-      {
-        await _endpoint.ExportAsync(memoryStream, id, token);
-
-        memoryStream.Position = 0;
-        var now = DateTime.UtcNow;
-
-        var fileDownloadName = $"OLab4Export.map{id}.{now.ToString("yyyyMMddHHmm")}.zip";
-
-        response = request.CreateResponse(HttpStatusCode.OK);
-        response.WriteBytes(memoryStream.ToArray());
-        response.Headers.Add("Content-Type", "application/zip");
-        response.Headers.Add("Content-Length", $"{memoryStream.Length}");
-        response.Headers.Add("Content-Disposition", $"attachment; filename={fileDownloadName}; filename*=UTF-8'{fileDownloadName}");
-      }
-
-    }
-    catch (Exception ex)
-    {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
-    }
-
-    return response;
-
-  }
 }
 
