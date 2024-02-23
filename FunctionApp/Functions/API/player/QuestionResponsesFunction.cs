@@ -4,80 +4,78 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Data;
+using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
+using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data;
-using OLab.Api.Dto;
-using OLab.Api.Model;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using OLab.Api.Data;
 
-namespace OLab.FunctionApp.Functions.API.player;
-
-public partial class QuestionResponsesFunction : OLabFunction
+namespace OLab.FunctionApp.Functions.API.player
 {
-  private readonly ResponseEndpoint _endpoint;
-
-  public QuestionResponsesFunction(
-    ILoggerFactory loggerFactory,
-    IOLabConfiguration configuration,
-    OLabDBContext dbContext) : base(configuration, dbContext)
+  public partial class QuestionResponsesFunction : OLabFunction
   {
-    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+    private readonly ResponseEndpoint _endpoint;
 
-    Logger = OLabLogger.CreateNew<QuestionResponsesFunction>(loggerFactory);
-    _endpoint = new ResponseEndpoint(Logger, configuration, dbContext);
-  }
-
-  /// <summary>
-  /// 
-  /// </summary>
-  /// <param name="body"></param>
-  /// <returns></returns>
-  [Function("QuestionResponsePostPlayer")]
-  public async Task<HttpResponseData> QuestionResponsePostPlayerAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "response/{questionId}")] HttpRequestData request,
-    FunctionContext hostContext, CancellationToken cancellationToken,
-    uint questionId
-  )
-  {
-
-    QuestionResponsePostDataDto body = null;
-
-    try
+    public QuestionResponsesFunction(
+      ILoggerFactory loggerFactory,
+      IOLabConfiguration configuration,
+      OLabDBContext dbContext) : base(configuration, dbContext)
     {
-      // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>();
-
-      var session = new OLabSession(Logger, DbContext, auth.UserContext);
-      session.SetMapId(body.MapId);
-
-      var question = await GetQuestionAsync(body.QuestionId);
-      if (question == null)
-        throw new Exception($"Question {body.QuestionId} not found");
-
-      var result =
-        await _endpoint.PostQuestionResponseAsync(question, body);
-
-      session.OnQuestionResponse(
-        body.NodeId,
-        question.Id,
-        body.Value);
-
-      response = request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
-
-    }
-    catch (Exception ex)
-    {
-      response = request.CreateResponse(ex);
+      Logger = OLabLogger.CreateNew<QuestionResponsesFunction>(loggerFactory);
+      _endpoint = new ResponseEndpoint(Logger, configuration, dbContext);
     }
 
-    return response;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="body"></param>
+    /// <returns></returns>
+    [Function("QuestionResponsePostPlayer")]
+    public async Task<HttpResponseData> QuestionResponsePostPlayerAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "response/{questionId}")] HttpRequestData request,
+      FunctionContext hostContext, CancellationToken cancellationToken,
+      uint questionId
+    )
+    {
+
+      QuestionResponsePostDataDto body = null;
+
+      try
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization(hostContext);
+        var session = new OLabSession(Logger, DbContext, auth.UserContext);
+
+        body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>();
+
+        var question = await DbContext.SystemQuestions
+          .Include(x => x.SystemQuestionResponses)
+          .FirstOrDefaultAsync(x => x.Id == body.QuestionId)
+          ?? throw new Exception($"Question {body.QuestionId} not found");
+
+        var result =
+          await _endpoint.PostQuestionResponseAsync(question, body);
+
+        session.OnQuestionResponse(
+          body.MapId,
+          body.NodeId,
+          question.Id,
+          body.Value);
+
+        response = request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
+
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+    }
   }
 }

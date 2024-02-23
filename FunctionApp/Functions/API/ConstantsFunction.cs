@@ -5,194 +5,193 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Dto;
 using OLab.Api.Endpoints;
+using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Api.Dto;
-using OLab.Api.Model;
+using OLab.Data.Interface;
 using OLab.FunctionApp.Extensions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace OLab.FunctionApp.Functions.API;
-
-public class ConstantsFunction : OLabFunction
+namespace OLab.FunctionApp.Functions.API
 {
-  private readonly ConstantsEndpoint _endpoint;
-
-  public ConstantsFunction(
-    ILoggerFactory loggerFactory,
-    IOLabConfiguration configuration,
-    OLabDBContext dbContext) : base(configuration, dbContext)
+  public class ConstantsFunction : OLabFunction
   {
-    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+    private readonly ConstantsEndpoint _endpoint;
 
-    Logger = OLabLogger.CreateNew<ConstantsFunction>(loggerFactory);
-    _endpoint = new ConstantsEndpoint(Logger, configuration, DbContext);
-  }
-
-  /// <summary>
-  /// Gets all constants
-  /// </summary>
-  /// <param name="request"></param>
-  /// <param name="logger"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  [Function("ConstantsGet")]
-  public async Task<HttpResponseData> ConstantsGetAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants")] HttpRequestData request,
-      FunctionContext hostContext,
-      CancellationToken cancellationToken)
-  {
-
-    try
+    public ConstantsFunction(
+      ILoggerFactory loggerFactory,
+      IOLabConfiguration configuration,
+      OLabDBContext dbContext) : base(configuration, dbContext)
     {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(hostContext).NotNull(nameof(hostContext));
+      Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-      var queryTake = Convert.ToInt32(request.Query["take"]);
-      var querySkip = Convert.ToInt32(request.Query["skip"]);
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
-
-      var auth = GetAuthorization(hostContext);
-
-      var pagedResult = await _endpoint.GetAsync(auth, take, skip);
-      Logger.LogInformation(string.Format("Found {0} constants", pagedResult.Data.Count));
-
-      response = request.CreateResponse(OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining));
-    }
-    catch (Exception ex)
-    {
-      response = request.CreateResponse(ex);
+      Logger = OLabLogger.CreateNew<ConstantsFunction>(loggerFactory);
+      _endpoint = new ConstantsEndpoint(Logger, configuration, DbContext);
     }
 
-    return response;
-  }
-
-  /// <summary>
-  /// Gets single constant
-  /// </summary>
-  /// <param name="id">Constant id</param>
-  /// <returns></returns>
-  [Function("ConstantGet")]
-  public async Task<HttpResponseData> ConstantGetAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants/{id}")] HttpRequestData request,
-    FunctionContext hostContext, CancellationToken cancellationToken,
-    uint id)
-  {
-    try
+    /// <summary>
+    /// Gets all constants
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="logger"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [Function("ConstantsGet")]
+    public async Task<HttpResponseData> ConstantsGetAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants")] HttpRequestData request,
+        FunctionContext hostContext,
+        CancellationToken cancellationToken)
     {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(hostContext).NotNull(nameof(hostContext));
-      Guard.Argument(id, nameof(id)).NotZero();
 
-      var auth = GetAuthorization(hostContext);
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(hostContext).NotNull(nameof(hostContext));
 
-      var dto = await _endpoint.GetAsync(auth, id);
-      response = request.CreateResponse(OLabObjectResult<ConstantsDto>.Result(dto));
-    }
-    catch (Exception ex)
-    {
-      response = request.CreateResponse(ex);
-    }
+        var queryTake = Convert.ToInt32(request.Query["take"]);
+        var querySkip = Convert.ToInt32(request.Query["skip"]);
+        int? take = queryTake > 0 ? queryTake : null;
+        int? skip = querySkip > 0 ? querySkip : null;
 
-    return response;
-  }
+        var auth = GetAuthorization(hostContext);
 
-  /// <summary>
-  /// Saves a object edit
-  /// </summary>
-  /// <param name="id">question id</param>
-  /// <returns>IActionResult</returns>
-  [Function("ConstantPut")]
-  public async Task<HttpResponseData> ConstantPutAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "constants/{id}")] HttpRequestData request,
-    FunctionContext hostContext, CancellationToken cancellationToken,
-    uint id)
-  {
-    try
-    {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(hostContext).NotNull(nameof(hostContext));
-      Guard.Argument(id, nameof(id)).NotZero();
+        var pagedResult = await _endpoint.GetAsync(auth, take, skip);
+        Logger.LogInformation(string.Format("Found {0} constants", pagedResult.Data.Count));
 
-      var auth = GetAuthorization(hostContext);
+        response = request.CreateResponse(OLabObjectPagedListResult<ConstantsDto>.Result(pagedResult.Data, pagedResult.Remaining));
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
 
-      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
-
-      await _endpoint.PutAsync(auth, id, body);
-      response = request.CreateResponse(new NoContentResult());
-    }
-    catch (Exception ex)
-    {
-      response = request.CreateResponse(ex);
+      return response;
     }
 
-    return response;
-
-  }
-
-  /// <summary>
-  /// Create new object
-  /// </summary>
-  /// <param name="dto">object data</param>
-  /// <returns>IActionResult</returns>
-  [Function("ConstantPost")]
-  public async Task<HttpResponseData> ConstantPostAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "constants")] HttpRequestData request,
-    FunctionContext hostContext)
-  {
-    try
+    /// <summary>
+    /// Gets single constant
+    /// </summary>
+    /// <param name="id">Constant id</param>
+    /// <returns></returns>
+    [Function("ConstantGet")]
+    public async Task<HttpResponseData> ConstantGetAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "constants/{id}")] HttpRequestData request,
+      FunctionContext hostContext, CancellationToken cancellationToken,
+      uint id)
     {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(hostContext).NotNull(nameof(hostContext));
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(hostContext).NotNull(nameof(hostContext));
+        Guard.Argument(id, nameof(id)).NotZero();
 
-      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
+        var auth = GetAuthorization(hostContext);
 
-      var auth = GetAuthorization(hostContext);
+        var dto = await _endpoint.GetAsync(auth, id);
+        response = request.CreateResponse(OLabObjectResult<ConstantsDto>.Result(dto));
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
 
-      var dto = await _endpoint.PostAsync(auth, body);
-      response = request.CreateResponse(OLabObjectResult<ConstantsDto>.Result(dto));
-    }
-    catch (Exception ex)
-    {
-      response = request.CreateResponse(ex);
-    }
-
-    return response;
-  }
-
-  /// <summary>
-  /// Delete a constant
-  /// </summary>
-  /// <param name="id"></param>
-  /// <returns></returns>
-  [Function("ConstantDelete")]
-  public async Task<HttpResponseData> ConstantDeleteAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "constants/{id}")] HttpRequestData request,
-    FunctionContext hostContext, CancellationToken cancellationToken,
-    uint id)
-  {
-    try
-    {
-      Guard.Argument(request).NotNull(nameof(request));
-      Guard.Argument(hostContext).NotNull(nameof(hostContext));
-      Guard.Argument(id, nameof(id)).NotZero();
-
-      var auth = GetAuthorization(hostContext);
-
-      await _endpoint.DeleteAsync(auth, id);
-      response = request.CreateResponse(new NoContentResult());
-
-    }
-    catch (Exception ex)
-    {
-      response = request.CreateResponse(ex);
+      return response;
     }
 
-    return response;
+    /// <summary>
+    /// Saves a object edit
+    /// </summary>
+    /// <param name="id">question id</param>
+    /// <returns>IActionResult</returns>
+    [Function("ConstantPut")]
+    public async Task<HttpResponseData> ConstantPutAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "constants/{id}")] HttpRequestData request,
+      FunctionContext hostContext, CancellationToken cancellationToken,
+      uint id)
+    {
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(hostContext).NotNull(nameof(hostContext));
+        Guard.Argument(id, nameof(id)).NotZero();
 
+        var auth = GetAuthorization(hostContext);
+
+        var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
+
+        await _endpoint.PutAsync(auth, id, body);
+        response = request.CreateResponse(new NoContentResult());
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+
+    }
+
+    /// <summary>
+    /// Create new object
+    /// </summary>
+    /// <param name="dto">object data</param>
+    /// <returns>IActionResult</returns>
+    [Function("ConstantPost")]
+    public async Task<HttpResponseData> ConstantPostAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "constants")] HttpRequestData request,
+      FunctionContext hostContext)
+    {
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(hostContext).NotNull(nameof(hostContext));
+
+        var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
+
+        var auth = GetAuthorization(hostContext);
+
+        var dto = await _endpoint.PostAsync(auth, body);
+        response = request.CreateResponse(OLabObjectResult<ConstantsDto>.Result(dto));
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+    }
+
+    /// <summary>
+    /// Delete a constant
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [Function("ConstantDelete")]
+    public async Task<HttpResponseData> ConstantDeleteAsync(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "constants/{id}")] HttpRequestData request,
+      FunctionContext hostContext, CancellationToken cancellationToken,
+      uint id)
+    {
+      try
+      {
+        Guard.Argument(request).NotNull(nameof(request));
+        Guard.Argument(hostContext).NotNull(nameof(hostContext));
+        Guard.Argument(id, nameof(id)).NotZero();
+
+        var auth = GetAuthorization(hostContext);
+
+        await _endpoint.DeleteAsync(auth, id);
+        response = request.CreateResponse(new NoContentResult());
+
+      }
+      catch (Exception ex)
+      {
+        response = request.CreateResponse(ex);
+      }
+
+      return response;
+
+    }
   }
 }

@@ -41,10 +41,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Files.AzureBlobStorage
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.Access", "OLab.Access\OLab.Access.csproj", "{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.TurkTalk.Endpoints", "..\Turktalk\Endpoints\OLab.TurkTalk.Endpoints.csproj", "{1C1A2F7C-A64A-45DD-AB4A-657F42C95B82}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OLab.TurkTalk.Data", "..\Turktalk\Data\OLab.TurkTalk.Data.csproj", "{2C937BD0-0788-4B14-B063-305E448EC0C1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,14 +83,6 @@ Global
 		{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FCA7C0E-CDB0-45C9-8BEA-547FD7383024}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C1A2F7C-A64A-45DD-AB4A-657F42C95B82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C1A2F7C-A64A-45DD-AB4A-657F42C95B82}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C1A2F7C-A64A-45DD-AB4A-657F42C95B82}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C1A2F7C-A64A-45DD-AB4A-657F42C95B82}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2C937BD0-0788-4B14-B063-305E448EC0C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2C937BD0-0788-4B14-B063-305E448EC0C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2C937BD0-0788-4B14-B063-305E448EC0C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2C937BD0-0788-4B14-B063-305E448EC0C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,18 +1,17 @@
 using Dawn;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.EntityFrameworkCore;
-using OLab.Access;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
+using OLab.Access.Interfaces;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using OLab.Access;
+using System.Net;
+using OLab.FunctionApp.Middleware;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.FunctionApp.Functions.API;
 
 public class OLabFunction
 {
@@ -26,7 +25,6 @@ public class OLabFunction
   //protected readonly IUserService userService;
   protected IUserContext userContext;
   protected readonly IOLabConfiguration _configuration;
-  //protected readonly TTalkDBContext TtalkDbContext;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 
@@ -57,6 +55,26 @@ public class OLabFunction
   }
 
   /// <summary>
+  /// Centralized processing of exceptions
+  /// </summary>
+  /// <param name="ex"></param>
+  /// <exception cref="NotImplementedException"></exception>
+  protected void ProcessException(Exception ex)
+  {
+    Logger.LogError($"{ex.Message}");
+
+    var inner = ex.InnerException;
+    while (inner != null)
+    {
+      Logger.LogError($"  {inner.Message}");
+      inner = inner.InnerException;
+    }
+
+    Logger.LogError($"{ex.StackTrace}");
+
+  }
+
+  /// <summary>
   /// Builds the authentication context from the host context
   /// </summary>
   /// <param name="hostContext">Function context</param>
@@ -77,19 +95,5 @@ public class OLabFunction
 
     throw new Exception("unable to get auth RequestContext");
 
-  }
-
-  /// <summary>
-  /// ReadAsync question with responses
-  /// </summary>
-  /// <param name="id">question id</param>
-  /// <returns></returns>
-  [NonAction]
-  protected async ValueTask<SystemQuestions> GetQuestionAsync(uint id)
-  {
-    var item = await DbContext.SystemQuestions
-        .Include(x => x.SystemQuestionResponses)
-        .FirstOrDefaultAsync(x => x.Id == id);
-    return item;
   }
 }

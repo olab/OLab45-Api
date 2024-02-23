@@ -1,186 +1,189 @@
 using Dawn;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using OLab.Api.Data;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Interface;
-using OLab.FunctionApp.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using OLab.FunctionApp.Middleware;
+using System.Net;
 using System.Security.Claims;
 
 #nullable disable
 
-namespace OLab.FunctionApp.Services;
-
-public class UserContextService : IUserContext
+namespace OLab.FunctionApp.Services
 {
-  public const string WildCardObjectType = "*";
-  public const uint WildCardObjectId = 0;
-  public const string NonAccessAcl = "-";
-  public ClaimsPrincipal User;
-  public Users OLabUser;
-
-  protected IDictionary<string, string> _claims;
-  protected readonly IOLabLogger _logger;
-  protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
-  protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
-
-  protected string _sessionId;
-  protected string _role;
-  public IList<string> UserRoles { get; set; }
-  protected uint _userId;
-  protected string _userName;
-  protected string _ipAddress;
-  protected string _issuer;
-  protected string _referringCourse;
-  protected string _accessToken;
-
-  public string SessionId
+  public class UserContextService : IUserContext
   {
-    get => _sessionId;
-    set => _sessionId = value;
-  }
+    public const string WildCardObjectType = "*";
+    public const uint WildCardObjectId = 0;
+    public const string NonAccessAcl = "-";
+    public ClaimsPrincipal User;
+    public Users OLabUser;
 
-  public string ReferringCourse
-  {
-    get => _referringCourse;
-    set => _referringCourse = value;
-  }
+    protected IDictionary<string, string> _claims;
+    protected readonly IOLabLogger _logger;
+    protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
+    protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
-  public string Role
-  {
-    get => _role;
-    set => _role = value;
-  }
+    protected string _sessionId;
+    protected string _role;
+    public IList<string> UserRoles { get; set; }
+    protected uint _userId;
+    protected string _userName;
+    protected string _ipAddress;
+    protected string _issuer;
+    protected string _referringCourse;
+    protected string _accessToken;
 
-  public uint UserId
-  {
-    get => _userId;
-    set => _userId = value;
-  }
-
-  public string UserName
-  {
-    get => _userName;
-    set => _userName = value;
-  }
-
-  public string IPAddress
-  {
-    get => _ipAddress;
-    set => _ipAddress = value;
-  }
-
-  public string Issuer
-  {
-    get => _issuer;
-    set => _issuer = value;
-  }
-
-  public string CourseName { get { return null; } }
-
-  // default ctor, needed for services Dependancy Injection
-  public UserContextService()
-  {
-
-  }
-
-  public UserContextService(
-    IOLabLogger logger,
-    FunctionContext hostContext)
-  {
-    Guard.Argument(logger).NotNull(nameof(logger));
-    Guard.Argument(hostContext).NotNull(nameof(hostContext));
-
-    _logger = logger;
-    _logger.LogInformation($"UserContext ctor");
-
-    LoadHostContext(hostContext);
-  }
-
-  private string GetRequestIpAddress(HttpRequestData req)
-  {
-    try
+    public string SessionId
     {
-      var headerDictionary = req.Headers.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
-      var key = "x-forwarded-for";
-
-      if (headerDictionary.ContainsKey(key))
-      {
-        var headerValues = headerDictionary[key];
-        var ipn = headerValues?.FirstOrDefault()?.Split(new char[] { ',' }).FirstOrDefault()?.Split(new char[] { ':' }).FirstOrDefault();
-
-        _logger.LogInformation($"found ip address: {ipn}");
-
-        return ipn;
-      }
-
-    }
-    catch (Exception)
-    {
-      // eat all exceptions
+      get => _sessionId;
+      set => _sessionId = value;
     }
 
-    return "<unknown>";
-  }
+    public string ReferringCourse
+    {
+      get => _referringCourse;
+      set => _referringCourse = value;
+    }
 
-  protected void LoadHostContext(FunctionContext hostContext)
-  {
-    if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
-      throw new Exception("unable to retrieve headers from host context");
+    public string Role
+    {
+      get => _role;
+      set => _role = value;
+    }
 
-    var headers = (Dictionary<string, string>)headersObjects;
+    public uint UserId
+    {
+      get => _userId;
+      set => _userId = value;
+    }
 
-    if (headers.TryGetValue("OLabSessionId".ToLower(), out var sessionId))
-      if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
+    public string UserName
+    {
+      get => _userName;
+      set => _userName = value;
+    }
+
+    public string IPAddress
+    {
+      get => _ipAddress;
+      set => _ipAddress = value;
+    }
+
+    public string Issuer
+    {
+      get => _issuer;
+      set => _issuer = value;
+    }
+
+    public string CourseName { get { return null; } }
+
+    // default ctor, needed for services Dependancy Injection
+    public UserContextService()
+    {
+
+    }
+
+    public UserContextService(
+      IOLabLogger logger,
+      FunctionContext hostContext)
+    {
+      Guard.Argument(logger).NotNull(nameof(logger));
+      Guard.Argument(hostContext).NotNull(nameof(hostContext));
+
+      _logger = logger;
+      _logger.LogInformation($"UserContext ctor");
+
+      LoadHostContext(hostContext);
+    }
+
+    private string GetRequestIpAddress(HttpRequestData req)
+    {
+      try
       {
-        SessionId = sessionId;
-        if (!string.IsNullOrWhiteSpace(SessionId))
-          _logger.LogInformation($"Found sessionId '{SessionId}'.");
+        var headerDictionary = req.Headers.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
+        var key = "x-forwarded-for";
+
+        if (headerDictionary.ContainsKey(key))
+        {
+          var headerValues = headerDictionary[key];
+          var ipn = headerValues?.FirstOrDefault()?.Split(new char[] { ',' }).FirstOrDefault()?.Split(new char[] { ':' }).FirstOrDefault();
+
+          _logger.LogInformation($"found ip address: {ipn}");
+
+          return ipn;
+        }
+
+      }
+      catch (Exception)
+      {
+        // eat all exceptions
       }
 
-    if (!hostContext.Items.TryGetValue("claims", out var claimsObject))
-      throw new Exception("unable to retrieve claims from host context");
+      return "<unknown>";
+    }
 
-    _claims = (IDictionary<string, string>)claimsObject;
+    protected void LoadHostContext(FunctionContext hostContext)
+    {
+      if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
+        throw new Exception("unable to retrieve headers from host context");
 
-    if (!_claims.TryGetValue(ClaimTypes.Name, out var nameValue))
-      throw new Exception("unable to retrieve user name from token claims");
+      var headers = (Dictionary<string, string>)headersObjects;
 
-    var req = hostContext.GetHttpRequestData();
-    IPAddress = GetRequestIpAddress(req);
+      if (headers.TryGetValue("OLabSessionId".ToLower(), out var sessionId))
+      {
+        if (!string.IsNullOrEmpty(sessionId) && sessionId != "null")
+        {
+          SessionId = sessionId;
+          if (!string.IsNullOrWhiteSpace(SessionId))
+            _logger.LogInformation($"Found sessionId '{SessionId}'.");
+        }
+      }
 
-    UserName = nameValue;
+      if (!hostContext.Items.TryGetValue("claims", out var claimsObject))
+        throw new Exception("unable to retrieve claims from host context");
 
-    ReferringCourse = _claims[ClaimTypes.UserData];
+      _claims = (IDictionary<string, string>)claimsObject;
 
-    if (!_claims.TryGetValue("iss", out var issValue))
-      throw new Exception("unable to retrieve iss from token claims");
-    Issuer = issValue;
+      if (!_claims.TryGetValue(ClaimTypes.Name, out var nameValue))
+        throw new Exception("unable to retrieve user name from token claims");
 
-    if (!_claims.TryGetValue("id", out var idValue))
-      throw new Exception("unable to retrieve user id from token claims");
-    UserId = (uint)Convert.ToInt32(idValue);
+      var req = hostContext.GetHttpRequestData();
+      IPAddress = GetRequestIpAddress(req);
 
-    if (!_claims.TryGetValue(ClaimTypes.Role, out var roleValue))
-      throw new Exception("unable to retrieve role from token claims");
-    Role = roleValue;
+      UserName = nameValue;
 
-    // separate out multiple roles, make lower case, remove spaces, and sort
-    UserRoles = Role.Split(',')
-      .Select(x => x.Trim())
-      .Select(x => x.ToLower())
-      .OrderBy(x => x)
-      .ToList();
+      ReferringCourse = _claims[ClaimTypes.UserData];
+
+      if (!_claims.TryGetValue("iss", out var issValue))
+        throw new Exception("unable to retrieve iss from token claims");
+      Issuer = issValue;
+
+      if (!_claims.TryGetValue("id", out var idValue))
+        throw new Exception("unable to retrieve user id from token claims");
+      UserId = (uint)Convert.ToInt32(idValue);
+
+      if (!_claims.TryGetValue(ClaimTypes.Role, out var roleValue))
+        throw new Exception("unable to retrieve role from token claims");
+      Role = roleValue;
+
+      // separate out multiple roles, make lower case, remove spaces, and sort
+      UserRoles = Role.Split(',')
+        .Select(x => x.Trim())
+        .Select(x => x.ToLower())
+        .OrderBy(x => x)
+        .ToList();
+    }
+
+    public override string ToString()
+    {
+      return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
+    }
+
   }
-
-  public override string ToString()
-  {
-    return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
-  }
-
 }
 

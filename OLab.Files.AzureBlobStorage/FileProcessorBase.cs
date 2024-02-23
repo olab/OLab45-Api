@@ -35,11 +35,7 @@ public abstract class FileProcessorBase : IFileProcessor
       var targetFile = $"{extractDirectory}/{archiveEntry.Key}";
 
       await using var fileStream = archiveEntry.OpenEntryStream();
-
-      //await _containerClient.UploadBlobAsync(targetFile, fileStream, token);
-
-      var blobClient = _containerClient.GetBlobClient(targetFile);
-      blobClient.Upload(fileStream, true, token);
+      await _containerClient.UploadBlobAsync(targetFile, fileStream, token);
 
       Logger.LogInformation(
           $"Processed '{archiveEntry.Key}' -> '{targetFile}'");

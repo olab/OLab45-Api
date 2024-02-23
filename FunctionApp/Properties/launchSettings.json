@@ -1,14 +1,9 @@
 {
   "profiles": {
-    "local": {
+    "FunctionApp": {
       "commandName": "Project",
-      "xcommandLineArgs": "--port 5001 --useHttps --cors *",
-      "commandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234"
-    },
-    "OLab.FunctionApp": {
-      "commandName": "Project",
-      "xcommandLineArgs": "--port 5001 --useHttps --cors *",
-      "commandLineArgs": "--port 5001 --useHttps --cors * --cert certificate.pfx --password 1234"
+      "commandLineArgs": "--port 5001 --useHttps --cores * --cert D:\\Client\\olab\\devel\\repos\\certificate.pfx --password 1234",
+      "launchBrowser": false
     }
   }
 }
