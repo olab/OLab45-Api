@@ -3,12 +3,10 @@
     "local": {
       "commandName": "Project",
       "commandLineArgs": "--port 7071 --useHttps --cors *",
-      "xcommandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234"
     },
-    "OLab.FunctionApp": {
+    "local w/cert": {
       "commandName": "Project",
-      "commandLineArgs": "--port 5001 --useHttps --cors *",
-      "xcommandLineArgs": "--port 5001 --useHttps --cors * --cert certificate.pfx --password 1234"
+      "commandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234"
     }
   }
 }
