@@ -2,7 +2,6 @@ using Azure.Messaging;
 using Azure.Messaging.EventGrid;
 using Common.Utils;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using OLab.Access;
 using OLab.TurkTalk.Data.Contracts;
 using OLab.TurkTalk.Endpoints;
