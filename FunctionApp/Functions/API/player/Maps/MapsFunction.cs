@@ -89,6 +89,66 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
+  [Function("MapGetStatusAbbreviated")]
+  public async Task<HttpResponseData> MapGetStatusAbbreviatedsync(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/shortstatus")] HttpRequestData request,
+    FunctionContext hostContext, 
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(hostContext);
+
+      var dto = await _endpoint.GetStatusAbbreviatedAsync(auth, id, cancellationToken);
+      response = request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError(ex);
+      response = request.CreateResponse(ex);
+    }
+
+    return response;
+  }
+
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [Function("MapGetStatus")]
+  public async Task<HttpResponseData> MapGetStatusAsync(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/status")] HttpRequestData request,
+    FunctionContext hostContext, 
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(hostContext);
+
+      var dto = await _endpoint.GetStatusAsync(auth, id, cancellationToken);
+      response = request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError(ex);
+      response = request.CreateResponse(ex);
+    }
+
+    return response;
+  }
+
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
   [Function("MapGetPlayer")]
   public async Task<HttpResponseData> MapGetPlayerAsync(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}")] HttpRequestData request,
