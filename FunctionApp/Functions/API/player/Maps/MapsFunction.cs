@@ -85,10 +85,10 @@ public partial class MapsFunction : OLabFunction
   }
 
   /// <summary>
-  /// 
+  /// Gets the short status information for a map
   /// </summary>
-  /// <param name="id"></param>
-  /// <returns></returns>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
   [Function("MapGetStatusAbbreviated")]
   public async Task<HttpResponseData> MapGetStatusAbbreviatedsync(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/shortstatus")] HttpRequestData request,
@@ -115,10 +115,10 @@ public partial class MapsFunction : OLabFunction
   }
 
   /// <summary>
-  /// 
+  /// Gets the full status information for a map
   /// </summary>
-  /// <param name="id"></param>
-  /// <returns></returns>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
   [Function("MapGetStatus")]
   public async Task<HttpResponseData> MapGetStatusAsync(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/status")] HttpRequestData request,

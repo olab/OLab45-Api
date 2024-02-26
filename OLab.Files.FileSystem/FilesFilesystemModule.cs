@@ -365,7 +365,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <returns>Public directory for scope</returns>
   public override string GetPublicFileDirectory(string parentType, uint parentId, string fileName = "")
   {
-    var targetDirectory = GetPhysicalPath(parentType, parentId.ToString());
+    var targetDirectory = BuildPath(parentType, parentId.ToString());
 
     if (!string.IsNullOrEmpty(fileName))
       targetDirectory = $"{targetDirectory}{GetFolderSeparator()}{fileName}";

@@ -1,8 +1,10 @@
+using Azure;
 using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols;
 using OLab.Api.Common;
 using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
@@ -13,6 +15,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
@@ -133,7 +136,9 @@ public partial class MapsController : OLabController
   /// <returns>IActionResult</returns>
   [HttpPost("{mapId}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> PostAppendTemplateToMapPlayerAsync([FromRoute] uint mapId, [FromBody] ExtendMapRequest body)
+  public async Task<IActionResult> PostAppendTemplateToMapPlayerAsync(
+    [FromRoute] uint mapId, 
+    [FromBody] ExtendMapRequest body)
   {
     try
     {
@@ -275,4 +280,56 @@ public partial class MapsController : OLabController
     }
 
   }
+
+  /// <summary>
+  /// Gets the short status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [HttpGet("{id}/shortstatus")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> MapGetStatusAbbreviatedsync( uint id )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      var dto = await _endpoint.GetStatusAbbreviatedAsync(auth, id);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+  /// <summary>
+  /// Gets the full status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [HttpGet("{id}/status")]
+  public async Task<IActionResult> MapGetStatusAsync(
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      var dto = await _endpoint.GetStatusAsync(auth, id);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
 }
