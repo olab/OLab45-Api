@@ -89,7 +89,67 @@ namespace OLab.FunctionApp.Functions.Player
 
       return response;
 
+  }
+
+  /// <summary>
+  /// Gets the short status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [Function("MapGetStatusAbbreviated")]
+  public async Task<HttpResponseData> MapGetStatusAbbreviatedsync(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/shortstatus")] HttpRequestData request,
+    FunctionContext hostContext, 
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(hostContext);
+
+      var dto = await _endpoint.GetStatusAbbreviatedAsync(auth, id, cancellationToken);
+      response = request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
     }
+    catch (Exception ex)
+    {
+      Logger.LogError(ex);
+      response = request.CreateResponse(ex);
+    }
+
+    return response;
+  }
+
+  /// <summary>
+  /// Gets the full status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [Function("MapGetStatus")]
+  public async Task<HttpResponseData> MapGetStatusAsync(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/status")] HttpRequestData request,
+    FunctionContext hostContext, 
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(hostContext);
+
+      var dto = await _endpoint.GetStatusAsync(auth, id, cancellationToken);
+      response = request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError(ex);
+      response = request.CreateResponse(ex);
+    }
+
+    return response;
+  }
 
     /// <summary>
     /// 

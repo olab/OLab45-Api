@@ -463,5 +463,22 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     }
   }
 
+  /// <summary>
+  /// Calculate target directory for scoped type and id
+  /// </summary>
+  /// <param name="parentType">Scoped object type (e.g. 'Maps')</param>
+  /// <param name="parentId">Scoped object id</param>
+  /// <param name="fileName">Optional file name</param>
+  /// <returns>Public directory for scope</returns>
+  public override string GetPublicFileDirectory(string parentType, uint parentId, string fileName = "")
+  {
+    var targetDirectory = BuildPath(parentType, parentId.ToString());
+
+    if (!string.IsNullOrEmpty(fileName))
+      targetDirectory = $"{targetDirectory}{GetFolderSeparator()}{fileName}";
+
+    return targetDirectory;
+  }
+
 
 }
