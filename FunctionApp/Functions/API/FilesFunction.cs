@@ -256,7 +256,7 @@ public class FilesFunction : OLabFunction
 
       await _endpoint.DeleteAsync(auth, id);
 
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
 
     }
     catch (Exception ex)

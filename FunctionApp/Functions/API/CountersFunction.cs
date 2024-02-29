@@ -123,7 +123,7 @@ public class CountersFunction : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
 
       await _endpoint.PutAsync(auth, id, body);
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
 
     }
     catch (Exception ex)
@@ -180,7 +180,7 @@ public class CountersFunction : OLabFunction
 
       await _endpoint.DeleteAsync(auth, id);
 
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
     }
     catch (Exception ex)
     {

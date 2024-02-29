@@ -58,7 +58,8 @@ public class TestFunction : OLabFunction
     var asms = AppDomain.CurrentDomain.GetAssemblies().ToList();
     var olabAsms = asms.Where(x => x.FullName.ToLower().Contains("olab"));
 
-    var expando = new ExpandoObject() as IDictionary<string, Object>;
+    //var expando = new ExpandoObject() as IDictionary<string, Object>;
+    var modules = new Dictionary<string, string>();
     // x.Add("NewProp", string.Empty);
 
     var assembly = Assembly.GetEntryAssembly(); // Assembly.GetExecutingAssembly();
@@ -81,14 +82,15 @@ public class TestFunction : OLabFunction
       var assemblyDef = reader.GetAssemblyDefinition();
 
       Logger.LogInformation($"  {fileName} {assemblyDef.Version}");
-      expando.TryAdd(fileName, assemblyDef.Version);
+      //expando.TryAdd(fileName.ToUpper(), assemblyDef.Version);
+      modules.TryAdd(fileName.ToLower(), assemblyDef.Version.ToString());
     }
 
     var dto = new HealthResult
     {
       statusCode = HttpStatusCode.OK,
       main = mainAssemblyDef.Version,
-      modules = expando,
+      modules = modules,
       message = "Hello there!"
     };
 

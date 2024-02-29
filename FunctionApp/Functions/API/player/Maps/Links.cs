@@ -39,7 +39,7 @@ public partial class MapsFunction : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>();
 
       await _endpoint.PutMapNodeLinksAsync(auth, mapId, nodeId, linkId, body);
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
     }
     catch (Exception ex)
     {

@@ -132,7 +132,7 @@ public class QuestionsFunction : OLabFunction
 
       await _endpoint.PutAsync(auth, id, body);
 
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
     }
     catch (Exception ex)
     {
@@ -189,7 +189,7 @@ public class QuestionsFunction : OLabFunction
       var auth = GetAuthorization(hostContext);
 
       await _endpoint.DeleteAsync(auth, id);
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
     }
     catch (Exception ex)
     {

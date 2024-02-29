@@ -123,7 +123,7 @@ public class ConstantsFunction : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
 
       await _endpoint.PutAsync(auth, id, body);
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
     }
     catch (Exception ex)
     {
@@ -184,7 +184,7 @@ public class ConstantsFunction : OLabFunction
       var auth = GetAuthorization(hostContext);
 
       await _endpoint.DeleteAsync(auth, id);
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
 
     }
     catch (Exception ex)

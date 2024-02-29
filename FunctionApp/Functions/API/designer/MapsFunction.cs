@@ -177,7 +177,7 @@ public class MapsFunction : OLabFunction
       var auth = GetAuthorization(hostContext);
 
       await _endpoint.DeleteMapNodeLinkAsync(auth, mapId, id);
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
 
     }
     catch (Exception ex)

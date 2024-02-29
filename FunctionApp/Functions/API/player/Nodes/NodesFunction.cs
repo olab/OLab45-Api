@@ -89,7 +89,7 @@ public partial class NodesFunction : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
 
       await _endpoint.PutNodeAsync(auth, id, body);
-      response = request.CreateResponse(new NoContentResult());
+      response = request.CreateNoContentResponse();
 
     }
     catch (Exception ex)

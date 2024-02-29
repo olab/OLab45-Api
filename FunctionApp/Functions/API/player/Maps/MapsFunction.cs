@@ -14,6 +14,7 @@ using OLab.FunctionApp.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace OLab.FunctionApp.Functions.Player;
 
@@ -152,7 +153,8 @@ public partial class MapsFunction : OLabFunction
   [Function("MapGetPlayer")]
   public async Task<HttpResponseData> MapGetPlayerAsync(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}")] HttpRequestData request,
-    FunctionContext hostContext, CancellationToken cancellationToken,
+    FunctionContext hostContext, 
+    CancellationToken cancellationToken,
     uint id
   )
   {
@@ -290,6 +292,36 @@ public partial class MapsFunction : OLabFunction
       Logger.LogInformation(string.Format("Found {0} map links", dtoList.Count));
 
       response = request.CreateResponse(OLabObjectListResult<MapNodeLinksFullDto>.Result(dtoList));
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError(ex);
+      response = request.CreateResponse(ex);
+    }
+
+    return response;
+  }
+
+  /// <summary>
+  /// Gets the full status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [Function("MapDelete")]
+  public async Task<HttpResponseData> MapDeleteAsync(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "maps/{id}")] HttpRequestData request,
+    FunctionContext hostContext, 
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(hostContext);
+
+      await _endpoint.DeleteMapAsync(auth, id);
+      response = request.CreateNoContentResponse();
     }
     catch (Exception ex)
     {

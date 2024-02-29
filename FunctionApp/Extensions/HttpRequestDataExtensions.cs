@@ -80,6 +80,18 @@ public static class HttpRequestDataExtensions
     return response;
   }
 
+  /// <summary>
+  /// Create an HttpResponseData object from a StatusCodeResult
+  /// </summary>
+  /// <param name="request">HttpRequestData object</param>
+  /// <param name="statusCodeResult"></param>
+  /// <returns>HttpResponseData</returns>
+  public static HttpResponseData CreateNoContentResponse(this HttpRequestData request)
+  {
+    var response = request.CreateResponse(HttpStatusCode.NoContent);
+    return response;
+  }
+
   public static HttpResponseData CreateResponse<T>(
     this HttpRequestData request, 
     ObjectResult objectResult)
