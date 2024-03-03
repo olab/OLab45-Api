@@ -90,8 +90,10 @@ public class Import3Function : OLabFunction
         LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
       };
 
-      response = request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
-
+      var result = OLabObjectResult<ImportResponse>.Result(dto);
+      result.Message = Logger.HasErrorMessage() ? "error" : "success";
+      response = request.CreateResponse(result);
+      
       return response;
     }
     catch (Exception ex)
