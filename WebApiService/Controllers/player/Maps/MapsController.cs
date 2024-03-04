@@ -206,30 +206,6 @@ public partial class MapsController : OLabController
   /// <summary>
   /// 
   /// </summary>
-  /// <param name="id"></param>
-  /// <returns></returns>
-  [HttpDelete("{id}")]
-  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> DeleteAsync(uint id)
-  {
-    try
-    {
-      // validate token/setup up common properties
-      var auth = GetAuthorization(HttpContext);
-
-      await _endpoint.DeleteAsync(auth, id);
-    }
-    catch (Exception ex)
-    {
-      return ProcessException(ex, HttpContext.Request);
-    }
-
-    return NoContent();
-  }
-
-  /// <summary>
-  /// 
-  /// </summary>
   /// <param name="mapId"></param>
   /// <returns></returns>
   [HttpGet("{mapId}/links")]

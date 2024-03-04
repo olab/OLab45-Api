@@ -56,6 +56,12 @@ public class UserService : IUserService
     Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
     var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
+    if (user != null)
+    {
+      if (!ValidatePassword(model.Password, user))
+        return null;
+    }
+
     return user;
   }
 
