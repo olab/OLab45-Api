@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using OLab.Api.Common;
 using OLab.Api.Utils;
+using OLab.Common.Contracts;
 using OLab.Common.Interfaces;
 using OLabWebAPI.Endpoints.WebApi;
 using System;
@@ -12,6 +14,7 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 
 namespace OLabWebAPI.Controllers;
@@ -43,8 +46,7 @@ public class TestController : Controller
     var asms = AppDomain.CurrentDomain.GetAssemblies().ToList();
     var olabAsms = asms.Where(x => x.FullName.ToLower().Contains("olab"));
 
-    var expando = new ExpandoObject() as IDictionary<string, Object>;
-    // x.Add("NewProp", string.Empty);
+    var modules = new Dictionary<string, string>();
 
     var assembly = Assembly.GetEntryAssembly(); // Assembly.GetExecutingAssembly();
     var exeFvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -66,15 +68,17 @@ public class TestController : Controller
       var assemblyDef = reader.GetAssemblyDefinition();
 
       Logger.LogInformation($"  {fileName} {assemblyDef.Version}");
-      expando.TryAdd(fileName, assemblyDef.Version);
+      modules.TryAdd(fileName, assemblyDef.Version.ToString());
     }
 
-    return Ok(new
+    var dto = new HealthResult
     {
-      statusCode = 200,
+      statusCode = HttpStatusCode.OK,
       main = mainAssemblyDef.Version,
-      modules = expando,
+      modules = modules,
       message = "Hello there!"
-    });
+    };
+
+    return Ok(OLabObjectResult<HealthResult>.Result(dto));
   }
 }

@@ -66,7 +66,7 @@ public partial class MapsController : OLabController
     try
     {
       Guard.Argument(mapId, nameof(mapId)).NotZero();
-      Guard.Argument(nodeId, nameof(nodeId)).NotZero();
+      //Guard.Argument(nodeId, nameof(nodeId)).NotZero();
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);

@@ -18,16 +18,9 @@ using Humanizer;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.FunctionApp.Extensions;
+using OLab.Common.Contracts;
 
 namespace OLab.FunctionApp.Functions.API;
-
-public class HealthResult
-{
-  public HttpStatusCode statusCode;
-  public System.Version main;
-  public object modules;
-  public string message;
-}
 
 public class TestFunction : OLabFunction
 {
@@ -58,9 +51,7 @@ public class TestFunction : OLabFunction
     var asms = AppDomain.CurrentDomain.GetAssemblies().ToList();
     var olabAsms = asms.Where(x => x.FullName.ToLower().Contains("olab"));
 
-    //var expando = new ExpandoObject() as IDictionary<string, Object>;
     var modules = new Dictionary<string, string>();
-    // x.Add("NewProp", string.Empty);
 
     var assembly = Assembly.GetEntryAssembly(); // Assembly.GetExecutingAssembly();
     var exeFvi = FileVersionInfo.GetVersionInfo(assembly.Location);
