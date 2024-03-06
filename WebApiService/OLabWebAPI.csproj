@@ -3,6 +3,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Deterministic>False</Deterministic>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="GitVersion.MSBuild" Version="5.12.0">
