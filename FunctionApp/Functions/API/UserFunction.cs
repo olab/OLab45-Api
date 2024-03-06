@@ -57,7 +57,8 @@ public class UserFunction : OLabFunction
 
       Logger.LogDebug($"Login(user = '{model.Username}' ip: ???)");
 
-      var user = _userService.Authenticate(model);
+      //var user = _userService.Authenticate(model);
+      var user = _authentication.Authenticate(model);
       if (user == null)
         return request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 

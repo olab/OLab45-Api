@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace OLab.Access;
@@ -343,5 +344,54 @@ public class OLabAuthentication : IOLabAuthentication
     authenticateResponse.CourseName = user.Settings;
 
     return authenticateResponse;
+  }
+
+  /// <summary>
+  /// Authenticate user
+  /// </summary>
+  /// <param name="model">Login model</param>
+  /// <returns>Authenticate response, or null</returns>
+  public Users Authenticate(LoginRequest model)
+  {
+    Guard.Argument(model, nameof(model)).NotNull();
+
+    Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
+    var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+
+    if (user != null)
+    {
+      if (!ValidatePassword(model.Password, user))
+        return null;
+    }
+
+    return user;
+  }
+
+  /// <summary>
+  /// Validate user password
+  /// </summary>
+  /// <param name="clearText">Password</param>
+  /// <param name="user">Corresponding user record</param>
+  /// <returns>true/false</returns>
+  public bool ValidatePassword(string clearText, Users user)
+  {
+    Guard.Argument(user, nameof(user)).NotNull();
+    Guard.Argument(clearText, nameof(clearText)).NotEmpty();
+
+    var result = false;
+
+    if (!string.IsNullOrEmpty(user.Salt))
+    {
+      clearText += user.Salt;
+      var hash = SHA1.Create();
+      var plainTextBytes = Encoding.ASCII.GetBytes(clearText);
+      var hashBytes = hash.ComputeHash(plainTextBytes);
+      var localChecksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+
+      result = localChecksum == user.Password;
+    }
+
+    Logger.LogInformation($"Password validated = {result}");
+    return result;
   }
 }
