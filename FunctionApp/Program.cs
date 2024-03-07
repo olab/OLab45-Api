@@ -34,7 +34,7 @@ var host = new HostBuilder()
     {
       builder.AddJsonFile(
         "local.settings.json",
-        optional: true,
+        optional: false,
         reloadOnChange: true);
     })
 
