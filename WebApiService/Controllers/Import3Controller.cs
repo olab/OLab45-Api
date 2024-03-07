@@ -80,6 +80,7 @@ public class Import3Controller : OLabController
         Logger.LogError("Invalid file name");
       else
         mapId = await _endpoint.ImportAsync(
+          auth,
           archiveFileStream,
           Request.Form.Files[0].FileName,
           token);

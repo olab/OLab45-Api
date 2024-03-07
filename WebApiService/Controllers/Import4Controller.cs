@@ -91,6 +91,7 @@ public class Import4Controller : OLabController
         Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {stream.Length}");
 
         mapId = await _endpoint.ImportAsync(
+          auth,
           stream,
           Request.Form.Files[0].FileName,
           token);
