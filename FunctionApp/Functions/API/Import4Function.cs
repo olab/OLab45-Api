@@ -82,7 +82,11 @@ public class Import4Function : OLabFunction
 
       Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
 
-      var mapId = await _endpoint.ImportAsync(stream, parser.Files[0].FileName, cancel);
+      var mapId = await _endpoint.ImportAsync(
+        auth, 
+        stream, 
+        parser.Files[0].FileName, 
+        cancel);
 
       var dto = new ImportResponse
       {

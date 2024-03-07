@@ -7,6 +7,13 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="D:\Client\olab\devel\repos\configs\FunctionApp\local.settings.json" Link="local.settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Include="D:\Client\olab\devel\repos\newazure\Turktalk\Data\local.settings.json" Link="local.settings.json" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.8.1" />
     <PackageReference Include="Azure.Identity" Version="1.10.4" />
     <PackageReference Include="Dawn.Guard" Version="1.12.0" />
@@ -33,10 +40,6 @@
     </None>
     <None Update="host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="local.settings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

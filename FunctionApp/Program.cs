@@ -30,14 +30,24 @@ public class Program
   public static void Main()
   {
 var host = new HostBuilder()
+
+#if DEBUG
     .ConfigureAppConfiguration(builder =>
     {
       builder.AddJsonFile(
         "local.settings.json",
-        optional: false,
+        optional: true,
         reloadOnChange: true);
     })
-
+#else
+    .ConfigureAppConfiguration(builder =>
+    {
+      builder.AddJsonFile(
+        "local.settings.json",
+        optional: true,
+        reloadOnChange: true);
+    })
+#endif
     .ConfigureLogging(builder =>
     {
       builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
