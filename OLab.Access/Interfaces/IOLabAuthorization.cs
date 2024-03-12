@@ -9,5 +9,4 @@ public interface IOLabAuthorization
   bool HasAccess(string acl, string objectType, uint? objectId);
   IUserContext UserContext { get; set; }
   void ApplyUserContext(IUserContext userContext);
-
 }
