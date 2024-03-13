@@ -82,7 +82,7 @@ public class Import3Function : OLabFunction
 
       Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
 
-      var mapId = await _endpoint.ImportAsync(
+      var mapPhys = await _endpoint.ImportAsync(
         auth, 
         stream, 
         parser.Files[0].FileName, 
@@ -90,7 +90,9 @@ public class Import3Function : OLabFunction
 
       var dto = new ImportResponse
       {
-        MapId = mapId,
+        Id = mapPhys.Id,
+        Name = mapPhys.Name,
+        CreatedAt = mapPhys.CreatedAt.Value,
         LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
       };
 

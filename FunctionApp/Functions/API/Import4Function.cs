@@ -82,15 +82,20 @@ public class Import4Function : OLabFunction
 
       Logger.LogInformation($"Loading archive: '{parser.Files[0].FileName}'");
 
-      var mapId = await _endpoint.ImportAsync(
+      var mapPhys = await _endpoint.ImportAsync(
         auth, 
         stream, 
         parser.Files[0].FileName, 
         cancel);
 
+      var createdAt = mapPhys.CreatedAt.Value;
+      createdAt = DateTime.SpecifyKind(createdAt, DateTimeKind.Utc);
+
       var dto = new ImportResponse
       {
-        MapId = mapId,
+        Id = mapPhys.Id,
+        Name = mapPhys.Name,
+        CreatedAt = mapPhys.CreatedAt.Value,
         LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
       };
 

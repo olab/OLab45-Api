@@ -248,7 +248,8 @@ public class UserService : IUserService
     var response = new AddUserResponse
     {
       Username = newUser.Username,
-      Password = newPassword
+      Password = newPassword,
+      Id = newUser.Id
     };
 
     return response;
