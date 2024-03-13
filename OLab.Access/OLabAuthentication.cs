@@ -355,7 +355,11 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument(model, nameof(model)).NotNull();
 
-    Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
+    if (model.Password.Length > 3)
+      Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
+    else
+      Logger.LogInformation($"Authenticating {model.Username}, ***");
+
     var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     if (user != null)

@@ -58,7 +58,7 @@ public class Import3Controller : OLabController
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> Import(CancellationToken token)
   {
-    uint mapId = 0;
+    Maps mapPhys = null;
 
     // validate token/setup up common properties
     var auth = GetAuthorization(HttpContext);
@@ -79,7 +79,7 @@ public class Import3Controller : OLabController
       if (Request.Form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
         Logger.LogError("Invalid file name");
       else
-        mapId = await _endpoint.ImportAsync(
+        mapPhys = await _endpoint.ImportAsync(
           auth,
           archiveFileStream,
           Request.Form.Files[0].FileName,
@@ -88,8 +88,10 @@ public class Import3Controller : OLabController
 
     var dto = new ImportResponse
     {
-      MapId = mapId,
-      LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select( x => x.Message ).ToList()
+      Id = mapPhys.Id,
+      Name = mapPhys.Name,
+      CreatedAt = mapPhys.CreatedAt.Value,
+      LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
     };
 
     return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));
