@@ -2980,7 +2980,8 @@
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
 									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						},
 						{
@@ -3007,7 +3008,7 @@
 									"        \"hAlign\": null,\r",
 									"        \"heightType\": \"px\",\r",
 									"        \"mime\": \"application/json\",\r",
-									"        \"originUrl\": null,\r",
+									"        \"originUrl\": \"*\",\r",
 									"        \"path\": \"settings.json\",\r",
 									"        \"vAlign\": null,\r",
 									"        \"widthType\": \"px\",\r",
@@ -3023,14 +3024,15 @@
 									"        \"updatedat\": null,\r",
 									"        \"scopeLevelObj\": {\r",
 									"            \"id\": \"*\",\r",
-									"            \"name\": \"IMPORT: ExportTestOL3v5limited\"\r",
+									"            \"name\": \"IMPORT: ExportTestOL3v5limited - Riksväg-fallet\"\r",
 									"        }\r",
 									"    }\r",
 									"};\r",
 									"\r",
 									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -3067,6 +3069,88 @@
 							"path": [
 								"files",
 								"{{newId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download New File",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var expectedJson = {\r",
+									"  \"UpstreamSettings\": {\r",
+									"    \"Templates\": [\r",
+									"      {\r",
+									"        \"UrlTemplate\": \"http://localhost:7071/runtime/webhooks/signalr\",\r",
+									"        \"EventPattern\": \"*\",\r",
+									"        \"HubPattern\": \"*\",\r",
+									"        \"CategoryPattern\": \"*\"\r",
+									"      }\r",
+									"    ]\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://olabdevapi.blob.core.windows.net/$web/files/Maps/1955/settings.json",
+							"protocol": "https",
+							"host": [
+								"olabdevapi",
+								"blob",
+								"core",
+								"windows",
+								"net"
+							],
+							"path": [
+								"$web",
+								"files",
+								"Maps",
+								"1955",
+								"settings.json"
 							]
 						}
 					},
