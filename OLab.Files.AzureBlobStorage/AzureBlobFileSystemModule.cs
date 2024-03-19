@@ -480,5 +480,19 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     return targetDirectory;
   }
 
+  /// <summary>
+  /// Gets the public URL for the file
+  /// </summary>
+  /// <param name="path"></param>
+  /// <param name="fileName"></param>
+  /// <returns></returns>
+  public override string GetUrlPath(string path, string fileName)
+  {
+    var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageUrl,
+      path,
+      fileName);
 
+    return physicalPath;
+  }
 }

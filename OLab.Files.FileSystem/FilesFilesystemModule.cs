@@ -1,7 +1,9 @@
 ﻿using Dawn;
+using Humanizer;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
+using OLab.Data.Interface;
 using System.Configuration;
 using System.IO.Compression;
 
@@ -98,7 +100,13 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
     try
     {
-      var physicalPath = GetPhysicalPath(relativePath, fileName);
+      //var physicalPath = GetPhysicalPath(relativePath, fileName);
+      var physicalPath = BuildPath(
+        cfg.GetAppSettings().FileStorageRoot,
+        FilesRoot,
+        relativePath,
+        fileName);
+
       var result = File.Exists(physicalPath);
       if (!result)
         logger.LogWarning($"  '{physicalPath}' physical file not found");
@@ -111,6 +119,23 @@ public class FilesFilesystemModule : OLabFileStorageModule
       throw;
     }
 
+  }
+
+  /// <summary>
+  /// Gets the public URL for the file
+  /// </summary>
+  /// <param name="path"></param>
+  /// <param name="fileName"></param>
+  /// <returns></returns>
+  public override string GetUrlPath(string path, string fileName)
+  {
+    var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageRoot,
+      FilesRoot,
+      path,
+      fileName);
+
+    return physicalPath;
   }
 
   /// <summary>
