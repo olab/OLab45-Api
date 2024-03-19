@@ -232,7 +232,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      var physicalFileName = GetPhysicalPath(folderName, fileName);
+      var physicalFileName = BuildPath(folderName, fileName);
       logger.LogInformation($"DeleteFileAsync '{physicalFileName}'");
 
       await _blobServiceClient
