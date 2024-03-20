@@ -12,7 +12,9 @@ public partial class TurkTalkFunction : OLabFunction
 {
   [Function("Message")]
   [SignalROutput(HubName = "Hub")]
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
   public async Task<IList<object>> Message(
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     [SignalRTrigger("Hub", "messages", "Message", "payload")] SignalRInvocationContext invocationContext,
     SendMessageRequest payload)
   {
