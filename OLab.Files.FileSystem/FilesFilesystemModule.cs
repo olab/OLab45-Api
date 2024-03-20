@@ -192,6 +192,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <param name="token"></param>
   public override async Task ReadFileAsync(
       Stream stream,
+      string fileType,
       string folderName,
       string fileName,
       CancellationToken token = default)
@@ -203,7 +204,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
     try
     {
 
-      var physicalFilePath = GetPhysicalPath(folderName, fileName);
+      var physicalFilePath = BuildPath(fileType, folderName, fileName);
       logger.LogInformation($"ReadFileAsync reading file '{physicalFilePath}'");
 
       using var inputStream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read);
@@ -251,10 +252,13 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// Delete folder from blob storage
   /// </summary>
   /// <param name="relativePath">Folder to delete</param>
-  public override async Task DeleteFolderAsync(string folderName)
+  public override async Task DeleteFolderAsync(
+    string fileType,
+    string folderName)
   {
-    if (Directory.Exists(folderName))
-      Directory.Delete(folderName, true);
+    var folderPath = BuildPath(fileType, folderName);
+    if (Directory.Exists(folderPath))
+      Directory.Delete(folderPath, true);
   }
 
   /// <summary>
@@ -264,24 +268,26 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <param name="fileName">Archive file name</param>
   /// <param name="token"></param>
   public override async Task<bool> ExtractFileToStorageAsync(
-    string folderName,
-    string fileName,
-    string extractDirectoryName,
+    string sourceFileType,
+    string archiveFileName,
+    string destinationFileType,
+    string extractDirectory,
     CancellationToken token = default)
   {
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
-    Guard.Argument(fileName).NotEmpty(nameof(fileName));
-    Guard.Argument(extractDirectoryName).NotEmpty(nameof(extractDirectoryName));
+    Guard.Argument(sourceFileType).NotEmpty(nameof(sourceFileType));
+    Guard.Argument(archiveFileName).NotEmpty(nameof(archiveFileName));
+    Guard.Argument(destinationFileType).NotEmpty(nameof(destinationFileType));
+    Guard.Argument(extractDirectory).NotEmpty(nameof(extractDirectory));
 
     try
     {
 
-      logger.LogInformation($"extracting '{folderName}' {fileName} -> {extractDirectoryName}");
+      logger.LogInformation($"extracting '{sourceFileType}' {archiveFileName} -> {destinationFileType} {extractDirectory}");
 
-      var archiveFilePath = GetPhysicalPath(folderName, fileName);
-      var extractPath = GetPhysicalPath(extractDirectoryName);
+      var archiveFilePath = GetPhysicalPath(sourceFileType, archiveFileName);
+      var extractPath = GetPhysicalPath(extractDirectory);
 
-      await DeleteFolderAsync(extractPath);
+      await DeleteFolderAsync(destinationFileType, extractPath);
 
       ZipFile.ExtractToDirectory(archiveFilePath, extractPath);
       return true;

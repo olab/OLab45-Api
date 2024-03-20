@@ -30,7 +30,8 @@ public partial class TurkTalkFunction
 
     using (var stream = new MemoryStream())
     {
-      await fileStorageModule.ReadFileAsync(stream, "turktalk", "index.html", token);
+      await fileStorageModule.ReadFileAsync(
+        stream, "", "turktalk", "index.html", token);
 
       var reader = new StreamReader(stream);
       response.WriteString(reader.ReadToEnd());
