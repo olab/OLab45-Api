@@ -148,15 +148,15 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
     try
     {
-      var physicalPath = GetPhysicalPath(fileName);
-      logger.LogInformation($"Writing file {fileName} to {physicalPath}");
+      var physicalFileName = GetPhysicalPath(fileName);
+      var physicalFileDirectory = Path.GetDirectoryName(physicalFileName);
 
-      if (!Directory.Exists(physicalPath))
-        Directory.CreateDirectory(physicalPath);
+      logger.LogInformation($"Writing file {fileName} to {physicalFileName}");
 
-      var physicalFileName = BuildPath(
-        physicalPath,
-        fileName);
+      if (Directory.Exists(physicalFileDirectory))
+        Directory.Delete(physicalFileDirectory, true);
+
+      Directory.CreateDirectory(physicalFileDirectory);
 
       using (var file = new FileStream(physicalFileName, FileMode.OpenOrCreate, FileAccess.Write))
       {
@@ -164,7 +164,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
         logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
       }
 
-      return physicalPath;
+      return fileName;
     }
     catch (Exception ex)
     {
