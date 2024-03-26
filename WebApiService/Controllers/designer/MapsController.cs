@@ -324,30 +324,6 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// 
-  /// </summary>
-  /// <param name="id"></param>
-  /// <param name="enableWikiTranslation"></param>
-  /// <returns></returns>
-  //private async Task<IActionResult> GetScopedObjectsAsync(
-  //  uint id,
-  //  bool enableWikiTranslation)
-  //{
-  //  try
-  //  {
-  //    Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
-  //    DecorateDto(dto);
-  //    return HttpContext.Request.CreateResponse(OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto));
-  //  }
-  //  catch (Exception ex)
-  //  {
-  //    if (ex is OLabUnauthorizedException)
-  //      return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-  //    return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
-  //  }
-  //}
-
-  /// <summary>
   /// ReadAsync a list of users
   /// </summary>
   /// <param name="mapId"></param>
