@@ -230,6 +230,8 @@ public class UserService : IUserService
     }
 
     var newUser = Users.CreateDefault(userRequest);
+    AttachUserRoles(newUser, userRequest);
+
     var newPassword = newUser.Password;
 
     ChangePassword(newUser, new ChangePasswordRequest
@@ -247,6 +249,25 @@ public class UserService : IUserService
     };
 
     return response;
+  }
+
+  private void AttachUserRoles(Users user, AddUserRequest userRequest)
+  {
+    foreach (var role in userRequest.Roles)
+    {
+      var groupPhys = _dbContext.Groups.FirstOrDefault(x => x.Name == role.Group);
+      if (groupPhys == null)
+        groupPhys = _dbContext.Groups.FirstOrDefault();
+
+      user.UserGroups.Add(new UserGroups
+      {
+        GroupId = groupPhys.Id,
+        Role = role.Role,
+      });
+
+      Logger.LogInformation($"  Added group/role {groupPhys.Id}/{role.Role} to user {user.Username}");
+
+    }
   }
 
 }

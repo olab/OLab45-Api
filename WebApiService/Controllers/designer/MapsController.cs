@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
@@ -440,7 +441,11 @@ public partial class MapsController : OLabController
 
       foreach (var rule in dtos)
       {
-        var user = DbContext.Users.Where(x => x.Id == rule.UserId).FirstOrDefault();
+        var user = DbContext
+          .Users
+          .Include("UserGroups")
+          .Include("UserGroups.Group")
+          .Where(x => x.Id == rule.UserId).FirstOrDefault();
 
         list.Add(new Hashtable
         {
