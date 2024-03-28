@@ -73,7 +73,7 @@ public class OLabAuthorization : IOLabAuthorization
         var anonymousMaps = _dbContext.Maps
           .Include("MapGroups")
           .Include("MapGroups.Group")
-          .Where(x => x.IsAnonymous()).ToList();
+          .Where(x => x.SecurityId == 1).ToList();
 
         foreach (var item in anonymousMaps)
           _userAcls.Add(new SecurityUsers

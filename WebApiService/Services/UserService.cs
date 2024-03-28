@@ -230,8 +230,6 @@ public class UserService : IUserService
     }
 
     var newUser = Users.CreateDefault(userRequest);
-    AttachUserRoles(newUser, userRequest);
-
     var newPassword = newUser.Password;
 
     ChangePassword(newUser, new ChangePasswordRequest
@@ -242,10 +240,16 @@ public class UserService : IUserService
     await _dbContext.Users.AddAsync(newUser);
     await _dbContext.SaveChangesAsync();
 
+    AttachUserRoles(newUser, userRequest);
+    await _dbContext.SaveChangesAsync();
+
+
     var response = new AddUserResponse
     {
+      Id = newUser.Id,
       Username = newUser.Username,
-      Password = newPassword
+      Password = newPassword,
+      Roles = UserGroups.GetGroupRole( newUser.UserGroups.ToList() )
     };
 
     return response;
@@ -253,6 +257,25 @@ public class UserService : IUserService
 
   private void AttachUserRoles(Users user, AddUserRequest userRequest)
   {
+    if (userRequest.Roles.Count == 0)
+    {
+      var groupPhys = _dbContext.Groups.FirstOrDefault(x => x.Name == userRequest.Group);
+      if (groupPhys == null)
+        groupPhys = _dbContext.Groups.FirstOrDefault();
+
+      if (string.IsNullOrEmpty(userRequest.Role))
+        throw new Exception("Missing user role");
+
+      user.UserGroups.Add(new UserGroups
+      {
+        GroupId = groupPhys.Id,
+        Role = userRequest.Role,
+      });
+
+      Logger.LogInformation($"  Added group/role {groupPhys.Id}/{userRequest.Role} to user {user.Username}");
+
+    }
+
     foreach (var role in userRequest.Roles)
     {
       var groupPhys = _dbContext.Groups.FirstOrDefault(x => x.Name == role.Group);
