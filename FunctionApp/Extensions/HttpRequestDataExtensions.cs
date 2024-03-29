@@ -7,8 +7,13 @@ using NuGet.Protocol;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Exceptions;
+using OLab.FunctionApp.Extensions;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace OLab.FunctionApp.Extensions;
 
@@ -72,6 +77,18 @@ public static class HttpRequestDataExtensions
     var json = JsonConvert.SerializeObject(statusCodeResult.ToJson());
     response.WriteString(json);
 
+    return response;
+  }
+
+  /// <summary>
+  /// Create an HttpResponseData object from a StatusCodeResult
+  /// </summary>
+  /// <param name="request">HttpRequestData object</param>
+  /// <param name="statusCodeResult"></param>
+  /// <returns>HttpResponseData</returns>
+  public static HttpResponseData CreateNoContentResponse(this HttpRequestData request)
+  {
+    var response = request.CreateResponse(HttpStatusCode.NoContent);
     return response;
   }
 

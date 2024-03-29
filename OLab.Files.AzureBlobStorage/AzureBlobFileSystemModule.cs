@@ -55,15 +55,12 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <summary>
   /// Test if a file exists
   /// </summary>
-  /// <param name="folderName">File folder name</param>
-  /// <param name="fileName">file name</param>
+  /// <param name="filePath">Relative to root file path</param>
   /// <returns>true/false</returns>
   public override bool FileExists(
-    string folderName,
-    string fileName)
+    string filePath)
   {
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
-    Guard.Argument(fileName).NotEmpty(nameof(fileName));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     var result = false;
 
@@ -71,33 +68,31 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      var physicalPath = BuildPath(cfg.GetAppSettings().FileStorageRoot, folderName);
-
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
-      if (!_folderContentCache.ContainsKey(physicalPath))
+      if (!_folderContentCache.ContainsKey(filePath))
       {
-        logger.LogInformation($"  searching '{physicalPath} for blobs'");
+        logger.LogInformation($"  searching '{filePath} for blobs'");
 
         blobs = _blobServiceClient
           .GetBlobContainerClient(_containerName)
-          .GetBlobs(prefix: physicalPath).ToList();
+          .GetBlobs(prefix: filePath).ToList();
 
-        _folderContentCache[physicalPath] = blobs;
+        _folderContentCache[filePath] = blobs;
 
         foreach (var blob in blobs)
           logger.LogInformation($"  found blob '{blob.Name}'");
 
       }
       else
-        blobs = _folderContentCache[physicalPath];
+        blobs = _folderContentCache[filePath];
 
-      result = blobs.Any(x => x.Name.Contains(fileName));
+      result = blobs.Any(x => x.Name.Contains(Path.GetFileName(filePath)));
 
       if (!result)
-        logger.LogWarning($"  '{folderName}{GetFolderSeparator()}{fileName}' not found");
+        logger.LogWarning($"  '{filePath}' not found");
       else
-        logger.LogInformation($"  '{folderName}{GetFolderSeparator()}{fileName}' exists");
+        logger.LogInformation($"  '{filePath}' exists");
 
     }
     catch (Exception ex)
@@ -112,26 +107,30 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <summary>
   /// Move file between folders
   /// </summary>
-  /// <param name="fileName">File name</param>
-  /// <param name="sourceFolder">Source folder name</param>
-  /// <param name="destinationFolder">Destination folder name</param>
+  /// <param name="sourceFilePath">Relative to root file path</param>
+  /// <param name="destinationFolder">Relative to root destination folder name</param>
   public override async Task MoveFileAsync(
-    string fileName,
-    string sourceFolder,
+    string sourceFilePath,
     string destinationFolder,
     CancellationToken token = default)
   {
-    Guard.Argument(sourceFolder).NotEmpty(nameof(sourceFolder));
+    Guard.Argument(sourceFilePath).NotEmpty(nameof(sourceFilePath));
     Guard.Argument(destinationFolder).NotEmpty(nameof(destinationFolder));
 
     try
     {
-      logger.LogInformation($"MoveFileAsync '{fileName}' {sourceFolder} -> {destinationFolder}");
+      logger.LogInformation($"MoveFileAsync '{sourceFilePath} -> {destinationFolder}");
 
       using var stream = new MemoryStream();
-      await ReadFileAsync(stream, sourceFolder, fileName, token);
-      await WriteFileAsync(stream, destinationFolder, fileName, token);
-      await DeleteFileAsync(sourceFolder, fileName);
+
+      await ReadFileAsync(stream, sourceFilePath, token);
+      await WriteFileAsync(
+        stream,
+        BuildPath(
+          destinationFolder, 
+          Path.GetFileName(sourceFilePath)), 
+        token);
+      await DeleteFileAsync(sourceFilePath);
 
     }
     catch (Exception ex)
@@ -145,30 +144,27 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// Copy file presented by stream to file store
   /// </summary>
   /// <param name="stream">File stream</param>
-  /// <param name="folderName">Target folderName</param>
-  /// <param name="fileName">Target folderName</param>
+  /// <param name="fileType">Target folderName</param>
+  /// <param name="filePath">Target folderName</param>
   /// <param name="token"></param>
   public override async Task<string> WriteFileAsync(
     Stream stream,
-    string folderName,
-    string fileName,
+    string filePath,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
-    Guard.Argument(fileName).NotEmpty(nameof(fileName));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     try
     {
-      var physicalFilename = GetPhysicalPath(folderName, fileName);
-      logger.LogInformation($"WriteFileAsync: {_containerName} {physicalFilename}");
+      logger.LogInformation($"WriteFileAsync: {_containerName} {filePath}");
 
       await _blobServiceClient
             .GetBlobContainerClient(_containerName)
-            .GetBlobClient(physicalFilename)
+            .GetBlobClient(filePath)
             .UploadAsync(stream, overwrite: true, token);
 
-      return folderName;
+      return filePath;
     }
     catch (Exception ex)
     {
@@ -179,32 +175,27 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   }
 
   /// <summary>
-  /// ReadAsync file from storage
+  /// Read file from storage into stream
   /// </summary>
-  /// <param name="logger">OLabLogger</param>
-  /// <param name="folderName">Source sourceFolderName name</param>
-  /// <param name="fileName">File name</param>
-  /// <returns>File contents stream</returns>
+  /// <param name="stream">File stream</param>
+  /// <param name="filePath">Relative to root file path</param>
+  /// <param name="token">CancellationToken</param>
   public override async Task ReadFileAsync(
     Stream stream,
-    string folderName,
-    string fileName,
+    string filePath,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
-    Guard.Argument(fileName).NotEmpty(nameof(fileName));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     try
     {
-
-      var physicalFileName = GetPhysicalPath(folderName, fileName);
-      logger.LogInformation($"ReadFileAsync: {_containerName} {physicalFileName}");
-
       await _blobServiceClient
            .GetBlobContainerClient(_containerName)
-           .GetBlobClient(physicalFileName)
+           .GetBlobClient(filePath)
            .DownloadToAsync(stream);
+
+      logger.LogInformation($"ReadFileAsync: {_containerName} {filePath}. File size: {stream.Length}");
 
       stream.Position = 0;
     }
@@ -220,19 +211,16 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// Delete file from blob storage
   /// </summary>
   /// <param name="logger">OLabLogger</param>
-  /// <param name="folderName">File sourceFolderName</param>
-  /// <param name="fileName">File to delete</param>
+  /// <param name="filePath">Relative to root file path</param>
   /// <returns></returns>
   public override async Task<bool> DeleteFileAsync(
-    string folderName,
-    string fileName)
+    string filePath)
   {
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
-    Guard.Argument(fileName).NotEmpty(nameof(fileName));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     try
     {
-      var physicalFileName = GetPhysicalPath(folderName, fileName);
+      var physicalFileName = filePath;
       logger.LogInformation($"DeleteFileAsync '{physicalFileName}'");
 
       await _blobServiceClient
@@ -253,8 +241,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// Delete folder from blob storage
   /// </summary>
   /// <param name="folderName">Folder to delete</param>
-  public override async Task DeleteFolderAsync(string folderName)
+  public override async Task DeleteFolderAsync(
+    string folderName)
   {
+    Guard.Argument(folderName).NotEmpty(nameof(folderName));
+
     await DeleteImportFilesAsync(
       _blobServiceClient.GetBlobContainerClient(_containerName),
       GetPhysicalPath(folderName),
@@ -270,18 +261,16 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="token">Cancellation token</param>
   /// <returns></returns>
   public override async Task<bool> ExtractFileToStorageAsync(
-    string sourceFolderName,
-    string sourceFileName,
-    string targetDirectoryName,
+    string archiveFileName,
+    string extractDirectory,
     CancellationToken token = default)
   {
-    Guard.Argument(sourceFolderName).NotEmpty(nameof(sourceFolderName));
-    Guard.Argument(sourceFileName).NotEmpty(nameof(sourceFileName));
-    Guard.Argument(targetDirectoryName).NotEmpty(nameof(targetDirectoryName));
+    Guard.Argument(archiveFileName).NotEmpty(nameof(archiveFileName));
+    Guard.Argument(extractDirectory).NotEmpty(nameof(extractDirectory));
 
     try
     {
-      logger.LogInformation($"extracting '{sourceFolderName}' {sourceFileName} -> {targetDirectoryName}");
+      logger.LogInformation($"extracting {archiveFileName} -> {extractDirectory}");
 
       using var stream = new MemoryStream();
       var fileProcessor = new ZipFileProcessor(
@@ -291,17 +280,12 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
       await ReadFileAsync(
         stream,
-        sourceFolderName,
-        sourceFileName,
+        archiveFileName,
         token);
-
-      var extractPath = GetPhysicalPath(
-        sourceFolderName,
-        Path.GetFileNameWithoutExtension(sourceFileName));
 
       await fileProcessor.ProcessFileAsync(
         stream,
-        extractPath,
+        extractDirectory,
         token);
 
       return true;
@@ -392,11 +376,9 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       logger.LogInformation($"looking in '{folderName}' for files");
 
-      var physicalFolderName = GetPhysicalPath(folderName);
-
       var blobs = _blobServiceClient
         .GetBlobContainerClient(_containerName)
-        .GetBlobs(prefix: physicalFolderName).ToList();
+        .GetBlobs(prefix: folderName).ToList();
 
       if (blobs.Count == 0)
         return fileNames;
@@ -480,5 +462,19 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     return targetDirectory;
   }
 
+  /// <summary>
+  /// Gets the public URL for the file
+  /// </summary>
+  /// <param name="path"></param>
+  /// <param name="fileName"></param>
+  /// <returns></returns>
+  public override string GetUrlPath(string path, string fileName)
+  {
+    var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageUrl,
+      path,
+      fileName);
 
+    return physicalPath;
+  }
 }

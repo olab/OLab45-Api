@@ -1,3 +1,4 @@
+using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,8 @@ public partial class MapsController : OLabController
 
     try
     {
+      Guard.Argument(mapId, nameof(mapId)).NotZero();
+
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
       var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);

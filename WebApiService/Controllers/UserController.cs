@@ -63,7 +63,7 @@ public class AuthController : OLabController
 
     Logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
-    var user = _userService.Authenticate(model);
+    var user = _authentication.Authenticate(model);
     if (user == null)
       return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 

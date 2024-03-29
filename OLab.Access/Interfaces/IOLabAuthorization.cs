@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Dto;
+using OLab.Api.Model;
 
 namespace OLab.Api.Data.Interface;
 
@@ -9,5 +10,5 @@ public interface IOLabAuthorization
   bool HasAccess(string acl, string objectType, uint? objectId);
   IUserContext UserContext { get; set; }
   void ApplyUserContext(IUserContext userContext);
-
+  Users User { get; }
 }

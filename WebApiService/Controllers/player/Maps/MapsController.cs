@@ -95,7 +95,9 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
-      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
+      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(
+        pagedResponse.Data, 
+        pagedResponse.Remaining));
     }
     catch (Exception ex)
     {
@@ -137,7 +139,7 @@ public partial class MapsController : OLabController
   [HttpPost("{mapId}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> PostAppendTemplateToMapPlayerAsync(
-    [FromRoute] uint mapId, 
+    [FromRoute] uint mapId,
     [FromBody] ExtendMapRequest body)
   {
     try
@@ -194,30 +196,6 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       await _endpoint.PutAsync(auth, id, mapdto);
-    }
-    catch (Exception ex)
-    {
-      return ProcessException(ex, HttpContext.Request);
-    }
-
-    return NoContent();
-  }
-
-  /// <summary>
-  /// 
-  /// </summary>
-  /// <param name="id"></param>
-  /// <returns></returns>
-  [HttpDelete("{id}")]
-  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> DeleteAsync(uint id)
-  {
-    try
-    {
-      // validate token/setup up common properties
-      var auth = GetAuthorization(HttpContext);
-
-      await _endpoint.DeleteAsync(auth, id);
     }
     catch (Exception ex)
     {
@@ -288,7 +266,7 @@ public partial class MapsController : OLabController
   /// <returns>MapStatusDto</returns>
   [HttpGet("{id}/shortstatus")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> MapGetStatusAbbreviatedsync( uint id )
+  public async Task<IActionResult> MapGetStatusAbbreviatedsync(uint id)
   {
     try
     {
@@ -323,6 +301,32 @@ public partial class MapsController : OLabController
 
       var dto = await _endpoint.GetStatusAsync(auth, id);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+  /// <summary>
+  /// Gets the full status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> MapDeleteAsync(
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      await _endpoint.DeleteMapAsync(auth, id);
+      return HttpContext.Request.CreateNoContentResponse();
 
     }
     catch (Exception ex)
