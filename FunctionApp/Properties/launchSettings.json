@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "FunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7071 --useHttps --cors *",
+    },
+    "local w/cert": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234"
+    }
+  }
+}
