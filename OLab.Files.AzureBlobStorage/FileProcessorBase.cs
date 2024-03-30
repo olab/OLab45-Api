@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using OLab.Common.Interfaces;
 using SharpCompress.Archives;
 
@@ -35,7 +35,11 @@ public abstract class FileProcessorBase : IFileProcessor
       var targetFile = $"{extractDirectory}/{archiveEntry.Key}";
 
       await using var fileStream = archiveEntry.OpenEntryStream();
-      await _containerClient.UploadBlobAsync(targetFile, fileStream, token);
+
+      //await _containerClient.UploadBlobAsync(targetFile, fileStream, token);
+
+      var blobClient = _containerClient.GetBlobClient(targetFile);
+      blobClient.Upload(fileStream, true, token);
 
       Logger.LogInformation(
           $"Processed '{archiveEntry.Key}' -> '{targetFile}'");

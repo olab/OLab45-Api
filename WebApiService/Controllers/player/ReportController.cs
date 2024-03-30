@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
+namespace OLabWebAPI.Endpoints.WebApi.Player;
+
 [Route("olab/api/v3/reports")]
 public partial class ReportController : OLabController
 {

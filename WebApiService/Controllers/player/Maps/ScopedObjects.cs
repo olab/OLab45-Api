@@ -32,6 +32,13 @@ public partial class MapsController : OLabController
       return ProcessException(ex, HttpContext.Request);
     }
 
+      var dto = await _endpoint.GetScopedObjectsAsync(auth, id);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<OLab.Api.Dto.ScopedObjectsDto>.Result(dto));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
   }
 
   /// <summary>

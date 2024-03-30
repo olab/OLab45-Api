@@ -1,0 +1,541 @@
+<html>
+
+<head>
+  <title>Serverless Chat</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+  <script>
+    window.apiBaseUrl = window.location.origin;
+  </script>
+  <style>
+    .slide-fade-enter-active,
+    .slide-fade-leave-active {
+      transition: all 1s ease;
+    }
+
+    .slide-fade-enter,
+    .slide-fade-leave-to {
+      height: 0px;
+      overflow-y: hidden;
+      opacity: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <p>&nbsp;</p>
+  <div id="app" class="container">
+    <h3>Serverless chat</h3>
+    <div class="row" v-if="ready">
+      <div class="signalr-demo col-sm">
+        <div class="row" v-if="ready">
+          <div class="signalr-demo col-sm">
+            <hr />
+            <input type="text" v-model="accessToken" id="accessToken" class="form-control" />
+          </div>
+        </div>
+        <hr />
+        <div id='groupchecked'>
+          <input type="checkbox" id="checkbox" v-model="checked">
+          <label for="checkbox">Send To Default Group: {{ this.defaultgroup }}</label>
+        </div>
+        <div>
+          <input type="text" v-model="newMessage" id="message-box" class="form-control"
+                 placeholder="Type text here..." />
+        </div>
+        <div>
+          <a href="#"
+             v-on:click.prevent="registerLearner(data.ConnectionId || data.connectionId)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">registerLearner</span>
+          </a>
+          <a href="#"
+             v-on:click.prevent="registerModerator(data.ConnectionId || data.connectionId)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">RegisterModerator</span>
+          </a>
+          <a href="#"
+             v-on:click.prevent="assignLearner(data.newMessage)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">AssignLearner</span>
+          </a>
+          <a href="#"
+             v-on:click.prevent="sendMessage(data.newMessage)">
+            <span v-if="data.ConnectionId || data.connectionId"
+                  class="badge badge-primary">SendMessage</span>
+          </a>
+
+          <table>
+            <tr>
+              <td>contextId</td>
+              <td>mapId</td>
+              <td>nodeId</td>
+              <td>questionId</td>
+              <td>connectionId</td>
+              <td>userKey</td>
+            </tr>
+            <tr>
+              <td><input type="text" v-model="contextId" id="contextId" class="form-control" /></td>
+              <td><input type="text" v-model="mapId" id="mapId" class="form-control" /></td>
+              <td><input type="text" v-model="nodeId" id="nodeId" class="form-control" /></td>
+              <td><input type="text" v-model="questionId" id="questionId" class="form-control" /></td>
+              <td><input type="text" v-model="connectionId" id="connectionId" class="form-control" /></td>
+              <td><input type="text" v-model="userKey" id="userKey" class="form-control" /></td>
+            </tr>
+          </table>
+
+          <hr />
+
+          <div v-if="data.seatNumber > 0">
+
+            <table>
+              <tr>
+                <td>topicId</td>
+                <td>roomId</td>
+                <td>roomName</td>
+                <td>seatNumber</td>
+                <td>groupName</td>
+              </tr>
+              <tr>
+                <td><input type="text" v-model="topicId" id="topicId" class="form-control" /></td>
+                <td><input type="text" v-model="roomId" id="roomId" class="form-control" /></td>
+                <td><input type="text" v-model="roomName" id="roomName" class="form-control" /></td>
+                <td><input type="text" v-model="seatNumber" id="seatNumber" class="form-control" /></td>
+                <td><input type="text" v-model="groupName" id="groupName" class="form-control" /></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td>
+                  <table>
+                    <tr>
+                      <td>
+                        <div v-for="msg in data.seats[data.seatNumber].messages">
+                          {{ msg }}<br />
+                        </div>
+                      </td>
+                      <td>
+                        <input type="text" v-model="data.seats[data.seatNumber].text" id="seat1" class="form-control" />
+                      </td>
+                      <td>
+                        <a href="#"
+                           v-on:click.prevent="sendMessage(n, data.seats[data.seatNumber].text)">
+                          <span v-if="data.ConnectionId || data.connectionId"
+                                class="badge badge-primary">Send</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="3"><center>{{ data.seats[data.seatNumber].sessionId }}</center></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+          </div>
+
+          <div v-if="data.seatNumber == 0">
+
+
+            <table>
+              <tr>
+                <td v-for="n in 4">
+                  <table>
+                    <tr>
+                      <td>
+                        <div v-for="msg in data.seats[n].messages">
+                          {{ msg }}<br />
+                        </div>
+                      </td>
+                      <td>
+                        <input type="text" v-model="data.seats[n].text" id="seat1" class="form-control" />
+                      </td>
+                      <td>
+                        <a href="#"
+                           v-on:click.prevent="sendMessage(n, data.seats[n].text)">
+                          <span v-if="data.ConnectionId || data.connectionId"
+                                class="badge badge-primary">Send</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="3"><center>{{ data.seats[n].sessionId }}</center></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td v-for="n in 4">
+                  <table>
+                    <tr>
+                      <td>
+                        <div v-for="msg in data.seats[n+4].messages">
+                          {{ msg }}<br />
+                        </div>
+                      </td>
+                      <td>
+                        <input type="text" v-model="data.seats[n+4].text" id="seat1" class="form-control" />
+                      </td>
+                      <td>
+                        <a href="#"
+                           v-on:click.prevent="sendMessage(n+4, data.seats[n+4].text)">
+                          <span v-if="data.ConnectionId || data.connectionId"
+                                class="badge badge-primary">Send</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="3"><center>{{ data.seats[n+4].sessionId }}</center></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="row" v-if="!ready">
+      <div class="col-sm">
+        <div>Loading...</div>
+      </div>
+    </div>
+    <div v-if="ready">
+      <transition-group name="slide-fade" tag="div">
+        <div class="row" v-for="message in messages" v-bind:key="message.id">
+          <div class="col-sm">
+            <hr />
+            <div>
+              <div style="display: inline-block; padding-left: 12px;">
+                <div>
+                  {{ message.Text || message.text }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition-group>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.0.3/dist/browser/signalr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@3.1.9-1/crypto-js.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@3.1.9-1/enc-base64.js"></script>
+    <script>
+      const data = {
+        accessToken: '',
+        checked: false,
+        command: null,
+        connectionId: '',
+        contextId: generateUUID(),
+        defaultgroup: 'AzureSignalR',
+        mapId: 5,
+        messages: [],
+        myConnectionId: '',
+        newMessage: '',
+        nodeId: 0,
+        payload: {},
+        questionId: 3900,
+        ready: false,
+        userKey: '',
+        username: '',
+
+        topicId: '',
+        roomId: '',
+        roomName: '',
+        seatNumber: null,
+        groupName: '',
+        seats: []
+      };
+
+      for (var i = 0; i <= 8; i++) {
+        data.seats.push({ sessionId: '-', messages: ['-'], text: '' })
+      }
+
+      var qs = (function (a) {
+        if (a == "") return {};
+        var b = {};
+        for (var i = 0; i < a.length; ++i) {
+          var p = a[i].split('=', 2);
+          if (p.length == 1)
+            b[p[0]] = "";
+          else
+            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+      })(window.location.search.substr(1).split('&'));
+
+      if (!qs["accessToken"])
+        alert("Missing 'accessToken' querystring parameter");
+
+      data.accessToken = qs["accessToken"];
+
+      const app = new Vue({
+        el: '#app',
+        data: data,
+        methods: {
+          sendMessage: function (message) {
+            connection.invoke("message", {
+              "message": data.newMessage,
+              "userKey": data.userKey
+            });
+            this.newMessage = '';
+          },
+
+          registerLearner: async function (connectionId) {
+            var result = await
+              connection.invoke("registerLearner", {
+                "contextId": data.contextId,
+                "mapId": data.mapId,
+                "nodeId": data.nodeId,
+                "questionId": data.questionId,
+                "userKey": data.userKey
+              });
+            console.log(JSON.stringify(result));
+          },
+          registerModerator: function (connectionId) {
+            connection.invoke("registerModerator", {
+              "contextId": data.contextId,
+              "mapId": data.mapId,
+              "nodeId": data.nodeId,
+              "questionId": data.questionId,
+              "userKey": data.userKey
+            });
+          },
+          assignLearner: function (learnerSessionId) {
+            connection.invoke("assignLearner", {
+              "learnerSessionId": learnerSessionId,
+              "moderatorSessionId": data.contextId,
+              "questionId": data.questionId,
+              "seatNumber": null,
+              "userKey": data.userKey
+            });
+          },
+          removeUserFromGroup: function (user) {
+            confirm('Remove user ' + user + ' from group: ' + this.defaultgroup);
+            connection.invoke("leaveUserFromGroup", user, this.defaultgroup);
+          }
+        }
+      });
+
+      const apiBaseUrl = window.location.origin;
+      var connection = null;
+
+      if (data.accessToken != null) {
+
+        //data.username = prompt("Enter your username");
+
+        //if (!data.username) {
+        //  alert("No username entered. Reload page and try again.");
+        //  throw "No username entered";
+        //}
+
+        data.userName = "";
+
+        getConnectionInfo().then(info => {
+          // make compatible with old and new SignalRConnectionInfo
+          info.accessToken = info.AccessToken || info.accessKey; // pay attention to the case
+          info.url = info.Url || info.endpoint; // pay attention to the case
+          data.ready = true;
+
+          info.url = `${info.url}&olab_access_token=${data.accessToken}`;
+
+          const options = {
+            accessTokenFactory: () => info.accessToken
+          };
+          connection = new signalR.HubConnectionBuilder()
+            .withUrl(info.url, options)
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+          connection.on('newMessage', onNewMessage);
+          connection.on('newConnection', onNewConnection);
+          connection.on('onCommand', onCommand);
+          connection.on('atriumaccepted', onAtriumAccepted);
+          connection.on('roomaccepted', onRoomAccepted);
+          connection.on('atriumupdate', onAtriumUpdate);
+          connection.on('message', onMessage);
+          connection.on('learnerassigned', learnerAssigned);
+
+          //connection.onclose(() => console.log('disconnected'));
+          connection.onclose(onDisconnected);
+
+          console.log('connecting...');
+          connection.start()
+            .then(() => {
+              data.ready = true;
+              console.log('connected!');
+              newConnectionMessage = {
+                id: counter++,
+                text: `connected to signalr`
+              };
+              data.messages.unshift(newConnectionMessage);
+            })
+            .catch(console.error);
+        }).catch(alert);
+
+      }
+      else
+        data.ready = true;
+
+      function learnerAssigned(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `learner assigned '${JSON.stringify(message)}'`
+        };
+        data.messages.unshift(newConnectionMessage);
+
+        data.seats[message.SeatNumber].sessionId = message.DtoLearner.SessionId;
+      }
+
+      function onMessage(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `Message recv'd' '${JSON.stringify(message)}'`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
+      function onAtriumUpdate(message) {
+        let text = `Atrium update: ${JSON.stringify(message)} `;
+        if (message.Attendees.length == 0) {
+          text += 'none';
+        }
+
+        for (var i = 0; i < message.Attendees.length; i++) {
+          text += `\
+          ${message.Attendees[i].NickName} ${message.Attendees[i].SessionId}`;
+        }
+
+        newConnectionMessage = {
+          id: counter++,
+          text: text
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
+      function onRoomAccepted(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: `Accepted to '${message.RoomName}' room. ${JSON.stringify(message)}'`
+        };
+
+        data.topicId = message.TopicId;
+        data.roomId = message.RoomId;
+        data.roomName = message.RoomName;
+        data.seatNumber = message.SeatNumber;
+        data.groupName = message.Destination;
+
+        data.seats[message.SeatNumber].sessionId = message.SessionId;
+
+        data.messages.unshift(newConnectionMessage);
+      }
+
+      function onAtriumAccepted(message) {
+        let action = message.WasAdded ? "Added to" : "Rejoined";
+        newConnectionMessage = {
+          id: counter++,
+          text: `${action} '${message.TopicName}' atrium ${JSON.stringify(message)}`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
+      function onDisconnected() {
+        newConnectionMessage = {
+          id: counter++,
+          text: `disconnected`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
+      function getConnectionInfo() {
+        return axios.post(`${apiBaseUrl}/olab/api/v3/negotiate?userid=${data.username}&accessToken=${data.accessToken}`, null, null)
+          .then(resp => resp.data);
+      }
+
+      let counter = 0;
+      function onNewMessage(message) {
+        newConnectionMessage = {
+          id: counter++,
+          text: message
+        };
+        data.messages.unshift(newConnectionMessage);
+      };
+
+      function onNewConnection(message) {
+
+        data.connectionId = message.ConnectionId;
+        data.userKey = message.UserKey;
+
+        authEnabled = false;
+        if (message.Authentication) {
+          authEnabled = true;
+        }
+        newConnectionMessage = {
+          id: counter++,
+          text: `connected: ${JSON.stringify(message)}`
+        };
+        data.messages.unshift(newConnectionMessage);
+      }
+
+      function onCommand(message) {
+
+        newCommandMessage = {
+          id: counter++,
+          text: `${message.command}: ${JSON.stringify(message.payload)}`
+        };
+
+        data.messages.unshift(newCommandMessage);
+      }
+
+      function generateUUID() { // Public Domain/MIT
+
+        let contextId = localStorage.getItem('contextId');
+        if (contextId != null) {
+          return contextId;
+        }
+
+        var d = new Date().getTime();//Timestamp
+        var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+
+        contextId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = Math.random() * 16;//random number between 0 and 16
+          if (d > 0) {//Use timestamp until depleted
+            r = (d + r) % 16 | 0;
+            d = Math.floor(d / 16);
+          } else {//Use microseconds since page-load if supported
+            r = (d2 + r) % 16 | 0;
+            d2 = Math.floor(d2 / 16);
+          }
+          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+
+        localStorage.setItem('contextId', contextId);
+
+        return contextId;
+      }
+
+      function base64url(source) {
+        // Encode in classical base64
+        encodedSource = CryptoJS.enc.Base64.stringify(source);
+
+        // Remove padding equal characters
+        encodedSource = encodedSource.replace(/=+$/, '');
+
+        // Replace characters according to base64url specifications
+        encodedSource = encodedSource.replace(/\+/g, '-');
+        encodedSource = encodedSource.replace(/\//g, '_');
+
+        return encodedSource;
+      }
+    </script>
+  </div>
+</body>
+
+</html>

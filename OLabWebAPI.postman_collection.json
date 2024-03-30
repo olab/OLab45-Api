@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a8bcad8c-905f-4044-81e0-4178747d4b69",
+		"_postman_id": "12be5dbe-72ea-43cb-9920-c98d1db3965d",
 		"name": "OLab4 Unit Test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "1460452"
@@ -20,7 +20,7 @@
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData)\r",
+									"tests[\"Properties compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -31,20 +31,16 @@
 							"script": {
 								"exec": [
 									"var expectedJson = {\r",
-									"    \"statusCode\": 200,\r",
-									"    \"main\": \"2024.1.8823.15462\",\r",
-									"    \"modules\": {\r",
-									"        \"OLabWebAPI.dll\": \"2024.1.8823.15462\",\r",
-									"        \"OLab.Data.dll\": \"0.1.0.0\",\r",
-									"        \"OLab.Common.dll\": \"0.1.0.0\",\r",
-									"        \"OLab.Access.dll\": \"0.1.0.0\",\r",
-									"        \"OLab.Endpoints.dll\": \"0.1.0.0\",\r",
-									"        \"OLab.Files.AzureBlobStorage.dll\": \"0.1.0.0\",\r",
-									"        \"OLab.Files.FileSystem.dll\": \"0.1.0.0\",\r",
-									"        \"OLab.Import.dll\": \"0.1.0.0\",\r",
-									"        \"OLab.WikiTags.dll\": \"0.1.0.0\"\r",
-									"    },\r",
-									"    \"message\": \"Hello there!\"\r",
+									"    \"extended_status_code\": null,\r",
+									"    \"message\": \"success\",\r",
+									"    \"error_code\": 200,\r",
+									"    \"diagnostics\": [],\r",
+									"    \"data\": {\r",
+									"        \"statusCode\": 200,\r",
+									"        \"main\": \"*\",\r",
+									"        \"modules\": \"*\",\r",
+									"        \"message\": \"Hello there!\"\r",
+									"    }\r",
 									"};\r",
 									"\r",
 									"pm.environment.set(\"expectedJson\", expectedJson); \r",
@@ -76,6 +72,148 @@
 					"response": []
 				},
 				{
+					"name": "Login User Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
+									"tests[\"Status code is 401\"] = responseCode.code === 401;\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var expectedJson = {\r",
+									"    \"extended_status_code\": null,\r",
+									"    \"message\": \"Unauthorized\",\r",
+									"    \"error_code\": 401,\r",
+									"    \"diagnostics\": [],\r",
+									"    \"data\": \"Username or password is incorrect\"\r",
+									"};\r",
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-",
+								"value": "application/json;charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"UserName\": \"{{user}}\",\r\n    \"Password\": \"{{password}}xx\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User Fail Short  Pwd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
+									"tests[\"Status code is 401\"] = responseCode.code === 401;\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var expectedJson = {\r",
+									"    \"extended_status_code\": null,\r",
+									"    \"message\": \"Unauthorized\",\r",
+									"    \"error_code\": 401,\r",
+									"    \"diagnostics\": [],\r",
+									"    \"data\": \"Username or password is incorrect\"\r",
+									"};\r",
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-",
+								"value": "application/json;charset=UTF-8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"UserName\": \"{{user}}\",\r\n    \"Password\": \"x\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Login User",
 					"event": [
 						{
@@ -85,7 +223,7 @@
 									"var jsonData = JSON.parse(responseBody);\r",
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									"postman.setEnvironmentVariable(\"jwt_token\", jsonData.data.authInfo.token);\r",
+									"pm.environment.set(\"jwt_token\", jsonData.data.authInfo.token);\r",
 									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
@@ -170,8 +308,9 @@
 									"var jsonData = pm.response.json();\r",
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									"postman.setEnvironmentVariable(\"loginuser\", jsonData.data[0].username);\r",
-									"postman.setEnvironmentVariable(\"loginpassword\", jsonData.data[0].password);\r",
+									"pm.environment.set(\"loginuser\", jsonData.data[0].username);\r",
+									"pm.environment.set(\"loginpassword\", jsonData.data[0].password);\r",
+									"pm.environment.set(\"loginid\", jsonData.data[0].id);\r",
 									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
@@ -193,6 +332,7 @@
 									"    \"diagnostics\": [],\r",
 									"    \"data\": [\r",
 									"        {\r",
+									"            \"id\": \"*\",\r",
 									"            \"username\": \"*\",\r",
 									"            \"password\": \"*\",\r",
 									"            \"message\": \"OK\"\r",
@@ -257,6 +397,7 @@
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
 									"expectedData.data.userName = pm.environment.get(\"loginuser\");\r",
+									"pm.environment.set(\"jwt_token\", jsonData.data.authInfo.token);\r",
 									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
@@ -334,166 +475,970 @@
 			]
 		},
 		{
-			"name": "Import/",
+			"name": "Import-Export",
 			"item": [
 				{
-					"name": "Import OLab4",
-					"event": [
+					"name": "OLab4",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"var expectedData = pm.environment.get(\"expectedJson\");\r",
-									"\r",
-									"postman.setEnvironmentVariable(\"mapId\", jsonData.data.mapId);\r",
-									"\r",
-									"let count = jsonData.data.logMessages.length;\r",
-									"tests[\"# messages is correct\"] = ( count === 149 );\r",
-									"\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
-									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"logMessages\": \"*\",\r",
-									"        \"mapId\": \"*\"\r",
-									"    }\r",
-									"};\r",
-									"pm.environment.set(\"expectedJson\", expectedJson); "
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
+							"name": "Import OLab4",
+							"event": [
 								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-",
-								"value": "application/json;charset=UTF-8",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"pm.environment.set(\"mapId\", jsonData.data.id);\r",
+											"pm.environment.set(\"mapName\", jsonData.data.name);\r",
+											"pm.environment.set(\"mapCreatedAt\", jsonData.data.createdAt);\r",
+											"pm.environment.set(\"olab4mapId\", jsonData.data.id);\r",
+											"\r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+											"tests[\"Message count correct\"] = functions.compareArraySize( jsonData.data.logMessages, 149 );\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
 								{
-									"key": "file",
-									"type": "file",
-									"src": "postman-cloud:///1eed0c6b-354d-4f90-bade-99573491993d"
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 200,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": {\r",
+											"        \"logMessages\": \"*\",\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": \"*\",\r",
+											"        \"createdAt\": \"*\"\r",
+											"    }\r",
+											"};\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); "
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/import4",
-							"host": [
-								"{{url}}"
 							],
-							"path": [
-								"import4"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get OLab4 Map Status",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"var expectedData = pm.environment.get(\"expectedJson\");\r",
-									"\r",
-									"expectedData.data.id == pm.environment.get(\"mapId\");\r",
-									"\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
-									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
-									""
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-",
+										"value": "application/json;charset=UTF-8",
+										"type": "text",
+										"disabled": true
+									}
 								],
-								"type": "text/javascript"
-							}
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1eee1411-de16-4a60-b7f7-9bbd16b0aa1c"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{url}}/import4",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"import4"
+									]
+								}
+							},
+							"response": []
 						},
 						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": \"IMPORT: Test: Duplicate and advanced export testing\",\r",
-									"        \"nodeCount\": 27,\r",
-									"        \"nodeLinkCount\": 90,\r",
-									"        \"total\": {\r",
-									"            \"questions\": 20,\r",
-									"            \"questionRepsonses\": 42,\r",
-									"            \"constants\": 34,\r",
-									"            \"counters\": 6,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 24\r",
-									"        },\r",
-									"        \"server\": {\r",
-									"            \"questions\": 14,\r",
-									"            \"questionRepsonses\": 35,\r",
-									"            \"constants\": 34,\r",
-									"            \"counters\": 3,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 12\r",
-									"        },\r",
-									"        \"map\": {\r",
-									"            \"questions\": 6,\r",
-									"            \"questionRepsonses\": 7,\r",
-									"            \"constants\": 0,\r",
-									"            \"counters\": 3,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 12\r",
-									"        },\r",
-									"        \"node\": {\r",
-									"            \"questions\": 0,\r",
-									"            \"questionRepsonses\": 0,\r",
-									"            \"constants\": 0,\r",
-									"            \"counters\": 0,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 0\r",
-									"        }\r",
-									"    }\r",
-									"};\r",
-									"\r",
-									"pm.environment.set(\"expectedJson\", expectedJson); "
-								],
-								"type": "text/javascript"
-							}
+							"name": "Get Map Root Node",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson =  {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 200,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": {\r",
+											"        \"links\": \"*\",\r",
+											"        \"dynamicObjects\": \"*\",\r",
+											"        \"linkCount\": 4,\r",
+											"        \"isEnd\": false,\r",
+											"        \"kfp\": null,\r",
+											"        \"probability\": null,\r",
+											"        \"undo\": null,\r",
+											"        \"createdAt\": null,\r",
+											"        \"updatedAt\": null,\r",
+											"        \"x\": 1332.8514404296875,\r",
+											"        \"y\": -1372.2801513671875,\r",
+											"        \"isPrivate\": 0,\r",
+											"        \"collapsed\": 0,\r",
+											"        \"forceReload\": 0,\r",
+											"        \"height\": 160,\r",
+											"        \"linkTypeId\": 2,\r",
+											"        \"locked\": 0,\r",
+											"        \"priorityId\": 1,\r",
+											"        \"typeId\": 1,\r",
+											"        \"visitOnce\": 0,\r",
+											"        \"width\": 300,\r",
+											"        \"showInfo\": 0,\r",
+											"        \"annotation\": \"<p><strong>Facilitator note</strong>: if you can see this panel, you are running in either Author or Reviewer mode. Users who are playing this case as Learners will <span style=\\\"text-decoration: underline;\\\">not</span> see the contents of these panels. </p>\\n<p>We use these panels for notes for teachers and for collaborative authoring notes while building a case. </p>\",\r",
+											"        \"conditional\": null,\r",
+											"        \"conditionalMessage\": null,\r",
+											"        \"info\": \"<p>This is an InfoButton - it should display in a separate panel. </p>\",\r",
+											"        \"text\": \"<p>The primary purpose of this labyrinth is to test whether Duplicate/Export/Import works satisfacorily for advanced OLab4 cases.&nbsp;</p>\\n<p>This case has not been prettified at all. This is just for testing portability of advanced functionality in OLab4 cases.&nbsp;</p>\\n<p>Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\",\r",
+											"        \"linkStyleId\": 5,\r",
+											"        \"mapId\": null,\r",
+											"        \"color\": null,\r",
+											"        \"scopedObjects\": null,\r",
+											"        \"data\": null,\r",
+											"        \"contextId\": null,\r",
+											"        \"title\": \"Root Node Riksväg-fallet\",\r",
+											"        \"url\": null,\r",
+											"        \"id\": \"*\"\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"expectedJson.data.mapId = Number(pm.environment.get(\"mapId\"));\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); "
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/designer/maps/{{mapId}}/node/0",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"designer",
+										"maps",
+										"{{mapId}}",
+										"node",
+										"0"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get OLab4 Map Status",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 200,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": {\r",
+											"        \"id\": null,\r",
+											"        \"name\": null,\r",
+											"        \"nodeCount\": 27,\r",
+											"        \"nodeLinkCount\": 90,\r",
+											"        \"author\": \"*\",\r",
+											"        \"createdAt\": null,        \r",
+											"        \"total\": {\r",
+											"            \"questions\": \"*\",\r",
+											"            \"questionRepsonses\": \"*\",\r",
+											"            \"constants\": \"*\",\r",
+											"            \"counters\": \"*\",\r",
+											"            \"counterActions\": \"*\",\r",
+											"            \"files\": \"*\"\r",
+											"        },\r",
+											"        \"server\": {\r",
+											"            \"questions\": \"*\",\r",
+											"            \"questionRepsonses\": \"*\",\r",
+											"            \"constants\": \"*\",\r",
+											"            \"counters\": \"*\",\r",
+											"            \"counterActions\": \"*\",\r",
+											"            \"files\": \"*\"\r",
+											"        },\r",
+											"        \"map\": {\r",
+											"            \"questions\": 6,\r",
+											"            \"questionRepsonses\": 7,\r",
+											"            \"constants\": 0,\r",
+											"            \"counters\": 3,\r",
+											"            \"counterActions\": 0,\r",
+											"            \"files\": 12\r",
+											"        },\r",
+											"        \"node\": {\r",
+											"            \"questions\": 0,\r",
+											"            \"questionRepsonses\": 0,\r",
+											"            \"constants\": 0,\r",
+											"            \"counters\": 0,\r",
+											"            \"counterActions\": 0,\r",
+											"            \"files\": 0\r",
+											"        }\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"expectedJson.data.id = Number(pm.environment.get(\"mapId\"));\r",
+											"expectedJson.data.name = pm.environment.get(\"mapName\");\r",
+											"expectedJson.data.createdAt = pm.environment.get(\"mapCreatedAt\");\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); \r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/maps/{{olab4mapId}}/status",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"maps",
+										"{{olab4mapId}}",
+										"status"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Map Short Status",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"       \r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 200,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": {\r",
+											"        \"id\": null,\r",
+											"        \"name\": null,\r",
+											"        \"nodeCount\": 27,\r",
+											"        \"nodeLinkCount\": 90,\r",
+											"        \"author\": \"*\",\r",
+											"        \"createdAt\": null,        \r",
+											"        \"total\": null,\r",
+											"        \"server\": null,\r",
+											"        \"map\": null,\r",
+											"        \"node\": null\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"expectedJson.data.id = Number(pm.environment.get(\"mapId\"));\r",
+											"expectedJson.data.name = pm.environment.get(\"mapName\");\r",
+											"expectedJson.data.createdAt = pm.environment.get(\"mapCreatedAt\");\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); "
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/maps/{{olab4mapId}}/shortstatus",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"maps",
+										"{{olab4mapId}}",
+										"shortstatus"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ExportAsJson",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"// tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"\r",
+											"tests[\"Map compare\"] = functions.deepCompareData(expectedData.map, jsonData.data.mapDetails);\r",
+											"// tests[\"Properties compare\"] = functions.deepKeyList(expectedData.map) === functions.deepKeyList(jsonData.data.mapDetails);\r",
+											"\r",
+											"// tests[\"# Nodes are correct\"] = functions.compareArraySize( jsonData.data.nodes, 27 );\r",
+											"// tests[\"Nodes Data compare\"] = functions.deepCompareData(expectedData.node, jsonData.data.nodes[0]);\r",
+											"// tests[\"Nodes Properties compare\"] = functions.deepKeyList(expectedData.node) === functions.deepKeyList(jsonData.data.nodes[0]);\r",
+											"\r",
+											"// tests[\"# Edges are correct\"] = functions.compareArraySize( jsonData.data.edges, 90 );\r",
+											"// tests[\"Edges Data compare\"] = functions.deepCompareData(expectedData.edge, jsonData.data.edges[0]);\r",
+											"// tests[\"Edges Properties compare\"] = functions.deepKeyList(expectedData.edge) === functions.deepKeyList(jsonData.data.edges[0]);\r",
+											"\r",
+											"// tests[\"# Questions are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.questions, 6 );\r",
+											"// tests[\"Questions Data compare\"] = functions.deepCompareData(expectedData.question, jsonData.data.scopedObjects.questions[2]);\r",
+											"// tests[\"Questions Properties compare\"] = functions.deepKeyList(expectedData.question) === functions.deepKeyList(jsonData.data.scopedObjects.questions[2]);\r",
+											"\r",
+											"// tests[\"# Responses are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.questions[2].responses, 4 );\r",
+											"// tests[\"Responses Data compare\"] = functions.deepCompareData(expectedData.response, jsonData.data.scopedObjects.questions[2].responses[0]);\r",
+											"// tests[\"Responses Properties compare\"] = functions.deepKeyList(expectedData.response) === functions.deepKeyList(jsonData.data.scopedObjects.questions[2].responses[0]);\r",
+											"\r",
+											"// tests[\"# Constants are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.constants, 0 );\r",
+											"\r",
+											"// tests[\"# Counters are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.counters, 3 );\r",
+											"// tests[\"Counters Data compare\"] = functions.deepCompareData(expectedData.counter, jsonData.data.scopedObjects.counters[0]);\r",
+											"// tests[\"Counters Properties compare\"] = functions.deepKeyList(expectedData.counter) === functions.deepKeyList(jsonData.data.scopedObjects.counters[0]);\r",
+											"\r",
+											"// tests[\"# Files are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.files, 12 );\r",
+											"// tests[\"Files Data compare\"] = functions.deepCompareData(expectedData.file, jsonData.data.scopedObjects.files[0]);\r",
+											"// tests[\"Files Properties compare\"] = functions.deepKeyList(expectedData.file) === functions.deepKeyList(jsonData.data.scopedObjects.files[0]);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = { \r",
+											"    \"map\": {\r",
+											"        \"enabled\": true,\r",
+											"        \"revisableAnswers\": false,\r",
+											"        \"sendXapiStatements\": false,\r",
+											"        \"showBar\": false,\r",
+											"        \"showScore\": false,\r",
+											"        \"timing\": false,\r",
+											"        \"createdAt\": null,\r",
+											"        \"updatedAt\": null,\r",
+											"        \"rendererVersion\": null,\r",
+											"        \"authorRights\": 0,\r",
+											"        \"deltaTime\": 0,\r",
+											"        \"reminderTime\": 0,\r",
+											"        \"startScore\": 0,\r",
+											"        \"threshold\": 0,\r",
+											"        \"assignForumId\": null,\r",
+											"        \"isTemplate\": 0,\r",
+											"        \"abstract\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
+											"        \"author\": null,\r",
+											"        \"devNotes\": \"<p>**Authoring notes do not Import properly. They were Base64 encoded I think. They should have said this&hellip;</p>\\n<p>Has one of everything that we want to Export/Import between OLab3 servers. This exceeds what can be covered in the ANSI/MVP format.&nbsp;</p>\\n<p>Check to see if all the internal and external refs work properly.&nbsp;Has been updated since some of the duplicates were made so some of them will not be identical.&nbsp;</p>\",\r",
+											"        \"feedback\": \"Here's some random feedback\",\r",
+											"        \"guid\": \"\",\r",
+											"        \"keywords\": \"test\",\r",
+											"        \"reminderMsg\": \"empty_reminder_msg\",\r",
+											"        \"source\": \"\",\r",
+											"        \"title\": null,\r",
+											"        \"units\": \"\",\r",
+											"        \"verification\": null,\r",
+											"        \"sectionId\": 3,\r",
+											"        \"securityId\": 3,\r",
+											"        \"skinId\": 0,\r",
+											"        \"sourceId\": 0,\r",
+											"        \"typeId\": 5,\r",
+											"        \"languageId\": 1,\r",
+											"        \"reportNodeId\": null,\r",
+											"        \"id\": null,\r",
+											"        \"name\": null,\r",
+											"        \"description\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
+											"        \"url\": null\r",
+											"    },\r",
+											"    \"node\": {\r",
+											"        \"isEnd\": false,\r",
+											"        \"kfp\": null,\r",
+											"        \"probability\": null,\r",
+											"        \"undo\": null,\r",
+											"        \"createdAt\": null,\r",
+											"        \"updatedAt\": null,\r",
+											"        \"x\": 1332.8514404296875,\r",
+											"        \"y\": -1372.2801513671875,\r",
+											"        \"isPrivate\": 0,\r",
+											"        \"collapsed\": 0,\r",
+											"        \"forceReload\": 0,\r",
+											"        \"height\": 160,\r",
+											"        \"linkTypeId\": 2,\r",
+											"        \"locked\": 0,\r",
+											"        \"priorityId\": 1,\r",
+											"        \"typeId\": 1,\r",
+											"        \"visitOnce\": 0,\r",
+											"        \"width\": 300,\r",
+											"        \"showInfo\": 0,\r",
+											"        \"annotation\": \"<p><strong>Facilitator note</strong>: if you can see this panel, you are running in either Author or Reviewer mode. Users who are playing this case as Learners will <span style=\\\"text-decoration: underline;\\\">not</span> see the contents of these panels.??</p>\\n<p>We use these panels for notes for teachers and for collaborative authoring notes while building a case.??</p>\",\r",
+											"        \"conditional\": null,\r",
+											"        \"conditionalMessage\": null,\r",
+											"        \"info\": \"<p>This is an InfoButton - it should display in a separate panel.??</p>\",\r",
+											"        \"text\": \"<p>The primary purpose of this labyrinth is to test whether Duplicate/Export/Import works satisfacorily for advanced OLab4 cases.&nbsp;</p>\\n<p>This case has not been prettified at all. This is just for testing portability of advanced functionality in OLab4 cases.&nbsp;</p>\\n<p>Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\",\r",
+											"        \"linkStyleId\": 5,\r",
+											"        \"mapId\": \"*\",\r",
+											"        \"color\": \"#c1e1c5\",\r",
+											"        \"scopedObjects\": {\r",
+											"            \"questions\": [],\r",
+											"            \"constants\": [],\r",
+											"            \"counters\": [],\r",
+											"            \"files\": [],\r",
+											"            \"scripts\": [],\r",
+											"            \"themes\": [],\r",
+											"            \"counteractions\": []\r",
+											"        },\r",
+											"        \"data\": null,\r",
+											"        \"contextId\": null,\r",
+											"        \"title\": \"Root Node\",\r",
+											"        \"url\": null,\r",
+											"        \"id\": \"*\"\r",
+											"    },\r",
+											"    \"edge\": {\r",
+											"        \"id\": \"*\",\r",
+											"        \"sourceId\": \"*\",\r",
+											"        \"destinationId\": \"*\",\r",
+											"        \"color\": \"#566e94\",\r",
+											"        \"reverseId\": null,\r",
+											"        \"linkText\": \"\",\r",
+											"        \"destinationTitle\": null,\r",
+											"        \"linkStyleId\": null,\r",
+											"        \"isHidden\": false\r",
+											"    },\r",
+											"    \"question\": {\r",
+											"        \"stem\": \"multiple choice stem\",\r",
+											"        \"width\": 0,\r",
+											"        \"height\": 0,\r",
+											"        \"settings\": \"\",\r",
+											"        \"feedback\": \"\",\r",
+											"        \"prompt\": \"0\",\r",
+											"        \"showAnswer\": true,\r",
+											"        \"showSubmit\": 0,\r",
+											"        \"layoutType\": 0,\r",
+											"        \"isPrivate\": 0,\r",
+											"        \"order\": 0,\r",
+											"        \"responses\": \"*\",\r",
+											"        \"tryCount\": -1,\r",
+											"        \"numTries\": -1,\r",
+											"        \"disabled\": 0,\r",
+											"        \"wiki\": \"[[QU:QUESTION3463]]\",\r",
+											"        \"value\": null,\r",
+											"        \"questionType\": 3,\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": \"QUESTION3463\",\r",
+											"        \"description\": null,\r",
+											"        \"parentId\": \"*\",\r",
+											"        \"scopeLevel\": \"Maps\",\r",
+											"        \"createdat\": \"*\",\r",
+											"        \"updatedat\": \"*\",\r",
+											"        \"scopeLevelObj\": {\r",
+											"            \"id\": 0,\r",
+											"            \"name\": null\r",
+											"        }\r",
+											"    },\r",
+											"    \"response\": {\r",
+											"        \"response\": \"MCQ1\",\r",
+											"        \"feedback\": \"You clicked on choice 1\",\r",
+											"        \"isCorrect\": 0,\r",
+											"        \"score\": 0,\r",
+											"        \"from\": \"\",\r",
+											"        \"to\": \"\",\r",
+											"        \"order\": 1,\r",
+											"        \"questionId\": \"*\",\r",
+											"        \"value\": false,\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": null,\r",
+											"        \"description\": null,\r",
+											"        \"parentId\": 0,\r",
+											"        \"scopeLevel\": null,\r",
+											"        \"createdat\": \"*\",\r",
+											"        \"updatedat\": \"*\",\r",
+											"        \"scopeLevelObj\": {\r",
+											"            \"id\": 0,\r",
+											"            \"name\": null\r",
+											"        },\t\r",
+											"    },\t\r",
+											"    \"counter\": {\r",
+											"        \"value\": \"\",\r",
+											"        \"isSystem\": 0,\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": \"Score int\",\r",
+											"        \"description\": \"Simple integer score\",\r",
+											"        \"parentId\": \"*\",\r",
+											"        \"scopeLevel\": \"Maps\",\r",
+											"        \"createdat\": \"*\",\r",
+											"        \"updatedat\": \"*\",\r",
+											"        \"scopeLevelObj\": {\r",
+											"            \"id\": 0,\r",
+											"            \"name\": null\r",
+											"        }\r",
+											"    },\r",
+											"    \"file\": {\r",
+											"        \"fileSize\": 25280,\r",
+											"        \"height\": null,\r",
+											"        \"isSystem\": 0,\r",
+											"        \"type\": null,\r",
+											"        \"width\": null,\r",
+											"        \"isPrivate\": 0,\r",
+											"        \"isShared\": 1,\r",
+											"        \"isEmbedded\": null,\r",
+											"        \"args\": null,\r",
+											"        \"copyright\": \"\",\r",
+											"        \"fileName\": \"RonAvatar.png\",\r",
+											"        \"hAlign\": null,\r",
+											"        \"heightType\": \"px\",\r",
+											"        \"mime\": \"image/png\",\r",
+											"        \"originUrl\": null,\r",
+											"        \"path\": \"RonAvatar.png\",\r",
+											"        \"vAlign\": null,\r",
+											"        \"widthType\": \"px\",\r",
+											"        \"selectedFileName\": null,\r",
+											"        \"isMediaResource\": true,\r",
+											"        \"url\": null,\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": \"Test image of Ron's avatar\",\r",
+											"        \"description\": \"Borrowed from Ron TT case for PNG as attached file\",\r",
+											"        \"parentId\": \"*\",\r",
+											"        \"scopeLevel\": \"Maps\",\r",
+											"        \"createdat\": \"*\",\r",
+											"        \"updatedat\": null,\r",
+											"        \"scopeLevelObj\": {\r",
+											"            \"id\": 0,\r",
+											"            \"name\": null\r",
+											"        }\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"expectedJson.map.id = Number(pm.environment.get(\"mapId\"));\r",
+											"expectedJson.map.name = pm.environment.get(\"mapName\");\r",
+											"expectedJson.map.createdAt = pm.environment.get(\"mapCreatedAt\");\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); "
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/import4/export/{{olab4mapId}}/json",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"import4",
+										"export",
+										"{{olab4mapId}}",
+										"json"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Export",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.environment.get(\"functions\", functions);\r",
+											"\r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedMapDetailsJson = {\r",
+											"            \"enabled\": true,\r",
+											"            \"revisableAnswers\": false,\r",
+											"            \"sendXapiStatements\": false,\r",
+											"            \"showBar\": false,\r",
+											"            \"showScore\": false,\r",
+											"            \"timing\": false,\r",
+											"            \"createdAt\": null,\r",
+											"            \"updatedAt\": null,\r",
+											"            \"rendererVersion\": null,\r",
+											"            \"authorRights\": 0,\r",
+											"            \"deltaTime\": 0,\r",
+											"            \"reminderTime\": 0,\r",
+											"            \"startScore\": 0,\r",
+											"            \"threshold\": 0,\r",
+											"            \"assignForumId\": null,\r",
+											"            \"isTemplate\": 0,\r",
+											"            \"abstract\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
+											"            \"author\": null,\r",
+											"            \"devNotes\": \"<p>**Authoring notes do not Import properly. They were Base64 encoded I think. They should have said this&hellip;</p>\\n<p>Has one of everything that we want to Export/Import between OLab3 servers. This exceeds what can be covered in the ANSI/MVP format.&nbsp;</p>\\n<p>Check to see if all the internal and external refs work properly.&nbsp;Has been updated since some of the duplicates were made so some of them will not be identical.&nbsp;</p>\",\r",
+											"            \"feedback\": \"Here's some random feedback\",\r",
+											"            \"guid\": \"\",\r",
+											"            \"keywords\": \"test\",\r",
+											"            \"reminderMsg\": \"empty_reminder_msg\",\r",
+											"            \"source\": \"\",\r",
+											"            \"title\": null,\r",
+											"            \"units\": \"\",\r",
+											"            \"verification\": null,\r",
+											"            \"sectionId\": 3,\r",
+											"            \"securityId\": 3,\r",
+											"            \"skinId\": 0,\r",
+											"            \"sourceId\": 0,\r",
+											"            \"typeId\": 5,\r",
+											"            \"languageId\": 1,\r",
+											"            \"reportNodeId\": null,\r",
+											"            \"id\": null,\r",
+											"            \"name\": null,\r",
+											"            \"description\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
+											"            \"url\": null\r",
+											"        };\r",
+											"\r",
+											"expectedMapDetailsJson.id = Number(pm.environment.get(\"mapId\"));\r",
+											"expectedMapDetailsJson.name = pm.environment.get(\"mapName\");\r",
+											"expectedMapDetailsJson.createdAt = pm.environment.get(\"mapCreatedAt\");\r",
+											"\r",
+											"pm.environment.set(\"expectedMapData\", expectedMapDetailsJson); "
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/import4/export/{{olab4mapId}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"import4",
+										"export",
+										"{{olab4mapId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete OLab4 Map",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code is 204\"] = responseCode.code === 204;\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/maps/{{olab4mapId}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"maps",
+										"{{olab4mapId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Deleted OLab4 Map",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"expectedData.data.id == pm.environment.get(\"olab4mapId\");\r",
+											"\r",
+											"tests[\"Status code is 404\"] = responseCode.code === 404;\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 404,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": \"*\"\r",
+											"};\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); "
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/maps/{{olab4mapId}}/shortstatus",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"maps",
+										"{{olab4mapId}}",
+										"shortstatus"
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"protocolProfileBehavior": {
@@ -536,686 +1481,313 @@
 					"response": []
 				},
 				{
-					"name": "Get Map Short Status",
-					"event": [
+					"name": "OLab3",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"var expectedData = pm.environment.get(\"expectedJson\");\r",
-									"\r",
-									"expectedData.data.id == pm.environment.get(\"mapId\");\r",
-									"\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
-									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": \"IMPORT: Test: Duplicate and advanced export testing\",\r",
-									"        \"nodeCount\": 27,\r",
-									"        \"nodeLinkCount\": 90,\r",
-									"        \"total\": null,\r",
-									"        \"server\": null,\r",
-									"        \"map\": null,\r",
-									"        \"node\": null\r",
-									"    }\r",
-									"};\r",
-									"\r",
-									"pm.environment.set(\"expectedJson\", expectedJson); "
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
+							"name": "Import OLab3",
+							"event": [
 								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"pm.environment.set(\"mapId\", jsonData.data.id);\r",
+											"pm.environment.set(\"mapName\", jsonData.data.name);\r",
+											"pm.environment.set(\"mapCreatedAt\", jsonData.data.createdAt);\r",
+											"pm.environment.set(\"olab3mapId\", jsonData.data.id);\r",
+											"\r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+											"\r",
+											"tests[\"Message count correct\"] = functions.compareArraySize( jsonData.data.logMessages, 291 );\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 200,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": {\r",
+											"        \"logMessages\": \"*\",\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": \"*\",\r",
+											"        \"createdAt\": \"*\"\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); "
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/maps/{{mapId}}/shortstatus",
-							"host": [
-								"{{url}}"
 							],
-							"path": [
-								"maps",
-								"{{mapId}}",
-								"shortstatus"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "ExportAsJson",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"var expectedData = pm.environment.get(\"expectedJson\");\r",
-									"\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"\r",
-									"tests[\"Map compare\"] = functions.deepCompareData(expectedData.map, jsonData.data.mapDetails);\r",
-									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData.map) === functions.deepKeyList(jsonData.data.mapDetails);\r",
-									"\r",
-									"tests[\"# Nodes are correct\"] = functions.compareArraySize( jsonData.data.nodes, 27 );\r",
-									"tests[\"Nodes Data compare\"] = functions.deepCompareData(expectedData.node, jsonData.data.nodes[0]);\r",
-									"tests[\"Nodes Properties compare\"] = functions.deepKeyList(expectedData.node) === functions.deepKeyList(jsonData.data.nodes[0]);\r",
-									"\r",
-									"tests[\"# Edges are correct\"] = functions.compareArraySize( jsonData.data.edges, 90 );\r",
-									"tests[\"Edges Data compare\"] = functions.deepCompareData(expectedData.edge, jsonData.data.edges[0]);\r",
-									"tests[\"Edges Properties compare\"] = functions.deepKeyList(expectedData.edge) === functions.deepKeyList(jsonData.data.edges[0]);\r",
-									"\r",
-									"tests[\"# Questions are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.questions, 6 );\r",
-									"tests[\"Questions Data compare\"] = functions.deepCompareData(expectedData.question, jsonData.data.scopedObjects.questions[2]);\r",
-									"tests[\"Questions Properties compare\"] = functions.deepKeyList(expectedData.question) === functions.deepKeyList(jsonData.data.scopedObjects.questions[2]);\r",
-									"\r",
-									"tests[\"# Responses are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.questions[2].responses, 4 );\r",
-									"tests[\"Responses Data compare\"] = functions.deepCompareData(expectedData.response, jsonData.data.scopedObjects.questions[2].responses[0]);\r",
-									"tests[\"Responses Properties compare\"] = functions.deepKeyList(expectedData.response) === functions.deepKeyList(jsonData.data.scopedObjects.questions[2].responses[0]);\r",
-									"\r",
-									"tests[\"# Constants are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.constants, 0 );\r",
-									"\r",
-									"tests[\"# Counters are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.counters, 3 );\r",
-									"tests[\"Counters Data compare\"] = functions.deepCompareData(expectedData.counter, jsonData.data.scopedObjects.counters[0]);\r",
-									"tests[\"Counters Properties compare\"] = functions.deepKeyList(expectedData.counter) === functions.deepKeyList(jsonData.data.scopedObjects.counters[0]);\r",
-									"\r",
-									"tests[\"# Files are correct\"] = functions.compareArraySize( jsonData.data.scopedObjects.files, 12 );\r",
-									"tests[\"Files Data compare\"] = functions.deepCompareData(expectedData.file, jsonData.data.scopedObjects.files[0]);\r",
-									"tests[\"Files Properties compare\"] = functions.deepKeyList(expectedData.file) === functions.deepKeyList(jsonData.data.scopedObjects.files[0]);\r",
-									""
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-",
+										"value": "application/json;charset=UTF-8",
+										"type": "text"
+									}
 								],
-								"type": "text/javascript"
-							}
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1eee0b8a-a254-4e80-87c6-88d97eb8bc4c"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{url}}/import3",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"import3"
+									]
+								}
+							},
+							"response": []
 						},
 						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var expectedJson = { \r",
-									"    \"map\": {\r",
-									"        \"enabled\": true,\r",
-									"        \"revisableAnswers\": false,\r",
-									"        \"sendXapiStatements\": false,\r",
-									"        \"showBar\": false,\r",
-									"        \"showScore\": false,\r",
-									"        \"timing\": false,\r",
-									"        \"createdAt\": null,\r",
-									"        \"updatedAt\": null,\r",
-									"        \"rendererVersion\": null,\r",
-									"        \"authorRights\": 0,\r",
-									"        \"deltaTime\": 0,\r",
-									"        \"reminderTime\": 0,\r",
-									"        \"startScore\": 0,\r",
-									"        \"threshold\": 0,\r",
-									"        \"assignForumId\": null,\r",
-									"        \"isTemplate\": 0,\r",
-									"        \"abstract\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
-									"        \"author\": null,\r",
-									"        \"devNotes\": \"<p>**Authoring notes do not Import properly. They were Base64 encoded I think. They should have said this&hellip;</p>\\n<p>Has one of everything that we want to Export/Import between OLab3 servers. This exceeds what can be covered in the ANSI/MVP format.&nbsp;</p>\\n<p>Check to see if all the internal and external refs work properly.&nbsp;Has been updated since some of the duplicates were made so some of them will not be identical.&nbsp;</p>\",\r",
-									"        \"feedback\": \"This is general feedback given to everyone\",\r",
-									"        \"guid\": \"\",\r",
-									"        \"keywords\": \"test\",\r",
-									"        \"reminderMsg\": \"empty_reminder_msg\",\r",
-									"        \"source\": \"\",\r",
-									"        \"title\": null,\r",
-									"        \"units\": \"\",\r",
-									"        \"verification\": null,\r",
-									"        \"sectionId\": 3,\r",
-									"        \"securityId\": 3,\r",
-									"        \"skinId\": 0,\r",
-									"        \"sourceId\": 0,\r",
-									"        \"typeId\": 5,\r",
-									"        \"languageId\": 1,\r",
-									"        \"reportNodeId\": null,\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": \"IMPORT: Test: Duplicate and advanced export testing\",\r",
-									"        \"description\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
-									"        \"url\": null\r",
-									"    },\r",
-									"    \"node\": {\r",
-									"        \"isEnd\": false,\r",
-									"        \"kfp\": null,\r",
-									"        \"probability\": null,\r",
-									"        \"undo\": null,\r",
-									"        \"createdAt\": null,\r",
-									"        \"updatedAt\": null,\r",
-									"        \"x\": 1332.8514404296875,\r",
-									"        \"y\": -1372.2801513671875,\r",
-									"        \"isPrivate\": 0,\r",
-									"        \"collapsed\": 0,\r",
-									"        \"forceReload\": 0,\r",
-									"        \"height\": 160,\r",
-									"        \"linkTypeId\": 2,\r",
-									"        \"locked\": 0,\r",
-									"        \"priorityId\": 1,\r",
-									"        \"typeId\": 1,\r",
-									"        \"visitOnce\": 0,\r",
-									"        \"width\": 300,\r",
-									"        \"showInfo\": 0,\r",
-									"        \"annotation\": \"<p><strong>Facilitator note</strong>: if you can see this panel, you are running in either Author or Reviewer mode. Users who are playing this case as Learners will <span style=\\\"text-decoration: underline;\\\">not</span> see the contents of these panels.??</p>\\n<p>We use these panels for notes for teachers and for collaborative authoring notes while building a case.??</p>\",\r",
-									"        \"conditional\": null,\r",
-									"        \"conditionalMessage\": null,\r",
-									"        \"info\": \"<p>This is an InfoButton - it should display in a separate panel.??</p>\",\r",
-									"        \"text\": \"<p>The primary purpose of this labyrinth is to test whether Duplicate/Export/Import works satisfacorily for advanced OLab4 cases.&nbsp;</p>\\n<p>This case has not been prettified at all. This is just for testing portability of advanced functionality in OLab4 cases.&nbsp;</p>\\n<p>Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\",\r",
-									"        \"linkStyleId\": 5,\r",
-									"        \"mapId\": \"*\",\r",
-									"        \"color\": \"#c1e1c5\",\r",
-									"        \"scopedObjects\": {\r",
-									"            \"questions\": [],\r",
-									"            \"constants\": [],\r",
-									"            \"counters\": [],\r",
-									"            \"files\": [],\r",
-									"            \"scripts\": [],\r",
-									"            \"themes\": [],\r",
-									"            \"counteractions\": []\r",
-									"        },\r",
-									"        \"data\": null,\r",
-									"        \"contextId\": null,\r",
-									"        \"title\": \"Root Node\",\r",
-									"        \"url\": null,\r",
-									"        \"id\": \"*\"\r",
-									"    },\r",
-									"    \"edge\": {\r",
-									"        \"id\": \"*\",\r",
-									"        \"sourceId\": \"*\",\r",
-									"        \"destinationId\": \"*\",\r",
-									"        \"color\": \"#566e94\",\r",
-									"        \"reverseId\": null,\r",
-									"        \"linkText\": \"\",\r",
-									"        \"destinationTitle\": null,\r",
-									"        \"linkStyleId\": null,\r",
-									"        \"isHidden\": false\r",
-									"    },\r",
-									"    \"question\": {\r",
-									"        \"stem\": \"multiple choice stem\",\r",
-									"        \"width\": 0,\r",
-									"        \"height\": 0,\r",
-									"        \"settings\": \"\",\r",
-									"        \"feedback\": \"\",\r",
-									"        \"prompt\": \"0\",\r",
-									"        \"showAnswer\": true,\r",
-									"        \"showSubmit\": 0,\r",
-									"        \"layoutType\": 0,\r",
-									"        \"isPrivate\": 0,\r",
-									"        \"order\": 0,\r",
-									"        \"responses\": \"*\",\r",
-									"        \"tryCount\": -1,\r",
-									"        \"numTries\": -1,\r",
-									"        \"disabled\": 0,\r",
-									"        \"wiki\": \"[[QU:QUESTION3463]]\",\r",
-									"        \"value\": null,\r",
-									"        \"questionType\": 3,\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": \"QUESTION3463\",\r",
-									"        \"description\": null,\r",
-									"        \"parentId\": \"*\",\r",
-									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": \"*\",\r",
-									"        \"updatedat\": \"*\",\r",
-									"        \"scopeLevelObj\": {\r",
-									"            \"id\": 0,\r",
-									"            \"name\": null\r",
-									"        }\r",
-									"    },\r",
-									"    \"response\": {\r",
-									"        \"response\": \"MCQ1\",\r",
-									"        \"feedback\": \"You clicked on choice 1\",\r",
-									"        \"isCorrect\": 0,\r",
-									"        \"score\": 0,\r",
-									"        \"from\": \"\",\r",
-									"        \"to\": \"\",\r",
-									"        \"order\": 1,\r",
-									"        \"questionId\": \"*\",\r",
-									"        \"value\": false,\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": null,\r",
-									"        \"description\": null,\r",
-									"        \"parentId\": 0,\r",
-									"        \"scopeLevel\": null,\r",
-									"        \"createdat\": \"*\",\r",
-									"        \"updatedat\": \"*\",\r",
-									"        \"scopeLevelObj\": {\r",
-									"            \"id\": 0,\r",
-									"            \"name\": null\r",
-									"        },\t\r",
-									"    },\t\r",
-									"    \"counter\": {\r",
-									"        \"value\": \"\",\r",
-									"        \"isSystem\": 0,\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": \"Score int\",\r",
-									"        \"description\": \"Simple integer score\",\r",
-									"        \"parentId\": \"*\",\r",
-									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": \"*\",\r",
-									"        \"updatedat\": \"*\",\r",
-									"        \"scopeLevelObj\": {\r",
-									"            \"id\": 0,\r",
-									"            \"name\": null\r",
-									"        }\r",
-									"    },\r",
-									"    \"file\": {\r",
-									"        \"fileSize\": 25280,\r",
-									"        \"height\": null,\r",
-									"        \"isSystem\": 0,\r",
-									"        \"type\": null,\r",
-									"        \"width\": null,\r",
-									"        \"isPrivate\": 0,\r",
-									"        \"isShared\": 1,\r",
-									"        \"isEmbedded\": null,\r",
-									"        \"args\": null,\r",
-									"        \"copyright\": \"\",\r",
-									"        \"fileName\": \"RonAvatar.png\",\r",
-									"        \"hAlign\": null,\r",
-									"        \"heightType\": \"px\",\r",
-									"        \"mime\": \"image/png\",\r",
-									"        \"originUrl\": null,\r",
-									"        \"path\": \"RonAvatar.png\",\r",
-									"        \"vAlign\": null,\r",
-									"        \"widthType\": \"px\",\r",
-									"        \"selectedFileName\": null,\r",
-									"        \"isMediaResource\": true,\r",
-									"        \"url\": null,\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": \"Test image of Ron's avatar\",\r",
-									"        \"description\": \"Borrowed from Ron TT case for PNG as attached file\",\r",
-									"        \"parentId\": \"*\",\r",
-									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": \"*\",\r",
-									"        \"updatedat\": null,\r",
-									"        \"scopeLevelObj\": {\r",
-									"            \"id\": 0,\r",
-									"            \"name\": null\r",
-									"        }\r",
-									"    }\r",
-									"};\r",
-									"\r",
-									"pm.environment.set(\"expectedJson\", expectedJson); "
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
+							"name": "Get OLab3 Map Status",
+							"event": [
 								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 200,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": {\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": \"IMPORT: ExportTestOL3v5limited - Riksväg-fallet\",\r",
+											"        \"nodeCount\": 13,\r",
+											"        \"nodeLinkCount\": 26,\r",
+											"        \"author\": \"*\",\r",
+											"        \"createdAt\": \"*\",\r",
+											"        \"total\": {\r",
+											"            \"questions\": \"*\",\r",
+											"            \"questionRepsonses\": \"*\",\r",
+											"            \"constants\": \"*\",\r",
+											"            \"counters\": \"*\",\r",
+											"            \"counterActions\": \"*\",\r",
+											"            \"files\": \"*\"\r",
+											"        },\r",
+											"        \"server\": {\r",
+											"            \"questions\": \"*\",\r",
+											"            \"questionRepsonses\": \"*\",\r",
+											"            \"constants\": \"*\",\r",
+											"            \"counters\": \"*\",\r",
+											"            \"counterActions\": \"*\",\r",
+											"            \"files\": \"*\"\r",
+											"        },\r",
+											"        \"map\": {\r",
+											"            \"questions\": 8,\r",
+											"            \"questionRepsonses\": 13,\r",
+											"            \"constants\": 6,\r",
+											"            \"counters\": 2,\r",
+											"            \"counterActions\": 0,\r",
+											"            \"files\": 6\r",
+											"        },\r",
+											"        \"node\": {\r",
+											"            \"questions\": 0,\r",
+											"            \"questionRepsonses\": 0,\r",
+											"            \"constants\": 0,\r",
+											"            \"counters\": 0,\r",
+											"            \"counterActions\": 0,\r",
+											"            \"files\": 0\r",
+											"        }\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"expectedJson.data.id = Number(pm.environment.get(\"mapId\"));\r",
+											"expectedJson.data.name = pm.environment.get(\"mapName\");\r",
+											"expectedJson.data.createdAt = pm.environment.get(\"mapCreatedAt\");\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); \r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/import4/export/{{mapId}}/json",
-							"host": [
-								"{{url}}"
 							],
-							"path": [
-								"import4",
-								"export",
-								"{{mapId}}",
-								"json"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Export",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.get(\"functions\", functions);\r",
-									"\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									""
-								],
-								"type": "text/javascript"
-							}
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/maps/{{olab3mapId}}/status",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"maps",
+										"{{olab3mapId}}",
+										"status"
+									]
+								}
+							},
+							"response": []
 						},
 						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var expectedMapDetailsJson = {\r",
-									"            \"enabled\": true,\r",
-									"            \"revisableAnswers\": false,\r",
-									"            \"sendXapiStatements\": false,\r",
-									"            \"showBar\": false,\r",
-									"            \"showScore\": false,\r",
-									"            \"timing\": false,\r",
-									"            \"createdAt\": null,\r",
-									"            \"updatedAt\": null,\r",
-									"            \"rendererVersion\": null,\r",
-									"            \"authorRights\": 0,\r",
-									"            \"deltaTime\": 0,\r",
-									"            \"reminderTime\": 0,\r",
-									"            \"startScore\": 0,\r",
-									"            \"threshold\": 0,\r",
-									"            \"assignForumId\": null,\r",
-									"            \"isTemplate\": 0,\r",
-									"            \"abstract\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
-									"            \"author\": null,\r",
-									"            \"devNotes\": \"<p>**Authoring notes do not Import properly. They were Base64 encoded I think. They should have said this&hellip;</p>\\n<p>Has one of everything that we want to Export/Import between OLab3 servers. This exceeds what can be covered in the ANSI/MVP format.&nbsp;</p>\\n<p>Check to see if all the internal and external refs work properly.&nbsp;Has been updated since some of the duplicates were made so some of them will not be identical.&nbsp;</p>\",\r",
-									"            \"feedback\": \"VGhpcyBpcyBnZW5lcmFsIGZlZWRiYWNrIGdpdmVuIHRvIGV2ZXJ5b25l\",\r",
-									"            \"guid\": \"\",\r",
-									"            \"keywords\": \"test\",\r",
-									"            \"reminderMsg\": \"empty_reminder_msg\",\r",
-									"            \"source\": \"\",\r",
-									"            \"title\": null,\r",
-									"            \"units\": \"\",\r",
-									"            \"verification\": null,\r",
-									"            \"sectionId\": 3,\r",
-									"            \"securityId\": 3,\r",
-									"            \"skinId\": 0,\r",
-									"            \"sourceId\": 0,\r",
-									"            \"typeId\": 5,\r",
-									"            \"languageId\": 1,\r",
-									"            \"reportNodeId\": null,\r",
-									"            \"id\": 1944,\r",
-									"            \"name\": \"IMPORT: Test: Duplicate and advanced export testing\",\r",
-									"            \"description\": \"<p>This map contains an example of all the features in a labyrinth in OLab v4.6. Created to test out the <strong>Duplicate</strong> function or advanced <strong>Export</strong>.&nbsp;Note that the Export/Import format being used here extends beyond what is permitted by the ANSI/Medbiq MVP standard.&nbsp;</p>\\n<p>See Author notes about what needs to be included, that was not included in 'Export testing 2'. Has been updated since some of the duplicates were made. Some items in this map are intended to illustrate what is known to survive an Export and what is known to be lost. e.g. Embedded Relative Links (see [Internally referenced node]) and <strong>Imagemaps</strong>.&nbsp;</p>\\n<p>&nbsp;</p>\",\r",
-									"            \"url\": null\r",
-									"        };\r",
-									"\r",
-									"pm.environment.set(\"expectedMapData\", expectedMapDetailsJson); "
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
+							"name": "Get Map Short Status",
+							"event": [
 								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);\r",
+											"var expectedData = pm.environment.get(\"expectedJson\");\r",
+											"\r",
+											"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+											"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+											"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var expectedJson = {\r",
+											"    \"extended_status_code\": null,\r",
+											"    \"message\": \"success\",\r",
+											"    \"error_code\": 200,\r",
+											"    \"diagnostics\": [],\r",
+											"    \"data\": {\r",
+											"        \"id\": \"*\",\r",
+											"        \"name\": \"IMPORT: ExportTestOL3v5limited\",\r",
+											"        \"nodeCount\": 13,\r",
+											"        \"nodeLinkCount\": 26,\r",
+											"        \"author\": \"*\",\r",
+											"        \"createdAt\": \"*\",        \r",
+											"        \"total\": null,\r",
+											"        \"server\": null,\r",
+											"        \"map\": null,\r",
+											"        \"node\": null\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"expectedJson.data.id = Number(pm.environment.get(\"mapId\"));\r",
+											"expectedJson.data.name = pm.environment.get(\"mapName\");\r",
+											"expectedJson.data.createdAt = pm.environment.get(\"mapCreatedAt\");\r",
+											"\r",
+											"pm.environment.set(\"expectedJson\", expectedJson); "
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/import4/export/{{mapId}}",
-							"host": [
-								"{{url}}"
 							],
-							"path": [
-								"import4",
-								"export",
-								"{{mapId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Import OLab3",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"var expectedData = pm.environment.get(\"expectedJson\");\r",
-									"\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
-									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
-									"\r",
-									"tests[\"# messages are correct\"] = functions.compareArraySize( jsonData.data.logMessages, 292 );\r",
-									"\r",
-									"postman.setEnvironmentVariable(\"mapId\", jsonData.data.mapId);\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"logMessages\": \"*\",\r",
-									"        \"mapId\": \"*\"\r",
-									"    }\r",
-									"};\r",
-									"pm.environment.set(\"expectedJson\", expectedJson); "
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/maps/{{olab3mapId}}/shortstatus",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"maps",
+										"{{olab3mapId}}",
+										"shortstatus"
+									]
 								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-",
-								"value": "application/json;charset=UTF-8",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": "postman-cloud:///1eed0c6b-c77b-4d90-8654-dd4283b85d54"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/import3",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"import3"
-							]
+							},
+							"response": []
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get OLab3 Map Status",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"var expectedData = pm.environment.get(\"expectedJson\");\r",
-									"\r",
-									"expectedData.data.id == pm.environment.get(\"mapId\");\r",
-									"\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
-									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"id\": \"*\",\r",
-									"        \"name\": \"IMPORT: Export testing4 -- all features\",\r",
-									"        \"nodeCount\": 8,\r",
-									"        \"nodeLinkCount\": 20,\r",
-									"        \"total\": {\r",
-									"            \"questions\": 26,\r",
-									"            \"questionRepsonses\": 67,\r",
-									"            \"constants\": 39,\r",
-									"            \"counters\": 5,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 18\r",
-									"        },\r",
-									"        \"server\": {\r",
-									"            \"questions\": 14,\r",
-									"            \"questionRepsonses\": 35,\r",
-									"            \"constants\": 34,\r",
-									"            \"counters\": 3,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 12\r",
-									"        },\r",
-									"        \"map\": {\r",
-									"            \"questions\": 12,\r",
-									"            \"questionRepsonses\": 32,\r",
-									"            \"constants\": 5,\r",
-									"            \"counters\": 2,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 6\r",
-									"        },\r",
-									"        \"node\": {\r",
-									"            \"questions\": 0,\r",
-									"            \"questionRepsonses\": 0,\r",
-									"            \"constants\": 0,\r",
-									"            \"counters\": 0,\r",
-									"            \"counterActions\": 0,\r",
-									"            \"files\": 0\r",
-									"        }\r",
-									"    }\r",
-									"};\r",
-									"\r",
-									"pm.environment.set(\"expectedJson\", expectedJson); "
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/maps/{{mapId}}/status",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"maps",
-								"{{mapId}}",
-								"status"
-							]
-						}
-					},
-					"response": []
+					]
 				}
 			]
 		},
@@ -1223,7 +1795,7 @@
 			"name": "Question",
 			"item": [
 				{
-					"name": "Get Questions",
+					"name": "Get Questions Paged",
 					"event": [
 						{
 							"listen": "test",
@@ -1234,10 +1806,9 @@
 									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"\r",
-									"tests[\"# Questions is correct\"] = functions.compareArraySize( jsonData.data, 5 );\r",
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData.data[0]);\r",
 									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData.data[0]);\r",
-									"\r",
+									"tests[`Count correct`] = functions.compareArraySize( jsonData.data, 5 );\r",
 									""
 								],
 								"type": "text/javascript"
@@ -1329,7 +1900,7 @@
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
 									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
 									"\r",
-									"postman.setEnvironmentVariable(\"newId\", jsonData.data.id);\r",
+									"pm.environment.set(\"newId\", jsonData.data.id);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -1432,7 +2003,8 @@
 									"\r",
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
 									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
-									""
+									"\r",
+									"pm.environment.set(\"newObject\", jsonData.data);"
 								],
 								"type": "text/javascript"
 							}
@@ -1474,7 +2046,188 @@
 									"        \"updatedat\": null,\r",
 									"        \"scopeLevelObj\": {\r",
 									"            \"id\": \"*\",\r",
-									"            \"name\": \"IMPORT: Export testing4 -- all features\"\r",
+									"            \"name\": \"IMPORT: ExportTestOL3v5limited\"\r",
+									"        }\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"expectedJson.data.parentId = Number(pm.environment.get(\"mapId\"));\r",
+									"expectedJson.data.scopeLevelObj.id = Number(pm.environment.get(\"mapId\"));\r",
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/questions/{{newId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"questions",
+								"{{newId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put Question",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 204\"] = responseCode.code === 204;\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var expectedJson = pm.environment.get('newObject');\r",
+									"expectedJson.stem = \"Editted stem\";\r",
+									"expectedJson.showAnswer = false;\r",
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson);\r",
+									"\r",
+									"pm.request.body.update( JSON.stringify( expectedJson ) );\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/questions/{{newId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"questions",
+								"{{newId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Edited Question",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+									"\r",
+									"pm.environment.set(\"newObject\", jsonData.data);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var expectedJson = {\r",
+									"    \"extended_status_code\": null,\r",
+									"    \"message\": \"success\",\r",
+									"    \"error_code\": 200,\r",
+									"    \"diagnostics\": [],\r",
+									"    \"data\": {\r",
+									"        \"stem\": \"Editted stem\",\r",
+									"        \"width\": 0,\r",
+									"        \"height\": 0,\r",
+									"        \"settings\": null,\r",
+									"        \"feedback\": \"\",\r",
+									"        \"prompt\": \"\",\r",
+									"        \"showAnswer\": false,\r",
+									"        \"showSubmit\": 1,\r",
+									"        \"layoutType\": 0,\r",
+									"        \"isPrivate\": 0,\r",
+									"        \"order\": null,\r",
+									"        \"responses\": [],\r",
+									"        \"tryCount\": -1,\r",
+									"        \"numTries\": -1,\r",
+									"        \"disabled\": 0,\r",
+									"        \"wiki\": \"[[QU:2912]]\",\r",
+									"        \"value\": null,\r",
+									"        \"questionType\": 3,\r",
+									"        \"id\": \"*\",\r",
+									"        \"name\": \"2912\",\r",
+									"        \"description\": null,\r",
+									"        \"parentId\": \"*\",\r",
+									"        \"scopeLevel\": \"Maps\",\r",
+									"        \"createdat\": \"*\",\r",
+									"        \"updatedat\": \"*\",\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": \"*\",\r",
+									"            \"name\": \"IMPORT: ExportTestOL3v5limited\"\r",
 									"        }\r",
 									"    }\r",
 									"};\r",
@@ -1798,14 +2551,12 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Id is expected\"] = jsonData.data.id == pm.environment.get(\"newId\");\r",
-									"tests[\"ResponseId is expected\"] = jsonData.data.responses[0].id == pm.environment.get(\"newResponseId\");\r",
-									"\r",
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									"console.log(jsonData);\r",
-									"console.log(expectedData);\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
 									"\r",
 									""
 								],
@@ -1833,21 +2584,47 @@
 									"        \"layoutType\": 0,\r",
 									"        \"isPrivate\": 0,\r",
 									"        \"order\": null,\r",
-									"        \"responses\": [],\r",
+									"        \"responses\": [\r",
+									"            {\r",
+									"                \"response\": \"$5,000\",\r",
+									"                \"feedback\": \"\",\r",
+									"                \"isCorrect\": 1,\r",
+									"                \"score\": 1,\r",
+									"                \"from\": null,\r",
+									"                \"to\": null,\r",
+									"                \"order\": 0,\r",
+									"                \"questionId\": \"*\",\r",
+									"                \"value\": false,\r",
+									"                \"id\": \"*\",\r",
+									"                \"name\": \"120\",\r",
+									"                \"description\": null,\r",
+									"                \"parentId\": 0,\r",
+									"                \"scopeLevel\": null,\r",
+									"                \"createdat\": null,\r",
+									"                \"updatedat\": null,\r",
+									"                \"scopeLevelObj\": {\r",
+									"                    \"id\": 0,\r",
+									"                    \"name\": null\r",
+									"                }\r",
+									"            }\r",
+									"        ],\r",
 									"        \"tryCount\": -1,\r",
 									"        \"numTries\": -1,\r",
 									"        \"disabled\": 0,\r",
-									"        \"wiki\": null,\r",
+									"        \"wiki\": \"*\",\r",
 									"        \"value\": null,\r",
 									"        \"questionType\": 3,\r",
-									"        \"id\": null,\r",
+									"        \"id\": \"*\",\r",
 									"        \"name\": \"2912\",\r",
 									"        \"description\": null,\r",
-									"        \"parentId\": 1644,\r",
+									"        \"parentId\": \"*\",\r",
 									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": null,\r",
+									"        \"createdat\": \"*\",\r",
 									"        \"updatedat\": null,\r",
-									"        \"scopeLevelObj\": null\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": \"*\",\r",
+									"            \"name\": \"IMPORT: ExportTestOL3v5limited\"\r",
+									"        }\r",
 									"    }\r",
 									"};\r",
 									"\r",
@@ -1954,7 +2731,7 @@
 									"    }\r",
 									"};\r",
 									"\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -2087,20 +2864,15 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
 									"pm.environment.set(\"newId\", jsonData.data.id);\r",
 									"\r",
-									"jsonData.data.createdat = null;\r",
-									"jsonData.data.id = null;\r",
-									"jsonData.data.scopeLevelObj = null;\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"\r",
-									"var expectedData = pm.environment.get(\"expectedJson\");\r",
-									"\r",
-									"console.log(jsonData);\r",
-									"console.log(expectedData);\r",
-									"\r",
-									"tests[\"Body is correct\"] = ( JSON.stringify(jsonData) === JSON.stringify(expectedData) );"
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -2129,25 +2901,27 @@
 									"        \"hAlign\": null,\r",
 									"        \"heightType\": \"px\",\r",
 									"        \"mime\": \"application/json\",\r",
-									"        \"originUrl\": null,        \r",
+									"        \"originUrl\": null,\r",
 									"        \"path\": \"settings.json\",\r",
 									"        \"vAlign\": null,\r",
 									"        \"widthType\": \"px\",\r",
 									"        \"selectedFileName\": null,\r",
 									"        \"isMediaResource\": true,\r",
 									"        \"url\": null,\r",
-									"        \"id\": null,\r",
+									"        \"id\": \"*\",\r",
 									"        \"name\": \"settings.json\",\r",
 									"        \"description\": \"description\",\r",
-									"        \"parentId\": 5,\r",
+									"        \"parentId\": \"*\",\r",
 									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": null,\r",
+									"        \"createdat\": \"*\",\r",
 									"        \"updatedat\": null,\r",
-									"        \"scopeLevelObj\": null\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": 0,\r",
+									"            \"name\": null\r",
+									"        }\r",
 									"    }\r",
 									"}\r",
 									"\r",
-									"expectedJson.data.parentId = Number(pm.environment.get(\"mapId\"));\r",
 									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
@@ -2173,7 +2947,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "settings.json"
+									"src": "postman-cloud:///1eed74da-672d-4060-a06d-614a099deaab"
 								},
 								{
 									"key": "id",
@@ -2237,20 +3011,15 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Id is expected\"] = jsonData.data.id == pm.environment.get(\"newId\");\r",
-									"\r",
-									"jsonData.data.createdat = null;\r",
-									"jsonData.data.id = null;\r",
-									"jsonData.data.parentId = null;\r",
-									"jsonData.data.scopeLevelObj = null;\r",
-									"\r",
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									"tests[\"Body is correct\"] = functions.compare(expectedData, jsonData);\r",
-									""
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						},
 						{
@@ -2277,27 +3046,31 @@
 									"        \"hAlign\": null,\r",
 									"        \"heightType\": \"px\",\r",
 									"        \"mime\": \"application/json\",\r",
-									"        \"originUrl\": null,\r",
+									"        \"originUrl\": \"*\",\r",
 									"        \"path\": \"settings.json\",\r",
 									"        \"vAlign\": null,\r",
 									"        \"widthType\": \"px\",\r",
 									"        \"selectedFileName\": null,\r",
 									"        \"isMediaResource\": true,\r",
 									"        \"url\": null,\r",
-									"        \"id\": null,\r",
+									"        \"id\": \"*\",\r",
 									"        \"name\": \"settings.json\",\r",
 									"        \"description\": \"description\",\r",
-									"        \"parentId\": null,\r",
+									"        \"parentId\": \"*\",\r",
 									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": null,\r",
+									"        \"createdat\": \"*\",\r",
 									"        \"updatedat\": null,\r",
-									"        \"scopeLevelObj\": null\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": \"*\",\r",
+									"            \"name\": \"IMPORT: ExportTestOL3v5limited - Riksväg-fallet\"\r",
+									"        }\r",
 									"    }\r",
 									"};\r",
 									"\r",
 									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -2334,6 +3107,88 @@
 							"path": [
 								"files",
 								"{{newId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download New File",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var expectedJson = {\r",
+									"  \"UpstreamSettings\": {\r",
+									"    \"Templates\": [\r",
+									"      {\r",
+									"        \"UrlTemplate\": \"http://localhost:7071/runtime/webhooks/signalr\",\r",
+									"        \"EventPattern\": \"*\",\r",
+									"        \"HubPattern\": \"*\",\r",
+									"        \"CategoryPattern\": \"*\"\r",
+									"      }\r",
+									"    ]\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://olabdevapi.blob.core.windows.net/$web/files/Maps/1955/settings.json",
+							"protocol": "https",
+							"host": [
+								"olabdevapi",
+								"blob",
+								"core",
+								"windows",
+								"net"
+							],
+							"path": [
+								"$web",
+								"files",
+								"Maps",
+								"1955",
+								"settings.json"
 							]
 						}
 					},
@@ -2398,7 +3253,7 @@
 									"    }\r",
 									"};\r",
 									"\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -2447,16 +3302,12 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 404\"] = responseCode.code === 404;\r",
-									"\r",
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									"jsonData.data = null;\r",
+									"tests[\"Status code is 404\"] = responseCode.code === 404;\r",
 									"\r",
-									"console.log(jsonData);\r",
-									"console.log(expectedData);\r",
-									"\r",
-									"tests[\"Body is correct\"] = ( JSON.stringify(jsonData) === JSON.stringify(expectedData) );"
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);"
 								],
 								"type": "text/javascript"
 							}
@@ -2470,7 +3321,7 @@
 									"    \"message\": \"success\",\r",
 									"    \"error_code\": 404,\r",
 									"    \"diagnostics\": [],\r",
-									"    \"data\": null\r",
+									"    \"data\": \"*\"\r",
 									"};\r",
 									"\r",
 									"pm.environment.set(\"expectedJson\", expectedJson); \r",
@@ -2531,8 +3382,14 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Count is > 0\"] = jsonData.count > 0;"
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData.data[1]);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData.data[1]);\r",
+									"tests[`Count correct`] = functions.compareArraySize( jsonData.data, 161 );\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -2542,23 +3399,13 @@
 							"script": {
 								"exec": [
 									"var expectedJson = {\r",
-									"  \"count\": null,\r",
-									"  \"remaining\": 0,\r",
-									"  \"extended_status_code\": null,\r",
-									"  \"message\": \"success\",\r",
-									"  \"error_code\": 200,\r",
-									"  \"diagnostics\": [],\r",
-									"  \"data\": [\r",
-									"        {\r",
-									"            \"id\": 1643,\r",
-									"            \"name\": \"(Note: This is the DEV server)\",\r",
-									"            \"description\": \"<p>This is to remind authors that they are using the DEV server</p>\",\r",
-									"            \"url\": null\r",
-									"        }\r",
-									"  ]\r",
+									"    \"id\": \"*\",\r",
+									"    \"name\": \"1. Welcome to OLab4\",\r",
+									"    \"description\": \"<p>An open case for public consumption to demonstrate the basic capabilities of OLab4.</p>\",\r",
+									"    \"url\": null\r",
 									"};\r",
 									"\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -2609,13 +3456,12 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"\r",
-									"var expectedData = pm.globals.get(\"expectedJson\");\r",
-									"expectedData.data.id = Number(pm.environment.get(\"mapId\"));\r",
-									"jsonData.data.createdAt = null;\r",
-									"\r",
-									"tests[\"Body is correct\"] =  functions.compare(expectedData, jsonData);\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -2637,7 +3483,7 @@
 									"        \"showBar\": false,\r",
 									"        \"showScore\": false,\r",
 									"        \"timing\": false,\r",
-									"        \"createdAt\": null,\r",
+									"        \"createdAt\": \"*\",\r",
 									"        \"updatedAt\": null,\r",
 									"        \"rendererVersion\": null,\r",
 									"        \"authorRights\": 0,\r",
@@ -2647,9 +3493,9 @@
 									"        \"threshold\": 0,\r",
 									"        \"assignForumId\": null,\r",
 									"        \"isTemplate\": 0,\r",
-									"        \"abstract\": \"<p>This case designed for testing other Export features. This was Duplicated from the original map 18, 'Export testing2'</p>\\n<p>This is for testing of all items that matter to see what breaks. </p>\\n<p>I have included all QUestion types but not all sub-parameters, scores, response details. </p>\",\r",
+									"        \"abstract\": \"<p>This case designed for testing Export functions from OLab3 to OLab4.</p>\\n<p>This was Duplicated from the original map 3060, 'Export testing5'</p>\\n<p>This is for testing of all items that will be functional in OLab4. </p>\\n<p>I have included most QUestion types but not those types which are deprecated in OLab4. I also included a small Counter grid. </p>\",\r",
 									"        \"author\": null,\r",
-									"        \"devNotes\": \"<p>This was duplicated from the original map 18 on demo.olab3. The Duplicate function seemed to proceed smoothly. Some medial files were missing. </p>\\n<p>Also added 7763 which has data in map_elements_metadata. </p>\",\r",
+									"        \"devNotes\": \"<p>This was duplicated from the original map 18 on demo.olab3 and then from map 3060. </p>\\n<p>The Duplicate function does not include everything - be careful. Some media files were missing. </p>\\n<p>Added a single-try pick-choice question. Other pick-choice and MCQ are many-tries</p>\",\r",
 									"        \"feedback\": \"\",\r",
 									"        \"guid\": \"\",\r",
 									"        \"keywords\": \"imported, mvp, test\",\r",
@@ -2665,13 +3511,13 @@
 									"        \"typeId\": 2,\r",
 									"        \"languageId\": 1,\r",
 									"        \"reportNodeId\": null,\r",
-									"        \"id\": null,\r",
-									"        \"name\": \"IMPORT: Export testing4 -- all features\",\r",
-									"        \"description\": \"<p>This case designed for testing other Export features. This was Duplicated from the original map 18, 'Export testing2'</p>\\n<p>This is for testing of all items that matter to see what breaks. </p>\\n<p>I have included all QUestion types but not all sub-parameters, scores, response details. </p>\",\r",
+									"        \"id\": \"*\",\r",
+									"        \"name\": \"IMPORT: ExportTestOL3v5limited\",\r",
+									"        \"description\": \"<p>This case designed for testing Export functions from OLab3 to OLab4.</p>\\n<p>This was Duplicated from the original map 3060, 'Export testing5'</p>\\n<p>This is for testing of all items that will be functional in OLab4. </p>\\n<p>I have included most QUestion types but not those types which are deprecated in OLab4. I also included a small Counter grid. </p>\",\r",
 									"        \"url\": null\r",
 									"    }\r",
 									"};\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -2723,15 +3569,12 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"jsonData.count = null;\r",
 									"\r",
-									"postman.setEnvironmentVariable(\"newNodeId\", jsonData.data[0].node_id_1);\r",
-									"postman.setEnvironmentVariable(\"newNodeId2\", jsonData.data[0].node_id_2);\r",
-									"\r",
-									"console.log(jsonData.data.length);\r",
-									"\r",
-									"tests[\"DAta count is correct\"] =  jsonData.data.length == 20;\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData.data[0]);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData.data[0]);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -2742,9 +3585,9 @@
 							"script": {
 								"exec": [
 									"var expectedJson = {\r",
-									"    \"map_id\": 1812,\r",
-									"    \"node_id_1\": 34467,\r",
-									"    \"node_id_2\": 34468,\r",
+									"    \"map_id\": \"*\",\r",
+									"    \"node_id_1\": \"*\",\r",
+									"    \"node_id_2\": \"*\",\r",
 									"    \"image_id\": null,\r",
 									"    \"text\": \"\",\r",
 									"    \"order\": 0,\r",
@@ -2753,9 +3596,9 @@
 									"    \"thickness\": null,\r",
 									"    \"line_type\": null,\r",
 									"    \"follow_once\": null,\r",
-									"    \"id\": 115482,\r",
-									"    \"sourceId\": 34467,\r",
-									"    \"destinationId\": 34468,\r",
+									"    \"id\": \"*\",\r",
+									"    \"sourceId\": \"*\",\r",
+									"    \"destinationId\": \"*\",\r",
 									"    \"color\": null,\r",
 									"    \"reverseId\": null,\r",
 									"    \"linkText\": null,\r",
@@ -2764,7 +3607,7 @@
 									"    \"isHidden\": false\r",
 									"};\r",
 									"\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -2817,13 +3660,25 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"\r",
 									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									"console.log(jsonData.data.questions.length);\r",
-									"tests[\"Questions count is correct\"] = jsonData.data.questions.length == 12;\r",
-									""
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"\r",
+									"tests[\"Question data compare\"] = functions.deepCompareData(expectedData.question, jsonData.data.questions[0]);\r",
+									"tests[\"Question properties compare\"] = functions.deepKeyList(expectedData.question) === functions.deepKeyList(jsonData.data.questions[0]);\r",
+									"tests[\"Question count compare\"] = functions.compareArraySize(jsonData.data.questions, 8);\r",
+									"\r",
+									"tests[\"Constant data compare\"] = functions.deepCompareData(expectedData.constant, jsonData.data.constants[0]);\r",
+									"tests[\"Constant properties compare\"] = functions.deepKeyList(expectedData.constant) === functions.deepKeyList(jsonData.data.constants[0]);\r",
+									"tests[\"Constant count compare\"] = functions.compareArraySize(jsonData.data.constants, 8);\r",
+									"\r",
+									"tests[\"Counter data compare\"] = functions.deepCompareData(expectedData.counter, jsonData.data.counters[0]);\r",
+									"tests[\"Counter properties compare\"] = functions.deepKeyList(expectedData.counter) === functions.deepKeyList(jsonData.data.counters[0]);\r",
+									"tests[\"Counter count compare\"] = functions.compareArraySize(jsonData.data.counters, 2);\r",
+									"\r",
+									"tests[\"File data compare\"] = functions.deepCompareData(expectedData.file, jsonData.data.files[0]);\r",
+									"tests[\"File properties compare\"] = functions.deepKeyList(expectedData.file) === functions.deepKeyList(jsonData.data.files[0]);\r",
+									"tests[\"File count compare\"] = functions.compareArraySize(jsonData.data.files, 6);"
 								],
 								"type": "text/javascript"
 							}
@@ -2833,40 +3688,100 @@
 							"script": {
 								"exec": [
 									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"fileSize\": 25280,\r",
-									"        \"height\": null,\r",
+									"    \"question\": {\r",
+									"        \"stem\": \"Tell us what you think\",\r",
+									"        \"width\": 20,\r",
+									"        \"height\": 4,\r",
+									"        \"settings\": \"\",\r",
+									"        \"feedback\": \"Thanks for your comments\",\r",
+									"        \"prompt\": \"\",\r",
+									"        \"showAnswer\": true,\r",
+									"        \"showSubmit\": 0,\r",
+									"        \"layoutType\": 0,\r",
+									"        \"isPrivate\": 0,\r",
+									"        \"order\": null,\r",
+									"        \"responses\": [],\r",
+									"        \"tryCount\": -1,\r",
+									"        \"numTries\": -1,\r",
+									"        \"disabled\": 0,\r",
+									"        \"wiki\": \"*\",\r",
+									"        \"value\": null,\r",
+									"        \"questionType\": 2,\r",
+									"        \"id\": \"*\",\r",
+									"        \"name\": \"*\",\r",
+									"        \"description\": \"*\",\r",
+									"        \"parentId\": \"*\",\r",
+									"        \"scopeLevel\": \"Maps\",\r",
+									"        \"createdat\": \"*\",\r",
+									"        \"updatedat\": null,\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": 0,\r",
+									"            \"name\": null\r",
+									"        }\r",
+									"    },\r",
+									"    \"file\":  {\r",
+									"        \"fileSize\": null,\r",
+									"        \"height\": 0,\r",
 									"        \"isSystem\": 0,\r",
 									"        \"type\": null,\r",
-									"        \"width\": null,\r",
+									"        \"width\": 0,\r",
 									"        \"isPrivate\": 0,\r",
 									"        \"isShared\": 1,\r",
 									"        \"isEmbedded\": null,\r",
-									"        \"args\": null,\r",
-									"        \"copyright\": \"\",\r",
-									"        \"fileName\": \"RonAvatar.png\",\r",
-									"        \"hAlign\": null,\r",
-									"        \"heightType\": \"px\",\r",
-									"        \"mime\": \"image/png\",\r",
-									"        \"originUrl\": \"RonAvatar.png\",\r",
-									"        \"path\": \"RonAvatar.png\",\r",
-									"        \"vAlign\": null,\r",
-									"        \"widthType\": \"px\",\r",
+									"        \"args\": \"\",\r",
+									"        \"copyright\": null,\r",
+									"        \"fileName\": \"magnet.gif\",\r",
+									"        \"hAlign\": \"\",\r",
+									"        \"heightType\": \"\",\r",
+									"        \"mime\": \"image/gif\",\r",
+									"        \"originUrl\": \"*\",\r",
+									"        \"path\": \"magnet.gif\",\r",
+									"        \"vAlign\": \"\",\r",
+									"        \"widthType\": \"\",\r",
 									"        \"selectedFileName\": null,\r",
-									"        \"isMediaResource\": true,\r",
+									"        \"isMediaResource\": false,\r",
 									"        \"url\": null,\r",
-									"        \"id\": null,\r",
-									"        \"name\": \"Test image of Ron's avatar\",\r",
-									"        \"description\": \"Borrowed from Ron TT case for PNG as attached file\",\r",
-									"        \"parentId\": null,\r",
+									"        \"id\": \"*\",\r",
+									"        \"name\": \"magnet.gif\",\r",
+									"        \"description\": null,\r",
+									"        \"parentId\": \"*\",\r",
 									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": null,\r",
+									"        \"createdat\": \"*\",\r",
 									"        \"updatedat\": null,\r",
-									"        \"scopeLevelObj\": null\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": 0,\r",
+									"            \"name\": null\r",
+									"        }\r",
+									"    },\r",
+									"    \"counter\":             {\r",
+									"        \"value\": \"5\",\r",
+									"        \"isSystem\": null,\r",
+									"        \"id\": \"*\",\r",
+									"        \"name\": \"ctr\",\r",
+									"        \"description\": \"\",\r",
+									"        \"parentId\": \"*\",\r",
+									"        \"scopeLevel\": \"Maps\",\r",
+									"        \"createdat\": \"*\",\r",
+									"        \"updatedat\": null,\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": 0,\r",
+									"            \"name\": null\r",
+									"        }\r",
+									"    },\r",
+									"    \"constant\":             {\r",
+									"        \"value\": \"narrative\",\r",
+									"        \"isSystem\": null,\r",
+									"        \"id\": \"*\",\r",
+									"        \"name\": \"*\",\r",
+									"        \"description\": \"*\",\r",
+									"        \"parentId\": \"*\",\r",
+									"        \"scopeLevel\": \"Maps\",\r",
+									"        \"createdat\": \"*\",\r",
+									"        \"updatedat\": null,\r",
+									"        \"scopeLevelObj\": {\r",
+									"            \"id\": 0,\r",
+									"            \"name\": null\r",
+									"        }\r",
 									"    }\r",
 									"};\r",
 									"\r",
@@ -2928,11 +3843,13 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Count is correct\"] = ( jsonData.data.length === jsonData.count );\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									"console.log(jsonData.data.length);\r",
-									"tests[\"Array count is correct\"] = ( jsonData.data.length === 8 );\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData.data[0]);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData.data[0]);\r",
+									"tests[\"Count correct\"] = functions.compareArraySize(jsonData.data, 13);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -2942,53 +3859,43 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"enabled\": true,\r",
-									"        \"revisableAnswers\": false,\r",
-									"        \"sendXapiStatements\": true,\r",
-									"        \"showBar\": false,\r",
-									"        \"showScore\": false,\r",
-									"        \"timing\": false,\r",
-									"        \"createdAt\": null,\r",
-									"        \"updatedAt\": null,\r",
-									"        \"rendererVersion\": null,\r",
-									"        \"authorRights\": 0,\r",
-									"        \"deltaTime\": 0,\r",
-									"        \"reminderTime\": 0,\r",
-									"        \"startScore\": 0,\r",
-									"        \"threshold\": 0,\r",
-									"        \"assignForumId\": null,\r",
-									"        \"isTemplate\": 0,\r",
-									"        \"abstract\": \"<p>An open case for public consumption to demonstrate the basic capabilities of OLab4.</p>\",\r",
-									"        \"author\": null,\r",
-									"        \"devNotes\": \"\",\r",
-									"        \"feedback\": \"\",\r",
-									"        \"guid\": \"\",\r",
-									"        \"keywords\": \"olab4\",\r",
-									"        \"reminderMsg\": \"empty_reminder_msg\",\r",
-									"        \"source\": \"\",\r",
-									"        \"title\": null,\r",
-									"        \"units\": \"\",\r",
-									"        \"verification\": null,\r",
-									"        \"sectionId\": 3,\r",
-									"        \"securityId\": 1,\r",
-									"        \"skinId\": 0,\r",
-									"        \"sourceId\": 0,\r",
-									"        \"typeId\": 10,\r",
-									"        \"languageId\": null,\r",
-									"        \"reportNodeId\": null,\r",
-									"        \"id\": 5,\r",
-									"        \"name\": \"1. Welcome to OLab4\",\r",
-									"        \"description\": \"<p>An open case for public consumption to demonstrate the basic capabilities of OLab4.</p>\",\r",
-									"        \"url\": null\r",
-									"    }\r",
+									"var expectedJson =         {\r",
+									"    \"isEnd\": false,\r",
+									"    \"kfp\": false,\r",
+									"    \"probability\": false,\r",
+									"    \"undo\": false,\r",
+									"    \"createdAt\": \"*\",\r",
+									"    \"updatedAt\": null,\r",
+									"    \"x\": 625.0,\r",
+									"    \"y\": -269.0,\r",
+									"    \"isPrivate\": 0,\r",
+									"    \"collapsed\": null,\r",
+									"    \"forceReload\": 0,\r",
+									"    \"height\": 300,\r",
+									"    \"linkTypeId\": 1,\r",
+									"    \"locked\": null,\r",
+									"    \"priorityId\": 1,\r",
+									"    \"typeId\": 2,\r",
+									"    \"visitOnce\": null,\r",
+									"    \"width\": 400,\r",
+									"    \"showInfo\": 0,\r",
+									"    \"annotation\": \"\",\r",
+									"    \"conditional\": \"\",\r",
+									"    \"conditionalMessage\": \"\",\r",
+									"    \"info\": \"\\nImported from map_node.xml. id = 59303\",\r",
+									"    \"text\": \"<p>This node is wrongly created during the Import process. It was a duplicate of the Questions node. </p><p>Renamed as a generic info placeholder about the case. </p><p>It should not be linked to anything.  <br /></p>\",\r",
+									"    \"linkStyleId\": 5,\r",
+									"    \"mapId\": \"*\",\r",
+									"    \"color\": \"#F2EBFF\",\r",
+									"    \"scopedObjects\": null,\r",
+									"    \"data\": null,\r",
+									"    \"contextId\": null,\r",
+									"    \"title\": \"Info\",\r",
+									"    \"url\": null,\r",
+									"    \"id\": \"*\"\r",
 									"};\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -3042,15 +3949,13 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"\r",
-									"var expectedData = pm.globals.get(\"expectedJson\");\r",
-									"\r",
-									"console.log(expectedData);\r",
-									"console.log(jsonData.data.links.length);\r",
-									"\r",
-									"tests[\"Array count is correct\"] = ( jsonData.data.links.length === 5 );\r",
-									"tests[\"Body is correct\"] =  functions.compare(expectedData, jsonData.data.links[0]);\r",
+									"tests[\"Link data compare\"] = functions.deepCompareData(expectedData.link, jsonData.data.links[0]);\r",
+									"tests[\"Link properties compare\"] = functions.deepKeyList(expectedData.link) === functions.deepKeyList(jsonData.data.links[0]);\r",
+									"tests[\"Link count correct\"] = functions.compareArraySize(jsonData.data.links, 0);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -3060,23 +3965,69 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"var expectedJson =  {\r",
-									"    \"id\": 115926,\r",
-									"    \"sourceId\": 34607,\r",
-									"    \"destinationId\": 34608,\r",
-									"    \"color\": null,\r",
-									"    \"reverseId\": null,\r",
-									"    \"linkText\": \"Elements examples\",\r",
-									"    \"destinationTitle\": \"Elements examples\",\r",
-									"    \"linkStyleId\": null,\r",
-									"    \"isHidden\": false\r",
+									"var expectedJson = {\r",
+									"    \"extended_status_code\": null,\r",
+									"    \"message\": \"success\",\r",
+									"    \"error_code\": 200,\r",
+									"    \"diagnostics\": [],\r",
+									"    \"data\": {\r",
+									"        \"links\": [],\r",
+									"        \"dynamicObjects\": {\r",
+									"            \"newPlay\": false,\r",
+									"            \"updatedAt\": \"*\",\r",
+									"            \"checksum\": null,\r",
+									"            \"server\": {\r",
+									"                \"counters\": []\r",
+									"            },\r",
+									"            \"map\": {\r",
+									"                \"counters\": []\r",
+									"            },\r",
+									"            \"node\": {\r",
+									"                \"counters\": []\r",
+									"            }\r",
+									"        },\r",
+									"        \"linkCount\": 0,\r",
+									"        \"isEnd\": false,\r",
+									"        \"kfp\": false,\r",
+									"        \"probability\": false,\r",
+									"        \"undo\": false,\r",
+									"        \"createdAt\": \"*\",\r",
+									"        \"updatedAt\": null,\r",
+									"        \"x\": 625.0,\r",
+									"        \"y\": -269.0,\r",
+									"        \"isPrivate\": 0,\r",
+									"        \"collapsed\": null,\r",
+									"        \"forceReload\": 0,\r",
+									"        \"height\": 300,\r",
+									"        \"linkTypeId\": 1,\r",
+									"        \"locked\": null,\r",
+									"        \"priorityId\": 1,\r",
+									"        \"typeId\": 2,\r",
+									"        \"visitOnce\": null,\r",
+									"        \"width\": 400,\r",
+									"        \"showInfo\": 0,\r",
+									"        \"annotation\": \"\",\r",
+									"        \"conditional\": \"\",\r",
+									"        \"conditionalMessage\": \"\",\r",
+									"        \"info\": \"*\",\r",
+									"        \"text\": \"<p>This node is wrongly created during the Import process. It was a duplicate of the Questions node. </p><p>Renamed as a generic info placeholder about the case. </p><p>It should not be linked to anything.  <br /></p>\",\r",
+									"        \"linkStyleId\": 5,\r",
+									"        \"mapId\": \"*\",\r",
+									"        \"color\": null,\r",
+									"        \"scopedObjects\": null,\r",
+									"        \"data\": null,\r",
+									"        \"contextId\": null,\r",
+									"        \"title\": \"Info\",\r",
+									"        \"url\": null,\r",
+									"        \"id\": \"*\"\r",
+									"    }\r",
 									"};\r",
 									"\r",
 									"expectedJson.id = null;\r",
 									"expectedJson.sourceId = Number(pm.environment.get(\"newNodeId\"));\r",
 									"expectedJson.destinationId = Number(pm.environment.get(\"newNodeId2\"));\r",
 									"\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -3108,7 +4059,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/designer/maps/{{mapId}}/node/{{newNodeId}}",
+							"raw": "{{url}}/designer/maps/{{mapId}}/node/0",
 							"host": [
 								"{{url}}"
 							],
@@ -3117,7 +4068,7 @@
 								"maps",
 								"{{mapId}}",
 								"node",
-								"{{newNodeId}}"
+								"0"
 							]
 						}
 					},
@@ -3136,8 +4087,13 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Body is correct\"] = ( JSON.stringify(jsonData) === JSON.stringify(pm.globals.get(\"expectedJson\")) );\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript"
@@ -3164,7 +4120,8 @@
 									"        \"followOnce\": 0\r",
 									"    }\r",
 									"};\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -3216,8 +4173,12 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
+									"\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Body is correct\"] = ( JSON.stringify(jsonData) === JSON.stringify(pm.globals.get(\"expectedJson\")) );\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData.data);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData.data);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -3228,33 +4189,28 @@
 							"script": {
 								"exec": [
 									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"title\": \"New Node\",\r",
-									"        \"text\": \"<b>New node text</b>\",\r",
-									"        \"x\": 0.0,\r",
-									"        \"y\": 0.0,\r",
-									"        \"locked\": 0,\r",
-									"        \"collapsed\": 0,\r",
-									"        \"height\": 160,\r",
-									"        \"width\": 300,\r",
-									"        \"probability\": 0,\r",
-									"        \"info\": \"\",\r",
-									"        \"annotation\": \"\",\r",
-									"        \"linkStyleId\": 5,\r",
-									"        \"linkTypeId\": 1,\r",
-									"        \"typeId\": 2,\r",
-									"        \"isPrivate\": 0,\r",
-									"        \"color\": \"#566e94\",\r",
-									"        \"visitOnce\": 0,\r",
-									"        \"priorityId\": 1,\r",
-									"        \"isEnd\": 0\r",
-									"    }\r",
-									"};\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"    \"title\": \"New Node\",\r",
+									"    \"text\": \"<b>New node text</b>\",\r",
+									"    \"x\": 0.0,\r",
+									"    \"y\": 0.0,\r",
+									"    \"locked\": 0,\r",
+									"    \"collapsed\": 0,\r",
+									"    \"height\": 160,\r",
+									"    \"width\": 300,\r",
+									"    \"probability\": 0,\r",
+									"    \"info\": \"\",\r",
+									"    \"annotation\": \"\",\r",
+									"    \"linkStyleId\": 5,\r",
+									"    \"linkTypeId\": 1,\r",
+									"    \"typeId\": 2,\r",
+									"    \"isPrivate\": 0,\r",
+									"    \"color\": \"#566e94\",\r",
+									"    \"visitOnce\": 0,\r",
+									"    \"priorityId\": 1,\r",
+									"    \"isEnd\": 0\r",
+									"    };\r",
+									"\r",
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -3311,62 +4267,13 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Got >0 objects\"] = jsonData.count > 0;\r",
+									"var expectedData = pm.environment.get(\"expectedJson\");\r",
 									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/counters",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"counters"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Counters",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Coun t> 0\"] = jsonData.count === jsonData.data.length;\r",
+									"\r",
+									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData.data[0]);\r",
+									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData.data[0]);\r",
+									"tests[`Count correct`] = functions.compareArraySize( jsonData.data, 141 );\r",
 									"\r",
 									""
 								],
@@ -3377,38 +4284,19 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"var expectedJson = {\r",
-									"    \"extended_status_code\": null,\r",
-									"    \"message\": \"success\",\r",
-									"    \"error_code\": 200,\r",
-									"    \"diagnostics\": [],\r",
-									"    \"data\": {\r",
-									"        \"stem\": \"Unittesting case?\",\r",
-									"        \"width\": 0,\r",
-									"        \"height\": 0,\r",
-									"        \"settings\": null,\r",
-									"        \"feedback\": \"\",\r",
-									"        \"prompt\": \"\",\r",
-									"        \"showAnswer\": true,\r",
-									"        \"showSubmit\": 1,\r",
-									"        \"layoutType\": 0,\r",
-									"        \"isPrivate\": 0,\r",
-									"        \"order\": null,\r",
-									"        \"responses\": [],\r",
-									"        \"tryCount\": -1,\r",
-									"        \"numTries\": -1,\r",
-									"        \"disabled\": 0,\r",
-									"        \"wiki\": null,\r",
-									"        \"value\": null,\r",
-									"        \"questionType\": 3,\r",
-									"        \"id\": null,\r",
-									"        \"name\": \"2912\",\r",
-									"        \"description\": null,\r",
-									"        \"parentId\": 1644,\r",
-									"        \"scopeLevel\": \"Maps\",\r",
-									"        \"createdat\": null,\r",
-									"        \"updatedat\": null,\r",
-									"        \"scopeLevelObj\": null\r",
+									"var expectedJson =         {\r",
+									"    \"value\": \"\",\r",
+									"    \"isSystem\": 0,\r",
+									"    \"id\": 1346,\r",
+									"    \"name\": \"BadNodes\",\r",
+									"    \"description\": \"How many times did you visit a bad node, really?\",\r",
+									"    \"parentId\": 1409,\r",
+									"    \"scopeLevel\": \"Maps\",\r",
+									"    \"createdat\": \"2022-05-08T21:43:41\",\r",
+									"    \"updatedat\": \"2022-05-08T21:46:23\",\r",
+									"    \"scopeLevelObj\": {\r",
+									"        \"id\": 1409,\r",
+									"        \"name\": \"Test: Unconstrained navigation\"\r",
 									"    }\r",
 									"};\r",
 									"\r",
@@ -3469,7 +4357,7 @@
 									"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
 									"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);\r",
 									"\r",
-									"postman.setEnvironmentVariable(\"newId\", jsonData.data.id);"
+									"pm.environment.set(\"newId\", jsonData.data.id);"
 								],
 								"type": "text/javascript"
 							}
@@ -3499,16 +4387,13 @@
 									"        \"parentId\": \"*\",\r",
 									"        \"scopeLevel\": \"Maps\",\r",
 									"        \"createdat\": \"*\",\r",
-									"        \"updatedat\": \"*\",\r",
+									"        \"updatedat\": null,\r",
 									"        \"scopeLevelObj\": {\r",
 									"            \"id\": \"*\",\r",
-									"            \"name\": \"IMPORT: Export testing4 -- all features\"\r",
+									"            \"name\": \"IMPORT: ExportTestOL3v5limited\"\r",
 									"        }\r",
 									"    }\r",
 									"};\r",
-									"\r",
-									"expectedJson.data.scopeLevelObj.id = Number(pm.environment.get(\"mapId\"));\r",
-									"expectedJson.data.parentId = Number(pm.environment.get(\"mapId\"));\r",
 									"\r",
 									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
@@ -3594,10 +4479,10 @@
 									"        \"parentId\": \"*\",\r",
 									"        \"scopeLevel\": \"Maps\",\r",
 									"        \"createdat\": \"*\",\r",
-									"        \"updatedat\": \"*\",\r",
+									"        \"updatedat\": null,\r",
 									"        \"scopeLevelObj\": {\r",
 									"            \"id\": \"*\",\r",
-									"            \"name\": \"IMPORT: Export testing4 -- all features\"\r",
+									"            \"name\": \"IMPORT: ExportTestOL3v5limited\"\r",
 									"        }\r",
 									"    }\r",
 									"};\r",
@@ -3899,7 +4784,7 @@
 									"    }\r",
 									"};\r",
 									"\r",
-									"pm.globals.set(\"expectedJson\", expectedJson); "
+									"pm.environment.set(\"expectedJson\", expectedJson); "
 								],
 								"type": "text/javascript"
 							}
@@ -4034,10 +4919,10 @@
 									"var jsonData = JSON.parse(responseBody);\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"tests[\"Got >0 objects\"] = jsonData.count > 0;\r",
-									"postman.setEnvironmentVariable(\"initial_object_count\", jsonData.data.count);\r",
-									"postman.setEnvironmentVariable(\"skip_count\", jsonData.data.count - 2);\r",
-									"postman.setEnvironmentVariable(\"first_object\", jsonData.data[0].id);\r",
-									"postman.setEnvironmentVariable(\"last_object\", jsonData.data[jsonData.count-1].id);\r",
+									"pm.environment.set(\"initial_object_count\", jsonData.data.count);\r",
+									"pm.environment.set(\"skip_count\", jsonData.data.count - 2);\r",
+									"pm.environment.set(\"first_object\", jsonData.data[0].id);\r",
+									"pm.environment.set(\"last_object\", jsonData.data[jsonData.count-1].id);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -4587,8 +5472,8 @@
 									"var jsonData = JSON.parse(responseBody);\r",
 									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 									"tests[\"Got >0 objects\"] = jsonData.count > 0;\r",
-									"postman.setEnvironmentVariable(\"source_node_id\", jsonData.data[0].node_id_1);\r",
-									"postman.setEnvironmentVariable(\"destination_node_id\", jsonData.data[jsonData.data.length - 1].node_id_1);\r",
+									"pm.environment.set(\"source_node_id\", jsonData.data[0].node_id_1);\r",
+									"pm.environment.set(\"destination_node_id\", jsonData.data[jsonData.data.length - 1].node_id_1);\r",
 									""
 								],
 								"type": "text/javascript"
@@ -4953,15 +5838,144 @@
 			]
 		},
 		{
-			"name": "Delete Test User",
+			"name": "Delete OLab3 Map",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 204\"] = responseCode.code === 204;\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+									"tests[\"Got >0 objects\"] = jsonData.count > 0;\r",
+									"postman.setEnvironmentVariable(\"source_node_id\", jsonData.data[0].node_id_1);\r",
+									"postman.setEnvironmentVariable(\"destination_node_id\", jsonData.data[jsonData.data.length - 1].node_id_1);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					},
+					"response": []
+				},
+				"url": {
+					"raw": "{{url}}/maps/{{olab3mapId}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"maps",
+						"{{olab3mapId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Deleted OLab3 Map",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
 							"var jsonData = JSON.parse(responseBody);\r",
-							"postman.setEnvironmentVariable(\"loginuser\", jsonData.data[0].username);\r",
-							"postman.setEnvironmentVariable(\"loginpassword\", jsonData.data[0].password);\r",
+							"var expectedData = pm.environment.get(\"expectedJson\");\r",
+							"\r",
+							"expectedData.data.id == pm.environment.get(\"olab3mapId\");\r",
+							"\r",
+							"tests[\"Status code is 404\"] = responseCode.code === 404;\r",
+							"tests[\"Data compare\"] = functions.deepCompareData(expectedData, jsonData);\r",
+							"tests[\"Properties compare\"] = functions.deepKeyList(expectedData) === functions.deepKeyList(jsonData);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var expectedJson = {\r",
+							"    \"extended_status_code\": null,\r",
+							"    \"message\": \"success\",\r",
+							"    \"error_code\": 404,\r",
+							"    \"diagnostics\": [],\r",
+							"    \"data\": \"*\"\r",
+							"};\r",
+							"\r",
+							"pm.environment.set(\"expectedJson\", expectedJson); "
+						],
+						"type": "text/javascript"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/maps/{{olab3mapId}}/shortstatus",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"maps",
+						"{{olab3mapId}}",
+						"shortstatus"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Test User",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.environment.set(\"loginuser\", jsonData.data[0].username);\r",
+							"pm.environment.set(\"loginpassword\", jsonData.data[0].password);\r",
 							"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
 							""
 						],
@@ -5112,7 +6126,10 @@
 					"        }",
 					"",
 					"        if (!a || !b || (typeof a !== 'object' && typeof b !== 'object')) {",
-					"            // console.log(\"!a || !b || (typeof a !== 'object' && typeof b !== 'object')\");",
+					"            let result = ( a === b );",
+					"            if ( !result ) {",
+					"                console.log(`${a} === ${b}`);",
+					"            }",
 					"            return a === b;",
 					"        }",
 					"",
@@ -5122,13 +6139,13 @@
 					"        }",
 					"",
 					"        if (a.prototype !== b.prototype) {",
-					"            // console.log('a.prototype !== b.prototype');",
+					"            console.log(`${a.prototype} !== ${b.prototype}`);",
 					"            return false;",
 					"        }",
 					"        ",
 					"        let keys = Object.keys(a);",
 					"        if (keys.length !== Object.keys(b).length) {",
-					"            // console.log('keys.length !== Object.keys(b).length');",
+					"            console.log(`${keys.length} !== ${Object.keys(b).length}`);",
 					"            return false;",
 					"        }",
 					"",
@@ -5136,13 +6153,18 @@
 					"    }",
 					"};",
 					"",
-					"postman.setEnvironmentVariable(\"functions\", functions);",
+					"pm.environment.set(\"functions\", functions);",
 					"",
 					"var today  = new Date();",
 					"var prefix = today.toLocaleString(\"en-US\");",
-					"postman.setEnvironmentVariable(\"testuser\", prefix);",
-					"postman.setEnvironmentVariable(\"testemail\", `${prefix}@gmail.com`);",
-					"postman.setEnvironmentVariable(\"testnickname\", `${prefix} test user`);"
+					"prefix = prefix.replaceAll(\" \", \"\");",
+					"prefix = prefix.replaceAll(\"/\", \"\");",
+					"prefix = prefix.replaceAll(\":\", \"\");",
+					"prefix = prefix.replaceAll(\",\", \"\");",
+					"",
+					"pm.environment.set(\"testuser\", prefix);",
+					"pm.environment.set(\"testemail\", `${prefix}@gmail.com`);",
+					"pm.environment.set(\"testnickname\", `${prefix} test user`);"
 				]
 			}
 		},

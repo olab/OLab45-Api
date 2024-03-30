@@ -16,6 +16,7 @@ using OLab.Endpoints;
 using OLabWebAPI.Extensions;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,7 +63,7 @@ public class Import4Controller : OLabController
   {
     try
     {
-      uint mapId = 0;
+      Maps mapPhys = null;
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
@@ -89,7 +90,8 @@ public class Import4Controller : OLabController
 
         Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {stream.Length}");
 
-        mapId = await _endpoint.ImportAsync(
+        mapPhys = await _endpoint.ImportAsync(
+          auth,
           stream,
           Request.Form.Files[0].FileName,
           token);
@@ -97,8 +99,11 @@ public class Import4Controller : OLabController
 
       var dto = new ImportResponse
       {
-        MapId = mapId,
-        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info)
+        Id = mapPhys.Id,
+        Name = mapPhys.Name,
+        CreatedAt = mapPhys.CreatedAt.Value,
+        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList(),
+        Groups = mapPhys.MapGroups.Select( x =>  x.Group.Name ).ToList()
       };
 
       return HttpContext.Request.CreateResponse(
