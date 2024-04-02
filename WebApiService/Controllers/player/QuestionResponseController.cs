@@ -85,8 +85,3 @@ public partial class QuestionResponseController : OLabController
 
   }
 }
-
-    return HttpContext.Request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
-
-  }
-}
