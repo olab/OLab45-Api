@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace OLab.Access;
 
-public abstract class UserService : IUserService
+public class UserService : IUserService
 {
   public static int defaultTokenExpiryMinutes = 120;
   protected readonly OLabDBContext _dbContext;
@@ -77,7 +77,10 @@ public abstract class UserService : IUserService
   /// <returns>Enumerable list of users</returns>
   public IEnumerable<Users> GetAll()
   {
-    return _dbContext.Users.ToList();
+    return _dbContext.Users
+      .Include("UserGroups")
+      .Include("UserGroups.Group")
+      .ToList();
   }
 
   /// <summary>
@@ -87,7 +90,10 @@ public abstract class UserService : IUserService
   /// <returns>User record</returns>
   public Users GetById(int id)
   {
-    return _dbContext.Users.FirstOrDefault(x => x.Id == id);
+    return _dbContext.Users
+      .Include("UserGroups")
+      .Include("UserGroups.Group")
+      .FirstOrDefault(x => x.Id == id);
   }
 
   /// <summary>
@@ -97,7 +103,10 @@ public abstract class UserService : IUserService
   /// <returns>User record</returns>
   public Users GetByUserName(string userName)
   {
-    return _dbContext.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
+    return _dbContext.Users
+      .Include("UserGroups")
+      .Include("UserGroups.Group")
+      .FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
   }
 
   public async Task<List<AddUserResponse>> DeleteUsersAsync(List<AddUserRequest> items)
@@ -136,7 +145,10 @@ public abstract class UserService : IUserService
     }
 
     var physUser =
-      await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == userRequest.Username);
+      await _dbContext.Users
+        .Include("UserGroups")
+        .Include("UserGroups.Group")
+        .FirstOrDefaultAsync(x => x.Username == userRequest.Username);
 
     _dbContext.Users.Remove(physUser);
     await _dbContext.SaveChangesAsync();
