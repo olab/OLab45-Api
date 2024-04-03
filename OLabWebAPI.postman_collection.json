@@ -1440,45 +1440,7 @@
 							},
 							"response": []
 						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{url}}/maps/{{mapId}}/status",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"maps",
-								"{{mapId}}",
-								"status"
-							]
-						}
-					},
-					"response": []
+					]
 				},
 				{
 					"name": "OLab3",
@@ -5865,18 +5827,9 @@
 					"type": "bearer",
 					"bearer": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
-									"tests[\"Got >0 objects\"] = jsonData.count > 0;\r",
-									"postman.setEnvironmentVariable(\"source_node_id\", jsonData.data[0].node_id_1);\r",
-									"postman.setEnvironmentVariable(\"destination_node_id\", jsonData.data[jsonData.data.length - 1].node_id_1);\r",
-									""
-								],
-								"type": "text/javascript"
-							}
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
 						}
 					]
 				},
@@ -5889,8 +5842,7 @@
 						"raw": {
 							"language": "json"
 						}
-					},
-					"response": []
+					}
 				},
 				"url": {
 					"raw": "{{url}}/maps/{{olab3mapId}}",
@@ -5940,6 +5892,21 @@
 						],
 						"type": "text/javascript"
 					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "GET",
 				"header": [],
@@ -5970,7 +5937,7 @@
 			"name": "Delete Test User",
 			"event": [
 				{
-					"listen": "prerequest",
+					"listen": "test",
 					"script": {
 						"exec": [
 							"var jsonData = JSON.parse(responseBody);\r",

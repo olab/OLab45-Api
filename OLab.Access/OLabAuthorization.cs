@@ -1,7 +1,5 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NuGet.Packaging;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
@@ -20,7 +18,7 @@ public class OLabAuthorization : IOLabAuthorization
   public IUserContext UserContext { get; set; }
   protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
   protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
-  public Users User { get; private set; }
+  public Users OLabUser;
 
   public const string WildCardObjectType = "*";
   public const uint WildCardObjectId = 0;
@@ -44,37 +42,26 @@ public class OLabAuthorization : IOLabAuthorization
 
     UserContext = userContext;
 
-    var userRoles = UserContext.UserRoles;
+    var roles = UserContext.UserRoles;
     var userName = UserContext.UserName;
     var userId = UserContext.UserId;
 
-    foreach (var userRole in userRoles)
-      _roleAcls.AddRange(_dbContext
-        .SecurityRoles
-        .Where(x => (x.GroupId == userRole.GroupId) && (x.Role == userRole.Role)).ToList());
+    _roleAcls = _dbContext.SecurityRoles.Where(x => roles.Contains(x.Name.ToLower())).ToList();
 
     // test for a local user
-    var physUser = _dbContext.Users
-      .Include("UserGroups")
-      .Include("UserGroups.Group")
-      .FirstOrDefault(x => x.Username == userName && x.Id == userId);
-
-    if (physUser != null)
+    var user = _dbContext.Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
+    if (user != null)
     {
       _logger.LogInformation($"Local user '{userName}' found");
 
-      User = physUser;
-      userId = physUser.Id;
+      OLabUser = user;
+      userId = user.Id;
       _userAcls = _dbContext.SecurityUsers.Where(x => x.UserId == userId).ToList();
 
       // if user is anonymous user, add user access to anon-flagged maps
-      if (User.IsAnonymous())
+      if (OLabUser.Group == "anonymous")
       {
-        var anonymousMaps = _dbContext.Maps
-          .Include("MapGroups")
-          .Include("MapGroups.Group")
-          .Where(x => x.SecurityId == 1).ToList();
-
+        var anonymousMaps = _dbContext.Maps.Where(x => x.SecurityId == 1).ToList();
         foreach (var item in anonymousMaps)
           _userAcls.Add(new SecurityUsers
           {

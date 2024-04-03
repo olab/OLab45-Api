@@ -1,4 +1,4 @@
-using Microsoft.Azure.Functions.Worker;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
 using System;

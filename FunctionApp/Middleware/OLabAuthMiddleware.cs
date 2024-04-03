@@ -1,4 +1,4 @@
-using Dawn;
+﻿using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,6 @@ using OLab.FunctionApp.Utils;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace OLab.FunctionApp.Middleware;
 
@@ -69,7 +68,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         hostContext.Items.Add("claims", authentication.Claims);
 
         // This is added pre-function execution, function will have access to this information
-        var userContext = new UserContextService(_dbContext, _logger, hostContext);
+        var userContext = new UserContextService(_logger, hostContext);
         hostContext.Items.Add("usercontext", userContext);
 
         // This happens after function execution. We can inspect the context after the function

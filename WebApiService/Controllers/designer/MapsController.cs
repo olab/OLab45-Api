@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
@@ -325,6 +324,30 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="id"></param>
+  /// <param name="enableWikiTranslation"></param>
+  /// <returns></returns>
+  //private async Task<IActionResult> GetScopedObjectsAsync(
+  //  uint id,
+  //  bool enableWikiTranslation)
+  //{
+  //  try
+  //  {
+  //    Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
+  //    DecorateDto(dto);
+  //    return HttpContext.Request.CreateResponse(OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto));
+  //  }
+  //  catch (Exception ex)
+  //  {
+  //    if (ex is OLabUnauthorizedException)
+  //      return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
+  //    return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+  //  }
+  //}
+
+  /// <summary>
   /// ReadAsync a list of users
   /// </summary>
   /// <param name="mapId"></param>
@@ -441,11 +464,7 @@ public partial class MapsController : OLabController
 
       foreach (var rule in dtos)
       {
-        var user = DbContext
-          .Users
-          .Include("UserGroups")
-          .Include("UserGroups.Group")
-          .Where(x => x.Id == rule.UserId).FirstOrDefault();
+        var user = DbContext.Users.Where(x => x.Id == rule.UserId).FirstOrDefault();
 
         list.Add(new Hashtable
         {

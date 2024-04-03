@@ -118,7 +118,7 @@ public class Startup
     OLabAuthMiddleware.SetupServices(Configuration, services, dbContext);
 
     //services.AddScoped<IOLabSession, OLabSession>();
-    services.AddScoped<IUserService, Services.UserService>();
+    services.AddScoped<IUserService, UserService>();
     services.AddScoped<IOLabAuthentication, OLabAuthentication>();
     services.AddScoped<IOLabAuthorization, OLabAuthorization>();
 

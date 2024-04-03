@@ -79,13 +79,11 @@ public class Import3Controller : OLabController
       if (Request.Form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
         Logger.LogError("Invalid file name");
       else
-      {
         mapPhys = await _endpoint.ImportAsync(
           auth,
           archiveFileStream,
           Request.Form.Files[0].FileName,
           token);
-      }
     }
 
     var dto = new ImportResponse
@@ -93,8 +91,7 @@ public class Import3Controller : OLabController
       Id = mapPhys.Id,
       Name = mapPhys.Name,
       CreatedAt = mapPhys.CreatedAt.Value,
-      LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList(),
-      Groups = mapPhys.MapGroups.Select(x => x.Group.Name).ToList()
+      LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
     };
 
     return HttpContext.Request.CreateResponse(OLabObjectResult<ImportResponse>.Result(dto));

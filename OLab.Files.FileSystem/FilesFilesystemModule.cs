@@ -1,4 +1,4 @@
-using Dawn;
+﻿using Dawn;
 using Humanizer;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
@@ -45,8 +45,8 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Move file from one folder to another
   /// </summary>
-  /// <param name="sourceFilePath">Relative to root source file path</param>
-  /// <param name="destinationFolder">Destination path</param>
+  /// <param name="sourceFilePath">Relative source file path</param>
+  /// <param name="destinationFolder">Relative destination path</param>
   public override async Task MoveFileAsync(
       string sourceFilePath,
       string destinationFolder,
@@ -123,11 +123,11 @@ public class FilesFilesystemModule : OLabFileStorageModule
   public override string GetUrlPath(string path, string fileName)
   {
     var physicalPath = BuildPath(
-      cfg.GetAppSettings().FileStorageRoot,
-      FilesRoot,
       path,
       fileName);
 
+    physicalPath = physicalPath.Replace("\\", "/");
+ 
     return physicalPath;
   }
 
@@ -367,21 +367,21 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
   }
 
-  /// Calculate target directory for scoped type and id
+  /// Calculate physical target directory for scoped type and id
   /// </summary>
   /// <param name="parentType">Scoped object type (e.g. 'Maps')</param>
   /// <param name="parentId">Scoped object id</param>
   /// <param name="fileName">Optional file name</param>
   /// <returns>Public directory for scope</returns>
-  public override string GetPublicFileDirectory(string parentType, uint parentId, string fileName = "")
-  {
-    var targetDirectory = BuildPath(parentType, parentId.ToString());
+  //public override string GetPublicFileDirectory(string parentType, uint parentId, string fileName = "")
+  //{
+  //  var targetDirectory = BuildPath(FilesRoot, parentType, parentId.ToString());
 
-    if (!string.IsNullOrEmpty(fileName))
-      targetDirectory = $"{targetDirectory}{GetFolderSeparator()}{fileName}";
+  //  if (!string.IsNullOrEmpty(fileName))
+  //    targetDirectory = $"{targetDirectory}{GetFolderSeparator()}{fileName}";
 
-    return targetDirectory;
-  }
+  //  return targetDirectory;
+  //}
 }
 
 #pragma warning restore CS1998

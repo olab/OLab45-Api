@@ -1,7 +1,6 @@
 using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -163,7 +162,7 @@ public class OLabAuthMiddleware
           hostContext.Items.Add("claims", authentication.Claims);
 
           // build and inject the host context into the authorixation object
-          var userContext = new UserContextService(dbContext, _logger, hostContext);
+          var userContext = new UserContextService(_logger, hostContext);
           hostContext.Items.Add("usercontext", userContext);
 
           // run the function

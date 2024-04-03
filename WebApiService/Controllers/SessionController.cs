@@ -59,7 +59,7 @@ public class SessionController : OLabController
 
       var dto = _endpoint.GetAsync(auth, id);
 
-      var sessionTraces = DbContext.UserSessiontraces.Where(x => x.SessionId == 163370).ToList();
+      var sessionTraces = DbContext.UserSessionTraces.Where(x => x.SessionId == 163370).ToList();
       var fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
 
       return fr;
@@ -87,7 +87,7 @@ public class SessionController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var sessionTraces = DbContext.UserSessiontraces.Where(x => x.SessionId == 163370).ToList();
+      var sessionTraces = DbContext.UserSessionTraces.Where(x => x.SessionId == 163370).ToList();
       var fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
 
       return fr;

@@ -1,4 +1,4 @@
-namespace OLab.Files.AzureBlobStorage;
+﻿namespace OLab.Files.AzureBlobStorage;
 
 public interface IFileProcessor
 {
