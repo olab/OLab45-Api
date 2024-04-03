@@ -24,14 +24,13 @@ public class UserContextService : IUserContext
   public Users OLabUser;
 
   protected IDictionary<string, string> _claims;
-  private readonly OLabDBContext dbContext;
   protected readonly IOLabLogger _logger;
   protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
   protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
   protected string _sessionId;
   protected string _role;
-  public IList<UserGroups> UserRoles { get; set; }
+  public IList<string> UserRoles { get; set; }
   protected uint _userId;
   protected string _userName;
   protected string _ipAddress;
@@ -90,15 +89,12 @@ public class UserContextService : IUserContext
   }
 
   public UserContextService(
-    OLabDBContext dbContext,
     IOLabLogger logger,
     FunctionContext hostContext)
   {
     Guard.Argument(logger).NotNull(nameof(logger));
     Guard.Argument(hostContext).NotNull(nameof(hostContext));
-    Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
-    this.dbContext = dbContext;
     _logger = logger;
     _logger.LogInformation($"UserContext ctor");
 
@@ -173,7 +169,12 @@ public class UserContextService : IUserContext
       throw new Exception("unable to retrieve role from token claims");
     Role = roleValue;
 
-    UserRoles = dbContext.UserGroups.Where(x => x.UserId == UserId).ToList();
+    // separate out multiple roles, make lower case, remove spaces, and sort
+    UserRoles = Role.Split(',')
+      .Select(x => x.Trim())
+      .Select(x => x.ToLower())
+      .OrderBy(x => x)
+      .ToList();
   }
 
   public override string ToString()

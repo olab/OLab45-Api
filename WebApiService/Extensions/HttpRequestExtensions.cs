@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using OLab.Api.Common;
 using System.Net;
 
@@ -12,14 +13,23 @@ public static class HttpRequestExtensions
     this HttpRequest request,
     OLabAPIResponse<T> apiResponse)
   {
+    var contractResolver = new DefaultContractResolver
+    {
+      NamingStrategy = new CamelCaseNamingStrategy()
+    };
+
     var content = new ContentResult
     {
       StatusCode = (int)apiResponse.ErrorCode,
       ContentType = "application/json",
-      Content = JsonConvert.SerializeObject(apiResponse)
+      Content = JsonConvert.SerializeObject(apiResponse, new JsonSerializerSettings
+      {
+        ContractResolver = contractResolver
+      })
     };
 
     return content;
+
   }
 
   public static ContentResult CreateNoContentResponse(

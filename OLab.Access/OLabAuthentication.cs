@@ -1,12 +1,9 @@
 ﻿using Dawn;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Data.Exceptions;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -241,14 +238,12 @@ public class OLabAuthentication : IOLabAuthentication
     var securityKey =
       new SymmetricSecurityKey(secretBytes);
 
-    var roleString = string.Join(",", user.GenerateRoleString());
-
     var tokenDescriptor = new SecurityTokenDescriptor
     {
       Subject = new ClaimsIdentity(new Claim[]
       {
         new Claim(ClaimTypes.Name, user.Username.ToLower()),
-        new Claim(ClaimTypes.Role, $"{roleString}"),
+        new Claim(ClaimTypes.Role, $"{user.Role}"),
         new Claim("name", user.Nickname),
         new Claim("sub", user.Username),
         new Claim("id", $"{user.Id}"),
@@ -267,7 +262,7 @@ public class OLabAuthentication : IOLabAuthentication
     var response = new AuthenticateResponse();
     response.AuthInfo.Token = securityToken;
     response.AuthInfo.Refresh = null;
-    response.Roles = user.GenerateRoleString();
+    response.Role = $"{user.Role}";
     response.UserName = user.Username;
     response.AuthInfo.Created = DateTime.UtcNow;
     response.AuthInfo.Expires =
@@ -284,21 +279,28 @@ public class OLabAuthentication : IOLabAuthentication
   public AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
   {
     // get user flagged for anonymous use
-    var serverUser = Users.GetAnonymousUser(_dbContext);
-    var map = _dbContext.Maps
-      .Include("MapGroups")
-      .Include("MapGroups.Group")
-      .FirstOrDefault(x => x.Id == mapId);
+    var serverUser = _dbContext.Users.FirstOrDefault(x => x.Group == "anonymous");
+    if (serverUser == null)
+      throw new Exception($"No user is defined for anonymous map play");
+
+    var map = _dbContext.Maps.FirstOrDefault(x => x.Id == mapId);
     if (map == null)
-      throw new OLabObjectNotFoundException(Constants.ScopeLevelMap, mapId);
+      throw new Exception($"Map {mapId} is not defined.");
 
     // test for 'open' map
-    if (map.IsAnonymous() )
+    if (map.SecurityId != 1)
       Logger.LogError($"Map {mapId} is not configured for anonymous map play");
 
-    var user = new Users(serverUser);
+    var user = new Users();
 
-    var authenticateResponse = GenerateJwtToken(user, "olab");
+    user.Username = serverUser.Username;
+    user.Role = serverUser.Role;
+    user.Nickname = serverUser.Nickname;
+    user.Id = serverUser.Id;
+    var issuedBy = "olab";
+
+    var authenticateResponse = GenerateJwtToken(user, issuedBy);
+
     return authenticateResponse;
   }
 
@@ -326,11 +328,7 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     if (externalAuth.Claims.TryGetValue("role", out value))
-    {
-      user.UserGroups.Clear();
-      foreach (var item in UserGroups.ParseRoleString(_dbContext, value))
-        user.UserGroups.Add(item);
-    }
+      user.Role = value;
 
     if (externalAuth.Claims.TryGetValue("id", out value))
       user.Id = (uint)Convert.ToInt32(value);
@@ -362,10 +360,7 @@ public class OLabAuthentication : IOLabAuthentication
     else
       Logger.LogInformation($"Authenticating {model.Username}, ***");
 
-    var user = _dbContext.Users
-      .Include("UserGroups")
-      .Include("UserGroups.Group")
-      .SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+    var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     if (user != null)
     {

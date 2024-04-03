@@ -95,9 +95,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
-      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(
-        pagedResponse.Data, 
-        pagedResponse.Remaining));
+      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapsDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
     }
     catch (Exception ex)
     {

@@ -6,10 +6,6 @@
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="GitVersion.MSBuild" Version="5.12.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="HttpMultipartParser" Version="8.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.16">
       <PrivateAssets>all</PrivateAssets>
@@ -35,11 +31,6 @@
     <ProjectReference Include="..\OLab.Access\OLab.Access.csproj" />
     <ProjectReference Include="..\OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj" />
     <ProjectReference Include="..\OLab.Files.FileSystem\OLab.Files.FileSystem.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Update="appsettings.json">
