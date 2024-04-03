@@ -123,10 +123,11 @@ public class FilesFilesystemModule : OLabFileStorageModule
   public override string GetUrlPath(string path, string fileName)
   {
     var physicalPath = BuildPath(
-      cfg.GetAppSettings().FileStorageRoot,
-      FilesRoot,
+      cfg.GetAppSettings().FileStorageUrl,
       path,
       fileName);
+
+    physicalPath = physicalPath.Replace("\\", "/");
 
     return physicalPath;
   }
