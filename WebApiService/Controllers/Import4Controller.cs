@@ -68,9 +68,6 @@ public class Import4Controller : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess("X", "Import", 0))
-        throw new OLabUnauthorizedException();
-
       if (Request.Form == null)
         throw new ArgumentNullException(nameof(Request.Form));
 

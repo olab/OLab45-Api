@@ -1,5 +1,6 @@
 ﻿using Dawn;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
 using OLab.Access.Interfaces;
@@ -263,7 +264,7 @@ public class OLabAuthentication : IOLabAuthentication
     var response = new AuthenticateResponse();
     response.AuthInfo.Token = securityToken;
     response.AuthInfo.Refresh = null;
-    response.Role = $"{string.Join( ",", user.UserGroups.Select( x => x.Group.Name ))}";
+    response.Auth = UserGroups.ToString(user.UserGroups.ToList());
     response.UserName = user.Username;
     response.AuthInfo.Created = DateTime.UtcNow;
     response.AuthInfo.Expires =
@@ -361,7 +362,11 @@ public class OLabAuthentication : IOLabAuthentication
     else
       Logger.LogInformation($"Authenticating {model.Username}, ***");
 
-    var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+    var user = _dbContext.Users
+      .Include("UserGroups")
+      .Include("UserGroups.Group")
+      .Include("UserGroups.Role")
+      .SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     if (user != null)
     {

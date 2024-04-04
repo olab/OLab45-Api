@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -87,7 +88,11 @@ public class SessionController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var sessionTraces = DbContext.UserSessiontraces.Where(x => x.SessionId == 163370).ToList();
+      var userSession = DbContext.UserSessions.FirstOrDefault( x => x.Uuid == request.ContextId );
+      if (userSession != null)
+        throw new OLabObjectNotFoundException("session", request.ContextId);
+
+      var sessionTraces = DbContext.UserSessiontraces.Where(x => x.SessionId == userSession.Id).ToList();
       var fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
 
       return fr;

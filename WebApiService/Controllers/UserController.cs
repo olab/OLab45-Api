@@ -137,7 +137,7 @@ public class AuthController : OLabController
       var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess("X", "UserAdmin", 0))
+      if (!auth.IsMemberOf(Groups.GroupNameOLab, Roles.RoleNameSuperuser))
         return OLabUnauthorizedResult.Result();
 
       var responses = await _userService.AddUsersAsync(items);
@@ -165,7 +165,7 @@ public class AuthController : OLabController
       var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess("X", "UserAdmin", 0))
+      if (!auth.IsMemberOf(Groups.GroupNameOLab, Roles.RoleNameSuperuser))
         return OLabUnauthorizedResult.Result();
 
       var responses = await _userService.DeleteUsersAsync(items);
@@ -194,7 +194,7 @@ public class AuthController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       // test if user has access to add users.
-      if (!auth.HasAccess("X", "UserAdmin", 0))
+      if (!auth.IsMemberOf(Groups.GroupNameOLab, Roles.RoleNameSuperuser))
         return OLabUnauthorizedResult.Result();
 
       var result = new List<string>();

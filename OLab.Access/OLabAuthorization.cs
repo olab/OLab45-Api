@@ -61,7 +61,7 @@ public class OLabAuthorization : IOLabAuthorization
       _userAcls = SecurityUsers.GetAcls(_dbContext, user.Id);
 
       // if user is anonymous user, add user access to anon-flagged maps
-      if (OLabUser.UserGroups.Select( x => x.Group.Name ).Contains( "anonymous") )
+      if (OLabUser.UserGroups.Select(x => x.Group.Name).Contains("anonymous"))
       {
         var anonymousMaps = _dbContext.Maps.Where(x => x.SecurityId == 1).ToList();
         foreach (var item in anonymousMaps)
@@ -233,5 +233,22 @@ public class OLabAuthorization : IOLabAuthorization
       return true;
 
     return false;
+  }
+
+  /// <summary>
+  /// Test if user member of specified group/role
+  /// </summary>
+  /// <param name="groupName">Group name</param>
+  /// <param name="roleName">Role name</param>
+  /// <returns></returns>
+  public bool IsMemberOf(string groupName, string roleName)
+  {
+    var isMember = UserContext.IsMemberOf(groupName, roleName);
+
+    // if no access, test if OLab Superuser, which overrides the parametered names
+    if ( !isMember ) 
+      isMember = UserContext.IsMemberOf( Groups.GroupNameOLab, Roles.RoleNameSuperuser );
+
+    return isMember;
   }
 }

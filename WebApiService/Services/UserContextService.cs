@@ -1,5 +1,7 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
@@ -140,14 +142,57 @@ public class UserContextService : IUserContext
     if (!_claims.TryGetValue(ClaimTypes.Role, out var roleValue))
       throw new Exception("unable to retrieve role from token claims");
 
-    // TODO: parse roles here
+    // if OLab user, get user info from database
+    if ( ( Issuer == "olab") && ( UserId != 0  ) )
+    {
+      var userPhys = dbContext.Users
+        .Include("UserGroups")
+        .Include("UserGroups.Group")
+        .Include("UserGroups.Role")
+        .FirstOrDefault( x => x.Id == UserId );
+
+      if ( userPhys == null )
+        throw new OLabObjectNotFoundException("Users", UserId);
+
+      UserRoles = userPhys.UserGroups.ToList();
+    }
+    else
     // separate out multiple roles, make lower case, remove spaces, and sort
-    UserRoles = UserGroups.FromString(dbContext, roleValue);
+      UserRoles = UserGroups.FromString(dbContext, roleValue);
 
   }
   public override string ToString()
   {
     return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
+  }
+
+  /// <summary>
+  /// Test if user member of group/role
+  /// </summary>
+  /// <param name="groupName">Group name (or *)</param>
+  /// <param name="RoleName">Role name (or *)</param>
+  /// <returns></returns>
+  public bool IsMemberOf(string groupName, string RoleName)
+  {
+    foreach (var item in UserRoles)
+    {
+      if ((groupName == "*") && (RoleName != "*"))
+      {
+        if (item.Role.Name == RoleName)
+          return true;
+      }
+
+      if ((groupName != "*") && (RoleName == "*"))
+      {
+        if (item.Group.Name == groupName)
+          return true;
+      }
+
+      if ((item.Group.Name == groupName) && (item.Role.Name == RoleName))
+        return true;
+    }
+
+    return false;
   }
 }
 

@@ -1,6 +1,7 @@
 using Dawn;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -232,6 +233,10 @@ public class UserService : IUserService
     var newUser = Users.CreateDefault(userRequest);
     var newPassword = newUser.Password;
 
+    // build UserGroups list from auth string
+    var userGroups = UserGroups.FromString(_dbContext, userRequest.Auth);
+    newUser.UserGroups.AddRange( userGroups );
+
     ChangePassword(newUser, new ChangePasswordRequest
     {
       NewPassword = newUser.Password
@@ -242,8 +247,10 @@ public class UserService : IUserService
 
     var response = new AddUserResponse
     {
+      Id = newUser.Id,
       Username = newUser.Username,
-      Password = newPassword
+      Password = newPassword,
+      Auth = UserGroups.ToString(newUser.UserGroups.ToList())
     };
 
     return response;
