@@ -1,6 +1,7 @@
 ﻿using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
+using NuGet.Packaging;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
@@ -243,7 +244,7 @@ public class OLabAuthentication : IOLabAuthentication
       Subject = new ClaimsIdentity(new Claim[]
       {
         new Claim(ClaimTypes.Name, user.Username.ToLower()),
-        new Claim(ClaimTypes.Role, $"{user.Role}"),
+        new Claim(ClaimTypes.Role, UserGroups.ToString(user.UserGroups.ToList())),
         new Claim("name", user.Nickname),
         new Claim("sub", user.Username),
         new Claim("id", $"{user.Id}"),
@@ -262,7 +263,7 @@ public class OLabAuthentication : IOLabAuthentication
     var response = new AuthenticateResponse();
     response.AuthInfo.Token = securityToken;
     response.AuthInfo.Refresh = null;
-    response.Role = $"{user.Role}";
+    response.Role = $"{string.Join( ",", user.UserGroups.Select( x => x.Group.Name ))}";
     response.UserName = user.Username;
     response.AuthInfo.Created = DateTime.UtcNow;
     response.AuthInfo.Expires =
@@ -279,7 +280,7 @@ public class OLabAuthentication : IOLabAuthentication
   public AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
   {
     // get user flagged for anonymous use
-    var serverUser = _dbContext.Users.FirstOrDefault(x => x.Group == "anonymous");
+    var serverUser = _dbContext.Users.FirstOrDefault(x => x.Username == "anonymous");
     if (serverUser == null)
       throw new Exception($"No user is defined for anonymous map play");
 
@@ -288,13 +289,13 @@ public class OLabAuthentication : IOLabAuthentication
       throw new Exception($"Map {mapId} is not defined.");
 
     // test for 'open' map
-    if (map.SecurityId != 1)
+    if (map.IsAnonymous())
       Logger.LogError($"Map {mapId} is not configured for anonymous map play");
 
     var user = new Users();
 
     user.Username = serverUser.Username;
-    user.Role = serverUser.Role;
+    user.UserGroups.AddRange( serverUser.UserGroups );
     user.Nickname = serverUser.Nickname;
     user.Id = serverUser.Id;
     var issuedBy = "olab";
@@ -328,7 +329,7 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     if (externalAuth.Claims.TryGetValue("role", out value))
-      user.Role = value;
+      user.UserGroups.AddRange( UserGroups.FromString( _dbContext, value ));
 
     if (externalAuth.Claims.TryGetValue("id", out value))
       user.Id = (uint)Convert.ToInt32(value);

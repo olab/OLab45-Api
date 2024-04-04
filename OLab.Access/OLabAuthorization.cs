@@ -1,5 +1,6 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Packaging;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
@@ -46,7 +47,8 @@ public class OLabAuthorization : IOLabAuthorization
     var userName = UserContext.UserName;
     var userId = UserContext.UserId;
 
-    _roleAcls = _dbContext.SecurityRoles.Where(x => roles.Contains(x.Name.ToLower())).ToList();
+    foreach (var userSecurity in roles)
+      _roleAcls.AddRange(SecurityRoles.GetAcls(_dbContext, userSecurity));
 
     // test for a local user
     var user = _dbContext.Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
@@ -55,11 +57,11 @@ public class OLabAuthorization : IOLabAuthorization
       _logger.LogInformation($"Local user '{userName}' found");
 
       OLabUser = user;
-      userId = user.Id;
-      _userAcls = _dbContext.SecurityUsers.Where(x => x.UserId == userId).ToList();
+
+      _userAcls = SecurityUsers.GetAcls(_dbContext, user.Id);
 
       // if user is anonymous user, add user access to anon-flagged maps
-      if (OLabUser.Group == "anonymous")
+      if (OLabUser.UserGroups.Select( x => x.Group.Name ).Contains( "anonymous") )
       {
         var anonymousMaps = _dbContext.Maps.Where(x => x.SecurityId == 1).ToList();
         foreach (var item in anonymousMaps)

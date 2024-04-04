@@ -26,7 +26,7 @@ public class UserContextService : IUserContext
 
   protected string _sessionId;
   private string _role;
-  public IList<string> UserRoles { get; set; }
+  public IList<UserGroups> UserRoles { get; set; }
   private uint _userId;
   private string _userName;
   private string _ipAddress;
@@ -84,6 +84,7 @@ public class UserContextService : IUserContext
 
   public UserContextService(
     IOLabLogger logger,
+    OLabDBContext dbContext,
     HttpContext httpContext)
   {
     Guard.Argument(logger).NotNull(nameof(logger));
@@ -91,10 +92,12 @@ public class UserContextService : IUserContext
 
     _logger = logger;
 
-    LoadHttpContext(httpContext);
+    LoadHttpContext(dbContext, httpContext);
   }
 
-  protected virtual void LoadHttpContext(HttpContext hostContext)
+  protected virtual void LoadHttpContext(
+    OLabDBContext dbContext,
+    HttpContext hostContext)
   {
     if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
       throw new Exception("unable to retrieve headers from host context");
@@ -136,14 +139,10 @@ public class UserContextService : IUserContext
 
     if (!_claims.TryGetValue(ClaimTypes.Role, out var roleValue))
       throw new Exception("unable to retrieve role from token claims");
-    Role = roleValue;
 
+    // TODO: parse roles here
     // separate out multiple roles, make lower case, remove spaces, and sort
-    UserRoles = Role.Split(',')
-      .Select(x => x.Trim())
-      .Select(x => x.ToLower())
-      .OrderBy(x => x)
-      .ToList();
+    UserRoles = UserGroups.FromString(dbContext, roleValue);
 
   }
   public override string ToString()
