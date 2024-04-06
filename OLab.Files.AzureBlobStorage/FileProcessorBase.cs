@@ -10,6 +10,8 @@ public abstract class FileProcessorBase : IFileProcessor
   public readonly IOLabLogger Logger;
   private readonly IOLabConfiguration _configuration;
 
+  public abstract IList<string> GetFiles(Stream stream);
+
   protected FileProcessorBase(
     BlobContainerClient containerClient,
     IOLabLogger logger,

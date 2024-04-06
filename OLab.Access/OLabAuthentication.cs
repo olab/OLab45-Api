@@ -1,4 +1,5 @@
 ﻿using Dawn;
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -66,7 +67,8 @@ public class OLabAuthentication : IOLabAuthentication
   /// Builds token validation object
   /// </summary>
   /// <param name="configuration">App cfg</param>
-  public static TokenValidationParameters BuildTokenValidationObject(IOLabConfiguration config)
+  public static TokenValidationParameters BuildTokenValidationObject(
+    IOLabConfiguration config)
   {
     // get and extract the valid token issuers
     var jwtIssuers = config.GetValue<string>("Issuer");
@@ -90,7 +92,8 @@ public class OLabAuthentication : IOLabAuthentication
       ValidateAudience = true,
       ValidAudience = jwtAudience,
 
-      // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
+      // set clockskew to zero so tokens expire exactly at
+      // token expiration time (instead of 5 minutes later)
       ClockSkew = TimeSpan.Zero,
 
       // validate against existing security key
@@ -149,16 +152,17 @@ public class OLabAuthentication : IOLabAuthentication
 
     var token = string.Empty;
 
-
     // handler for external logins
-    if ((bindingData != null) && bindingData.TryGetValue("token", out var externalToken))
+    if ((bindingData != null)
+      && bindingData.TryGetValue("token", out var externalToken))
     {
       token = externalToken as string;
       Logger.LogInformation("Binding data token provided");
     }
 
     // handler for signalR logins 
-    else if ((bindingData != null) && bindingData.TryGetValue("access_token", out var signalRToken))
+    else if ((bindingData != null)
+      && bindingData.TryGetValue("access_token", out var signalRToken))
     {
       token = signalRToken as string;
       Logger.LogInformation("Signalr token provided");
@@ -254,7 +258,8 @@ public class OLabAuthentication : IOLabAuthentication
       Expires = DateTime.UtcNow.AddDays(7),
       Issuer = issuedBy,
       Audience = _config.GetAppSettings().Audience,
-      SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
+      SigningCredentials =
+        new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
     };
 
     var tokenHandler = new JwtSecurityTokenHandler();
@@ -281,11 +286,15 @@ public class OLabAuthentication : IOLabAuthentication
   public AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
   {
     // get user flagged for anonymous use
-    var serverUser = _dbContext.Users.FirstOrDefault(x => x.Username == "anonymous");
+    var serverUser = _dbContext.Users
+      .FirstOrDefault(x => x.Username == "anonymous");
+
     if (serverUser == null)
       throw new Exception($"No user is defined for anonymous map play");
 
-    var map = _dbContext.Maps.FirstOrDefault(x => x.Id == mapId);
+    var map = _dbContext.Maps
+      .FirstOrDefault(x => x.Id == mapId);
+
     if (map == null)
       throw new Exception($"Map {mapId} is not defined.");
 
@@ -296,7 +305,7 @@ public class OLabAuthentication : IOLabAuthentication
     var user = new Users();
 
     user.Username = serverUser.Username;
-    user.UserGroups.AddRange( serverUser.UserGroups );
+    user.UserGroups.AddRange(serverUser.UserGroups);
     user.Nickname = serverUser.Nickname;
     user.Id = serverUser.Id;
     var issuedBy = "olab";
@@ -330,7 +339,15 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     if (externalAuth.Claims.TryGetValue("role", out value))
-      user.UserGroups.AddRange( UserGroups.FromString( _dbContext, value ));
+    {
+      user.UserGroups.AddRange(
+        UserGroups.FromString(_dbContext, value, false));
+
+      //validate that external token does not
+      //request anything but 'learner' roles
+      if (user.UserGroups.Any(x => x.Role.Name != Roles.RoleNameLearner))
+        throw new OLabUnauthorizedException("invalid group/roles requested");
+    }
 
     if (externalAuth.Claims.TryGetValue("id", out value))
       user.Id = (uint)Convert.ToInt32(value);
@@ -396,7 +413,8 @@ public class OLabAuthentication : IOLabAuthentication
       var hash = SHA1.Create();
       var plainTextBytes = Encoding.ASCII.GetBytes(clearText);
       var hashBytes = hash.ComputeHash(plainTextBytes);
-      var localChecksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+      var localChecksum =
+        BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
 
       result = localChecksum == user.Password;
     }

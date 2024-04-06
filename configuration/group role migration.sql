@@ -1,4 +1,4 @@
-use olab_dev;
+use dev_olab;
 
 CREATE TABLE `roles` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -7,7 +7,7 @@ CREATE TABLE `roles` (
   PRIMARY KEY (`id`),
   KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-INSERT INTO `olab_dev`.`roles` (`name`) VALUES ('importer');
+INSERT INTO `roles` (`name`) VALUES ('importer');
 
 ALTER TABLE `security_users` 
 CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL ;
@@ -54,13 +54,13 @@ UPDATE `users`
 	SET role_id = ( SELECT id from `roles` WHERE name = `users`.role);
 
 ALTER TABLE `user_groups` 
-	ADD COLUMN `iss` VARCHAR(45) NOT NULL DEFAULT 'olab' AFTER `id`,
-	ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`;
+	ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`,
+    DROP COLUMN `role`;
 
 ALTER TABLE `user_groups` 
 ADD CONSTRAINT `user_groups_ibfk_3`
   FOREIGN KEY (`role_id`)
-  REFERENCES `olab_dev`.`roles` (`id`)
+  REFERENCES `roles` (`id`)
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
   
@@ -81,12 +81,12 @@ DROP COLUMN `name`;
 ALTER TABLE `security_roles` 
 ADD CONSTRAINT `security_roles_ibfk_1`
   FOREIGN KEY (`group_id`)
-  REFERENCES `olab_dev`.`groups` (`id`)
+  REFERENCES `groups` (`id`)
   ON DELETE NO ACTION
   ON UPDATE NO ACTION,
 ADD CONSTRAINT `security_roles_ibfk_2`
   FOREIGN KEY (`role_id`)
-  REFERENCES `olab_dev`.`roles` (`id`)
+  REFERENCES `roles` (`id`)
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
   
@@ -105,9 +105,9 @@ ADD CONSTRAINT `mp_ibfk_group`
 INSERT INTO map_groups (map_id, group_id ) 
  SELECT id, (SELECT id from `groups` WHERE name = 'olab' ) FROM `maps` WHERE is_template = 0;
 
-DROP VIEW `orphanedconstantsview`;
-DROP VIEW `orphanedquestionsview`;
-DROP TABLE `map_nodes_im`, `map_nodes_tmp`;
+DROP VIEW IF EXISTS `orphanedconstantsview`;
+DROP VIEW IF EXISTS `orphanedquestionsview`;
+DROP TABLE IF EXISTS  `map_nodes_im`, `map_nodes_tmp`;
 
 ALTER TABLE `users` 
 DROP COLUMN `role`,

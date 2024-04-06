@@ -69,22 +69,22 @@ public partial class RolesController : OLabController
   }
 
   /// <summary>
-  /// 
+  /// Get single object
   /// </summary>
-  /// <param name="id"></param>
-  /// <returns></returns>
-  [HttpGet("{id}")]
+  /// <param name="nameOrId">Name or id</param>
+  /// <returns>OLabObjectResult</returns>
+  [HttpGet("{nameOrId}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> GetAsync(uint id)
+  public async Task<IActionResult> GetAsync(string nameOrId)
   {
     try
     {
-      Guard.Argument(id, nameof(id)).NotZero();
+      Guard.Argument(nameOrId, nameof(nameOrId)).NotEmpty();
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var dto = await _endpoint.GetAsync(auth, id);
+      var dto = await _endpoint.GetAsync(auth, nameOrId);
       return HttpContext.Request.CreateResponse(OLabObjectResult<IdNameDto>.Result(dto));
     }
     catch (Exception ex)
@@ -98,19 +98,18 @@ public partial class RolesController : OLabController
   /// </summary>
   /// <param name="id">question id</param>
   /// <returns>IActionResult</returns>
-  [HttpPut("{id}")]
+  [HttpPut]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> PutAsync(uint id, [FromBody] IdNameDto dto)
+  public async Task<IActionResult> PutAsync([FromBody] IdNameDto dto)
   {
     try
     {
-      Guard.Argument(id, nameof(id)).NotZero();
       Guard.Argument(dto).NotNull(nameof(dto));
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      await _endpoint.PutAsync(auth, id, dto);
+      await _endpoint.PutAsync(auth, dto);
     }
     catch (Exception ex)
     {
@@ -148,20 +147,20 @@ public partial class RolesController : OLabController
   /// <summary>
   /// 
   /// </summary>
-  /// <param name="id"></param>
+  /// <param name="nameOrId">Name or id</param>
   /// <returns></returns>
-  [HttpDelete("{id}")]
+  [HttpDelete("{nameOrId}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> DeleteAsync(uint id)
+  public async Task<IActionResult> DeleteAsync(string nameOrId)
   {
     try
     {
-      Guard.Argument(id, nameof(id)).NotZero();
+      Guard.Argument(nameOrId, nameof(nameOrId)).NotEmpty();
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      await _endpoint.DeleteAsync(auth, id);
+      await _endpoint.DeleteAsync(auth, nameOrId);
     }
     catch (Exception ex)
     {

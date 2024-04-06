@@ -89,6 +89,9 @@ public class OLabController : ControllerBase
     if (ex is OLabObjectNotFoundException)
       return request.CreateResponse(OLabNotFoundResult<string>.Result(ex.Message));
 
+    if (ex is OLabBadRequestException)
+      return request.CreateResponse(OLabBadRequestObjectResult.Result(ex.Message));
+
     return request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
   }
 

@@ -141,6 +141,7 @@ public class AuthController : OLabController
         return OLabUnauthorizedResult.Result();
 
       var responses = await _userService.AddUsersAsync(items);
+
       return HttpContext.Request.CreateResponse(
         OLabObjectListResult<AddUserResponse>.Result(responses));
     }
