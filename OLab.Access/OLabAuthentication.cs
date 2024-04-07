@@ -269,7 +269,7 @@ public class OLabAuthentication : IOLabAuthentication
     var response = new AuthenticateResponse();
     response.AuthInfo.Token = securityToken;
     response.AuthInfo.Refresh = null;
-    response.Auth = UserGroups.ToString(user.UserGroups.ToList());
+    response.Auth = UserGroups.ToStringList(user.UserGroups.ToList());
     response.UserName = user.Username;
     response.AuthInfo.Created = DateTime.UtcNow;
     response.AuthInfo.Expires =

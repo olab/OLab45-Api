@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
-using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -14,6 +13,7 @@ using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.Endpoints;
+using OLab.Import;
 using OLabWebAPI.Extensions;
 using System;
 using System.IO;
@@ -23,13 +23,14 @@ using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
-[Route("olab/api/v3/import4")]
+[Route("olab/api/v3/import")]
 [ApiController]
-public class Import4Controller : OLabController
+public class ImportController : OLabController
 {
-  private readonly Import4Endpoint _endpoint;
+  private readonly Import4Endpoint _endpoint4;
+  private readonly Import3Endpoint _endpoint3;
 
-  public Import4Controller(
+  public ImportController(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -42,9 +43,16 @@ public class Import4Controller : OLabController
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    Logger = OLabLogger.CreateNew<Import4Controller>(loggerFactory, true);
+    Logger = OLabLogger.CreateNew<ImportController>(loggerFactory, true);
 
-    _endpoint = new Import4Endpoint(
+    _endpoint4 = new Import4Endpoint(
+      Logger,
+      configuration,
+      DbContext,
+      wikiTagProvider,
+      fileStorageProvider);
+
+    _endpoint3 = new Import3Endpoint(
       Logger,
       configuration,
       DbContext,
@@ -88,11 +96,22 @@ public class Import4Controller : OLabController
 
         Logger.LogInformation($"Import archive file: {Request.Form.Files[0].FileName}. size {stream.Length}");
 
-        mapPhys = await _endpoint.ImportAsync(
-          auth,
-          stream,
-          Request.Form.Files[0].FileName,
-          token);
+        // get list of archive files to determine if OLab3/4 import
+        var files = ZipFileHelper.GetFiles(stream);
+
+        if (files.Contains("map.json"))
+          mapPhys = await _endpoint4.ImportAsync(
+            auth,
+            stream,
+            Request.Form.Files[0].FileName,
+            token);
+
+        if (files.Contains("map.xml"))
+          mapPhys = await _endpoint3.ImportAsync(
+            auth,
+            stream,
+            Request.Form.Files[0].FileName,
+            token);
       }
 
       var dto = new ImportResponse
@@ -126,10 +145,7 @@ public class Import4Controller : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess("X", "Export", 0))
-        throw new OLabUnauthorizedException();
-
-      var dto = await _endpoint.ExportAsync(auth, id, token);
+      var dto = await _endpoint4.ExportAsync(auth, id, token);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
 
     }
@@ -151,11 +167,12 @@ public class Import4Controller : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess("X", "Export", 0))
-        throw new OLabUnauthorizedException();
-
       using var memoryStream = new MemoryStream();
-      await _endpoint.ExportAsync(auth, memoryStream, id, token);
+      await _endpoint4.ExportAsync(
+        auth,
+        memoryStream, 
+        id, 
+        token);
 
       memoryStream.Position = 0;
       var now = DateTime.UtcNow;

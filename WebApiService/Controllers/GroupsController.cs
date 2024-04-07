@@ -58,8 +58,10 @@ public partial class GroupsController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var pagedResult = await _endpoint.GetAsync(auth, take, skip);
-      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<IdNameDto>.Result(pagedResult.Data, pagedResult.Remaining));
+      var pagedResult = await _endpoint.GetAsync(auth, skip, take);
+      
+      return HttpContext.Request
+        .CreateResponse(OLabObjectPagedListResult<IdNameDto>.Result(pagedResult.Data, pagedResult.Remaining));
     }
     catch (Exception ex)
     {
