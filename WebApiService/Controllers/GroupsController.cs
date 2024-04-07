@@ -59,9 +59,10 @@ public partial class GroupsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var pagedResult = await _endpoint.GetAsync(auth, skip, take);
-      
+      var dtoList = new OLab.Api.ObjectMapper.Groups(Logger).PhysicalToDto(pagedResult.Data);
+
       return HttpContext.Request
-        .CreateResponse(OLabObjectPagedListResult<IdNameDto>.Result(pagedResult.Data, pagedResult.Remaining));
+        .CreateResponse(OLabObjectPagedListResult<IdNameDto>.Result(dtoList, pagedResult.Remaining));
     }
     catch (Exception ex)
     {

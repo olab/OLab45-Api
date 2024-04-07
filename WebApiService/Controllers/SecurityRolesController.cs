@@ -13,6 +13,7 @@ using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
@@ -60,7 +61,34 @@ public partial class SecurityRolesController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var pagedResult = await _endpoint.GetAsync(auth, take, skip);
+
       return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<SecurityRolesDto>.Result(pagedResult.Data, pagedResult.Remaining));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+  /// <summary>
+  /// Retrieve records from group and role
+  /// </summary>
+  /// <param name="groupIdName">Group id/name</param>
+  /// <param name="roleIdName">Role id/name</param>
+  /// <returns></returns>
+  [HttpGet("group/{groupIdName}/{roleIdName?}")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetAsync( string groupIdName, string roleIdName = null)
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      var results = await _endpoint.GetGroupRoleAsync(auth, groupIdName, roleIdName);
+
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<SecurityRolesDto>.Result(results));
     }
     catch (Exception ex)
     {
