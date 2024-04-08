@@ -54,8 +54,7 @@ UPDATE `users`
 	SET role_id = ( SELECT id from `roles` WHERE name = `users`.role);
 
 ALTER TABLE `user_groups` 
-	ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`,
-    DROP COLUMN `role`;
+	ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`;
 
 ALTER TABLE `user_groups` 
 ADD CONSTRAINT `user_groups_ibfk_3`
@@ -116,6 +115,3 @@ DROP COLUMN `group`;
 
 INSERT INTO `users` (`username`, `email`, `password`, `salt`, `nickname`, `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) VALUES 
 ('anonymous', 'anon@example.com', '', '', 'anonymous', '0', '0', '50000', 'easy', '0');
-
-
-
