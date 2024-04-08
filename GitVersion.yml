@@ -1,4 +1,4 @@
-next-version: 1.0.0.0 #
+next-version: 4.6.0.0 #
 assembly-versioning-scheme: MajorMinorPatchTag
 assembly-file-versioning-scheme: MajorMinorPatchTag
 assembly-informational-format: "{FullSemVer}"
@@ -83,4 +83,12 @@ branches:
     track-merge-target: true
     tracks-release-branches: true
     is-release-branch: false
-
+  development:
+    regex: ^cw\/[a-z]*
+    mode: ContinuousDeployment
+    tag: unstable
+    increment: Patch
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: true
+    tracks-release-branches: true
+    is-release-branch: false
