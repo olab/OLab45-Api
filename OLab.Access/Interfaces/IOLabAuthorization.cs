@@ -5,8 +5,8 @@ namespace OLab.Api.Data.Interface;
 
 public interface IOLabAuthorization
 {
-  IActionResult HasAccess(string acl, ScopedObjectDto dto);
-  bool HasAccess(string acl, string objectType, uint? objectId);
+  IActionResult HasAccess(ulong acl, ScopedObjectDto dto);
+  bool HasAccess(ulong acl, string objectType, uint? objectId);
   bool IsMemberOf(string groupName, string RoleName);
 
   IUserContext UserContext { get; set; }
