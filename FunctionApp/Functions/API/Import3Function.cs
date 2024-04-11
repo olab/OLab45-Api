@@ -68,7 +68,7 @@ public class Import3Function : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "Import", 0))
+      if (!auth.HasAccess(SecurityRoles.Execute, "Import", 0))
         throw new OLabUnauthorizedException();
 
       if (request.Body == null)

@@ -68,7 +68,7 @@ public class Import4Function : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "Import", 0))
+      if (!auth.HasAccess(SecurityRoles.Execute, "Import", 0))
         throw new OLabUnauthorizedException();
 
       if (request.Body == null)
@@ -127,10 +127,10 @@ public class Import4Function : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "Export", 0))
+      if (!auth.HasAccess(SecurityRoles.Execute, "Export", 0))
         throw new OLabUnauthorizedException();
 
-      var dto = await _endpoint.ExportAsync(id, token);
+      var dto = await _endpoint.ExportAsync(auth, id, token);
       response = request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
 
     }
@@ -158,12 +158,12 @@ public class Import4Function : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "Export", 0))
+      if (!auth.HasAccess(SecurityRoles.Execute, "Export", 0))
         throw new OLabUnauthorizedException();
 
       using (var memoryStream = new MemoryStream())
       {
-        await _endpoint.ExportAsync(memoryStream, id, token);
+        await _endpoint.ExportAsync(auth, memoryStream, id, token);
 
         memoryStream.Position = 0;
         var now = DateTime.UtcNow;

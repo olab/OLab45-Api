@@ -1,6 +1,9 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
+using OLab.Access;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
@@ -15,90 +18,17 @@ using System.Security.Claims;
 
 namespace OLab.FunctionApp.Services;
 
-public class UserContextService : IUserContext
+public class UserContextService : UserContextBase
 {
-  public const string WildCardObjectType = "*";
-  public const uint WildCardObjectId = 0;
-  public const string NonAccessAcl = "-";
-  public ClaimsPrincipal User;
-  public Users OLabUser;
-
-  protected IDictionary<string, string> _claims;
-  protected readonly IOLabLogger _logger;
-  protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
-  protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
-
-  protected string _sessionId;
-  protected string _role;
-  public IList<string> UserRoles { get; set; }
-  protected uint _userId;
-  protected string _userName;
-  protected string _ipAddress;
-  protected string _issuer;
-  protected string _referringCourse;
-  protected string _accessToken;
-
-  public string SessionId
-  {
-    get => _sessionId;
-    set => _sessionId = value;
-  }
-
-  public string ReferringCourse
-  {
-    get => _referringCourse;
-    set => _referringCourse = value;
-  }
-
-  public string Role
-  {
-    get => _role;
-    set => _role = value;
-  }
-
-  public uint UserId
-  {
-    get => _userId;
-    set => _userId = value;
-  }
-
-  public string UserName
-  {
-    get => _userName;
-    set => _userName = value;
-  }
-
-  public string IPAddress
-  {
-    get => _ipAddress;
-    set => _ipAddress = value;
-  }
-
-  public string Issuer
-  {
-    get => _issuer;
-    set => _issuer = value;
-  }
-
-  public string CourseName { get { return null; } }
-
-  // default ctor, needed for services Dependancy Injection
-  public UserContextService()
-  {
-
-  }
-
+ 
   public UserContextService(
     IOLabLogger logger,
-    FunctionContext hostContext)
+    OLabDBContext dbContext,
+    FunctionContext hostContext) : base(logger, dbContext)
   {
-    Guard.Argument(logger).NotNull(nameof(logger));
     Guard.Argument(hostContext).NotNull(nameof(hostContext));
 
-    _logger = logger;
-    _logger.LogInformation($"UserContext ctor");
-
-    LoadHostContext(hostContext);
+    LoadHostContext(dbContext, hostContext);
   }
 
   private string GetRequestIpAddress(HttpRequestData req)
@@ -127,7 +57,9 @@ public class UserContextService : IUserContext
     return "<unknown>";
   }
 
-  protected void LoadHostContext(FunctionContext hostContext)
+  protected void LoadHostContext(
+    OLabDBContext dbContext,
+    FunctionContext hostContext)
   {
     if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
       throw new Exception("unable to retrieve headers from host context");
@@ -169,17 +101,23 @@ public class UserContextService : IUserContext
       throw new Exception("unable to retrieve role from token claims");
     Role = roleValue;
 
-    // separate out multiple roles, make lower case, remove spaces, and sort
-    UserRoles = Role.Split(',')
-      .Select(x => x.Trim())
-      .Select(x => x.ToLower())
-      .OrderBy(x => x)
-      .ToList();
-  }
+    // if OLab user, get user info from database
+    if ((Issuer == "olab") && (UserId != 0))
+    {
+      var userPhys = dbContext.Users
+        .Include("UserGroups")
+        .Include("UserGroups.Group")
+        .Include("UserGroups.Role")
+        .FirstOrDefault(x => x.Id == UserId);
 
-  public override string ToString()
-  {
-    return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
+      if (userPhys == null)
+        throw new OLabObjectNotFoundException("Users", UserId);
+
+      UserRoles = userPhys.UserGroups.ToList();
+    }
+    else
+      // separate out multiple roles, make lower case, remove spaces, and sort
+      UserRoles = UserGroups.FromString(dbContext, roleValue);
   }
 
 }
