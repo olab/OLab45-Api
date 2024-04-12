@@ -2,6 +2,20 @@ use dev_olab;
 
 START TRANSACTION;
 
+CREATE TABLE `node_group_roles` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `node_id` int(10) unsigned NOT NULL,
+  `group_id` int(10) unsigned NOT NULL,
+  `role_id` int(10) unsigned NOT NULL,  
+  PRIMARY KEY (`id`),
+  KEY `node_id` (`node_id`),  
+  KEY `group_id` (`group_id`),  
+  KEY `role_id` (`role_id`),
+  CONSTRAINT `ngr_ibfk_node` FOREIGN KEY (`node_id`) REFERENCES `map_nodes` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `ngr_ibfk_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `ngr_ibfk_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB;
+
 ALTER TABLE `user_responses` 
 DROP FOREIGN KEY `user_responses_ibfk_3`;
 
