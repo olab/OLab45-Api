@@ -84,12 +84,21 @@ public class OLabAuthorization : IOLabAuthorization
     if (dto.ImageableType == Constants.ScopeLevelMap)
       if (!HasAccess(acl, Constants.ScopeLevelMap, dto.ImageableId))
         return OLabUnauthorizedResult.Result();
+
     if (dto.ImageableType == Constants.ScopeLevelServer)
       if (!HasAccess(acl, Constants.ScopeLevelServer, dto.ImageableId))
         return OLabUnauthorizedResult.Result();
+
     if (dto.ImageableType == Constants.ScopeLevelNode)
+    {
       if (!HasAccess(acl, Constants.ScopeLevelNode, dto.ImageableId))
-        return OLabUnauthorizedResult.Result();
+      {
+        // if no access at node level, check access to owning map
+        var mapNodePhys = _dbContext.MapNodes.FirstOrDefault(x => x.Id == dto.ImageableId);
+        if (!HasAccess(acl, Constants.ScopeLevelMap, mapNodePhys.MapId))
+          return OLabUnauthorizedResult.Result();
+      }
+    }
 
     return new NoContentResult();
   }
