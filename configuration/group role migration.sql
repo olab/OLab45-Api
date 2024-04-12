@@ -2,6 +2,9 @@ use dev_olab;
 
 START TRANSACTION;
 
+ALTER TABLE `user_responses` 
+DROP FOREIGN KEY `user_responses_ibfk_3`;
+
 CREATE TABLE `roles` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `description` VARCHAR(100),
@@ -26,11 +29,13 @@ CHANGE COLUMN `counter_id` `counter_id` INT(10) UNSIGNED ;
 
 ALTER TABLE `security_users` 
 CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL,
+CHANGE COLUMN `acl` `acl` VARCHAR(45) NULL,
 ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `acl`;
 
 ALTER TABLE `security_roles` 
 ADD COLUMN `group_id` INT(10) UNSIGNED NOT NULL AFTER `acl`,
 ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`,
+CHANGE COLUMN `acl` `acl` VARCHAR(45) NULL,
 ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `role_id`;
   
 UPDATE `security_roles` SET `group_id` = 1;
@@ -118,9 +123,13 @@ SET role_id = ( SELECT id from `roles` WHERE name = security_roles.name );
 UPDATE security_roles set acl2 = 4 WHERE acl like '%R%';
 UPDATE security_roles set acl2 = acl2+2  WHERE acl like '%W%';
 UPDATE security_roles set acl2 = acl2+1  WHERE acl like '%X%';
+
+ALTER TABLE `security_users` 
+DROP COLUMN `acl`;
   
 ALTER TABLE `security_roles` 
 DROP COLUMN `name`,
+DROP COLUMN `acl`,
 ADD CONSTRAINT `security_roles_ibfk_1`
   FOREIGN KEY (`group_id`)
   REFERENCES `groups` (`id`)
