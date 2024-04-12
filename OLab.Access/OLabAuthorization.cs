@@ -171,17 +171,22 @@ public class OLabAuthorization : IOLabAuthorization
     if (!userGroupAcls.Any())
       return false;
 
-    // test for explicit no-access to specific object type and id
-    var acl = userGroupAcls.Where(x =>
-     x.ImageableType == objectType &&
-     x.ImageableId == objectId.Value &&
-     x.Acl2 == SecurityRoles.NoAccess).FirstOrDefault();
+    // special test for explicit no-access to specific object type and id
+    if (requestedPerm == SecurityUsers.NoAccess)
+    {
+      var noAccessAcl = userGroupAcls.Where(x =>
+       x.ImageableType == objectType &&
+       x.ImageableId == objectId.Value &&
+       requestedPerm == SecurityUsers.NoAccess &&
+       x.Acl2 == SecurityRoles.NoAccess).FirstOrDefault();
 
-    if (acl != null)
+      if (noAccessAcl != null)
+        return true;
       return false;
+    }
 
     // test for explicit access to specific object type and specific id
-    acl = userGroupAcls.Where(x =>
+    var acl = userGroupAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
      ((x.Acl2 & requestedPerm) == requestedPerm)).FirstOrDefault();
