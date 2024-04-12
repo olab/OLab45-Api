@@ -1,8 +1,8 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using OLab.Access;
 using OLab.Api.Data.Exceptions;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
 using System;
@@ -14,85 +14,15 @@ using System.Security.Claims;
 
 namespace OLabWebAPI.Services;
 
-public class UserContextService : IUserContext
+public class UserContextService : UserContextBase
 {
-  public const string WildCardObjectType = "*";
-  public const uint WildCardObjectId = 0;
-  public const string NonAccessAcl = "-";
-  public Users OLabUser;
-
-  protected IDictionary<string, string> _claims;
-  private readonly IOLabLogger _logger;
-  protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
-  protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
-
-  protected string _sessionId;
-  private string _role;
-  public IList<UserGroups> UserRoles { get; set; }
-  private uint _userId;
-  private string _userName;
-  private string _ipAddress;
-  private string _issuer;
-  private readonly string _courseName;
-
-  public string SessionId
-  {
-    get => _sessionId;
-    set => _sessionId = value;
-  }
-
-  public string ReferringCourse
-  {
-    get => _role;
-    set => _role = value;
-  }
-
-  public string Role
-  {
-    get => _role;
-    set => _role = value;
-  }
-
-  public uint UserId
-  {
-    get => _userId;
-    set => _userId = value;
-  }
-
-  public string UserName
-  {
-    get => _userName;
-    set => _userName = value;
-  }
-
-  public string IPAddress
-  {
-    get => _ipAddress;
-    set => _ipAddress = value;
-  }
-
-  public string Issuer
-  {
-    get => _issuer;
-    set => _issuer = value;
-  }
-  string IUserContext.SessionId
-  {
-    get => _sessionId;
-    set => _sessionId = value;
-  }
-
-  public string CourseName { get { return _courseName; } }
 
   public UserContextService(
     IOLabLogger logger,
     OLabDBContext dbContext,
-    HttpContext httpContext)
+    HttpContext httpContext) : base( logger, dbContext )
   {
-    Guard.Argument(logger).NotNull(nameof(logger));
     Guard.Argument(httpContext).NotNull(nameof(httpContext));
-
-    _logger = logger;
 
     LoadHttpContext(dbContext, httpContext);
   }
@@ -161,38 +91,6 @@ public class UserContextService : IUserContext
       UserRoles = UserGroups.FromString(dbContext, roleValue);
 
   }
-  public override string ToString()
-  {
-    return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
-  }
 
-  /// <summary>
-  /// Test if user member of group/role
-  /// </summary>
-  /// <param name="groupName">Group name (or *)</param>
-  /// <param name="RoleName">Role name (or *)</param>
-  /// <returns></returns>
-  public bool IsMemberOf(string groupName, string RoleName)
-  {
-    foreach (var item in UserRoles)
-    {
-      if ((groupName == "*") && (RoleName != "*"))
-      {
-        if (item.Role.Name == RoleName)
-          return true;
-      }
-
-      if ((groupName != "*") && (RoleName == "*"))
-      {
-        if (item.Group.Name == groupName)
-          return true;
-      }
-
-      if ((item.Group.Name == groupName) && (item.Role.Name == RoleName))
-        return true;
-    }
-
-    return false;
-  }
 }
 

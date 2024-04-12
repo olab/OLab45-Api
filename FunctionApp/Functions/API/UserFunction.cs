@@ -151,7 +151,7 @@ public class UserFunction : OLabFunction
       var items = await request.ParseBodyFromRequestAsync<List<AddUserRequest>>();
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "UserAdmin", 0))
+      if (!auth.HasAccess(SecurityRoles.Execute, "UserAdmin", 0))
         return request.CreateResponse(OLabUnauthorizedObjectResult.Result("Not authorized to add user"));
 
 
@@ -183,7 +183,7 @@ public class UserFunction : OLabFunction
       var items = await request.ParseBodyFromRequestAsync<List<AddUserRequest>>();
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "UserAdmin", 0))
+      if (!auth.HasAccess(SecurityRoles.Execute, "UserAdmin", 0))
         return request.CreateResponse(OLabUnauthorizedObjectResult.Result("Not authorized to add user"));
 
 
