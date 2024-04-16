@@ -2,6 +2,56 @@ use dev_olab;
 
 START TRANSACTION;
 
+CREATE TABLE `user_counter_update` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `counter_state` VARCHAR(2048) NOT NULL,
+  PRIMARY KEY (`id`));
+
+CREATE TABLE `usersessiontrace_counterupdate` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `sessiontrace_id` INT(10) UNSIGNED NOT NULL,
+  `counterupdate_id` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `usersessiontrace_counterupdate` 
+ADD INDEX `stcu_fk_st_idx` (`sessiontrace_id` ASC) VISIBLE,
+ADD INDEX `stcu_fk_cu_idx` (`counterupdate_id` ASC) VISIBLE;
+;
+ALTER TABLE `usersessiontrace_counterupdate` 
+ADD CONSTRAINT `stcu_fk_st`
+  FOREIGN KEY (`sessiontrace_id`)
+  REFERENCES `user_sessiontraces` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `stcu_fk_cu`
+  FOREIGN KEY (`counterupdate_id`)
+  REFERENCES `user_counter_update` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION;
+
+CREATE TABLE `userresponse_counterupdate` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userresponse_id` INT(10) UNSIGNED NOT NULL,
+  `counterupdate_id` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+  
+ALTER TABLE `userresponse_counterupdate` 
+ADD INDEX `urcu_fk_ur_idx` (`userresponse_id` ASC) VISIBLE,
+ADD INDEX `urcu_fk_cu_idx` (`counterupdate_id` ASC) VISIBLE;
+;
+ALTER TABLE `userresponse_counterupdate` 
+ADD CONSTRAINT `urcu_fk_ur`
+  FOREIGN KEY (`userresponse_id`)
+  REFERENCES `user_responses` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `urcu_fk_cu`
+  FOREIGN KEY (`counterupdate_id`)
+  REFERENCES `user_counter_update` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION;
+
+  
 CREATE TABLE `roles` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `description` VARCHAR(100),
