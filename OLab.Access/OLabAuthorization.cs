@@ -71,7 +71,6 @@ public class OLabAuthorization : IOLabAuthorization
             Id = item.Id,
             ImageableId = item.Id,
             ImageableType = Constants.ScopeLevelMap,
-            Acl = "RX",
             Acl2 = SecurityRoles.Read | SecurityRoles.Execute
           });
       }
@@ -84,12 +83,21 @@ public class OLabAuthorization : IOLabAuthorization
     if (dto.ImageableType == Constants.ScopeLevelMap)
       if (!HasAccess(acl, Constants.ScopeLevelMap, dto.ImageableId))
         return OLabUnauthorizedResult.Result();
+
     if (dto.ImageableType == Constants.ScopeLevelServer)
       if (!HasAccess(acl, Constants.ScopeLevelServer, dto.ImageableId))
         return OLabUnauthorizedResult.Result();
+
     if (dto.ImageableType == Constants.ScopeLevelNode)
+    {
       if (!HasAccess(acl, Constants.ScopeLevelNode, dto.ImageableId))
-        return OLabUnauthorizedResult.Result();
+      {
+        // if no access at node level, check access to owning map
+        var mapNodePhys = _dbContext.MapNodes.FirstOrDefault(x => x.Id == dto.ImageableId);
+        if (!HasAccess(acl, Constants.ScopeLevelMap, mapNodePhys.MapId))
+          return OLabUnauthorizedResult.Result();
+      }
+    }
 
     return new NoContentResult();
   }
@@ -163,17 +171,22 @@ public class OLabAuthorization : IOLabAuthorization
     if (!userGroupAcls.Any())
       return false;
 
-    // test for explicit no-access to specific object type and id
-    var acl = userGroupAcls.Where(x =>
-     x.ImageableType == objectType &&
-     x.ImageableId == objectId.Value &&
-     x.Acl2 == SecurityRoles.NoAccess).FirstOrDefault();
+    // special test for explicit no-access to specific object type and id
+    if (requestedPerm == SecurityUsers.NoAccess)
+    {
+      var noAccessAcl = userGroupAcls.Where(x =>
+       x.ImageableType == objectType &&
+       x.ImageableId == objectId.Value &&
+       requestedPerm == SecurityUsers.NoAccess &&
+       x.Acl2 == SecurityRoles.NoAccess).FirstOrDefault();
 
-    if (acl != null)
+      if (noAccessAcl != null)
+        return true;
       return false;
+    }
 
     // test for explicit access to specific object type and specific id
-    acl = userGroupAcls.Where(x =>
+    var acl = userGroupAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
      ((x.Acl2 & requestedPerm) == requestedPerm)).FirstOrDefault();
