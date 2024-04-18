@@ -141,30 +141,30 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   }
 
   /// <summary>
-  /// Copy file presented by stream to file store
+  /// Uploads a file represented by a stream to a directory
   /// </summary>
-  /// <param name="stream">File stream</param>
-  /// <param name="fileType">Target folderName</param>
-  /// <param name="filePath">Target folderName</param>
-  /// <param name="token"></param>
+  /// <param name="file">File contents stream</param>
+  /// <param name="physicalFilePath">Physical file path to write to</param>
+  /// <param name="token">Cancellation token</param>
+  /// <returns>Physical file path</returns>
   public override async Task<string> WriteFileAsync(
     Stream stream,
-    string filePath,
+    string physicalFilePath,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(filePath).NotEmpty(nameof(filePath));
+    Guard.Argument(physicalFilePath).NotEmpty(nameof(physicalFilePath));
 
     try
     {
-      logger.LogInformation($"WriteFileAsync: {_containerName} {filePath}");
+      logger.LogInformation($"WriteFileAsync: {_containerName} {physicalFilePath}");
 
       await _blobServiceClient
             .GetBlobContainerClient(_containerName)
-            .GetBlobClient(filePath)
+            .GetBlobClient(physicalFilePath)
             .UploadAsync(stream, overwrite: true, token);
 
-      return filePath;
+      return physicalFilePath;
     }
     catch (Exception ex)
     {
@@ -468,13 +468,13 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="path"></param>
   /// <param name="fileName"></param>
   /// <returns></returns>
-  public override string GetUrlPath(string path, string fileName)
-  {
-    var physicalPath = BuildPath(
-      cfg.GetAppSettings().FileStorageUrl,
-      path,
-      fileName);
+  //public override string GetUrlPath(string path, string fileName)
+  //{
+  //  var physicalPath = BuildPath(
+  //    cfg.GetAppSettings().FileStorageUrl,
+  //    path,
+  //    fileName);
 
-    return physicalPath;
-  }
+  //  return physicalPath;
+  //}
 }
