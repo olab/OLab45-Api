@@ -162,6 +162,8 @@ public class OLabAuthorization : IOLabAuthorization
     string objectType,
     uint? objectId)
   {
+    bool hasAccess = false;
+
     var userGroupAcls = _roleAcls.Where(x =>
       (x.GroupId == rolePhys.GroupId) &&
       (x.RoleId == rolePhys.RoleId));
@@ -171,20 +173,6 @@ public class OLabAuthorization : IOLabAuthorization
     if (!userGroupAcls.Any())
       return false;
 
-    // special test for explicit no-access to specific object type and id
-    if (requestedPerm == SecurityUsers.NoAccess)
-    {
-      var noAccessAcl = userGroupAcls.Where(x =>
-       x.ImageableType == objectType &&
-       x.ImageableId == objectId.Value &&
-       requestedPerm == SecurityUsers.NoAccess &&
-       x.Acl2 == SecurityRoles.NoAccess).FirstOrDefault();
-
-      if (noAccessAcl != null)
-        return true;
-      return false;
-    }
-
     // test for explicit access to specific object type and specific id
     var acl = userGroupAcls.Where(x =>
      x.ImageableType == objectType &&
@@ -192,7 +180,7 @@ public class OLabAuthorization : IOLabAuthorization
      ((x.Acl2 & requestedPerm) == requestedPerm)).FirstOrDefault();
 
     if (acl != null)
-      return true;
+      hasAccess = true;
 
     // test for explicit access to specific object type and wildcard ids
     acl = userGroupAcls.Where(x =>
@@ -201,7 +189,7 @@ public class OLabAuthorization : IOLabAuthorization
      ((x.Acl2 & requestedPerm) == requestedPerm)).FirstOrDefault();
 
     if (acl != null)
-      return true;
+      hasAccess = true;
 
     // test for explicit access to default access to any object and wildcard ids
     acl = userGroupAcls.Where(x =>
@@ -210,9 +198,20 @@ public class OLabAuthorization : IOLabAuthorization
      ((x.Acl2 & requestedPerm) == requestedPerm)).FirstOrDefault();
 
     if (acl != null)
-      return true;
+      hasAccess = true;
 
-    return false;
+    // overriding test for explicit no-access to specific object type and id
+    // overrides any previous 'allow' access obtained
+    var noAccessAcl = userGroupAcls.Where(x =>
+     x.ImageableType == objectType &&
+     x.ImageableId == objectId.Value &&
+     requestedPerm == SecurityUsers.NoAccess &&
+     x.Acl2 == SecurityRoles.NoAccess).FirstOrDefault();
+
+    if (noAccessAcl != null)
+      hasAccess = false;
+
+    return hasAccess;
   }
 
   /// <summary>
