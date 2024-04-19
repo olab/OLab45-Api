@@ -2,6 +2,11 @@ use dev_olab;
 
 START TRANSACTION;
 
+ALTER TABLE `users` 
+DROP COLUMN `role`,
+DROP COLUMN `role_id`,
+DROP COLUMN `group`;
+
 CREATE TABLE `user_counter_update` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `counter_state` VARCHAR(8192) NOT NULL,
@@ -200,11 +205,6 @@ INSERT INTO map_groups (map_id, group_id )
 DROP VIEW IF EXISTS `orphanedconstantsview`;
 DROP VIEW IF EXISTS `orphanedquestionsview`;
 DROP TABLE IF EXISTS  `map_nodes_im`, `map_nodes_tmp`;
-
-ALTER TABLE `users` 
-DROP COLUMN `role`,
-DROP COLUMN `role_id`,
-DROP COLUMN `group`;
 
 INSERT INTO `users` (`username`, `email`, `password`, `salt`, `nickname`, `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) VALUES 
 ('anonymous', 'anon@example.com', '', '', 'anonymous', '0', '0', '50000', 'easy', '0');
