@@ -4,7 +4,6 @@ START TRANSACTION;
 
 ALTER TABLE `users` 
 DROP COLUMN `role`,
-DROP COLUMN `role_id`,
 DROP COLUMN `group`;
 
 CREATE TABLE `user_counter_update` (
