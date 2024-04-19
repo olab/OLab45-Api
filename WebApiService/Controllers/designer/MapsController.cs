@@ -436,7 +436,7 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// ReadAsync a list of security users for a given map
+  /// Read a list of security users for a given map
   /// </summary>
   /// <param name="mapId"></param>
   /// <returns></returns>
@@ -469,7 +469,7 @@ public partial class MapsController : OLabController
         list.Add(new Hashtable
         {
           { "userId", rule.UserId },
-          { "acl", rule.Acl },
+          { "acl", rule.Acl2 },
           { "user", user != null ? new Hashtable
             {
               { "id", user.Id },

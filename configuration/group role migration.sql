@@ -70,7 +70,7 @@ UPDATE `users`
 
 ALTER TABLE `user_groups` 
 	ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`,
-    ADD COLUMN `iss` VARCHAR(45) NOT NULL DEFAULT 'olab' AFTER `id`;
+    DROP COLUMN `role`;
     
 
 ALTER TABLE `user_groups` 
@@ -110,9 +110,12 @@ INSERT INTO `user_groups` (user_id, group_id, role_id )
 UPDATE `user_groups` SET role_id = ( SELECT role_id FROM `users` WHERE id = user_groups.user_id );  
   
 UPDATE `security_users` set acl2 = 4 WHERE acl like '%R%';
-UPDATE security_users set acl2 = acl2+2  WHERE acl like '%W%';
-UPDATE security_users set acl2 = acl2+1  WHERE acl like '%X%';
+UPDATE `security_users` set acl2 = acl2+2  WHERE acl like '%W%';
+UPDATE `security_users` set acl2 = acl2+1  WHERE acl like '%X%';
   
+ALTER TABLE `security_users` 
+DROP COLUMN `acl`;
+
 UPDATE `security_roles` 
 SET role_id = ( SELECT id from `roles` WHERE name = security_roles.name ); 
 UPDATE security_roles set acl2 = 4 WHERE acl like '%R%';
@@ -121,6 +124,7 @@ UPDATE security_roles set acl2 = acl2+1  WHERE acl like '%X%';
   
 ALTER TABLE `security_roles` 
 DROP COLUMN `name`,
+DROP COLUMN `acl`,
 ADD CONSTRAINT `security_roles_ibfk_1`
   FOREIGN KEY (`group_id`)
   REFERENCES `groups` (`id`)

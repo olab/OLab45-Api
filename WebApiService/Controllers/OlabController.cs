@@ -74,10 +74,13 @@ public class OLabController : ControllerBase
   {
     Logger.LogError($"{ex.Message}");
 
+    var message = ex.Message;
+
     var inner = ex.InnerException;
     while (inner != null)
     {
-      Logger.LogError($"  {inner.Message}");
+      message = inner.Message;
+      Logger.LogError($"  {message}");
       inner = inner.InnerException;
     }
 
@@ -89,10 +92,7 @@ public class OLabController : ControllerBase
     if (ex is OLabObjectNotFoundException)
       return request.CreateResponse(OLabNotFoundResult<string>.Result(ex.Message));
 
-    if (ex is OLabBadRequestException)
-      return request.CreateResponse(OLabBadRequestObjectResult.Result(ex.Message));
-
-    return request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+    return request.CreateResponse(OLabServerErrorResult.Result(message));
   }
 
   [NonAction]

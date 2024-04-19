@@ -71,7 +71,7 @@ public class OLabAuthorization : IOLabAuthorization
             Id = item.Id,
             ImageableId = item.Id,
             ImageableType = Constants.ScopeLevelMap,
-            Acl = "RX",
+            //Acl = "RX",
             Acl2 = SecurityRoles.Read | SecurityRoles.Execute
           });
       }

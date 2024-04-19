@@ -45,14 +45,23 @@ public static class HttpRequestDataExtensions
 
     try
     {
+      var message = ex.Message;
+
+      var inner = ex.InnerException;
+      while (inner != null)
+      {
+        message = inner.Message;
+        inner = inner.InnerException;
+      }
+
       if (ex is OLabObjectNotFoundException)
-        response = request.CreateResponse(OLabNotFoundResult<string>.Result(ex.Message));
+        response = request.CreateResponse(OLabNotFoundResult<string>.Result(message));
 
       else if (ex is OLabUnauthorizedException)
         response = request.CreateResponse(
           OLabUnauthorizedObjectResult.Result(ex.Message));
       else
-        response = request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
+        response = request.CreateResponse(OLabServerErrorResult.Result(message));
     }
     catch (Exception)
     {
