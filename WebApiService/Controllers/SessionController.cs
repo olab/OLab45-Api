@@ -88,11 +88,7 @@ public class SessionController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var userSession = DbContext.UserSessions.FirstOrDefault( x => x.Uuid == request.ContextId );
-      if (userSession != null)
-        throw new OLabObjectNotFoundException("session", request.ContextId);
-
-      var sessionTraces = DbContext.UserSessiontraces.Where(x => x.SessionId == userSession.Id).ToList();
+      var sessionTraces = DbContext.UserSessiontraces.Where(x => x.SessionId == 163370).ToList();
       var fr = CreateExcelFile.StreamExcelDocument(sessionTraces, "sessionTraces.xlsx");
 
       return fr;
