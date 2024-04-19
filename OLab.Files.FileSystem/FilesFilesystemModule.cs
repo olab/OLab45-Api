@@ -228,13 +228,12 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Delete folder from blob storage
   /// </summary>
-  /// <param name="relativePath">Folder to delete</param>
+  /// <param name="physFolderName">Folder to delete</param>
   public override async Task DeleteFolderAsync(
-    string relativeFolderName)
+    string physFolderName)
   {
-    var folderPath = GetPhysicalPath(relativeFolderName);
-    if (Directory.Exists(folderPath))
-      Directory.Delete(folderPath, true);
+    if (Directory.Exists(physFolderName))
+      Directory.Delete(physFolderName, true);
   }
 
   /// <summary>
