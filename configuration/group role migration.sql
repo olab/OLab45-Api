@@ -1,43 +1,187 @@
-use olab_dev;
+use dev_olab;
 
-ALTER TABLE `security_users` 
-CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL ;
+START TRANSACTION;
+
+CREATE TABLE `user_counter_update` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `counter_state` VARCHAR(8192) NOT NULL,
+  PRIMARY KEY (`id`));
+
+CREATE TABLE `usersessiontrace_counterupdate` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `sessiontrace_id` INT(10) UNSIGNED NOT NULL,
+  `counterupdate_id` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `usersessiontrace_counterupdate` 
+ADD INDEX `stcu_fk_st_idx` (`sessiontrace_id` ASC) VISIBLE,
+ADD INDEX `stcu_fk_cu_idx` (`counterupdate_id` ASC) VISIBLE;
+;
+ALTER TABLE `usersessiontrace_counterupdate` 
+ADD CONSTRAINT `stcu_fk_st`
+  FOREIGN KEY (`sessiontrace_id`)
+  REFERENCES `user_sessiontraces` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `stcu_fk_cu`
+  FOREIGN KEY (`counterupdate_id`)
+  REFERENCES `user_counter_update` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION;
+
+CREATE TABLE `userresponse_counterupdate` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userresponse_id` INT(10) UNSIGNED NOT NULL,
+  `counterupdate_id` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+  
+ALTER TABLE `userresponse_counterupdate` 
+ADD INDEX `urcu_fk_ur_idx` (`userresponse_id` ASC) VISIBLE,
+ADD INDEX `urcu_fk_cu_idx` (`counterupdate_id` ASC) VISIBLE;
+;
+ALTER TABLE `userresponse_counterupdate` 
+ADD CONSTRAINT `urcu_fk_ur`
+  FOREIGN KEY (`userresponse_id`)
+  REFERENCES `user_responses` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `urcu_fk_cu`
+  FOREIGN KEY (`counterupdate_id`)
+  REFERENCES `user_counter_update` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION;
+
+  
+CREATE TABLE `roles` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `description` VARCHAR(100),
+  `name` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 
+DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+INSERT INTO `roles` (`name`) VALUES ('importer');
+
+ALTER TABLE `system_counter_actions` 
+DROP FOREIGN KEY `fk_counter_action_counter`;
+ALTER TABLE `system_counter_actions` 
+ADD CONSTRAINT `fk_counter_action_counter`
+  FOREIGN KEY (`counter_id`)
+  REFERENCES `system_counters` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE;
 
 ALTER TABLE `system_questions` 
 CHANGE COLUMN `counter_id` `counter_id` INT(10) UNSIGNED ;
 
-update users set `group` = "olab";
-update users set role = "moderator" where role = "olabmod";
-update users set role = "learner" where role = "olablearner";
-update users set role = "author" where role = "olabauthor";
-update users set role = "guest" where role = "olabguest";
-update users set role = "superuser" where role = "olabsuperuser";
+ALTER TABLE `security_users` 
+CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL,
+ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `acl`;
 
 ALTER TABLE `security_roles` 
 ADD COLUMN `group_id` INT(10) UNSIGNED NOT NULL AFTER `acl`,
-CHANGE COLUMN `name` `role` VARCHAR(45) NOT NULL AFTER `acl`;
+ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`,
+ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `role_id`;
+  
+UPDATE `security_roles` SET `group_id` = 1;
+UPDATE `security_roles` SET name = "moderator" WHERE name = "olabmod";
+UPDATE `security_roles` SET name = "learner" WHERE name = "olablearner";
+UPDATE `security_roles` SET name = "author" WHERE name = "olabauthor";
+UPDATE `security_roles` SET name = "guest" WHERE name = "olabguest";
+UPDATE `security_roles` SET name = "superuser" WHERE name = "olabsuperuser";
+UPDATE `security_roles` SET name = "administrator" WHERE name = "olabadministrator";
 
-ALTER TABLE `user_groups` 
-ADD COLUMN `role` VARCHAR(45) NOT NULL AFTER `group_id`;
-
-update security_Roles set `group_id` = 1;
-update security_Roles set role = "moderator" where role = "olabmod";
-update security_Roles set role = "learner" where role = "olablearner";
-update security_Roles set role = "author" where role = "olabauthor";
-update security_Roles set role = "guest" where role = "olabguest";
-update security_Roles set role = "superuser" where role = "olabsuperuser";
-
+ALTER TABLE `groups` 
+ADD COLUMN `description` VARCHAR(100) AFTER `id`;
 INSERT INTO `groups` (`name`) VALUES ('olab');
 INSERT INTO `groups` (`name`) VALUES ('anonymous');
 INSERT INTO `groups` (`name`) VALUES ('external');
 
+UPDATE `users` SET `group` = "olab";
+UPDATE `users` SET role = "moderator" WHERE role = "olabmod";
+UPDATE `users` SET role = "learner" WHERE role = "olablearner";
+UPDATE `users` SET role = "author" WHERE role = "olabauthor";
+UPDATE `users` SET role = "guest" WHERE role = "olabguest";
+UPDATE `users` SET role = "superuser" WHERE role = "olabsuperuser";
+UPDATE `users` SET role = "learner" WHERE role = "";
+UPDATE `users` SET role = "director" WHERE role = "olabdirector";
+UPDATE `users` SET role = "administrator" WHERE role = "olabadministrator";
+
+INSERT into `roles` (`name`) 
+	SELECT DISTINCT role from `users` order by role;
+INSERT into `roles` (`name`) 
+	SELECT DISTINCT name FROM `security_roles` 
+    WHERE name NOT IN ( SELECT DISTINCT name from `roles` ) order by name;
+
+ALTER TABLE `users` 
+	ADD COLUMN `role_id` INT(10) UNSIGNED;
+UPDATE `users` 
+	SET role_id = ( SELECT id from `roles` WHERE name = `users`.role);
+
 ALTER TABLE `user_groups` 
-ADD COLUMN `iss` VARCHAR(45) NOT NULL DEFAULT 'olab' AFTER `id`;
+	ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`,
+    ADD COLUMN `iss` VARCHAR(45) NOT NULL DEFAULT 'olab' AFTER `id`;
+    
 
-INSERT INTO user_groups (user_id, group_id, `role`)
-SELECT id, (SELECT id from `groups` where name = 'olab'), role
-FROM users where role is not null;
+ALTER TABLE `user_groups` 
+ADD CONSTRAINT `user_groups_ibfk_3`
+  FOREIGN KEY (`role_id`)
+  REFERENCES `roles` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+    
+COMMIT;
 
+-- *************************
+
+SELECT @group_id := id FROM `groups` WHERE name = 'olab';
+SELECT @role_id := id FROM `roles` WHERE name = 'learner';
+SELECT @max_id := MAX(id) FROM `users`;
+SET @batch_size = @max_id / 10;
+SET @num_batches = @max_id / @batch_size;
+
+INSERT INTO `user_groups` (user_id, group_id, role_id )
+	SELECT id, @group_id, @role_id
+	FROM `users`;
+
+-- DELIMITER //
+-- FOR l in 0..@num_batches
+-- DO
+--     START TRANSACTION;
+--     SET @start = l * @batch_size;
+--     SET @end = ( l + 1 ) * @batch_size;
+--     INSERT INTO `user_groups` (user_id, group_id, role_id )
+--         SELECT id, @group_id, @role_id
+--         FROM `users` WHERE id >= @start and id <= @end;
+--     COMMIT;
+-- END FOR;
+-- //
+
+UPDATE `user_groups` SET role_id = ( SELECT role_id FROM `users` WHERE id = user_groups.user_id );  
+  
+UPDATE `security_users` set acl2 = 4 WHERE acl like '%R%';
+UPDATE security_users set acl2 = acl2+2  WHERE acl like '%W%';
+UPDATE security_users set acl2 = acl2+1  WHERE acl like '%X%';
+  
+UPDATE `security_roles` 
+SET role_id = ( SELECT id from `roles` WHERE name = security_roles.name ); 
+UPDATE security_roles set acl2 = 4 WHERE acl like '%R%';
+UPDATE security_roles set acl2 = acl2+2  WHERE acl like '%W%';
+UPDATE security_roles set acl2 = acl2+1  WHERE acl like '%X%';
+  
+ALTER TABLE `security_roles` 
+DROP COLUMN `name`,
+ADD CONSTRAINT `security_roles_ibfk_1`
+  FOREIGN KEY (`group_id`)
+  REFERENCES `groups` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `security_roles_ibfk_2`
+  FOREIGN KEY (`role_id`)
+  REFERENCES `roles` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+  
 ALTER TABLE `map_groups` 
 ADD CONSTRAINT `mp_ibfk_map`
   FOREIGN KEY (`map_id`)
@@ -53,16 +197,14 @@ ADD CONSTRAINT `mp_ibfk_group`
 INSERT INTO map_groups (map_id, group_id ) 
  SELECT id, (SELECT id from `groups` WHERE name = 'olab' ) FROM `maps` WHERE is_template = 0;
 
-DROP VIEW `orphanedconstantsview`;
-DROP VIEW `orphanedquestionsview`;
-DROP TABLE `map_nodes_im`, `map_nodes_tmp`;
+DROP VIEW IF EXISTS `orphanedconstantsview`;
+DROP VIEW IF EXISTS `orphanedquestionsview`;
+DROP TABLE IF EXISTS  `map_nodes_im`, `map_nodes_tmp`;
 
 ALTER TABLE `users` 
 DROP COLUMN `role`,
+DROP COLUMN `role_id`,
 DROP COLUMN `group`;
 
 INSERT INTO `users` (`username`, `email`, `password`, `salt`, `nickname`, `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) VALUES 
 ('anonymous', 'anon@example.com', '', '', 'anonymous', '0', '0', '50000', 'easy', '0');
-
-
-
