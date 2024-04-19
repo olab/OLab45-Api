@@ -469,7 +469,7 @@ public partial class MapsController : OLabController
         list.Add(new Hashtable
         {
           { "userId", rule.UserId },
-          { "acl", rule.Acl2 },
+          { "acl", rule.Acl },
           { "user", user != null ? new Hashtable
             {
               { "id", user.Id },

@@ -20,7 +20,7 @@ public abstract class UserContextBase : IUserContext
 
   protected IDictionary<string, string> _claims;
   protected readonly IOLabLogger _logger;
-  protected readonly OLabDBContext dbContext;
+  private readonly OLabDBContext dbContext;
   protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
   protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
