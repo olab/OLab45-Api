@@ -6,7 +6,6 @@ using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System.Configuration;
 using System.IO.Compression;
-using System.Net.NetworkInformation;
 
 namespace OLab.Files.FileSystem;
 
@@ -46,34 +45,38 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Move file from one folder to another
   /// </summary>
-  /// <param name="physSourceFilePath">Physical source file path</param>
-  /// <param name="physDestinationFolder">Physical destination path</param>
+  /// <param name="sourceFilePath">Relative source file path</param>
+  /// <param name="destinationFolder">Relative destination path</param>
   public override async Task MoveFileAsync(
-      string physSourceFilePath,
-      string physDestinationFolder,
+      string sourceFilePath,
+      string destinationFolder,
       CancellationToken token = default)
   {
-    Guard.Argument(physSourceFilePath).NotEmpty(nameof(physSourceFilePath));
-    Guard.Argument(physDestinationFolder).NotEmpty(nameof(physDestinationFolder));
+    Guard.Argument(sourceFilePath).NotEmpty(nameof(sourceFilePath));
+    Guard.Argument(destinationFolder).NotEmpty(nameof(destinationFolder));
 
     try
     {
-      if (!FileExists(physSourceFilePath))
-        throw new Exception($"file '{physSourceFilePath}' not found");
+      if (!FileExists(sourceFilePath))
+        throw new Exception($"file '{sourceFilePath}' not found");
 
-      if (!Directory.Exists(physDestinationFolder))
-        Directory.CreateDirectory(physDestinationFolder);
+      var sourcePhysFilePath = GetPhysicalPath(sourceFilePath);
+      var destinationPhysFolder = GetPhysicalPath(destinationFolder);
 
-      var physDestinationFilePath = BuildPath(
-          physDestinationFolder,
-          Path.GetFileName(physSourceFilePath));
+      if (!Directory.Exists(destinationPhysFolder))
+        Directory.CreateDirectory(destinationPhysFolder);
+
+      var destinationPhysFilePath = GetPhysicalPath(
+        BuildPath( 
+          destinationFolder, 
+          Path.GetFileName(sourceFilePath)));
 
       File.Move(
-        physSourceFilePath,
-        physDestinationFilePath,
+        sourcePhysFilePath,
+        destinationPhysFilePath,
         true);
 
-      logger.LogInformation($"moved '{physSourceFilePath}' to {physDestinationFilePath}");
+      logger.LogInformation($"moved '{sourcePhysFilePath}' to {destinationPhysFilePath}");
     }
     catch (Exception ex)
     {
@@ -86,18 +89,20 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Test if file exists in storage
   /// </summary>
-  /// <param name="physFilePath">Physical path of file to look for</param>
+  /// <param name="filePath">Relative path of file to look for</param>
   /// <returns>true/false</returns>
   public override bool FileExists(
-    string physFilePath)
+    string filePath)
   {
-    Guard.Argument(physFilePath).NotEmpty(nameof(physFilePath));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     try
     {
-      var result = File.Exists(physFilePath);
+      var physicalPath = GetPhysicalPath(filePath);
+
+      var result = File.Exists(physicalPath);
       if (!result)
-        logger.LogWarning($"  '{physFilePath}' physical file not found");
+        logger.LogWarning($"  '{physicalPath}' physical file not found");
 
       return result;
     }
@@ -115,50 +120,51 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <param name="path"></param>
   /// <param name="fileName"></param>
   /// <returns></returns>
-  //public override string GetUrlPath(string path, string fileName)
-  //{
-  //  var physicalPath = BuildPath(
-  //    path,
-  //    fileName);
+  public override string GetUrlPath(string path, string fileName)
+  {
+    var physicalPath = BuildPath(
+      path,
+      fileName);
 
-  //  physicalPath = physicalPath.Replace("\\", "/");
-
-  //  return physicalPath;
-  //}
+    physicalPath = physicalPath.Replace("\\", "/");
+ 
+    return physicalPath;
+  }
 
   /// <summary>
   /// Uploads a file represented by a stream to a directory
   /// </summary>
   /// <param name="file">File contents stream</param>
-  /// <param name="physicalFilePath">Physical file path to write to</param>
+  /// <param name="targetFolder">Target relativePath</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
   public override async Task<string> WriteFileAsync(
     Stream stream,
-    string physicalFilePath,
+    string fileName,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(physicalFilePath).NotEmpty(nameof(physicalFilePath));
+    Guard.Argument(fileName).NotEmpty(nameof(fileName));
 
     try
     {
-      var physicalFileDirectory = Path.GetDirectoryName(physicalFilePath);
+      var physicalFileName = GetPhysicalPath(fileName);
+      var physicalFileDirectory = Path.GetDirectoryName(physicalFileName);
 
-      logger.LogInformation($"Writing file {physicalFilePath} to {physicalFilePath}");
+      logger.LogInformation($"Writing file {fileName} to {physicalFileName}");
 
       if (Directory.Exists(physicalFileDirectory))
         Directory.Delete(physicalFileDirectory, true);
 
       Directory.CreateDirectory(physicalFileDirectory);
 
-      using (var file = new FileStream(physicalFilePath, FileMode.OpenOrCreate, FileAccess.Write))
+      using (var file = new FileStream(physicalFileName, FileMode.OpenOrCreate, FileAccess.Write))
       {
         await stream.CopyToAsync(file);
-        logger.LogInformation($"wrote to file '{physicalFilePath}'. Size: {file.Length}");
+        logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
       }
 
-      return physicalFilePath;
+      return fileName;
     }
     catch (Exception ex)
     {
@@ -172,22 +178,23 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// Copy file presented by stream to file store
   /// </summary>
   /// <param name="stream">File stream</param>
-  /// <param name="physFilePath">Physical file name</param>
+  /// <param name="filePath">Target file name</param>
   /// <param name="token"></param>
   public override async Task ReadFileAsync(
     Stream stream,
-    string physFilePath,
+    string filePath,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(physFilePath).NotEmpty(nameof(physFilePath));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     try
     {
 
-      logger.LogInformation($"ReadFileAsync reading file '{physFilePath}'");
+      var physicalFilePath = GetPhysicalPath(filePath);
+      logger.LogInformation($"ReadFileAsync reading file '{physicalFilePath}'");
 
-      using var inputStream = new FileStream(physFilePath, FileMode.Open, FileAccess.Read);
+      using var inputStream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read);
       inputStream.CopyTo(stream);
 
       stream.Position = 0;
@@ -204,60 +211,64 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Delete file
   /// </summary>
-  /// <param name="physFilePath">Physical file apth</param>
+  /// <param name="filePath">Relative to root file apth</param>
   /// <returns></returns>
   public override async Task<bool> DeleteFileAsync(
-    string physFilePath)
+    string filePath)
   {
-    Guard.Argument(physFilePath).NotEmpty(nameof(physFilePath));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     try
     {
-      logger.LogInformation($"DeleteFileAsync deleting '{physFilePath}'");
+      var physicalFilePath = GetPhysicalPath(filePath);
+      logger.LogInformation($"DeleteFileAsync deleting '{physicalFilePath}'");
 
-      File.Delete(physFilePath);
+      File.Delete(physicalFilePath);
       return true;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "DeleteFileAsync Exception");
+      logger.LogError(ex, "CopyStreamToFileAsync Exception");
       throw;
     }
   }
 
-  /// <summary>
   /// Delete folder from blob storage
   /// </summary>
-  /// <param name="physFolderName">Folder to delete</param>
+  /// <param name="relativePath">Folder to delete</param>
   public override async Task DeleteFolderAsync(
-    string physFolderName)
+    string folderName)
   {
-    if (Directory.Exists(physFolderName))
-      Directory.Delete(physFolderName, true);
+    var folderPath = GetPhysicalPath(folderName);
+    if (Directory.Exists(folderPath))
+      Directory.Delete(folderPath, true);
   }
 
   /// <summary>
   /// Extract archive file to folder
   /// </summary>
-  /// <param name="physArchiveFilePath">Physical archive file folder</param>
-  /// <param name="physExtractFolder">Physical destination folder</param>
+  /// <param name="archiveFileName">Archive file folder</param>
+  /// <param name="extractDirectory">Destination decompress folder</param>
   /// <param name="token"></param>
   public override async Task<bool> ExtractFileToStorageAsync(
-    string physArchiveFilePath,
-    string physExtractFolder,
+    string archiveFileName,
+    string extractDirectory,
     CancellationToken token = default)
   {
-    Guard.Argument(physArchiveFilePath).NotEmpty(nameof(physArchiveFilePath));
-    Guard.Argument(physExtractFolder).NotEmpty(nameof(physExtractFolder));
+    Guard.Argument(archiveFileName).NotEmpty(nameof(archiveFileName));
+    Guard.Argument(extractDirectory).NotEmpty(nameof(extractDirectory));
 
     try
     {
 
-      logger.LogInformation($"extracting {physArchiveFilePath} -> {physExtractFolder}");
+      logger.LogInformation($"extracting {archiveFileName} -> {extractDirectory}");
 
-      await DeleteFolderAsync(physExtractFolder);
+      var archiveFilePath = GetPhysicalPath(archiveFileName);
+      var extractPath = GetPhysicalPath(extractDirectory);
 
-      ZipFile.ExtractToDirectory(physArchiveFilePath, physExtractFolder);
+      await DeleteFolderAsync(extractPath);
+
+      ZipFile.ExtractToDirectory(archiveFilePath, extractPath);
       return true;
 
     }
@@ -273,24 +284,24 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// Create archvie file from a folder
   /// </summary>
   /// <param name="archive">Archive file stream</param>
-  /// <param name="relativeFileDirectory">Relative source file folder</param>
+  /// <param name="folderName">Source file folder</param>
   /// <param name="appendToStream">Append or replace stream contents</param>
   /// <param name="token"></param>
   public override async Task<bool> CopyFolderToArchiveAsync(
     ZipArchive archive,
-    string relativeFileDirectory,
+    string folderName,
     string zipEntryFolderName,
     bool appendToStream,
     CancellationToken token = default)
   {
     Guard.Argument(archive).NotNull(nameof(archive));
-    Guard.Argument(relativeFileDirectory).NotEmpty(nameof(relativeFileDirectory));
+    Guard.Argument(folderName).NotEmpty(nameof(folderName));
 
     var result = false;
 
     try
     {
-      var files = GetFiles(relativeFileDirectory);
+      var files = GetFiles(folderName);
 
       foreach (var file in files)
       {
@@ -321,34 +332,28 @@ public class FilesFilesystemModule : OLabFileStorageModule
     return result;
   }
 
-  /// <summary>
-  /// Get list of files in directory
-  /// </summary>
-  /// <param name="relativeFileDirectory">Relative directory</param>
-  /// <param name="token"></param>
-  /// <returns></returns>
   public override IList<string> GetFiles(
-    string relativeFileDirectory,
+    string folderName,
     CancellationToken token = default)
   {
     var fileNames = new List<string>();
 
     try
     {
-      var physicalPath = GetPhysicalPath(relativeFileDirectory);
+      var physicalPath = GetPhysicalPath(folderName);
 
       if (!Directory.Exists(physicalPath))
       {
-        logger.LogInformation($"source folder '{relativeFileDirectory}' does not exist");
+        logger.LogInformation($"source folder '{folderName}' does not exist");
         return fileNames;
       }
 
       var contents = Directory.GetFiles(physicalPath).ToList();
 
       if (contents.Count > 0)
-        logger.LogInformation($"found {contents.Count} files in '{relativeFileDirectory}'");
+        logger.LogInformation($"found {contents.Count} files in '{folderName}'");
 
-      fileNames = contents.Select(x => BuildPath(relativeFileDirectory, Path.GetFileName(x))).ToList();
+      fileNames = contents.Select(x => BuildPath(folderName, Path.GetFileName(x))).ToList();
       foreach (var fileName in fileNames)
         logger.LogInformation($"  {fileName}");
 

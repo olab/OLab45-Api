@@ -141,30 +141,30 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   }
 
   /// <summary>
-  /// Uploads a file represented by a stream to a directory
+  /// Copy file presented by stream to file store
   /// </summary>
-  /// <param name="file">File contents stream</param>
-  /// <param name="physicalFilePath">Physical file path to write to</param>
-  /// <param name="token">Cancellation token</param>
-  /// <returns>Physical file path</returns>
+  /// <param name="stream">File stream</param>
+  /// <param name="fileType">Target folderName</param>
+  /// <param name="filePath">Target folderName</param>
+  /// <param name="token"></param>
   public override async Task<string> WriteFileAsync(
     Stream stream,
-    string physicalFilePath,
+    string filePath,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(physicalFilePath).NotEmpty(nameof(physicalFilePath));
+    Guard.Argument(filePath).NotEmpty(nameof(filePath));
 
     try
     {
-      logger.LogInformation($"WriteFileAsync: {_containerName} {physicalFilePath}");
+      logger.LogInformation($"WriteFileAsync: {_containerName} {filePath}");
 
       await _blobServiceClient
             .GetBlobContainerClient(_containerName)
-            .GetBlobClient(physicalFilePath)
+            .GetBlobClient(filePath)
             .UploadAsync(stream, overwrite: true, token);
 
-      return physicalFilePath;
+      return filePath;
     }
     catch (Exception ex)
     {
@@ -468,13 +468,13 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="path"></param>
   /// <param name="fileName"></param>
   /// <returns></returns>
-  //public override string GetUrlPath(string path, string fileName)
-  //{
-  //  var physicalPath = BuildPath(
-  //    cfg.GetAppSettings().FileStorageUrl,
-  //    path,
-  //    fileName);
+  public override string GetUrlPath(string path, string fileName)
+  {
+    var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageUrl,
+      path,
+      fileName);
 
-  //  return physicalPath;
-  //}
+    return physicalPath;
+  }
 }
