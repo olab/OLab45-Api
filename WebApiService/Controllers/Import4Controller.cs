@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -67,9 +68,6 @@ public class Import4Controller : OLabController
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
-
-      if (!auth.HasAccess("X", "Import", 0))
-        throw new OLabUnauthorizedException();
 
       if (Request.Form == null)
         throw new ArgumentNullException(nameof(Request.Form));
