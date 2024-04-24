@@ -106,12 +106,22 @@ public class ImportController : OLabController
             Request.Form.Files[0].FileName,
             token);
 
-        if (files.Contains("map.xml"))
+        else if (files.Contains("map.xml"))
           mapPhys = await _endpoint3.ImportAsync(
             auth,
             stream,
             Request.Form.Files[0].FileName,
             token);
+
+        else
+        {
+          var errorDto = OLabObjectResult<ImportResponse>.Result(new ImportResponse());
+          errorDto.Message = "Invalid import file";
+          errorDto.Status = 400;
+          errorDto.Data = null;
+
+          return HttpContext.Request.CreateResponse(errorDto);
+        }
       }
 
       var dto = new ImportResponse
