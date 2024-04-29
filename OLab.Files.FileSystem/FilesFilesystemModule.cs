@@ -135,36 +135,36 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// Uploads a file represented by a stream to a directory
   /// </summary>
   /// <param name="file">File contents stream</param>
-  /// <param name="targetFolder">Target relativePath</param>
+  /// <param name="physFilePath">Physical file path</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
   public override async Task<string> WriteFileAsync(
     Stream stream,
-    string fileName,
+    string physFilePath,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(fileName).NotEmpty(nameof(fileName));
+    Guard.Argument(physFilePath).NotEmpty(nameof(physFilePath));
 
     try
     {
-      var physicalFileName = GetPhysicalPath(fileName);
-      var physicalFileDirectory = Path.GetDirectoryName(physicalFileName);
+      var physicalFileDirectory = Path.GetDirectoryName(physFilePath);
 
-      logger.LogInformation($"Writing file {fileName} to {physicalFileName}");
+      logger.LogInformation($"Writing file to {physFilePath}");
 
-      if (Directory.Exists(physicalFileDirectory))
-        Directory.Delete(physicalFileDirectory, true);
+      if (!Directory.Exists(physicalFileDirectory))
+        Directory.CreateDirectory(physicalFileDirectory);
 
-      Directory.CreateDirectory(physicalFileDirectory);
-
-      using (var file = new FileStream(physicalFileName, FileMode.OpenOrCreate, FileAccess.Write))
+      using (var file = new FileStream(
+        physFilePath, 
+        FileMode.OpenOrCreate, 
+        FileAccess.Write))
       {
         await stream.CopyToAsync(file);
-        logger.LogInformation($"wrote to file '{physicalFileName}'. Size: {file.Length}");
+        logger.LogInformation($"wrote to file '{physFilePath}'. Size: {file.Length}");
       }
 
-      return fileName;
+      return physFilePath;
     }
     catch (Exception ex)
     {
