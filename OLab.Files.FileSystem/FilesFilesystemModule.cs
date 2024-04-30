@@ -67,8 +67,8 @@ public class FilesFilesystemModule : OLabFileStorageModule
         Directory.CreateDirectory(destinationPhysFolder);
 
       var destinationPhysFilePath = GetPhysicalPath(
-        BuildPath( 
-          destinationFolder, 
+        BuildPath(
+          destinationFolder,
           Path.GetFileName(sourceFilePath)));
 
       File.Move(
@@ -123,11 +123,13 @@ public class FilesFilesystemModule : OLabFileStorageModule
   public override string GetUrlPath(string path, string fileName)
   {
     var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageUrl,
+      FilesRoot,
       path,
       fileName);
 
     physicalPath = physicalPath.Replace("\\", "/");
- 
+
     return physicalPath;
   }
 
@@ -135,16 +137,16 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// Uploads a file represented by a stream to a directory
   /// </summary>
   /// <param name="file">File contents stream</param>
-  /// <param name="targetFolder">Target relativePath</param>
+  /// <param name="physFilePath">Physical file path</param>
   /// <param name="token">Cancellation token</param>
   /// <returns>Physical file path</returns>
   public override async Task<string> WriteFileAsync(
     Stream stream,
-    string fileName,
+    string physFilePath,
     CancellationToken token = default)
   {
     Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(fileName).NotEmpty(nameof(fileName));
+    Guard.Argument(physFilePath).NotEmpty(nameof(physFilePath));
 
     try
     {
