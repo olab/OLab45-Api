@@ -152,15 +152,13 @@ public class FilesFilesystemModule : OLabFileStorageModule
     {
       var physFileDirectory = Path.GetDirectoryName(physFilePath);
 
-      logger.LogInformation($"Writing file to {physFilePath}");
-
       if (!Directory.Exists(physFileDirectory))
         Directory.CreateDirectory(physFileDirectory);
 
       using (var file = new FileStream(physFilePath, FileMode.OpenOrCreate, FileAccess.Write))
       {
         await stream.CopyToAsync(file);
-        logger.LogInformation($"wrote to file '{physFilePath}'. Size: {file.Length}");
+        stream.Position = 0;
       }
 
       return physFilePath;
