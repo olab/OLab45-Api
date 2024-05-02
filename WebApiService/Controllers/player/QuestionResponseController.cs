@@ -2,6 +2,7 @@ using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Data;
@@ -60,20 +61,22 @@ public partial class QuestionResponseController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var session = new OLabSession(Logger, DbContext, auth.UserContext);
+      var session = OLabSession.CreateInstance(
+        Logger,
+        DbContext,
+        auth.UserContext);
       session.SetMapId(body.MapId);
 
-      var question = await GetQuestionAsync(body.QuestionId);
-      if (question == null)
+      var questionPhys = await GetQuestionAsync(body.QuestionId);
+      if (questionPhys == null)
         throw new Exception($"Question {body.QuestionId} not found");
 
       var result =
-        await _endpoint.PostQuestionResponseAsync(question, body);
+        await _endpoint.PostQuestionResponseAsync(questionPhys, body);
 
       session.OnQuestionResponse(
-        body.NodeId,
-        question.Id,
-        body.Value);
+        body,
+        questionPhys);
 
     }
     catch (Exception ex)
