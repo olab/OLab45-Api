@@ -1,10 +1,13 @@
 use dev_olab;
 
+ALTER TABLE `security_roles` 
+RENAME TO  `grouprole_acls` ;
+
 ALTER TABLE `security_users` 
 	CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL ;
 ALTER TABLE `system_questions` 
 	CHANGE COLUMN `counter_id` `counter_id` INT(10) UNSIGNED ;
-ALTER TABLE `security_roles` 
+ALTER TABLE `grouprole_acls` 
 	ADD COLUMN `group_id` INT(10) UNSIGNED NOT NULL AFTER `acl`,
 	ADD COLUMN `role_id` INT(10) UNSIGNED NOT NULL AFTER `group_id`,
 	ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `role_id`;    
@@ -46,7 +49,7 @@ UPDATE users
 	SET `group` = "olab";
 UPDATE users 
 	SET `role` = replace(`role`, 'olab', '' ) where `role` like 'olab%';
-UPDATE `security_roles` 
+UPDATE `grouprole_acls` 
 	SET `name` = replace(`name`, 'olab', '' ) where `name` like 'olab%';
     
 INSERT INTO `groups` (`name`) VALUES ('olab');
@@ -57,10 +60,10 @@ INSERT INTO `roles` (`name`) VALUES ('importer');
 INSERT into `roles` (`name`) 
 	SELECT DISTINCT role from `users` order by role;
 INSERT into `roles` (`name`) 
-	SELECT DISTINCT name FROM `security_roles` 
+	SELECT DISTINCT name FROM `grouprole_acls` 
     WHERE name NOT IN ( SELECT DISTINCT name from `roles` ) order by name;
     
-UPDATE `security_roles` SET `group_id` = 1;
+UPDATE `grouprole_acls` SET `group_id` = 1;
 
 INSERT INTO `user_grouproles` (`user_id`, `group_id`, `role`)
 	SELECT id, (SELECT id from `groups` where name = 'olab'), role
@@ -81,10 +84,16 @@ DROP TABLE IF EXISTS  `map_nodes_tmp`;
 DROP TABLE IF EXISTS `user_groups`;
 
 ALTER TABLE `users` 
-DROP COLUMN `role`,
-DROP COLUMN `group`;
+	DROP COLUMN `role`,
+	DROP COLUMN `group`;
 
-INSERT INTO `users` (`username`, `email`, `password`, `salt`, `nickname`, `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) VALUES 
-('anonymous', 'anon@example.com', '', '', 'anonymous', '0', '0', '50000', 'easy', '0');
+INSERT INTO `users` 
+	(`username`, `email`, `password`, `salt`, `nickname`, `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) 
+    VALUES ('anonymous', 'anon@example.com', '', '', 'anonymous', '0', '0', '50000', 'easy', '0');
+
+ALTER TABLE `user_responses` 
+DROP FOREIGN KEY `user_responses_ibfk_2`;
+ALTER TABLE `user_responses` 
+DROP INDEX `session_id` ;
 
 
