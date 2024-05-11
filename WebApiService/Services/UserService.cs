@@ -217,6 +217,11 @@ public class UserService : IUserService
     }
   }
 
+  /// <summary>
+  /// Add user based on add user request
+  /// </summary>
+  /// <param name="userRequest">USer request</param>
+  /// <returns>ADd user response</returns>
   public async Task<AddUserResponse> AddUserAsync(AddUserRequest userRequest)
   {
     Users user = GetByUserName(userRequest.Username);

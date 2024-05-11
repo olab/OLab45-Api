@@ -16,7 +16,7 @@ public class OLabAuthorization : IOLabAuthorization
   private readonly IOLabLogger _logger;
   private readonly OLabDBContext _dbContext;
   public IUserContext UserContext { get; set; }
-  protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
+  protected IList<GrouproleAcls> _roleAcls = new List<GrouproleAcls>();
   protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
   public Users OLabUser;
 
@@ -42,11 +42,19 @@ public class OLabAuthorization : IOLabAuthorization
 
     UserContext = userContext;
 
-    var roles = UserContext.UserRoles;
     var userName = UserContext.UserName;
     var userId = UserContext.UserId;
 
-    _roleAcls = _dbContext.SecurityRoles.Where(x => roles.Contains(x.Name.ToLower())).ToList();
+    foreach (var groupRole in UserContext.GroupRoles)
+    {
+      var groupRolePhys = GrouproleAcls.Find(
+        _dbContext,
+        groupRole.Group.Name,
+        groupRole.Role.Name);
+
+      if ( groupRolePhys != null )
+        _roleAcls.Add(groupRolePhys);
+    }
 
     // test for a local user
     var user = _dbContext.Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
@@ -59,7 +67,7 @@ public class OLabAuthorization : IOLabAuthorization
       _userAcls = _dbContext.SecurityUsers.Where(x => x.UserId == userId).ToList();
 
       // if user is anonymous user, add user access to anon-flagged maps
-      if (OLabUser.Group == "anonymous")
+      if (OLabUser.Username == Users.AnonymousUserName)
       {
         var anonymousMaps = _dbContext.Maps.Where(x => x.SecurityId == 1).ToList();
         foreach (var item in anonymousMaps)

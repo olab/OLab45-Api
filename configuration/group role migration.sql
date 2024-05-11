@@ -49,22 +49,30 @@ UPDATE users
 	SET `group` = "olab";
 UPDATE users 
 	SET `role` = replace(`role`, 'olab', '' ) where `role` like 'olab%';
-UPDATE `grouprole_acls` 
-	SET `name` = replace(`name`, 'olab', '' ) where `name` like 'olab%';
-    
-INSERT INTO `groups` (`name`) VALUES ('olab');
-INSERT INTO `groups` (`name`) VALUES ('anonymous');
-INSERT INTO `groups` (`name`) VALUES ('external');
 
+ALTER TABLE `grouprole_acls` 
+CHANGE COLUMN `name` `role_name` VARCHAR(45) NOT NULL;
+
+UPDATE `grouprole_acls` 
+	SET `role_name` = replace(`role_name`, 'olab', '' ) where `role_name` like 'olab%';
+    
+    
 INSERT INTO `roles` (`name`) VALUES ('importer');
 INSERT into `roles` (`name`) 
 	SELECT DISTINCT role from `users` order by role;
 INSERT into `roles` (`name`) 
-	SELECT DISTINCT name FROM `grouprole_acls` 
-    WHERE name NOT IN ( SELECT DISTINCT name from `roles` ) order by name;
+	SELECT DISTINCT role_name FROM `grouprole_acls` 
+    WHERE role_name NOT IN ( SELECT DISTINCT name from `roles` ) order by role_name;
+UPDATE `grouprole_acls` 
+    SET `role_id` = ( SELECT `id` FROM `roles` WHERE `name` = `role_name` );
+    
+INSERT INTO `groups` (`name`) VALUES ('olab');
+INSERT INTO `groups` (`name`) VALUES ('anonymous');
+INSERT INTO `groups` (`name`) VALUES ('external');
     
 UPDATE `grouprole_acls` SET `group_id` = 1;
 
+/* ????  */
 INSERT INTO `user_grouproles` (`user_id`, `group_id`, `role`)
 	SELECT id, (SELECT id from `groups` where name = 'olab'), role
 	FROM users where role is not null;
@@ -88,12 +96,44 @@ ALTER TABLE `users`
 	DROP COLUMN `group`;
 
 INSERT INTO `users` 
-	(`username`, `email`, `password`, `salt`, `nickname`, `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) 
+	(`username`, `email`, `password`, `salt`, `nickname`, 
+     `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) 
     VALUES ('anonymous', 'anon@example.com', '', '', 'anonymous', '0', '0', '50000', 'easy', '0');
 
 ALTER TABLE `user_responses` 
 DROP FOREIGN KEY `user_responses_ibfk_2`;
-ALTER TABLE `user_responses` 
-DROP INDEX `session_id` ;
 
+-- ALTER TABLE `user_responses` 
+-- DROP INDEX `session_id` ;
 
+-- ALTER TABLE `user_grouproles` 
+-- ADD INDEX `user_grouproles_ibfk_3_idx` (`role_id` ASC) VISIBLE;
+
+-- ALTER TABLE `user_grouproles` 
+-- DROP COLUMN `role`;
+
+ALTER TABLE `user_grouproles` 
+ADD CONSTRAINT `user_grouproles_ibfk_3`
+  FOREIGN KEY (`role_id`)
+  REFERENCES `roles` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+  
+ALTER TABLE `grouprole_acls` 
+  DROP COLUMN `role_name`;
+  
+ALTER TABLE `grouprole_acls` 
+  ADD INDEX `ifk_gra_role_idx` (`role_id` ASC) VISIBLE,
+  ADD INDEX `ifk_gra_group_idx` (`group_id` ASC) VISIBLE;
+
+ALTER TABLE `grouprole_acls` 
+  ADD CONSTRAINT `ifk_gra_role`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `roles` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  ADD CONSTRAINT `ifk_gra_group`
+    FOREIGN KEY (`group_id`)
+    REFERENCES `groups` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION;

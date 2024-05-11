@@ -203,7 +203,10 @@ public class AuthController : OLabController
         while (reader.Peek() >= 0)
         {
           var userRequestText = reader.ReadLine();
-          var userRequest = new AddUserRequest(userRequestText);
+          var userRequest = new AddUserRequest( 
+            Logger, 
+            DbContext, 
+            userRequestText);
 
           var response = await _userService.AddUserAsync(userRequest);
           responses.Add(response);

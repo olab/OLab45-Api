@@ -21,17 +21,18 @@ public class UserContextService : IUserContext
 
   protected IDictionary<string, string> _claims;
   private readonly IOLabLogger _logger;
-  protected IList<SecurityRoles> _roleAcls = new List<SecurityRoles>();
+  private readonly OLabDBContext dbContext;
+  protected IList<GrouproleAcls> _roleAcls = new List<GrouproleAcls>();
   protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
 
   protected string _sessionId;
-  private string _role;
-  public IList<string> UserRoles { get; set; }
+  private IList<UserGrouproles> _groupRoles;
+  //public IList<string> UserRoles { get; set; }
   private uint _userId;
   private string _userName;
   private string _ipAddress;
   private string _issuer;
-  private readonly string _courseName;
+  private string _courseName;
 
   public string SessionId
   {
@@ -41,14 +42,14 @@ public class UserContextService : IUserContext
 
   public string ReferringCourse
   {
-    get => _role;
-    set => _role = value;
+    get => _courseName;
+    set => _courseName = value;
   }
 
-  public string Role
+  public IList<UserGrouproles> GroupRoles
   {
-    get => _role;
-    set => _role = value;
+    get => _groupRoles;
+    set => _groupRoles = value;
   }
 
   public uint UserId
@@ -84,13 +85,15 @@ public class UserContextService : IUserContext
 
   public UserContextService(
     IOLabLogger logger,
-    HttpContext httpContext)
+    HttpContext httpContext,
+    OLabDBContext dbContext)
   {
     Guard.Argument(logger).NotNull(nameof(logger));
     Guard.Argument(httpContext).NotNull(nameof(httpContext));
+    Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
     _logger = logger;
-
+    this.dbContext = dbContext;
     LoadHttpContext(httpContext);
   }
 
@@ -134,21 +137,13 @@ public class UserContextService : IUserContext
       throw new Exception("unable to retrieve user id from token claims");
     UserId = (uint)Convert.ToInt32(idValue);
 
-    if (!_claims.TryGetValue(ClaimTypes.Role, out var roleValue))
+    if (!_claims.TryGetValue(ClaimTypes.Role, out var groupRoleString))
       throw new Exception("unable to retrieve role from token claims");
-    Role = roleValue;
-
-    // separate out multiple roles, make lower case, remove spaces, and sort
-    UserRoles = Role.Split(',')
-      .Select(x => x.Trim())
-      .Select(x => x.ToLower())
-      .OrderBy(x => x)
-      .ToList();
-
+    GroupRoles = UserGrouproles.StringToList( dbContext, groupRoleString);
   }
   public override string ToString()
   {
-    return $"{UserId} {Issuer} {UserName} {Role} {IPAddress} {ReferringCourse}";
+    return $"{UserId} {Issuer} {UserName} {GroupRoles} {IPAddress} {ReferringCourse}";
   }
 }
 
