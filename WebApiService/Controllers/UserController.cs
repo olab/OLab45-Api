@@ -137,7 +137,7 @@ public class AuthController : OLabController
       var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess("X", "UserAdmin", 0))
+      if (!auth.HasAccess("X", Roles.UserAdminRole, 0))
         return OLabUnauthorizedResult.Result();
 
       var responses = await _userService.AddUsersAsync(items);

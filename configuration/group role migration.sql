@@ -72,6 +72,21 @@ INSERT INTO `groups` (`name`) VALUES ('external');
     
 UPDATE `grouprole_acls` SET `group_id` = 1;
 
+UPDATE `grouprole_acls` SET `acl2` = 0;
+
+UPDATE `grouprole_acls` SET `acl2` = `acl2` | 4 WHERE `acl` LIKE '%R%';
+UPDATE `grouprole_acls` SET `acl2` = `acl2` | 2 WHERE `acl` LIKE '%W%';
+UPDATE `grouprole_acls` SET `acl2` = `acl2` | 1 WHERE `acl` LIKE '%X%';
+
+INSERT INTO `grouprole_acls` (`imageable_type`, `imageable_id`, `group_id`, `role_id`, `acl`, `acl2` )
+	VALUES (
+		'UserAdmin', 
+        0,
+        ( SELECT id FROM `groups` where name = 'olab' ), 
+        ( SELECT id FROM `roles` where name = 'superuser' ), 
+        'X',
+        7);
+
 /* ????  */
 INSERT INTO `user_grouproles` (`user_id`, `group_id`, `role`)
 	SELECT id, (SELECT id from `groups` where name = 'olab'), role
@@ -119,6 +134,9 @@ ADD CONSTRAINT `user_grouproles_ibfk_3`
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
   
+  
+  /* ------ */
+  
 ALTER TABLE `grouprole_acls` 
   DROP COLUMN `role_name`;
   
@@ -137,3 +155,14 @@ ALTER TABLE `grouprole_acls`
     REFERENCES `groups` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION;
+    
+ALTER TABLE `security_users` 
+  RENAME TO  `user_acls` ;
+  
+ALTER TABLE `user_acls` 
+  ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `acl`;    
+  
+UPDATE `user_acls` SET `acl2` = `acl2` | 4 WHERE `acl` LIKE '%R%';
+UPDATE `user_acls` SET `acl2` = `acl2` | 2 WHERE `acl` LIKE '%W%';
+UPDATE `user_acls` SET `acl2` = `acl2` | 1 WHERE `acl` LIKE '%X%';
+  

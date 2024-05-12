@@ -24,6 +24,11 @@ public class OLabAuthorization : IOLabAuthorization
   public const uint WildCardObjectId = 0;
   public const string NonAccessAcl = "-";
 
+  public const ulong AclBitMaskRead = 4;
+  public const ulong AclBitMaskWrite = 2;
+  public const ulong AclBitMaskExecute = 1;
+  public const ulong AclBitMaskNoAccess = 0;
+
   public OLabAuthorization(
     IOLabLogger logger,
     OLabDBContext dbContext
@@ -142,13 +147,13 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectType">Securable object type</param>
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
-  private bool HasRoleLevelAccess(char requestedPerm, string objectType, uint? objectId)
+  private bool HasRoleLevelAccess(ulong requestedPerm, string objectType, uint? objectId)
   {
     // test for explicit non-access to specific object type and id
     var acl = _roleAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     x.Acl == NonAccessAcl).FirstOrDefault();
+     x.Acl2 == AclBitMaskNoAccess).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -157,7 +162,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _roleAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     x.Acl.Contains(requestedPerm)).FirstOrDefault();
+     ( x.Acl2 & requestedPerm ) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;
