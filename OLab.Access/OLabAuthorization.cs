@@ -17,7 +17,7 @@ public class OLabAuthorization : IOLabAuthorization
   private readonly OLabDBContext _dbContext;
   public IUserContext UserContext { get; set; }
   protected IList<GrouproleAcls> _roleAcls = new List<GrouproleAcls>();
-  protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
+  protected IList<UserAcls> _userAcls = new List<UserAcls>();
   public Users OLabUser;
 
   public const string WildCardObjectType = "*";
@@ -69,14 +69,14 @@ public class OLabAuthorization : IOLabAuthorization
 
       OLabUser = user;
       userId = user.Id;
-      _userAcls = _dbContext.SecurityUsers.Where(x => x.UserId == userId).ToList();
+      _userAcls = _dbContext.UserAcls.Where(x => x.UserId == userId).ToList();
 
       // if user is anonymous user, add user access to anon-flagged maps
       if (OLabUser.Username == Users.AnonymousUserName)
       {
         var anonymousMaps = _dbContext.Maps.Where(x => x.SecurityId == 1).ToList();
         foreach (var item in anonymousMaps)
-          _userAcls.Add(new SecurityUsers
+          _userAcls.Add(new UserAcls
           {
             Id = item.Id,
             ImageableId = item.Id,
@@ -171,7 +171,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _roleAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == WildCardObjectId &&
-     x.Acl.Contains(requestedPerm)).FirstOrDefault();
+     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -180,7 +180,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _roleAcls.Where(x =>
      x.ImageableType == WildCardObjectType &&
      x.ImageableId == WildCardObjectId &&
-     x.Acl.Contains(requestedPerm)).FirstOrDefault();
+     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -195,14 +195,14 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectType">Securable object type</param>
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
-  private bool HasUserLevelAccess(char requestedPerm, string objectType, uint? objectId)
+  private bool HasUserLevelAccess(ulong requestedPerm, string objectType, uint? objectId)
   {
 
     // test for explicit non-access to specific object type and id
     var acl = _userAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     x.Acl == NonAccessAcl).FirstOrDefault();
+     x.Acl2 == AclBitMaskNoAccess).FirstOrDefault();
 
     if (acl != null)
       return false;
@@ -211,7 +211,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _userAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     x.Acl.Contains(requestedPerm)).FirstOrDefault();
+     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -220,7 +220,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _userAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == WildCardObjectId &&
-     x.Acl.Contains(requestedPerm)).FirstOrDefault();
+     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -229,7 +229,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _userAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == 0 &&
-     x.Acl.Contains(requestedPerm)).FirstOrDefault();
+     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -238,7 +238,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _userAcls.Where(x =>
      x.ImageableType == WildCardObjectType &&
      x.ImageableId == 0 &&
-     x.Acl.Contains(requestedPerm)).FirstOrDefault();
+     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;

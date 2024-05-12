@@ -23,7 +23,7 @@ public class UserContextService : IUserContext
   private readonly IOLabLogger _logger;
   private readonly OLabDBContext dbContext;
   protected IList<GrouproleAcls> _roleAcls = new List<GrouproleAcls>();
-  protected IList<SecurityUsers> _userAcls = new List<SecurityUsers>();
+  protected IList<UserAcls> _userAcls = new List<UserAcls>();
 
   protected string _sessionId;
   private IList<UserGrouproles> _groupRoles;
