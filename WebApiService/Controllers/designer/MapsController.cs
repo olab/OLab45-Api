@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Exceptions;
+using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Model;
@@ -368,14 +369,14 @@ public partial class MapsController : OLabController
       var map = DbContext.Maps.Find(mapId);
 
       if (map == null)
-        throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
+        throw new OLabObjectNotFoundException(Constants.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list olab users users from this endpoint
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
-        throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
+      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskWrite, Constants.ScopeLevelMap, map.Id))
+        throw new OLabUnauthorizedException(Constants.ScopeLevelMap, map.Id);
 
       var dtos = _endpoint.GetMapAccessCandidates(map, search ?? "");
 
@@ -414,14 +415,14 @@ public partial class MapsController : OLabController
       var map = DbContext.Maps.Find(mapId);
 
       if (map == null)
-        throw new OLabObjectNotFoundException(OLab.Api.Utils.Constants.ScopeLevelMap, mapId);
+        throw new OLabObjectNotFoundException(Constants.ScopeLevelMap, mapId);
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list olab users users from this endpoint
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
-        throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
+      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskWrite, Constants.ScopeLevelMap, map.Id))
+        throw new OLabUnauthorizedException(Constants.ScopeLevelMap, map.Id);
 
       body.MapId = map.Id;
 
@@ -455,7 +456,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
+      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskWrite, Constants.ScopeLevelMap, map.Id))
         throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
 
       var dtos = _endpoint.GetSecurityUsersRaw(map);
@@ -509,7 +510,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
+      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskWrite, OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
         throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
 
       var result = await _endpoint.SetMapSecurityUserAsync(map, body);
@@ -543,7 +544,7 @@ public partial class MapsController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       // only allow users with write-access to list map security users
-      if (!auth.HasAccess("W", OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
+      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskWrite, OLab.Api.Utils.Constants.ScopeLevelMap, map.Id))
         throw new OLabUnauthorizedException(OLab.Api.Utils.Constants.ScopeLevelMap, map.Id);
 
       var result = await _endpoint.UnsetMapSecurityUserAsync(map, userId);

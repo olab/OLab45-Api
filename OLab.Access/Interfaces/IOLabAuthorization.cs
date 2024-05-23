@@ -5,8 +5,13 @@ namespace OLab.Api.Data.Interface;
 
 public interface IOLabAuthorization
 {
-  IActionResult HasAccess(string acl, ScopedObjectDto dto);
-  bool HasAccess(string acl, string objectType, uint? objectId);
+  public const ulong AclBitMaskRead = 4;
+  public const ulong AclBitMaskWrite = 2;
+  public const ulong AclBitMaskExecute = 1;
+  public const ulong AclBitMaskNoAccess = 0;
+
+  IActionResult HasAccess(ulong acl, ScopedObjectDto dto);
+  bool HasAccess(ulong acl, string objectType, uint? objectId);
   IUserContext UserContext { get; set; }
   void ApplyUserContext(IUserContext userContext);
 }

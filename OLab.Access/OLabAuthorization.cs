@@ -24,11 +24,6 @@ public class OLabAuthorization : IOLabAuthorization
   public const uint WildCardObjectId = 0;
   public const string NonAccessAcl = "-";
 
-  public const ulong AclBitMaskRead = 4;
-  public const ulong AclBitMaskWrite = 2;
-  public const ulong AclBitMaskExecute = 1;
-  public const ulong AclBitMaskNoAccess = 0;
-
   public OLabAuthorization(
     IOLabLogger logger,
     OLabDBContext dbContext
@@ -81,23 +76,36 @@ public class OLabAuthorization : IOLabAuthorization
             Id = item.Id,
             ImageableId = item.Id,
             ImageableType = Constants.ScopeLevelMap,
-            Acl = "RX"
+            Acl2 = 
+              IOLabAuthorization.AclBitMaskRead | 
+              IOLabAuthorization.AclBitMaskExecute
           });
       }
     }
   }
 
-  public IActionResult HasAccess(string acl, ScopedObjectDto dto)
+  public IActionResult HasAccess(ulong requestedAcl, ScopedObjectDto dto)
   {
     // test if user has access to write to parent.
     if (dto.ImageableType == Constants.ScopeLevelMap)
-      if (!HasAccess("W", Constants.ScopeLevelMap, dto.ImageableId))
+      if (!HasAccess(
+        IOLabAuthorization.AclBitMaskWrite, 
+        Constants.ScopeLevelMap, 
+        dto.ImageableId))
         return OLabUnauthorizedResult.Result();
+
     if (dto.ImageableType == Constants.ScopeLevelServer)
-      if (!HasAccess("W", Constants.ScopeLevelServer, dto.ImageableId))
+      if (!HasAccess(
+        IOLabAuthorization.AclBitMaskWrite, 
+        Constants.ScopeLevelServer, 
+        dto.ImageableId))
         return OLabUnauthorizedResult.Result();
+
     if (dto.ImageableType == Constants.ScopeLevelNode)
-      if (!HasAccess("W", Constants.ScopeLevelNode, dto.ImageableId))
+      if (!HasAccess(
+        IOLabAuthorization.AclBitMaskWrite, 
+        Constants.ScopeLevelNode, 
+        dto.ImageableId))
         return OLabUnauthorizedResult.Result();
 
     return new NoContentResult();
@@ -106,36 +114,20 @@ public class OLabAuthorization : IOLabAuthorization
   /// <summary>
   /// Test if have requested access to securable object
   /// </summary>
-  /// <param name="requestedPerm">Request permissions (RWED)</param>
+  /// <param name="requestedAcl">Request permissions (bitmask)</param>
   /// <param name="objectType">Securable object type</param>
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
-  public bool HasAccess(string requestedPerm, string objectType, uint? objectId)
+  public bool HasAccess(
+    ulong requestedAcl, 
+    string objectType, 
+    uint? objectId)
   {
-    var grantedCount = 0;
+    Guard.Argument(objectType, nameof(objectType)).NotEmpty();
 
-    if (!objectId.HasValue)
-      objectId = WildCardObjectId;
-
-    for (var i = 0; i < requestedPerm.Length; i++)
-      if (HasSingleAccess(requestedPerm[i], objectType, objectId))
-        grantedCount++;
-
-    return grantedCount == requestedPerm.Length;
-  }
-
-  /// <summary>
-  /// Test if have single ACL access
-  /// </summary>
-  /// <param name="requestedPerm">Single-letter ACL to test for</param>
-  /// <param name="objectType">Securable object type</param>
-  /// <param name="objectId">(optional) securable object id</param>
-  /// <returns>true/false</returns>
-  private bool HasSingleAccess(char requestedPerm, string objectType, uint? objectId)
-  {
-    var rc = HasUserLevelAccess(requestedPerm, objectType, objectId);
+    var rc = HasUserLevelAccess(requestedAcl, objectType, objectId);
     if (!rc)
-      rc = HasRoleLevelAccess(requestedPerm, objectType, objectId);
+      rc = HasRoleLevelAccess(requestedAcl, objectType, objectId);
 
     return rc;
   }
@@ -147,13 +139,16 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectType">Securable object type</param>
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
-  private bool HasRoleLevelAccess(ulong requestedPerm, string objectType, uint? objectId)
+  private bool HasRoleLevelAccess(
+    ulong requestedPerm, 
+    string objectType, 
+    uint? objectId)
   {
     // test for explicit non-access to specific object type and id
     var acl = _roleAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     x.Acl2 == AclBitMaskNoAccess).FirstOrDefault();
+     x.Acl2 == IOLabAuthorization.AclBitMaskNoAccess).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -195,14 +190,17 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectType">Securable object type</param>
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
-  private bool HasUserLevelAccess(ulong requestedPerm, string objectType, uint? objectId)
+  private bool HasUserLevelAccess(
+    ulong requestedPerm, 
+    string objectType, 
+    uint? objectId)
   {
 
     // test for explicit non-access to specific object type and id
     var acl = _userAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     x.Acl2 == AclBitMaskNoAccess).FirstOrDefault();
+     x.Acl2 == IOLabAuthorization.AclBitMaskNoAccess).FirstOrDefault();
 
     if (acl != null)
       return false;
