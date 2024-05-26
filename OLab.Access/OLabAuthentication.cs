@@ -333,7 +333,7 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     if (externalAuth.Claims.TryGetValue("role", out value))
-      user.UserGrouproles.AddRange(UserGrouproles.StringToList(_dbContext, value));
+      user.UserGrouproles.AddRange(UserGrouproles.StringToObjectList(_dbContext, value));
 
     if (externalAuth.Claims.TryGetValue("id", out value))
       user.Id = (uint)Convert.ToInt32(value);

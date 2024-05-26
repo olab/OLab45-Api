@@ -139,7 +139,7 @@ public class UserContextService : IUserContext
 
     if (!_claims.TryGetValue(ClaimTypes.Role, out var groupRoleString))
       throw new Exception("unable to retrieve role from token claims");
-    GroupRoles = UserGrouproles.StringToList( dbContext, groupRoleString);
+    GroupRoles = UserGrouproles.StringToObjectList( dbContext, groupRoleString);
   }
   public override string ToString()
   {
