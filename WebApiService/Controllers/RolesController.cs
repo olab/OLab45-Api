@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -62,7 +63,7 @@ public partial class RolesController : OLabController
 
       var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
       return HttpContext.Request
-        .CreateResponse(OLabObjectPagedListResult<Roles>.Result(pagedResponse.Data, pagedResponse.Remaining));
+        .CreateResponse(OLabObjectPagedListResult<RolesDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
     }
     catch (Exception ex)
     {
@@ -85,9 +86,9 @@ public partial class RolesController : OLabController
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
-      var phys = await _endpoint.PostAsync(auth, groupName, cancel);
+      var dto = await _endpoint.PostAsync(auth, groupName, cancel);
 
-      return HttpContext.Request.CreateResponse(OLabObjectResult<Roles>.Result(phys));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<RolesDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -111,8 +112,8 @@ public partial class RolesController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var phys = await _endpoint.GetAsync(auth, id);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<Roles>.Result(phys));
+      var dto = await _endpoint.GetAsync(auth, id);
+      return HttpContext.Request.CreateResponse(OLabObjectResult<RolesDto>.Result(dto));
     }
     catch (Exception ex)
     {

@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using OLab.Data.Mappers;
 using OLabWebAPI.Extensions;
 using System;
 using System.Threading;
@@ -62,7 +64,7 @@ public partial class GroupsController : OLabController
 
       var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
       return HttpContext.Request
-        .CreateResponse(OLabObjectPagedListResult<Groups>.Result(pagedResponse.Data, pagedResponse.Remaining));
+        .CreateResponse(OLabObjectPagedListResult<GroupsDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
     }
     catch (Exception ex)
     {
@@ -75,7 +77,7 @@ public partial class GroupsController : OLabController
   /// </summary>
   /// <param name="dto">File data</param>
   /// <returns>IActionResult</returns>
-  [HttpPost]
+  [HttpPost("{groupName}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> PostAsync(string groupName, CancellationToken cancel)
   {
@@ -85,9 +87,9 @@ public partial class GroupsController : OLabController
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
-      var phys = await _endpoint.PostAsync(auth, groupName, cancel);
+      var dto = await _endpoint.PostAsync(auth, groupName, cancel);
 
-      return HttpContext.Request.CreateResponse(OLabObjectResult<Groups>.Result(phys));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<GroupsDto>.Result(dto));
     }
     catch (Exception ex)
     {
@@ -100,19 +102,25 @@ public partial class GroupsController : OLabController
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [HttpGet("{id}")]
+  [HttpGet("{source}")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> GetAsync(uint id)
+  public async Task<IActionResult> GetAsync(string source)
   {
     try
     {
+      GroupsDto dto;
+
       Logger.LogDebug($"GroupsEndpoint.GetAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var phys = await _endpoint.GetAsync(auth, id);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<Groups>.Result(phys));
+      if ( uint.TryParse(source, out uint id ))
+        dto = await _endpoint.GetAsync(auth, id);
+      else
+        dto = await _endpoint.GetAsync(auth, source);
+
+      return HttpContext.Request.CreateResponse(OLabObjectResult<GroupsDto>.Result(dto));
     }
     catch (Exception ex)
     {
