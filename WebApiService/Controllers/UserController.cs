@@ -138,11 +138,8 @@ public class AuthController : OLabController
       var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess(
-        IOLabAuthorization.AclBitMaskExecute, 
-        UserGrouproles.ToString(Groups.OLabGroup, Roles.UserAdminRole), 
-        0)
-      )
+      // test if user has access to add users.
+      if (!await auth.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
       var responses = await _userService.AddUsersAsync(items);
@@ -170,7 +167,8 @@ public class AuthController : OLabController
       var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskExecute, "UserAdmin", 0))
+      // test if user has access to add users.
+      if (!await auth.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
       var responses = await _userService.DeleteUsersAsync(items);
@@ -199,7 +197,7 @@ public class AuthController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       // test if user has access to add users.
-      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskExecute, "UserAdmin", 0))
+      if (!await auth.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
       var result = new List<string>();
@@ -208,10 +206,11 @@ public class AuthController : OLabController
         while (reader.Peek() >= 0)
         {
           var userRequestText = reader.ReadLine();
-          var userRequest = new AddUserRequest( 
-            Logger, 
-            DbContext, 
-            userRequestText);
+          var userRequest = new AddUserRequest(
+            Logger,
+            DbContext);
+          
+          await userRequest.ProcessAddUserText(userRequestText);
 
           var response = await _userService.AddUserAsync(userRequest);
           responses.Add(response);

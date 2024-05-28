@@ -1,13 +1,16 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.ReaderWriters;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OLab.Access;
 
@@ -15,6 +18,8 @@ public class OLabAuthorization : IOLabAuthorization
 {
   private readonly IOLabLogger _logger;
   private readonly OLabDBContext _dbContext;
+  private readonly GroupRoleReaderWriter _groupRoleReaderWriter;
+
   public IUserContext UserContext { get; set; }
   protected IList<GrouproleAcls> _roleAcls = new List<GrouproleAcls>();
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
@@ -34,6 +39,7 @@ public class OLabAuthorization : IOLabAuthorization
 
     _logger = logger;
     _dbContext = dbContext;
+    _groupRoleReaderWriter = GroupRoleReaderWriter.Instance(logger, dbContext);
   }
 
   public void ApplyUserContext(IUserContext userContext)
@@ -52,7 +58,7 @@ public class OLabAuthorization : IOLabAuthorization
         groupRole.Group.Name,
         groupRole.Role.Name);
 
-      if ( groupRolePhys != null )
+      if (groupRolePhys != null)
         _roleAcls.Add(groupRolePhys);
     }
 
@@ -76,8 +82,8 @@ public class OLabAuthorization : IOLabAuthorization
             Id = item.Id,
             ImageableId = item.Id,
             ImageableType = Constants.ScopeLevelMap,
-            Acl2 = 
-              IOLabAuthorization.AclBitMaskRead | 
+            Acl2 =
+              IOLabAuthorization.AclBitMaskRead |
               IOLabAuthorization.AclBitMaskExecute
           });
       }
@@ -89,22 +95,22 @@ public class OLabAuthorization : IOLabAuthorization
     // test if user has access to write to parent.
     if (dto.ImageableType == Constants.ScopeLevelMap)
       if (!HasAccess(
-        IOLabAuthorization.AclBitMaskWrite, 
-        Constants.ScopeLevelMap, 
+        IOLabAuthorization.AclBitMaskWrite,
+        Constants.ScopeLevelMap,
         dto.ImageableId))
         return OLabUnauthorizedResult.Result();
 
     if (dto.ImageableType == Constants.ScopeLevelServer)
       if (!HasAccess(
-        IOLabAuthorization.AclBitMaskWrite, 
-        Constants.ScopeLevelServer, 
+        IOLabAuthorization.AclBitMaskWrite,
+        Constants.ScopeLevelServer,
         dto.ImageableId))
         return OLabUnauthorizedResult.Result();
 
     if (dto.ImageableType == Constants.ScopeLevelNode)
       if (!HasAccess(
-        IOLabAuthorization.AclBitMaskWrite, 
-        Constants.ScopeLevelNode, 
+        IOLabAuthorization.AclBitMaskWrite,
+        Constants.ScopeLevelNode,
         dto.ImageableId))
         return OLabUnauthorizedResult.Result();
 
@@ -119,8 +125,8 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
   public bool HasAccess(
-    ulong requestedAcl, 
-    string objectType, 
+    ulong requestedAcl,
+    string objectType,
     uint? objectId)
   {
     Guard.Argument(objectType, nameof(objectType)).NotEmpty();
@@ -140,8 +146,8 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
   private bool HasRoleLevelAccess(
-    ulong requestedPerm, 
-    string objectType, 
+    ulong requestedPerm,
+    string objectType,
     uint? objectId)
   {
     // test for explicit non-access to specific object type and id
@@ -157,7 +163,7 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _roleAcls.Where(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     ( x.Acl2 & requestedPerm ) == requestedPerm).FirstOrDefault();
+     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
 
     if (acl != null)
       return true;
@@ -191,8 +197,8 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
   private bool HasUserLevelAccess(
-    ulong requestedPerm, 
-    string objectType, 
+    ulong requestedPerm,
+    string objectType,
     uint? objectId)
   {
 
@@ -242,5 +248,62 @@ public class OLabAuthorization : IOLabAuthorization
       return true;
 
     return false;
+  }
+
+  /// <summary>
+  /// Test if user is system superuser 
+  /// </summary>
+  /// <returns>true/false</returns>
+  public async Task<bool> IsSystemSuperuserAsync()
+  {
+    var olabGroupPhys = await _groupRoleReaderWriter.GetGroupAsync(Groups.OLabGroup);
+    if (olabGroupPhys == null)
+    {
+      _logger.LogError($"system group {Groups.OLabGroup} not defined.");
+      return false;
+    }
+
+    return await IsGroupSuperuserAsync(olabGroupPhys.Id);
+  }
+
+  /// <summary>
+  /// Test if user is superuser in group
+  /// </summary>
+  /// <param name="groupName">Group name to check</param>
+  /// <returns>true/false</returns>
+  public async Task<bool> IsGroupSuperuserAsync(string groupName)
+  {
+    var groupPhys = await _groupRoleReaderWriter.GetGroupAsync(groupName);
+    if (groupPhys == null)
+    {
+      _logger.LogError($"group {groupName} not defined.");
+      return false;
+    }
+
+    var rolePhys = await _groupRoleReaderWriter.GetRoleAsync(Roles.SuperUserRole);
+    if (rolePhys == null)
+    {
+      _logger.LogError($"system role {Roles.SuperUserRole} not defined.");
+      return false;
+    }
+
+    return UserContext.GroupRoles.Any(x => (x.GroupId == groupPhys.Id) && (x.RoleId == rolePhys.Id));
+  }
+
+  /// <summary>
+  /// Test if user is superuser in group
+  /// </summary>
+  /// <param name="groupId">Group id to check</param>
+  /// <returns>true/false</returns>
+  public async Task<bool> IsGroupSuperuserAsync(uint groupId)
+  {
+    var superUserRolePhys = await _groupRoleReaderWriter.GetRoleAsync(Roles.SuperUserRole);
+    if (superUserRolePhys == null)
+    {
+      _logger.LogError($"system role {Roles.SuperUserRole} not defined.");
+      return false;
+    }
+
+    return UserContext.GroupRoles.Any(x => (x.GroupId == groupId) && (x.RoleId == superUserRolePhys.Id));
   }
 }

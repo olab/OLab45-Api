@@ -17,13 +17,13 @@ using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
 
-[Route("olab/api/v3/groups")]
+[Route("olab/api/v3/roles")]
 [ApiController]
-public partial class GroupsController : OLabController
+public partial class RolesController : OLabController
 {
-  private readonly GroupsEndpoint _endpoint;
+  private readonly RolesEndpoint _endpoint;
 
-  public GroupsController(ILoggerFactory loggerFactory,
+  public RolesController(ILoggerFactory loggerFactory,
   IOLabConfiguration configuration,
   OLabDBContext dbContext,
   IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
@@ -33,9 +33,9 @@ public partial class GroupsController : OLabController
   {
     Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
 
-    Logger = OLabLogger.CreateNew<GroupsController>(loggerFactory);
+    Logger = OLabLogger.CreateNew<RolesController>(loggerFactory);
 
-    _endpoint = new GroupsEndpoint(
+    _endpoint = new RolesEndpoint(
       Logger,
       configuration,
       dbContext,
@@ -55,14 +55,14 @@ public partial class GroupsController : OLabController
   {
     try
     {
-      Logger.LogDebug($"GroupsEndpoint.GetAsync");
+      Logger.LogDebug($"RolesEndpoint.GetAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       var pagedResponse = await _endpoint.GetAsync(auth, take, skip);
       return HttpContext.Request
-        .CreateResponse(OLabObjectPagedListResult<Groups>.Result(pagedResponse.Data, pagedResponse.Remaining));
+        .CreateResponse(OLabObjectPagedListResult<Roles>.Result(pagedResponse.Data, pagedResponse.Remaining));
     }
     catch (Exception ex)
     {
@@ -81,13 +81,13 @@ public partial class GroupsController : OLabController
   {
     try
     {
-      Logger.LogDebug($"GroupsEndpoint.PostAsync");
+      Logger.LogDebug($"RolesEndpoint.PostAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
       var phys = await _endpoint.PostAsync(auth, groupName, cancel);
 
-      return HttpContext.Request.CreateResponse(OLabObjectResult<Groups>.Result(phys));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<Roles>.Result(phys));
     }
     catch (Exception ex)
     {
@@ -106,13 +106,13 @@ public partial class GroupsController : OLabController
   {
     try
     {
-      Logger.LogDebug($"GroupsEndpoint.GetAsync");
+      Logger.LogDebug($"RolesEndpoint.GetAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
       var phys = await _endpoint.GetAsync(auth, id);
-      return HttpContext.Request.CreateResponse(OLabObjectResult<Groups>.Result(phys));
+      return HttpContext.Request.CreateResponse(OLabObjectResult<Roles>.Result(phys));
     }
     catch (Exception ex)
     {
@@ -132,7 +132,7 @@ public partial class GroupsController : OLabController
   {
     try
     {
-      Logger.LogDebug($"GroupsEndpoint.DeleteAsync");
+      Logger.LogDebug($"RolesEndpoint.DeleteAsync");
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
