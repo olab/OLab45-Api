@@ -18,7 +18,8 @@ public class OLabAuthorization : IOLabAuthorization
 {
   private readonly IOLabLogger _logger;
   private readonly OLabDBContext _dbContext;
-  private readonly GroupRoleReaderWriter _groupRoleReaderWriter;
+  private readonly GroupReaderWriter _groupReaderWriter;
+  private readonly RoleReaderWriter _roleReaderWriter;
 
   public IUserContext UserContext { get; set; }
   protected IList<GrouproleAcls> _roleAcls = new List<GrouproleAcls>();
@@ -39,7 +40,8 @@ public class OLabAuthorization : IOLabAuthorization
 
     _logger = logger;
     _dbContext = dbContext;
-    _groupRoleReaderWriter = GroupRoleReaderWriter.Instance(logger, dbContext);
+    _groupReaderWriter = GroupReaderWriter.Instance(logger, dbContext);
+    _roleReaderWriter = RoleReaderWriter.Instance(logger, dbContext);
   }
 
   public void ApplyUserContext(IUserContext userContext)
@@ -256,14 +258,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   public async Task<bool> IsSystemSuperuserAsync()
   {
-    var olabGroupPhys = await _groupRoleReaderWriter.GetGroupAsync(Groups.OLabGroup);
-    if (olabGroupPhys == null)
-    {
-      _logger.LogError($"system group {Groups.OLabGroup} not defined.");
-      return false;
-    }
-
-    return await IsGroupSuperuserAsync(olabGroupPhys.Id);
+    return await IsSuperUserInGroup(Groups.OLabGroup);
   }
 
   /// <summary>
@@ -271,23 +266,16 @@ public class OLabAuthorization : IOLabAuthorization
   /// </summary>
   /// <param name="groupName">Group name to check</param>
   /// <returns>true/false</returns>
-  public async Task<bool> IsGroupSuperuserAsync(string groupName)
+  public async Task<bool> IsSuperUserInGroup(string groupName)
   {
-    var groupPhys = await _groupRoleReaderWriter.GetGroupAsync(groupName);
+    var groupPhys = await _groupReaderWriter.GetAsync(groupName);
     if (groupPhys == null)
     {
-      _logger.LogError($"group {groupName} not defined.");
+      _logger.LogError($"group '{groupName}' not defined.");
       return false;
     }
 
-    var rolePhys = await _groupRoleReaderWriter.GetRoleAsync(Roles.SuperUserRole);
-    if (rolePhys == null)
-    {
-      _logger.LogError($"system role {Roles.SuperUserRole} not defined.");
-      return false;
-    }
-
-    return UserContext.GroupRoles.Any(x => (x.GroupId == groupPhys.Id) && (x.RoleId == rolePhys.Id));
+    return await IsSuperUserInGroup(groupPhys.Id);
   }
 
   /// <summary>
@@ -295,9 +283,9 @@ public class OLabAuthorization : IOLabAuthorization
   /// </summary>
   /// <param name="groupId">Group id to check</param>
   /// <returns>true/false</returns>
-  public async Task<bool> IsGroupSuperuserAsync(uint groupId)
+  public async Task<bool> IsSuperUserInGroup(uint groupId)
   {
-    var superUserRolePhys = await _groupRoleReaderWriter.GetRoleAsync(Roles.SuperUserRole);
+    var superUserRolePhys = await _roleReaderWriter.GetAsync(Roles.SuperUserRole);
     if (superUserRolePhys == null)
     {
       _logger.LogError($"system role {Roles.SuperUserRole} not defined.");
