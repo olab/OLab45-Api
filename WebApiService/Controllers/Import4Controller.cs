@@ -125,7 +125,7 @@ public class Import4Controller : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskExecute, "Export", 0))
+      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, "Export", 0))
         throw new OLabUnauthorizedException();
 
       var dto = await _endpoint.ExportAsync(id, token);
@@ -150,7 +150,7 @@ public class Import4Controller : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskExecute, "Export", 0))
+      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, "Export", 0))
         throw new OLabUnauthorizedException();
 
       using var memoryStream = new MemoryStream();

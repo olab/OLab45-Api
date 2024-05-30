@@ -1,6 +1,8 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using NuGet.Packaging;
 using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
@@ -8,6 +10,8 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.ReaderWriters;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,13 +26,16 @@ public class OLabAuthorization : IOLabAuthorization
   private readonly RoleReaderWriter _roleReaderWriter;
 
   public IUserContext UserContext { get; set; }
-  protected IList<GrouproleAcls> _roleAcls = new List<GrouproleAcls>();
+  protected IList<GrouproleAcls> _groupRoleAcls = new List<GrouproleAcls>();
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
   public Users OLabUser;
 
   public const string WildCardObjectType = "*";
   public const uint WildCardObjectId = 0;
   public const string NonAccessAcl = "-";
+
+  public OLabDBContext GetDbContext() { return _dbContext; }
+  public IOLabLogger GetLogger() { return _logger; }
 
   public OLabAuthorization(
     IOLabLogger logger,
@@ -53,31 +60,30 @@ public class OLabAuthorization : IOLabAuthorization
     var userName = UserContext.UserName;
     var userId = UserContext.UserId;
 
-    foreach (var groupRole in UserContext.GroupRoles)
+    // load all the user's group/roles acl records
+    foreach (var userGroups in UserContext.GroupRoles.Select(x => x.Group).Distinct())
     {
-      var groupRolePhys = GrouproleAcls.Find(
+      var groupsPhys = GrouproleAcls.FindByGroup(
         _dbContext,
-        groupRole.Group.Name,
-        groupRole.Role.Name);
+        userGroups.Name);
 
-      if (groupRolePhys != null)
-        _roleAcls.Add(groupRolePhys);
+      _groupRoleAcls.AddRange(groupsPhys);
     }
 
-    // test for a local user
-    var user = _dbContext.Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
+    // if local user, read the user-level acls
+    var user = GetDbContext().Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
     if (user != null)
     {
       _logger.LogInformation($"Local user '{userName}' found");
 
       OLabUser = user;
       userId = user.Id;
-      _userAcls = _dbContext.UserAcls.Where(x => x.UserId == userId).ToList();
+      _userAcls = GetDbContext().UserAcls.Where(x => x.UserId == userId).ToList();
 
       // if user is anonymous user, add user access to anon-flagged maps
       if (OLabUser.Username == Users.AnonymousUserName)
       {
-        var anonymousMaps = _dbContext.Maps.Where(x => x.SecurityId == 1).ToList();
+        var anonymousMaps = GetDbContext().Maps.Where(x => x.SecurityId == 1).ToList();
         foreach (var item in anonymousMaps)
           _userAcls.Add(new UserAcls
           {
@@ -92,25 +98,27 @@ public class OLabAuthorization : IOLabAuthorization
     }
   }
 
-  public IActionResult HasAccess(ulong requestedAcl, ScopedObjectDto dto)
+  public async Task<IActionResult> HasAccessAsync(
+    ulong requestedAcl,
+    ScopedObjectDto dto)
   {
     // test if user has access to write to parent.
     if (dto.ImageableType == Constants.ScopeLevelMap)
-      if (!HasAccess(
+      if (!await HasAccessAsync(
         IOLabAuthorization.AclBitMaskWrite,
         Constants.ScopeLevelMap,
         dto.ImageableId))
         return OLabUnauthorizedResult.Result();
 
     if (dto.ImageableType == Constants.ScopeLevelServer)
-      if (!HasAccess(
+      if (!await HasAccessAsync(
         IOLabAuthorization.AclBitMaskWrite,
         Constants.ScopeLevelServer,
         dto.ImageableId))
         return OLabUnauthorizedResult.Result();
 
     if (dto.ImageableType == Constants.ScopeLevelNode)
-      if (!HasAccess(
+      if (!await HasAccessAsync(
         IOLabAuthorization.AclBitMaskWrite,
         Constants.ScopeLevelNode,
         dto.ImageableId))
@@ -126,7 +134,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectType">Securable object type</param>
   /// <param name="objectId">(optional) securable object id</param>
   /// <returns>true/false</returns>
-  public bool HasAccess(
+  public async Task<bool> HasAccessAsync(
     ulong requestedAcl,
     string objectType,
     uint? objectId)
@@ -135,7 +143,19 @@ public class OLabAuthorization : IOLabAuthorization
 
     var rc = HasUserLevelAccess(requestedAcl, objectType, objectId);
     if (!rc)
-      rc = HasRoleLevelAccess(requestedAcl, objectType, objectId);
+    {
+      // get group ids that apply to securable object and test if user
+      // has access to any group in the list
+      var groupIds = await GetSecurableObjectIdsAsync(objectType, objectId);
+      foreach (var groupId in groupIds)
+      {
+        if (HasRoleLevelAccess(requestedAcl, objectType, objectId, groupId))
+        {
+          rc = true;
+          break;
+        }
+      }
+    }
 
     return rc;
   }
@@ -146,46 +166,48 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="requestedPerm">Single-letter ACL to test for</param>
   /// <param name="objectType">Securable object type</param>
   /// <param name="objectId">(optional) securable object id</param>
+  /// <param name="objectGroupId">(optional) group id to evaluate against</param>
   /// <returns>true/false</returns>
   private bool HasRoleLevelAccess(
     ulong requestedPerm,
     string objectType,
-    uint? objectId)
+    uint? objectId,
+    uint objectGroupId)
   {
+    // get group role acl records specific to user
+    var groupRoleAcls = GroupRoleAclReaderWriter
+      .Instance(GetLogger(), GetDbContext()).GetForUser(UserContext.GroupRoles);
+
     // test for explicit non-access to specific object type and id
-    var acl = _roleAcls.Where(x =>
+    if (groupRoleAcls.Any(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     x.Acl2 == IOLabAuthorization.AclBitMaskNoAccess).FirstOrDefault();
-
-    if (acl != null)
-      return true;
+     x.GroupId == objectGroupId &&
+     x.Acl2 == IOLabAuthorization.AclBitMaskNoAccess))
+      return false;
 
     // test for specific object type and id
-    acl = _roleAcls.Where(x =>
+    if (groupRoleAcls.Any(x =>
      x.ImageableType == objectType &&
      x.ImageableId == objectId.Value &&
-     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
-
-    if (acl != null)
+     x.GroupId == objectGroupId &&
+     (x.Acl2 & requestedPerm) == requestedPerm))
       return true;
 
     // test for specific object type and all ids
-    acl = _roleAcls.Where(x =>
+    if (groupRoleAcls.Any(x =>
      x.ImageableType == objectType &&
      x.ImageableId == WildCardObjectId &&
-     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
-
-    if (acl != null)
+     x.GroupId == objectGroupId &&
+     (x.Acl2 & requestedPerm) == requestedPerm))
       return true;
 
     // test for default any object, any id
-    acl = _roleAcls.Where(x =>
+    if (groupRoleAcls.Any(x =>
      x.ImageableType == WildCardObjectType &&
      x.ImageableId == WildCardObjectId &&
-     (x.Acl2 & requestedPerm) == requestedPerm).FirstOrDefault();
-
-    if (acl != null)
+     x.GroupId == objectGroupId &&
+     (x.Acl2 & requestedPerm) == requestedPerm))
       return true;
 
     return false;
@@ -250,6 +272,41 @@ public class OLabAuthorization : IOLabAuthorization
       return true;
 
     return false;
+  }
+
+  /// <summary>
+  /// Get applicable group id's for an object
+  /// </summary>
+  /// <param name="objectType">Securable object type</param>
+  /// <param name="objectId">Securable object id</param>
+  /// <returns>List of group ids</returns>
+  private async Task<IList<uint>> GetSecurableObjectIdsAsync(string objectType, uint? objectId)
+  {
+    var groupIds = new List<uint>();
+
+    if (objectId.HasValue)
+    {
+      if (objectType == Constants.ScopeLevelNode)
+      {
+        var nodePhys = await GetDbContext().MapNodes.FirstOrDefaultAsync(x => x.Id == objectId);
+        if (nodePhys != null)
+        {
+          var mapPhys = await GetDbContext().Maps.Include("MapGroups").FirstOrDefaultAsync(x => x.Id == objectId);
+          if (mapPhys != null)
+            groupIds.AddRange(mapPhys.MapGroups.Select(x => x.GroupId).Distinct());
+        }
+      }
+
+      else if (objectType == Constants.ScopeLevelMap)
+      {
+        var mapPhys = await GetDbContext().Maps.Include("MapGroups").FirstOrDefaultAsync(x => x.Id == objectId);
+        if (mapPhys != null)
+          groupIds.AddRange(mapPhys.MapGroups.Select(x => x.GroupId).Distinct());
+
+      }
+    }
+
+    return groupIds;
   }
 
   /// <summary>

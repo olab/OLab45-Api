@@ -11,8 +11,8 @@ public interface IOLabAuthorization
   public const ulong AclBitMaskExecute = 1;
   public const ulong AclBitMaskNoAccess = 0;
 
-  IActionResult HasAccess(ulong acl, ScopedObjectDto dto);
-  bool HasAccess(ulong acl, string objectType, uint? objectId);
+  Task<IActionResult> HasAccessAsync(ulong acl, ScopedObjectDto dto);
+  Task<bool> HasAccessAsync(ulong acl, string objectType, uint? objectId);
   IUserContext UserContext { get; set; }
   void ApplyUserContext(IUserContext userContext);
   Task<bool> IsSystemSuperuserAsync();
