@@ -5,7 +5,6 @@ using OLab.Api.Model;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 
 #nullable disable
@@ -139,7 +138,7 @@ public class UserContextService : IUserContext
 
     if (!_claims.TryGetValue(ClaimTypes.Role, out var groupRoleString))
       throw new Exception("unable to retrieve role from token claims");
-    GroupRoles = UserGrouproles.StringToObjectList( dbContext, groupRoleString);
+    GroupRoles = UserGrouproles.StringToObjectList(dbContext, groupRoleString);
   }
   public override string ToString()
   {

@@ -100,7 +100,7 @@ public class Import4Controller : OLabController
         Id = mapPhys.Id,
         Name = mapPhys.Name,
         CreatedAt = mapPhys.CreatedAt.Value,
-        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select( x => x.Message ).ToList()
+        LogMessages = Logger.GetMessages(OLabLogMessage.MessageLevel.Info).Select(x => x.Message).ToList()
       };
 
       return HttpContext.Request.CreateResponse(

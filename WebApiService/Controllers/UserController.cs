@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -209,7 +208,7 @@ public class AuthController : OLabController
           var userRequest = new AddUserRequest(
             Logger,
             DbContext);
-          
+
           await userRequest.ProcessAddUserText(userRequestText);
 
           var response = await _userService.AddUserAsync(userRequest);

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -181,7 +180,7 @@ public class ImportController : OLabController
       using var memoryStream = new MemoryStream();
       await _endpoint4.ExportAsync(
         memoryStream,
-        id, 
+        id,
         token);
 
       memoryStream.Position = 0;

@@ -117,7 +117,7 @@ public class OLabAuthMiddleware
 
     foreach (var part in urlParts)
     {
-      int i = 0;
+      var i = 0;
       if (!int.TryParse(part, out i))
         return part.ToLower();
     }

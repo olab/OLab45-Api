@@ -127,8 +127,8 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       await WriteFileAsync(
         stream,
         BuildPath(
-          destinationFolder, 
-          Path.GetFileName(sourceFilePath)), 
+          destinationFolder,
+          Path.GetFileName(sourceFilePath)),
         token);
       await DeleteFileAsync(sourceFilePath);
 
@@ -413,10 +413,10 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
           .AsPages(default, segmentSize);
 
       // Enumerate the blobs returned for each page.
-      await foreach (Page<BlobHierarchyItem> blobPage in resultSegment)
+      await foreach (var blobPage in resultSegment)
       {
         // A hierarchical listing may return both virtual directories and blobs.
-        foreach (BlobHierarchyItem blobhierarchyItem in blobPage.Values)
+        foreach (var blobhierarchyItem in blobPage.Values)
         {
           if (blobhierarchyItem.IsPrefix)
           {

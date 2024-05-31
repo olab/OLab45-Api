@@ -1,10 +1,8 @@
-using Azure;
 using Dawn;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Protocols;
 using OLab.Api.Common;
 using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
@@ -15,7 +13,6 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
