@@ -99,6 +99,9 @@ INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `rol
 	VALUES ( 0, 'Maps',  ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Import',  ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
 	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'director' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
@@ -121,6 +124,9 @@ INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `rol
 	VALUES ( 0, 'Maps',  ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Import',  ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
 	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'director' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
@@ -141,6 +147,9 @@ INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `rol
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
 	VALUES ( 0, 'Maps',  ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Import',  ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
 	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'director' ), 7 );

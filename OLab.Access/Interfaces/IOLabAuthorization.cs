@@ -13,6 +13,8 @@ public interface IOLabAuthorization
 
   Task<IActionResult> HasAccessAsync(ulong acl, ScopedObjectDto dto);
   Task<bool> HasAccessAsync(ulong acl, string objectType, uint? objectId);
+  bool HasAccess(ulong requestedPerm, string operationType);
+
   IUserContext UserContext { get; set; }
   void ApplyUserContext(IUserContext userContext);
   Task<bool> IsSystemSuperuserAsync();

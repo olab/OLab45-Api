@@ -150,7 +150,7 @@ public class Import4Controller : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, "Export", 0))
+      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskExecute, "Import"))
         throw new OLabUnauthorizedException();
 
       using var memoryStream = new MemoryStream();

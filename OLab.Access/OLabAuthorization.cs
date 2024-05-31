@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OLab.Access;
 
@@ -125,6 +126,25 @@ public class OLabAuthorization : IOLabAuthorization
         return OLabUnauthorizedResult.Result();
 
     return new NoContentResult();
+  }
+
+  /// <summary>
+  /// Test if have requested access to operation
+  /// </summary>
+  /// <param name="requestedPerm">Request permissions (bitmask)</param>
+  /// <param name="operationType">Operation type</param>
+  /// <returns>true/false</returns>
+  public bool HasAccess(ulong requestedPerm, string operationType)
+  {
+    // get group role acl records specific to user
+    var groupRoleAcls = GroupRoleAclReaderWriter
+      .Instance(GetLogger(), GetDbContext()).GetForUser(UserContext.GroupRoles);
+
+    // test for explicit non-access to specific object type and id
+    return groupRoleAcls.Any(x =>
+     x.ImageableType == operationType &&
+     ( x.Acl2 & requestedPerm ) == requestedPerm);
+
   }
 
   /// <summary>
