@@ -1,6 +1,5 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
 using OLab.Api.Common;
@@ -10,12 +9,9 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.ReaderWriters;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OLab.Access;
 
@@ -143,7 +139,7 @@ public class OLabAuthorization : IOLabAuthorization
     // test for explicit non-access to specific object type and id
     return groupRoleAcls.Any(x =>
      x.ImageableType == operationType &&
-     ( x.Acl2 & requestedPerm ) == requestedPerm);
+     (x.Acl2 & requestedPerm) == requestedPerm);
 
   }
 

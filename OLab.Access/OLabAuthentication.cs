@@ -370,8 +370,8 @@ public class OLabAuthentication : IOLabAuthentication
       GetLogger().LogInformation($"Authenticating {model.Username}, ***");
 
     var user = GetDbContext().Users
-      .Include( x => x.UserGrouproles).ThenInclude( y => y.Group )
-      .Include( x => x.UserGrouproles).ThenInclude( y => y.Role)
+      .Include(x => x.UserGrouproles).ThenInclude(y => y.Group)
+      .Include(x => x.UserGrouproles).ThenInclude(y => y.Role)
       .SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     if (user != null)
