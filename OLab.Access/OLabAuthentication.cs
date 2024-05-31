@@ -292,7 +292,8 @@ public class OLabAuthentication : IOLabAuthentication
     if (serverUser == null)
       throw new Exception($"No user is defined for anonymous map play");
 
-    var map = GetDbContext().Maps.FirstOrDefault(x => x.Id == mapId);
+    var map = GetDbContext().Maps
+      .FirstOrDefault(x => x.Id == mapId);
     if (map == null)
       throw new Exception($"Map {mapId} is not defined.");
 
@@ -300,14 +301,14 @@ public class OLabAuthentication : IOLabAuthentication
     if (map.SecurityId != 1)
       GetLogger().LogError($"Map {mapId} is not configured for anonymous map play");
 
-    var user = new Users();
+    //var user = new Users();
 
-    user.Username = serverUser.Username;
-    user.Nickname = serverUser.Nickname;
-    user.Id = serverUser.Id;
+    //user.Username = serverUser.Username;
+    //user.Nickname = serverUser.Nickname;
+    //user.Id = serverUser.Id;
     var issuedBy = "olab";
 
-    var authenticateResponse = GenerateJwtToken(user, issuedBy);
+    var authenticateResponse = GenerateJwtToken(serverUser, issuedBy);
 
     return authenticateResponse;
   }

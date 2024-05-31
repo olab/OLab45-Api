@@ -171,10 +171,20 @@ ALTER TABLE `users`
 	DROP COLUMN `role`,
 	DROP COLUMN `group`;
 
+DELETE FROM `users` WHERE username LIKE 'anon%';
+
 INSERT INTO `users` 
 	(`username`, `email`, `password`, `salt`, `nickname`, 
      `language_id`, `type_id`, `visualEditorAutosaveTime`, `modeUI`, `is_lti`) 
     VALUES ('anonymous', 'anon@example.com', '', '', 'anonymous', '0', '0', '50000', 'easy', '0');
+
+INSERT INTO `user_grouproles`
+	( `iss`, `user_id`, `role_id`, `group_id`)
+VALUES ( 
+	'olab',  
+    (SELECT id from `users` WHERE username = 'anonymous' ), 
+    (SELECT id from `roles` WHERE name = 'learner' ), 
+    (SELECT id from `groups` WHERE name = 'anonymous' ));
 
 ALTER TABLE `user_responses` 
 DROP FOREIGN KEY `user_responses_ibfk_2`;
@@ -196,5 +206,8 @@ UPDATE `user_acls` SET `acl2` = `acl2` | 4 WHERE `acl` LIKE '%R%';
 UPDATE `user_acls` SET `acl2` = `acl2` | 2 WHERE `acl` LIKE '%W%';
 UPDATE `user_acls` SET `acl2` = `acl2` | 1 WHERE `acl` LIKE '%X%';
   
+INSERT INTO `map_groups` (`map_id`, `group_id` )
+	SELECT id, (SELECT id from `groups` WHERE name = 'anonymous' ) FROM `maps` WHERE security_id = 1;  
+    
 DELETE FROM `user_grouproles` WHERE `role_id` IN (2, 7, 8, 9, 11 );  
 DELETE FROM `roles` WHERE `id` IN (2, 7, 8, 9, 11 );  
