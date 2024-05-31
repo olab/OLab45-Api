@@ -2,40 +2,7 @@ use dev_olab;
 
 DROP TABLE `security_roles` ;
 
-ALTER TABLE `security_users` 
-	CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL ;
-ALTER TABLE `system_questions` 
-	CHANGE COLUMN `counter_id` `counter_id` INT(10) UNSIGNED ;
-ALTER TABLE `grouprole_acls` 
-	ADD COLUMN `group_id` INT(10) UNSIGNED NOT NULL AFTER `acl`,
-	ADD COLUMN `role_id` INT(10) UNSIGNED NULL AFTER `group_id`,
-	ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `role_id`;    
-    
-CREATE TABLE `user_grouproles` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `iss` VARCHAR(45) NOT NULL DEFAULT 'olab',
-  `user_id` int(10) unsigned NOT NULL,
-  `role_id` INT(10) UNSIGNED NULL,
-  `group_id` int(10) unsigned NOT NULL,  
-  `role` VARCHAR(45) NOT NULL,  
-  PRIMARY KEY (`id`),
-  CONSTRAINT `user_grouproles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `user_grouproles_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
-ALTER TABLE `map_groups` 
-	ADD CONSTRAINT `mp_ibfk_map`
-	  FOREIGN KEY (`map_id`)
-	  REFERENCES `maps` (`id`)
-	  ON DELETE CASCADE
-	  ON UPDATE NO ACTION,
-	ADD CONSTRAINT `mp_ibfk_group`
-	  FOREIGN KEY (`group_id`)
-	  REFERENCES `groups` (`id`)
-	  ON DELETE NO ACTION
-	  ON UPDATE NO ACTION;
-  
-CREATE TABLE `roles` (
+CREATE TABLE IF NOT EXISTS `roles` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `description` VARCHAR(100),
   `name` VARCHAR(100) NOT NULL,
@@ -45,36 +12,6 @@ CREATE TABLE `roles` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 
 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
-UPDATE users 
-	SET `group` = "olab";
-UPDATE users 
-	SET `role` = replace(`role`, 'olab', '' ) where `role` like 'olab%';
-
-ALTER TABLE `grouprole_acls` 
-	CHANGE COLUMN `name` `role_name` VARCHAR(45) NOT NULL;
-
-UPDATE `grouprole_acls` 
-	SET `role_name` = replace(`role_name`, 'olab', '' ) where `role_name` like 'olab%';
-    
-    
-INSERT INTO `roles` (`name`) VALUES ('importer');
-INSERT into `roles` (`name`) 
-	SELECT DISTINCT role from `users` order by role;
-INSERT into `roles` (`name`) 
-	SELECT DISTINCT role_name FROM `grouprole_acls` 
-    WHERE role_name NOT IN ( SELECT DISTINCT name from `roles` ) order by role_name;
-UPDATE `roles` SET is_system = 1;
-    
-UPDATE `grouprole_acls` 
-    SET `role_id` = ( SELECT `id` FROM `roles` WHERE `name` = `role_name` );
-    
-INSERT INTO `groups` (`name`) VALUES ('olab');
-INSERT INTO `groups` (`name`) VALUES ('anonymous');
-INSERT INTO `groups` (`name`) VALUES ('external');
-ALTER TABLE `groups` 
-	ADD COLUMN `is_system` TINYINT NOT NULL DEFAULT 0 AFTER `name`;
-UPDATE `groups` SET is_system = 1;
-    
 CREATE TABLE IF NOT EXISTS  `grouprole_acls` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `imageable_id` int(10) unsigned NOT NULL,
@@ -88,6 +25,53 @@ CREATE TABLE IF NOT EXISTS  `grouprole_acls` (
   CONSTRAINT `ifk_gra_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `ifk_gra_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+CREATE TABLE IF NOT EXISTS `user_grouproles` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `iss` VARCHAR(45) NOT NULL DEFAULT 'olab',
+  `user_id` int(10) unsigned NOT NULL,
+  `role_id` INT(10) UNSIGNED NULL,
+  `group_id` int(10) unsigned NOT NULL,  
+  `role` VARCHAR(45) NOT NULL,  
+  PRIMARY KEY (`id`),
+  CONSTRAINT `user_grouproles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `user_grouproles_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+UPDATE users 
+	SET `group` = "olab";
+UPDATE users 
+	SET `role` = replace(`role`, 'olab', '' ) where `role` like 'olab%';
+    
+INSERT INTO `groups` (`name`) VALUES ('olab');
+INSERT INTO `groups` (`name`) VALUES ('anonymous');
+INSERT INTO `groups` (`name`) VALUES ('external');
+ALTER TABLE `groups` 
+	ADD COLUMN `is_system` TINYINT NOT NULL DEFAULT 0 AFTER `name`;
+UPDATE `groups` SET is_system = 1;    
+
+INSERT INTO `roles` (`name`) VALUES ('importer');
+INSERT into `roles` (`name`) 
+	SELECT DISTINCT role from `users` order by role;
+UPDATE `roles` SET is_system = 1;
+
+ALTER TABLE `security_users` 
+	CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL ;
+ALTER TABLE `system_questions` 
+	CHANGE COLUMN `counter_id` `counter_id` INT(10) UNSIGNED ;
+
+ALTER TABLE `map_groups` 
+	ADD CONSTRAINT `mp_ibfk_map`
+	  FOREIGN KEY (`map_id`)
+	  REFERENCES `maps` (`id`)
+	  ON DELETE CASCADE
+	  ON UPDATE NO ACTION,
+	ADD CONSTRAINT `mp_ibfk_group`
+	  FOREIGN KEY (`group_id`)
+	  REFERENCES `groups` (`id`)
+	  ON DELETE NO ACTION
+	  ON UPDATE NO ACTION;        
+
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
 	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), null, 5 );
@@ -194,15 +178,6 @@ INSERT INTO `users`
 ALTER TABLE `user_responses` 
 DROP FOREIGN KEY `user_responses_ibfk_2`;
 
--- ALTER TABLE `user_responses` 
--- DROP INDEX `session_id` ;
-
--- ALTER TABLE `user_grouproles` 
--- ADD INDEX `user_grouproles_ibfk_3_idx` (`role_id` ASC) VISIBLE;
-
--- ALTER TABLE `user_grouproles` 
--- DROP COLUMN `role`;
-
 ALTER TABLE `user_grouproles` 
 ADD CONSTRAINT `user_grouproles_ibfk_3`
   FOREIGN KEY (`role_id`)
@@ -210,28 +185,6 @@ ADD CONSTRAINT `user_grouproles_ibfk_3`
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
   
-  
-  /* ------ */
-  
-ALTER TABLE `grouprole_acls` 
-  DROP COLUMN `role_name`;
-  
-ALTER TABLE `grouprole_acls` 
-  ADD INDEX `ifk_gra_role_idx` (`role_id` ASC) VISIBLE,
-  ADD INDEX `ifk_gra_group_idx` (`group_id` ASC) VISIBLE;
-
-ALTER TABLE `grouprole_acls` 
-  ADD CONSTRAINT `ifk_gra_role`
-    FOREIGN KEY (`role_id`)
-    REFERENCES `roles` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  ADD CONSTRAINT `ifk_gra_group`
-    FOREIGN KEY (`group_id`)
-    REFERENCES `groups` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION;
-    
 ALTER TABLE `security_users` 
   RENAME TO  `user_acls` ;
   
