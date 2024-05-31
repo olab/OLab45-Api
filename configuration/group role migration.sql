@@ -50,7 +50,8 @@ ALTER TABLE `groups`
 	ADD COLUMN `is_system` TINYINT NOT NULL DEFAULT 0 AFTER `name`;
 UPDATE `groups` SET is_system = 1;    
 
-INSERT INTO `roles` (`name`) VALUES ('importer');
+INSERT INTO `roles` (`name`, `is_system`) VALUES ('importer', 1);
+INSERT INTO `roles` (`name`, `is_system`) VALUES ('moderator', 1);
 INSERT into `roles` (`name`) 
 	SELECT DISTINCT role from `users` order by role;
 UPDATE `roles` SET is_system = 1;
@@ -195,3 +196,5 @@ UPDATE `user_acls` SET `acl2` = `acl2` | 4 WHERE `acl` LIKE '%R%';
 UPDATE `user_acls` SET `acl2` = `acl2` | 2 WHERE `acl` LIKE '%W%';
 UPDATE `user_acls` SET `acl2` = `acl2` | 1 WHERE `acl` LIKE '%X%';
   
+DELETE FROM `user_grouproles` WHERE `role_id` IN (2, 7, 8, 9, 11 );  
+DELETE FROM `roles` WHERE `id` IN (2, 7, 8, 9, 11 );  
