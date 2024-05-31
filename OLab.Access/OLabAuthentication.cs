@@ -286,8 +286,8 @@ public class OLabAuthentication : IOLabAuthentication
     // get user flagged for anonymous use
     var serverUser = GetDbContext().Users
       .Include("UserGrouproles")
-      .Include("UserGrouproles.Groups")
-      .Include("UserGrouproles.Roles")
+      .Include("UserGrouproles.Group")
+      .Include("UserGrouproles.Role")
       .FirstOrDefault(x => x.Username == Users.AnonymousUserName);
     if (serverUser == null)
       throw new Exception($"No user is defined for anonymous map play");
