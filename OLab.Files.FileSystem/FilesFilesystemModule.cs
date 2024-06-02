@@ -335,6 +335,8 @@ public class FilesFilesystemModule : OLabFileStorageModule
 
     try
     {
+      logger.LogInformation($"Get files listing for folder '{folderName}'");
+
       var physicalPath = GetPhysicalPath(folderName);
 
       if (!Directory.Exists(physicalPath))
