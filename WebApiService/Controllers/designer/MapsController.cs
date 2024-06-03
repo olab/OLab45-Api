@@ -1,4 +1,5 @@
 using Dawn;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -324,29 +325,7 @@ public partial class MapsController : OLabController
 
   }
 
-  /// <summary>
-  /// 
-  /// </summary>
-  /// <param name="id"></param>
-  /// <param name="enableWikiTranslation"></param>
-  /// <returns></returns>
-  //private async Task<IActionResult> GetScopedObjectsAsync(
-  //  uint id,
-  //  bool enableWikiTranslation)
-  //{
-  //  try
-  //  {
-  //    Dto.Designer.ScopedObjectsDto dto = await _endpoint.GetScopedObjectsAsync(id, enableWikiTranslation);
-  //    DecorateDto(dto);
-  //    return HttpContext.Request.CreateResponse(OLabObjectResult<Dto.Designer.ScopedObjectsDto>.Result(dto));
-  //  }
-  //  catch (Exception ex)
-  //  {
-  //    if (ex is OLabUnauthorizedException)
-  //      return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result(ex.Message));
-  //    return HttpContext.Request.CreateResponse(OLabServerErrorResult.Result(ex.Message));
-  //  }
-  //}
+
 
   /// <summary>
   /// ReadAsync a list of users
@@ -558,41 +537,55 @@ public partial class MapsController : OLabController
   }
 
   /// <summary>
-  /// 
+  /// Get groups for a map
   /// </summary>
-  /// <param name="dto"></param>
-  private void DecorateDto(OLab.Api.Dto.Designer.ScopedObjectsDto dto)
+  /// <param name="mapId">Map Id</param>
+  /// <param name="groupIds">List of group ids</param>
+  /// <returns></returns>
+  [HttpGet("{mapId}/groups")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetMapGroupsAsync(
+    uint mapId)
   {
-    var t = typeof(QuestionsController);
-    var attribute =
-        (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-    var questionRoute = attribute.Template;
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
 
-    t = typeof(ConstantsController);
-    attribute =
-        (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-    var constantRoute = attribute.Template;
+      var result = await _endpoint.GetMapGroupsAsync(auth, mapId);
 
-    t = typeof(CountersController);
-    attribute =
-        (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-    var counterRoute = attribute.Template;
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(result));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+  }
 
-    t = typeof(FilesController);
-    attribute =
-        (RouteAttribute)Attribute.GetCustomAttribute(t, typeof(RouteAttribute));
-    var fileRoute = attribute.Template;
+  /// <summary>
+  /// Get groups for a map
+  /// </summary>
+  /// <param name="mapId">Map Id</param>
+  /// <param name="groupIds">List of group ids</param>
+  /// <returns></returns>
+  [HttpPut("{mapId}/groups")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> PutMapGroupsAsync(
+    uint mapId,
+    [FromBody] uint[] body)
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
 
-    foreach (var item in dto.Questions)
-      item.Url = $"{BaseUrl}/{questionRoute}/{item.Id}";
+      var result = await _endpoint.PutMapGroupsAsync(auth, mapId, body);
 
-    foreach (var item in dto.Counters)
-      item.Url = $"{BaseUrl}/{counterRoute}/{item.Id}";
-
-    foreach (var item in dto.Constants)
-      item.Url = $"{BaseUrl}/{constantRoute}/{item.Id}";
-
-    foreach (var item in dto.Files)
-      item.Url = $"{BaseUrl}/{fileRoute}/{item.Id}";
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(result));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
   }
 }
