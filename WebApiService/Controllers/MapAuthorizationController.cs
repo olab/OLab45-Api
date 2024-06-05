@@ -13,6 +13,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,6 +46,37 @@ public class MapAuthorizationController : OLabController
       DbContext,
       wikiTagProvider,
       fileStorageProvider);
+  }
+
+  /// <summary>
+  /// Replaces the map groups for a map
+  /// </summary>
+  /// <param name="mapId">Map id to change</param>
+  /// <param name="dtos">List of group dtos</param>
+  /// <param name="token">CancellationToken</param>
+  /// <returns></returns>
+  [HttpPost("{mapId}")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> ReplaceAsync(
+    uint mapId,
+    IList<GroupsDto> dtos,
+    CancellationToken token)
+  {
+    try
+    {
+      Guard.Argument(dtos).NotNull(nameof(dtos));
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      var response = await _endpoint.ReplaceAsync(auth, mapId, dtos, token);
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(response));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
   }
 
   /// <summary>

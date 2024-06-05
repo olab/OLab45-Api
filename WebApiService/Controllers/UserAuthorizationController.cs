@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
+using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -47,6 +48,31 @@ public class UserAuthorizationController : OLabController
   }
 
   /// <summary>
+  /// Get user's groups
+  /// </summary>
+  /// <param name="token"></param>
+  /// <returns>List of user's current groups</returns>
+  [HttpGet("groups")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetUserGroupsAsync(
+    CancellationToken token)
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      var response = await _endpoint.GetUserGroups(auth, token);
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<GroupsDto>.Result(response));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
+  /// <summary>
   /// Adds a group/role to a user
   /// </summary>
   /// <param name="request">ImportRequest</param>
@@ -54,8 +80,8 @@ public class UserAuthorizationController : OLabController
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> AddAsync(
-    UserGroupRolesDto dto,
-    CancellationToken token)
+  UserGroupRolesDto dto,
+  CancellationToken token)
   {
     try
     {
