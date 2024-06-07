@@ -376,8 +376,12 @@ public class OLabAuthentication : IOLabAuthentication
 
     if (user != null)
     {
-      if (!ValidatePassword(model.Password, user))
-        return null;
+      // do check for anonymous user
+      if (model.Username.ToLower() != Users.AnonymousUserName.ToLower())
+      {
+        if (!ValidatePassword(model.Password, user))
+          return null;
+      }
     }
 
     return user;
