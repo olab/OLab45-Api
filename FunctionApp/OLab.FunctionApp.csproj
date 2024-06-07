@@ -14,21 +14,21 @@
     <None Include="D:\Client\olab\devel\repos\newazure\Turktalk\Data\local.settings.json" Link="local.settings.json" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Data.Tables" Version="12.8.1" />
-    <PackageReference Include="Azure.Identity" Version="1.10.4" />
+    <PackageReference Include="Azure.Data.Tables" Version="12.8.3" />
+    <PackageReference Include="Azure.Identity" Version="1.11.3" />
     <PackageReference Include="Dawn.Guard" Version="1.12.0" />
-    <PackageReference Include="FluentValidation" Version="11.7.1" />
+    <PackageReference Include="FluentValidation" Version="11.9.1" />
     <PackageReference Include="GitVersion.MSBuild" Version="5.12.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="HttpMultipartParser" Version="8.3.0" />
+    <PackageReference Include="HttpMultipartParser" Version="8.4.0" />
     <PackageReference Include="JsonDiffPatch.Net" Version="2.3.0" />
-    <PackageReference Include="JWT" Version="10.1.0" />
-    <PackageReference Include="Microsoft.Azure.AppConfiguration.Functions.Worker" Version="6.1.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.7.0-preview2" />
+    <PackageReference Include="JWT" Version="10.1.1" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.Functions.Worker" Version="7.2.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.22.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.16">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
