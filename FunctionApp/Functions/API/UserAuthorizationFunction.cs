@@ -1,6 +1,5 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -12,9 +11,6 @@ using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.FunctionApp.Extensions;
 using OLab.Data.Interface;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Azure.Core;
 
 namespace OLab.FunctionApp.Functions.API;
 
@@ -65,7 +61,8 @@ public class UserAuthorizationFunction : OLabFunction
       var auth = GetAuthorization(hostContext);
 
       var userResponse = await _endpoint.GetUserGroups(auth, token);
-      response = request.CreateResponse(OLabObjectListResult<GroupsDto>.Result(userResponse));
+      response = 
+        request.CreateResponse(OLabObjectListResult<GroupsDto>.Result(userResponse));
 
     }
     catch (Exception ex)

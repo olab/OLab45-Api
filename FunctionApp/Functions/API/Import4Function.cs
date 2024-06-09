@@ -20,6 +20,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using OLab.Api.Data.Interface;
 
 namespace OLab.FunctionApp.Functions.API;
 
@@ -68,11 +69,11 @@ public class Import4Function : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "Import", 0))
-        throw new OLabUnauthorizedException();
-
       if (request.Body == null)
         throw new ArgumentNullException(nameof(request.Body));
+
+      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, "Import", 0))
+        throw new OLabUnauthorizedException();
 
       var parser = await MultipartFormDataParser.ParseAsync(request.Body);
       if (parser.Files.Count == 0)
@@ -127,7 +128,7 @@ public class Import4Function : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "Export", 0))
+      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, "Export", 0))
         throw new OLabUnauthorizedException();
 
       var dto = await _endpoint.ExportAsync(id, token);
@@ -158,7 +159,7 @@ public class Import4Function : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization(hostContext);
 
-      if (!auth.HasAccess("X", "Export", 0))
+      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, "Export", 0))
         throw new OLabUnauthorizedException();
 
       using (var memoryStream = new MemoryStream())

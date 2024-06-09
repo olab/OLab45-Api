@@ -83,7 +83,7 @@ var host = new HostBuilder()
 
       services.AddAzureAppConfiguration();
 
-      services.AddScoped<IUserContext, UserContextService>();
+      services.AddScoped<IUserContext, FunctionUserContextService>();
       services.AddSingleton<IOLabLogger, OLabLogger>();
       services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
       services.AddScoped<IOLabAuthentication, OLabAuthentication>();

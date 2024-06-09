@@ -58,17 +58,16 @@ public partial class QuestionResponsesFunction : OLabFunction
       var session = new OLabSession(Logger, DbContext, auth.UserContext);
       session.SetMapId(body.MapId);
 
-      var question = await GetQuestionAsync(body.QuestionId);
-      if (question == null)
+      var questionPhys = await GetQuestionAsync(body.QuestionId);
+      if (questionPhys == null)
         throw new Exception($"Question {body.QuestionId} not found");
 
       var result =
-        await _endpoint.PostQuestionResponseAsync(question, body);
+        await _endpoint.PostQuestionResponseAsync(questionPhys, body);
 
       session.OnQuestionResponse(
-        body.NodeId,
-        question.Id,
-        body.Value);
+        body,
+        questionPhys);
 
       response = request.CreateResponse(OLabObjectResult<DynamicScopedObjectsDto>.Result(body.DynamicObjects));
 

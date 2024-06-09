@@ -72,6 +72,9 @@ public class Import4Controller : OLabController
       if (Request.Form == null)
         throw new ArgumentNullException(nameof(Request.Form));
 
+      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, "Import", 0))
+        throw new OLabUnauthorizedException();
+
       var form = Request.Form;
 
       if (form.Files[0].FileName.Contains(Path.DirectorySeparatorChar))
