@@ -22,6 +22,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using HttpMultipartParser;
+using System.IO;
+using System.Text;
 
 namespace OLab.FunctionApp.Functions.API;
 
@@ -188,6 +191,61 @@ public class UserFunction : OLabFunction
 
 
       var responses = await _userService.DeleteUsersAsync(items);
+      response = request.CreateResponse(OLabObjectListResult<AddUserResponse>.Result(responses));
+    }
+    catch (Exception ex)
+    {
+      response = request.CreateResponse(ex);
+    }
+
+    return response;
+
+  }
+
+  /// <summary>
+  /// Adds users from posted json records
+  /// </summary>
+  /// <returns>AddUserResponse</returns>
+  [Function("AddUsers")]
+  public async Task<HttpResponseData> AddUsersAsync(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/addusers")] HttpRequestData request,
+    FunctionContext hostContext, CancellationToken cancellationToken)
+  {
+    try
+    {
+      Logger.LogDebug($"AddUsersAsync");
+
+      var responses = new List<AddUserResponse>();
+      var auth = GetAuthorization(hostContext);
+
+      // test if user has access to add users.
+      if (!await auth.IsSystemSuperuserAsync())
+        return request.CreateResponse(OLabUnauthorizedObjectResult.Result("Not authorized to add users"));
+
+      var parser = await MultipartFormDataParser.ParseAsync(request.Body);
+      if (parser.Files.Count == 0)
+        throw new Exception("No files were uploaded");
+
+      var result = new List<string>();
+      using (var stream = parser.Files[0].Data)
+      {
+        using (var streamReader = new StreamReader(stream, Encoding.UTF8))
+        {
+          String userRequestText;
+          while ((userRequestText = streamReader.ReadLine()) != null)
+          {
+            var userRequest = new AddUserRequest(
+              Logger,
+              DbContext);
+
+            await userRequest.ProcessAddUserText(userRequestText);
+
+            var userResponse = await _userService.AddUserAsync(userRequest);
+            responses.Add(userResponse);
+          }
+        }
+      }
+
       response = request.CreateResponse(OLabObjectListResult<AddUserResponse>.Result(responses));
     }
     catch (Exception ex)
