@@ -15,15 +15,12 @@ pushd ../Common
 git pull
 popd
 
-pushd ../Api
 git pull
 
 pushd WebApiService
 if [ ! -L "bin" ]; then
 	ln -s /opt/olab46/$1/api bin
 fi
-popd
-
 popd
 
 dotnet clean WebApp.sln
