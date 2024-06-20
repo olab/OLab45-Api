@@ -206,8 +206,23 @@ UPDATE `user_acls` SET `acl2` = `acl2` | 4 WHERE `acl` LIKE '%R%';
 UPDATE `user_acls` SET `acl2` = `acl2` | 2 WHERE `acl` LIKE '%W%';
 UPDATE `user_acls` SET `acl2` = `acl2` | 1 WHERE `acl` LIKE '%X%';
   
+-- add anonymous group to all anonymous maps
 INSERT INTO `map_groups` (`map_id`, `group_id` )
 	SELECT id, (SELECT id from `groups` WHERE name = 'anonymous' ) FROM `maps` WHERE security_id = 1;  
     
+-- clean up not-needed roles    
 DELETE FROM `user_grouproles` WHERE `role_id` IN (2, 7, 8, 9, 11 );  
 DELETE FROM `roles` WHERE `id` IN (2, 7, 8, 9, 11 );  
+
+-- give everyone default olab:learner access
+DELETE FROM `user_grouproles` WHERE 
+	`role_id` = (SELECT id from `roles` WHERE name = 'learner') AND
+    `group_id` = (SELECT id from `groups` WHERE name = 'olab');
+INSERT INTO `user_grouproles` ( `iss`, `user_id`, `group_id`, `role_id` )
+	SELECT 
+		'olab', 
+        id, 
+        (SELECT id from `groups` WHERE name = 'olab'), 
+        (SELECT id from `roles` WHERE name = 'learner') 
+	FROM `users` WHERE username <> 'anonymous';
+	
