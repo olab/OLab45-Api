@@ -31,11 +31,11 @@ public class WebApiUserContextService : UserContextService
 
     if (!hostContext.Items.TryGetValue("headers", out var headersObjects))
       throw new Exception("unable to retrieve headers from host context");
-    Headers = (Dictionary<string, string>)headersObjects;
+    SetHeaders((Dictionary<string, string>)headersObjects);
 
     if (!hostContext.Items.TryGetValue("claims", out var claimsObject))
       throw new Exception("unable to retrieve claims from host context");
-    Claims = (IDictionary<string, string>)claimsObject;
+    SetClaims((IDictionary<string, string>)claimsObject);
 
     LoadContext();
 
