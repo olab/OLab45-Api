@@ -32,7 +32,7 @@ public partial class MapsController : OLabController
 
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
-      var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
+      var dto = await _endpoint.PostMapNodeAsync(auth, mapId, nodeId, body);
 
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
     }
