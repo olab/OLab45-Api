@@ -16,6 +16,7 @@ using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Api.WikiTag;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data;
@@ -127,7 +128,7 @@ public class Startup
     services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
 
     services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
-    services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
+    services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>();
     services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
   }
 
