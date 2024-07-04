@@ -160,15 +160,15 @@ public class OLabController : ControllerBase
   /// <param name="map">Parent map to query for</param>
   /// <param name="enableWikiTanslation">PErform WikiTag translation</param>
   /// <returns>List of mapnode dto's</returns>
-  [NonAction]
-  protected async Task<IList<MapNodesFullDto>> GetNodesAsync(Maps map, bool enableWikiTanslation = true)
-  {
-    var physList = await DbContext.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
-    Logger.LogDebug(string.Format("found {0} mapNodes", physList.Count));
+  //[NonAction]
+  //protected async Task<IList<MapNodesFullDto>> GetNodesAsync(Maps map, bool enableWikiTanslation = true)
+  //{
+  //  var physList = await DbContext.MapNodes.Where(x => x.MapId == map.Id).ToListAsync();
+  //  Logger.LogDebug(string.Format("found {0} mapNodes", physList.Count));
 
-    var dtoList = new MapNodesFullMapper(Logger, enableWikiTanslation).PhysicalToDto(physList);
-    return dtoList;
-  }
+  //  var dtoList = new MapNodesFullMapper(Logger, enableWikiTanslation).PhysicalToDto(physList);
+  //  return dtoList;
+  //}
 
   /// <summary>
   /// ReadAsync node for map
