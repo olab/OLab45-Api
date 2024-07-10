@@ -6,7 +6,7 @@ namespace OLab.Access.Interfaces;
 
 public interface IOLabAuthentication
 {
-  Users Authenticate(LoginRequest model);
+  Users Authenticate(LoginRequest model, bool impersonateMode = false);
 
   string ExtractAccessToken(
     IReadOnlyDictionary<string, string> headers,

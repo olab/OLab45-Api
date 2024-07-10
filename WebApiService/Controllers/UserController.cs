@@ -52,18 +52,31 @@ public class AuthController : OLabController
   /// <returns></returns>
   [AllowAnonymous]
   [HttpPost]
-  public IActionResult Login(LoginRequest model)
+  public async Task<IActionResult> Login(LoginRequest model)
   {
     var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
 
     if (string.IsNullOrEmpty(ipAddress))
       ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
 
+    bool impersonateMode = false;
+    try
+    {
+      var auth = GetAuthorization(HttpContext);
+      // if user is superuser, then we can impersonate requested user
+      impersonateMode = await auth.IsSystemSuperuserAsync();
+    }
+    catch (Exception)
+    {
+      Logger.LogInformation($"Did not find authorization context");
+    }
+
+
     model.Username = model.Username.ToLower();
 
     Logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
-    var user = _authentication.Authenticate(model);
+    var user = _authentication.Authenticate(model, impersonateMode);
     if (user == null)
       return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 

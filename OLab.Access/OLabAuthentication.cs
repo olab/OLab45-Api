@@ -359,8 +359,9 @@ public class OLabAuthentication : IOLabAuthentication
   /// Authenticate user
   /// </summary>
   /// <param name="model">Login model</param>
+  /// <param name="impersonateMode">user is superuser, impersonate as logged in user</param>
   /// <returns>Authenticate response, or null</returns>
-  public Users Authenticate(LoginRequest model)
+  public Users Authenticate(LoginRequest model, bool impersonateMode = false)
   {
     Guard.Argument(model, nameof(model)).NotNull();
 
@@ -379,8 +380,11 @@ public class OLabAuthentication : IOLabAuthentication
       // do check for anonymous user
       if (model.Username.ToLower() != Users.AnonymousUserName.ToLower())
       {
-        if (!ValidatePassword(model.Password, user))
-          return null;
+        if (!impersonateMode)
+        {
+          if (!ValidatePassword(model.Password, user))
+            return null;
+        }
       }
     }
 
