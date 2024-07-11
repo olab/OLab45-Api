@@ -365,10 +365,13 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument(model, nameof(model)).NotNull();
 
-    if (model.Password.Length > 3)
-      GetLogger().LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
-    else
-      GetLogger().LogInformation($"Authenticating {model.Username}, ***");
+    if (!impersonateMode)
+    {
+      if (model.Password.Length > 3)
+        GetLogger().LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
+      else
+        GetLogger().LogInformation($"Authenticating {model.Username}, ***");
+    }
 
     var user = GetDbContext().Users
       .Include(x => x.UserGrouproles).ThenInclude(y => y.Group)

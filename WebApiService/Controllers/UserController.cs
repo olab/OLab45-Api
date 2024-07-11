@@ -63,14 +63,13 @@ public class AuthController : OLabController
     try
     {
       var auth = GetAuthorization(HttpContext);
-      // if user is superuser, then we can impersonate requested user
+      // if have token and user is superuser, then we can impersonate requested user
       impersonateMode = await auth.IsSystemSuperuserAsync();
     }
     catch (Exception)
     {
       Logger.LogInformation($"Did not find authorization context");
     }
-
 
     model.Username = model.Username.ToLower();
 
