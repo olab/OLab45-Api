@@ -143,38 +143,42 @@ public class OLabAuthMiddleware
 
       _logger.LogInformation($"Middleware Invoke. url '{hostContext.Request.Path.Value}'");
 
-      if (_functionName.Contains("login") ||
-           _functionName.Contains("health") ||
-           _functionName.Contains("loginanonymous"))
+      // process anopnymous endpoints
+      if (_functionName.Contains("health") ||
+          _functionName.Contains("loginanonymous"))
         await _next(hostContext);
 
-      // if not login endpoint, then continue with middleware evaluation
+      // process login endpoint, which may or may not have a token.
+      // (no token likely means it's an impersonation request)
+      else if (_functionName.Contains("login"))
+      {
+        string token = "";
+
+        try
+        {
+          token = authentication.ExtractAccessToken(_headers);
+          _logger.LogInformation($"InvokeAsync login: token provided (impersonation?)");
+          ProcessToken(hostContext, dbContext, authentication, token);
+        }
+        catch (OLabUnauthorizedException)
+        {
+          _logger.LogInformation($"InvokeAsync login: no token provided");
+        }
+
+        await _next(hostContext);
+
+      }
+
+      // if other endpoint, then continue with middleware evaluation
       else if (!_functionName.Contains("login"))
       {
         try
         {
           var token = authentication.ExtractAccessToken(_headers);
-
-          authentication.ValidateToken(token);
-
-          // This is added pre-function execution, function will have access to this information
-          hostContext.Items.Add("headers", _headers);
-          hostContext.Items.Add("claims", authentication.Claims);
-
-          // build and inject the host context into the authorixation object
-          var userContext = new WebApiUserContextService(_logger, hostContext, dbContext);
-          hostContext.Items.Add("usercontext", userContext);
+          ProcessToken(hostContext, dbContext, authentication, token);
 
           // run the function
           await _next(hostContext);
-
-          // This happens after function execution. We can inspect the context after the function
-          // was invoked
-          if (hostContext.Items.TryGetValue("functionitem", out var value) && value is string message)
-          {
-            _logger.LogInformation($"From function: {message}");
-          }
-
         }
         catch (OLabUnauthorizedException)
         {
@@ -189,6 +193,14 @@ public class OLabAuthMiddleware
           return;
         }
       }
+
+      // This happens after function execution. We can inspect the context after the function
+      // was invoked
+      if (hostContext.Items.TryGetValue("functionitem", out var value) && value is string message)
+      {
+        _logger.LogInformation($"From function: {message}");
+      }
+
     }
     catch (Exception ex)
     {
@@ -196,6 +208,24 @@ public class OLabAuthMiddleware
       _logger.LogError($"server error: {ex.Message} {ex.StackTrace}");
       return;
     }
+
+  }
+
+  private void ProcessToken(
+    HttpContext hostContext,
+    OLabDBContext dbContext,
+    IOLabAuthentication authentication,
+    string token)
+  {
+    authentication.ValidateToken(token);
+
+    // This is added pre-function execution, function will have access to this information
+    hostContext.Items.Add("headers", _headers);
+    hostContext.Items.Add("claims", authentication.Claims);
+
+    // build and inject the host context into the authorixation object
+    var userContext = new WebApiUserContextService(_logger, hostContext, dbContext);
+    hostContext.Items.Add("usercontext", userContext);
 
   }
 }
