@@ -73,81 +73,6 @@ ALTER TABLE `map_groups`
 	  ON DELETE NO ACTION
 	  ON UPDATE NO ACTION;        
 
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), null, 5 );
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps',  ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Import',  ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'director' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'administrator' ), 7 );
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), null, 1 );
-
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), null, 5 );
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps',  ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Import',  ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'director' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'administrator' ), 7 );
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), null, 1 );
-
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), null, 5 );
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps',  ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Import',  ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'director' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'administrator' ), 7 );
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), null, 1 );
-
 /* ????  */
 INSERT INTO `user_grouproles` (`user_id`, `group_id`, `role`)
 	SELECT id, (SELECT id from `groups` where name = 'olab'), role
@@ -226,3 +151,65 @@ INSERT INTO `user_grouproles` ( `iss`, `user_id`, `group_id`, `role_id` )
         (SELECT id from `roles` WHERE name = 'learner') 
 	FROM `users` WHERE username <> 'anonymous';
 	
+ALTER TABLE `grouprole_acls` 
+DROP FOREIGN KEY `ifk_gra_group`;
+ALTER TABLE `grouprole_acls` 
+CHANGE COLUMN `group_id` `group_id` INT(10) UNSIGNED NULL DEFAULT NULL ;
+ALTER TABLE `grouprole_acls` 
+ADD CONSTRAINT `ifk_gra_group`
+  FOREIGN KEY (`group_id`)
+  REFERENCES `groups` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION;
+
+-- defaults
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Maps', NULL, null, 0);
+    
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Nodes', NULL, null, 0 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Import', NULL, null, 0 );
+    
+-- olab
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, '*', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
+
+-- external
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, '*', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
+
+-- anonymous
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, '*', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+
+INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
+	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
