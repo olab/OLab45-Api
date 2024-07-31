@@ -165,15 +165,10 @@ ADD CONSTRAINT `ifk_gra_group`
 -- defaults
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', NULL, null, 0);
-    
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', NULL, null, 0 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Import', NULL, null, 0 );
+	VALUES ( 0, '*', NULL, null, 0 );
     
 -- olab
+
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
 	VALUES ( 0, '*', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
 
