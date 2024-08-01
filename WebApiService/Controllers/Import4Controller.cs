@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Interface;
@@ -153,7 +154,7 @@ public class Import4Controller : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      if (!auth.HasAccess(IOLabAuthorization.AclBitMaskExecute, "Import"))
+      if (!await auth.HasAccessAsync(IOLabAuthorization.AclBitMaskExecute, OLab.Api.Utils.Constants.OperationImport))
         throw new OLabUnauthorizedException();
 
       using var memoryStream = new MemoryStream();

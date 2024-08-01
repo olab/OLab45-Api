@@ -9,12 +9,21 @@ WHERE
     gra.role_id = r.id
     
 UNION
-SELECT gra.id, '*' as group_name, '*' as role_name, gra.imageable_type, gra.imageable_id, gra.acl2 FROM 
+SELECT gra.id, NULL as group_name, NULL as role_name, gra.imageable_type, gra.imageable_id, gra.acl2 FROM 
 	`grouprole_acls` gra,  
     `groups` g,
     `roles` r
 WHERE 
     gra.group_id IS NULL OR
     gra.role_id IS NULL
+
+UNION
+SELECT gra.id, g.name as group_name, NULL as role_name, gra.imageable_type, gra.imageable_id, gra.acl2 FROM 
+	`grouprole_acls` gra,  
+    `groups` g,
+    `roles` r
+WHERE 
+    gra.role_id IS NULL
     
-    order by group_name, role_name;
+ORDER BY
+	group_name, role_name, imageable_id, imageable_type

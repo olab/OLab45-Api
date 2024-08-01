@@ -68,7 +68,7 @@ public class AuthController : OLabController
     }
     catch (Exception)
     {
-      Logger.LogInformation($"Did not find authorization context");
+      Logger.LogInformation($"Normal login w/o impersonate");
     }
 
     model.Username = model.Username.ToLower();

@@ -12,11 +12,11 @@ CREATE TABLE IF NOT EXISTS `roles` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 
 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
-CREATE TABLE IF NOT EXISTS  `grouprole_acls` (
+CREATE TABLE IF NOT EXISTS `grouprole_acls` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `imageable_id` int(10) unsigned NOT NULL,
-  `imageable_type` varchar(45) NOT NULL,
-  `group_id` int(10) unsigned NOT NULL,
+  `imageable_id` int(10) unsigned DEFAULT NULL,
+  `imageable_type` varchar(45) DEFAULT NULL,
+  `group_id` int(10) unsigned DEFAULT NULL,
   `role_id` int(10) unsigned DEFAULT NULL,
   `acl2` bit(3) NOT NULL DEFAULT b'0',
   PRIMARY KEY (`id`),
@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS  `grouprole_acls` (
   KEY `ifk_gra_group_idx` (`group_id`),
   CONSTRAINT `ifk_gra_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `ifk_gra_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
 
 CREATE TABLE IF NOT EXISTS `user_grouproles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -165,46 +166,46 @@ ADD CONSTRAINT `ifk_gra_group`
 -- defaults
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, '*', NULL, null, 0 );
+	VALUES ( NULL, NULL, NULL, null, 0 );
     
 -- olab
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, '*', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+	VALUES ( NULL, NULL, ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+	VALUES ( NULL, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
+	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
 
 -- external
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, '*', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+	VALUES ( NULL, NULL, ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+	VALUES ( NULL, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
+	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
 
 -- anonymous
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, '*', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
+	VALUES ( NULL, NULL, ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+	VALUES ( NULL, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
+	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( 0, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
+	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
