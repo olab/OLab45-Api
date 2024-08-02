@@ -53,6 +53,10 @@ public class OLabAuthorization : IOLabAuthorization
     _roleReaderWriter = RoleReaderWriter.Instance(logger, dbContext);
   }
 
+  /// <summary>
+  /// Add user context to Authorization and load user-specific acl
+  /// </summary>
+  /// <param name="userContext">User context</param>
   public void ApplyUserContext(IUserContext userContext)
   {
     Guard.Argument(userContext).NotNull(nameof(userContext));
@@ -191,8 +195,8 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectType">Object type to search for (null = all)</param>
   /// <param name="objectId">Object id to search for (null = all)</param>
   /// <param name="requestedAcl">ACL to compare against</param>
-  /// <returns>true/false</returns>
-  private async Task<bool> HasRequestedAccessAsync(
+  /// <returns>true/false, no acl</returns>
+  private async Task<bool?> HasRequestedAccessAsync(
     uint? groupId,
     uint? roleId,
     string objectType,
@@ -210,35 +214,50 @@ public class OLabAuthorization : IOLabAuthorization
         return true;
     }
 
-    // test for explicit object id specified
+    // test for explicit object type and id specified
+    // for specific group and role
     var acl = _groupRoleAcls.FirstOrDefault(x =>
       x.ImageableId == objectId &&
       x.ImageableType == objectType &&
       x.GroupId == groupId &&
       x.RoleId == roleId);
 
-    if ((acl != null) && ((acl.Acl2 & requestedAcl) == requestedAcl))
-      return true;
+    if (acl != null) 
+      return (acl.Acl2 & requestedAcl) == requestedAcl;
+
+    // test for explicit object type and id specified
+    // for specific group (all roles)
+    acl = _groupRoleAcls.FirstOrDefault(x =>
+      x.ImageableId == objectId &&
+      x.ImageableType == objectType &&
+      x.GroupId == groupId &&
+      x.RoleId == null);
+
+    if (acl != null)
+      return (acl.Acl2 & requestedAcl) == requestedAcl;
+
 
     // test for any object of type specified
+    // for specific group and role
     acl = _groupRoleAcls.FirstOrDefault(x =>
-      !x.ImageableId.HasValue &&
+    !x.ImageableId.HasValue &&
       x.ImageableType == objectType &&
       x.GroupId == groupId &&
       x.RoleId == roleId);
 
-    if ((acl != null) && ((acl.Acl2 & requestedAcl) == requestedAcl))
-      return true;
+    if (acl != null)
+      return (acl.Acl2 & requestedAcl) == requestedAcl;
 
-    // test for any object of any type specified
+    // test for object of any type specified
+    // for specific group and role
     acl = _groupRoleAcls.FirstOrDefault(x =>
       !x.ImageableId.HasValue &&
       string.IsNullOrEmpty(x.ImageableType) &&
       x.GroupId == groupId &&
       x.RoleId == roleId);
 
-    if ((acl != null) && ((acl.Acl2 & requestedAcl) == requestedAcl))
-      return true;
+    if (acl != null)
+      return (acl.Acl2 & requestedAcl) == requestedAcl;
 
     // else return default acl
     acl = _groupRoleAcls.FirstOrDefault(x =>
@@ -247,10 +266,10 @@ public class OLabAuthorization : IOLabAuthorization
       !x.ImageableId.HasValue &&
       string.IsNullOrEmpty(x.ImageableType));
 
-    if ((acl != null) && ((acl.Acl2 & requestedAcl) == requestedAcl))
-      return true;
+    if (acl != null)
+      return (acl.Acl2 & requestedAcl) == requestedAcl;
 
-    return false;
+    return null;
 
   }
 
@@ -279,16 +298,15 @@ public class OLabAuthorization : IOLabAuthorization
         mapNodePhys.Id,
         requestedAcl);
 
-      if (roleResult)
+      if (roleResult.HasValue)
       {
-        result = true;
+        result = roleResult.Value;
         break;
       }
+      else
+        // test if no acl at node level, try the owning map
+        result = await HasRequestedAccessToMapAsync(requestedAcl, mapNodePhys.MapId);
     }
-
-    // test if no access at node level, try the owning map
-    if (!result)
-      result = await HasRequestedAccessToMapAsync(requestedAcl, mapNodePhys.MapId);
 
     return result;
   }
@@ -324,9 +342,9 @@ public class OLabAuthorization : IOLabAuthorization
           mapPhys.Id,
           requestedAcl);
 
-        if (roleResult)
+        if (roleResult.HasValue)
         {
-          result = true;
+          result = roleResult.Value;
           break;
         }
       }
@@ -345,9 +363,12 @@ public class OLabAuthorization : IOLabAuthorization
   {
     bool result = false;
 
-    // test if user has access to parent map.
+    // test if user has access to map.
     if (objectType == Constants.ScopeLevelMap)
       result = await HasRequestedAccessToMapAsync(requestedAcl, objectId.Value);
+
+    else if (objectType == Constants.ScopeLevelNode)
+      result = await HasRequestedAccessToNodeAsync(requestedAcl, objectId.Value);
 
     return result;
   }

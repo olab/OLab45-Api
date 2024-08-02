@@ -209,3 +209,6 @@ INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `rol
 
 INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
 	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
+
+
+UPDATE `maps` SET created_at = NOW() WHERE created_at is NULL;
