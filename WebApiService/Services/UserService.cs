@@ -1,10 +1,14 @@
 using Dawn;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.Contracts;
+using OLab.Data.Dtos;
 using OLab.Data.Interface;
+using OLab.Data.Mappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +28,9 @@ public class UserService : IUserService
   public bool IsValid { get; private set; }
   public bool UserName { get; private set; }
   public bool Role { get; private set; }
+
+  public OLabDBContext GetDbContext() { return _dbContext; }
+  public IOLabLogger GetLogger() { return Logger; }
 
   public UserService(
     ILoggerFactory loggerFactory,
@@ -54,7 +61,7 @@ public class UserService : IUserService
     Guard.Argument(model, nameof(model)).NotNull();
 
     Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
-    var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+    var user = GetDbContext().Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
 
     if (user != null)
     {
@@ -92,7 +99,7 @@ public class UserService : IUserService
   /// <returns>Enumerable list of users</returns>
   public IEnumerable<Users> GetAll()
   {
-    return _dbContext.Users.ToList();
+    return GetDbContext().Users.ToList();
   }
 
   /// <summary>
@@ -102,7 +109,7 @@ public class UserService : IUserService
   /// <returns>User record</returns>
   public Users GetById(int id)
   {
-    return _dbContext.Users.FirstOrDefault(x => x.Id == id);
+    return GetDbContext().Users.FirstOrDefault(x => x.Id == id);
   }
 
   /// <summary>
@@ -112,7 +119,7 @@ public class UserService : IUserService
   /// <returns>User record</returns>
   public Users GetByUserName(string userName)
   {
-    return _dbContext.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
+    return GetDbContext().Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
   }
 
   /// <summary>
@@ -180,10 +187,10 @@ public class UserService : IUserService
     }
 
     var physUser =
-      await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == userRequest.Username);
+      await GetDbContext().Users.FirstOrDefaultAsync(x => x.Username == userRequest.Username);
 
-    _dbContext.Users.Remove(physUser);
-    await _dbContext.SaveChangesAsync();
+    GetDbContext().Users.Remove(physUser);
+    await GetDbContext().SaveChangesAsync();
 
     var response = new AddUserResponse
     {
@@ -242,8 +249,8 @@ public class UserService : IUserService
       NewPassword = newUser.Password
     });
 
-    await _dbContext.Users.AddAsync(newUser);
-    await _dbContext.SaveChangesAsync();
+    await GetDbContext().Users.AddAsync(newUser);
+    await GetDbContext().SaveChangesAsync();
 
     var response = new AddUserResponse
     {
@@ -254,4 +261,31 @@ public class UserService : IUserService
     return response;
   }
 
+  public Task<AddUserResponse> GetUsersAsync(AddUserRequest item)
+  {
+    throw new NotImplementedException();
+  }
+
+  public IList<UsersDto> GetUsers(string name)
+  {
+    IList<Users> users = new List<Users>();
+
+    if (!string.IsNullOrEmpty(name))
+    {
+      users = GetDbContext().Users
+        .Include("UserGrouproles")
+        .Include("UserGrouproles.Group")
+        .Include("UserGrouproles.Role")
+        .Where(x => x.Nickname.Contains(name) || x.Username.Contains(name)).ToList();
+    }
+    else
+      users = GetDbContext().Users
+        .Include("UserGrouproles")
+        .Include("UserGrouproles.Group")
+        .Include("UserGrouproles.Role")
+        .ToList();
+
+    var dtoList = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(users);
+    return dtoList;
+  }
 }

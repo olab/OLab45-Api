@@ -11,6 +11,8 @@ using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.Contracts;
+using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
 using System;
@@ -191,6 +193,36 @@ public class AuthController : OLabController
       return ProcessException(ex, HttpContext.Request);
     }
 
+  }
+
+  /// <summary>
+  /// Query users
+  /// </summary>
+  /// <param name="request">GetUsersRequest user query</param>
+  /// <returns>List of users</returns>
+  [HttpGet("{name?}")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetUsers(string name = null)
+  {
+    try
+    {
+      var responses = new List<AddUserResponse>();
+      var auth = GetAuthorization(HttpContext);
+
+      // test if user has access to add users.
+      if (!await auth.IsSystemSuperuserAsync())
+        return OLabUnauthorizedResult.Result();
+
+      var response = _userService.GetUsers(name);
+
+      return HttpContext.Request.CreateResponse(
+        OLabObjectListResult<UsersDto>.Result(response));
+
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
   }
 
   /// <summary>
