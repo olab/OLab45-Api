@@ -72,7 +72,7 @@ public partial class RolesController : OLabController
   }
 
   /// <summary>
-  /// Retrieve all group objects
+  /// Retrieve all role objects
   /// </summary>
   /// <param name="take">Pages max # records to retrieve</param>
   /// <param name="skip"># records to skip</param>
@@ -99,7 +99,7 @@ public partial class RolesController : OLabController
   }
 
   /// <summary>
-  /// Create new group
+  /// Create new role
   /// </summary>
   /// <param name="name">Name to create</param>
   /// <returns>IActionResult</returns>
