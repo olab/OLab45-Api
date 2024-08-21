@@ -6,6 +6,7 @@ using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLabWebAPI.Extensions;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OLabWebAPI.Endpoints.WebApi.Player;
@@ -98,6 +99,35 @@ public partial class MapsController : OLabController
     {
       return ProcessException(ex, HttpContext.Request);
     }
+  }
+
+  /// <summary>
+  /// ReadAsync a list of nodes for a map
+  /// </summary>
+  /// <param name="mapId">Map id to retrieve nodes for/param>
+  /// <param name="take">Max number of records to return</param>
+  /// <param name="skip">SKip over a number of records</param>
+  /// <returns>IActionResult</returns>
+  [HttpGet("{mapId}/nodes")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> GetMapNodesPlayerAsync(
+    uint mapId, 
+    [FromQuery] int? take, 
+    [FromQuery] int? skip)
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization(HttpContext);
+
+      var pagedResponse = await _endpoint.GetNodesAsync(auth, mapId, take, skip);
+      return HttpContext.Request.CreateResponse(OLabObjectPagedListResult<MapNodesMapReferenceDto>.Result(pagedResponse.Data, pagedResponse.Remaining));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
   }
 
 }
