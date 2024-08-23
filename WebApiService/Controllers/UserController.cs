@@ -253,7 +253,7 @@ public class AuthController : OLabController
             Logger,
             DbContext);
 
-          await userRequest.ProcessAddUserText(userRequestText);
+          userRequest.ProcessAddUserText(userRequestText);
 
           var response = await _userService.AddUserAsync(userRequest);
           responses.Add(response);
@@ -268,5 +268,33 @@ public class AuthController : OLabController
     {
       return ProcessException(ex, HttpContext.Request);
     }
+  }
+
+  /// <summary>
+  /// Adds users from posted json records
+  /// </summary>
+  /// <param name="jsonStringData">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
+  [HttpPut]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> EditUser([FromBody] AddUserRequest request)
+  {
+    try
+    {
+      var auth = GetAuthorization(HttpContext);
+
+      // test if user has access to add users.
+      if (!await auth.IsSystemSuperuserAsync())
+        return OLabUnauthorizedResult.Result();
+
+      var response = await _userService.EditUserAsync(request);
+      return HttpContext.Request.CreateResponse(
+        OLabObjectResult<AddUserResponse>.Result(response));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
   }
 }

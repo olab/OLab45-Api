@@ -1,3 +1,4 @@
+using Azure.Core;
 using Dawn;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -107,9 +108,14 @@ public class UserService : IUserService
   /// </summary>
   /// <param name="id">User id</param>
   /// <returns>User record</returns>
-  public Users GetById(int id)
+  public Users GetById(uint? id)
   {
-    return GetDbContext().Users.FirstOrDefault(x => x.Id == id);
+    if (!id.HasValue)
+      return null;
+    return GetDbContext()
+      .Users
+      .Include("UserGrouproles")
+      .FirstOrDefault(x => x.Id == id.Value);
   }
 
   /// <summary>
@@ -119,7 +125,10 @@ public class UserService : IUserService
   /// <returns>User record</returns>
   public Users GetByUserName(string userName)
   {
-    return GetDbContext().Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
+    return GetDbContext()
+      .Users
+      .Include("UserGrouproles")
+      .FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
   }
 
   /// <summary>
@@ -225,6 +234,58 @@ public class UserService : IUserService
   }
 
   /// <summary>
+  /// Edit user based on add user request
+  /// </summary>
+  /// <param name="userRequest">USer request</param>
+  /// <returns>Add user response</returns>
+  public async Task<AddUserResponse> EditUserAsync(AddUserRequest userRequest)
+  {
+    var user = GetById(userRequest.Id);
+    if (user == null)
+    {
+      return new AddUserResponse
+      {
+        Username = userRequest.Username.ToLower(),
+        Message = $"User does not exist"
+      };
+    }
+
+    // need to set the logger and the dbContext since
+    // they are not present when AddUserRequest created by webApi
+    userRequest.SetInfrastructure(GetLogger(), GetDbContext());
+
+    // parse any GroupRole string(s)
+    userRequest.BuildGroupRoleObjects();
+
+    // build physical User object from request
+    Users.UpsertFromRequest(user, userRequest);
+
+    // update and encrypt password if one was passed in
+    if (!string.IsNullOrEmpty(userRequest.Password))
+    {
+      ChangePassword(user, new ChangePasswordRequest
+      {
+        NewPassword = userRequest.Password
+      });
+    }
+
+    GetDbContext().Users.Update(user);
+    await GetDbContext().SaveChangesAsync();
+
+    user.UserGrouproles.AddRange(userRequest.GroupRoleObjects);
+    GetDbContext().Users.Update(user);
+    await GetDbContext().SaveChangesAsync();
+
+    var response = new AddUserResponse
+    {
+      Username = user.Username,
+      Password = user.Password
+    };
+
+    return response;
+  }
+
+  /// <summary>
   /// Add user based on add user request
   /// </summary>
   /// <param name="userRequest">USer request</param>
@@ -241,7 +302,10 @@ public class UserService : IUserService
       };
     }
 
-    var newUser = Users.CreateDefault(userRequest);
+    var newUser = Users.UpsertFromRequest(null, userRequest);
+    newUser.UserGrouproles.AddRange(
+      UserGrouproles.StringToObjectList(GetDbContext(), userRequest.GroupRoles));
+
     var newPassword = newUser.Password;
 
     ChangePassword(newUser, new ChangePasswordRequest
