@@ -160,7 +160,7 @@ public class UserService : IUserService
     return epoch.AddSeconds(unixTime);
   }
 
-  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<AddUserRequest> items)
+  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<DeleteUsersRequest> items)
   {
     try
     {
@@ -183,28 +183,27 @@ public class UserService : IUserService
     }
   }
 
-  public async Task<AddUserResponse> DeleteUserAsync(AddUserRequest userRequest)
+  public async Task<AddUserResponse> DeleteUserAsync(DeleteUsersRequest userRequest)
   {
-    var user = GetByUserName(userRequest.Username);
+    var user = GetById(userRequest.Id);
     if (user == null)
     {
       return new AddUserResponse
       {
-        Username = userRequest.Username.ToLower(),
-        Message = $"User does not exist"
+        Id = userRequest.Id,
+        Error = $"User does not exist"
       };
     }
 
     var physUser =
-      await GetDbContext().Users.FirstOrDefaultAsync(x => x.Username == userRequest.Username);
+      await GetDbContext().Users.FirstOrDefaultAsync(x => x.Id == userRequest.Id);
 
     GetDbContext().Users.Remove(physUser);
     await GetDbContext().SaveChangesAsync();
 
     var response = new AddUserResponse
     {
-      Username = physUser.Username,
-      Message = "Deleted"
+      Id = userRequest.Id
     };
 
     return response;
@@ -245,8 +244,9 @@ public class UserService : IUserService
     {
       return new AddUserResponse
       {
+        Id = userRequest.Id.Value,
         Username = userRequest.Username.ToLower(),
-        Message = $"User does not exist"
+        Error = $"User does not exist"
       };
     }
 
@@ -297,8 +297,9 @@ public class UserService : IUserService
     {
       return new AddUserResponse
       {
+        Id = userRequest.Id.Value,
         Username = userRequest.Username.ToLower(),
-        Message = $"Already exists"
+        Error = $"Already exists"
       };
     }
 

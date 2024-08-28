@@ -177,7 +177,7 @@ public class AuthController : OLabController
   {
     try
     {
-      var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
+      var items = JsonConvert.DeserializeObject<List<DeleteUsersRequest>>(jsonStringData.ToString());
       var auth = GetAuthorization(HttpContext);
 
       // test if user has access to add users.
