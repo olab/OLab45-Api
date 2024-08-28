@@ -1,4 +1,3 @@
-using Azure.Core;
 using Dawn;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -7,7 +6,6 @@ using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Contracts;
 using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using OLab.Data.Mappers;
@@ -210,18 +208,18 @@ public class UserService : IUserService
     return response;
   }
 
-  public async Task<List<AddUserResponse>> AddUsersAsync(List<AddUserRequest> items)
+  public async Task<List<UsersDto>> AddUsersAsync(List<AddUserRequest> items)
   {
     try
     {
-      var responses = new List<AddUserResponse>();
+      var responses = new List<UsersDto>();
 
       Logger.LogDebug($"AddUserAsync(items count '{items.Count}')");
 
       foreach (var item in items)
       {
         var user = await AddUserAsync(item);
-        responses.Add(new AddUserResponse(user));
+        responses.Add(user);
       }
 
       return responses;
@@ -238,7 +236,7 @@ public class UserService : IUserService
   /// </summary>
   /// <param name="userRequest">USer request</param>
   /// <returns>Add user response</returns>
-  public async Task<Users> EditUserAsync(AddUserRequest userRequest)
+  public async Task<UsersDto> EditUserAsync(AddUserRequest userRequest)
   {
     var user = GetById(userRequest.Id);
     if (user == null)
@@ -271,7 +269,8 @@ public class UserService : IUserService
     GetDbContext().Users.Update(user);
     await GetDbContext().SaveChangesAsync();
 
-    return user;
+    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(user);
+    return userDto;
   }
 
   /// <summary>
@@ -279,7 +278,7 @@ public class UserService : IUserService
   /// </summary>
   /// <param name="userRequest">User request</param>
   /// <returns>ADd user response</returns>
-  public async Task<Users> AddUserAsync(AddUserRequest userRequest)
+  public async Task<UsersDto> AddUserAsync(AddUserRequest userRequest)
   {
     var user = GetByUserName(userRequest.Username);
     if (user != null)
@@ -299,7 +298,8 @@ public class UserService : IUserService
     await GetDbContext().Users.AddAsync(newUser);
     await GetDbContext().SaveChangesAsync();
 
-    return newUser;
+    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(newUser);
+    return userDto;
   }
 
   public Task<AddUserResponse> GetUsersAsync(AddUserRequest item)

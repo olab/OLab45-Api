@@ -157,7 +157,7 @@ public class AuthController : OLabController
 
       var responses = await _userService.AddUsersAsync(items);
       return HttpContext.Request.CreateResponse(
-        OLabObjectListResult<AddUserResponse>.Result(responses));
+        OLabObjectListResult<UsersDto>.Result(responses));
     }
     catch (Exception ex)
     {
@@ -185,7 +185,7 @@ public class AuthController : OLabController
 
       var response = await _userService.AddUserAsync(body);
       return HttpContext.Request.CreateResponse(
-        OLabObjectResult<Users>.Result(response));
+        OLabObjectResult<UsersDto>.Result(response));
     }
     catch (Exception ex)
     {
@@ -265,7 +265,7 @@ public class AuthController : OLabController
   {
     try
     {
-      var responses = new List<Users>();
+      var responses = new List<UsersDto>();
       var auth = GetAuthorization(HttpContext);
 
       // test if user has access to add users.
@@ -290,7 +290,7 @@ public class AuthController : OLabController
       }
 
       return HttpContext.Request.CreateResponse(
-        OLabObjectListResult<Users>.Result(responses));
+        OLabObjectListResult<UsersDto>.Result(responses));
 
     }
     catch (Exception ex)
@@ -318,7 +318,7 @@ public class AuthController : OLabController
 
       var response = await _userService.EditUserAsync(request);
       return HttpContext.Request.CreateResponse(
-        OLabObjectResult<Users>.Result(response));
+        OLabObjectResult<UsersDto>.Result(response));
     }
     catch (Exception ex)
     {
