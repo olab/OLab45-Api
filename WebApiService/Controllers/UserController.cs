@@ -144,7 +144,7 @@ public class AuthController : OLabController
   /// <returns>Array of AddUserResponse records</returns>
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> AddUser([FromBody] JArray jsonStringData)
+  public async Task<IActionResult> AddUsers([FromBody] JArray jsonStringData)
   {
     try
     {
@@ -165,6 +165,35 @@ public class AuthController : OLabController
     }
 
   }
+
+  /// <summary>
+  /// Adds users from posted json records
+  /// </summary>
+  /// <param name="jsonStringData">User records</param>
+  /// <returns>Array of AddUserResponse records</returns>
+  [HttpPost]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  public async Task<IActionResult> AddUser([FromBody] AddUserRequest body)
+  {
+    try
+    {
+      var auth = GetAuthorization(HttpContext);
+
+      // test if user has access to add users.
+      if (!await auth.IsSystemSuperuserAsync())
+        return OLabUnauthorizedResult.Result();
+
+      var response = await _userService.AddUserAsync(body);
+      return HttpContext.Request.CreateResponse(
+        OLabObjectResult<Users>.Result(response));
+    }
+    catch (Exception ex)
+    {
+      return ProcessException(ex, HttpContext.Request);
+    }
+
+  }
+
 
   /// <summary>
   /// Adds users from posted json records
@@ -236,7 +265,7 @@ public class AuthController : OLabController
   {
     try
     {
-      var responses = new List<AddUserResponse>();
+      var responses = new List<Users>();
       var auth = GetAuthorization(HttpContext);
 
       // test if user has access to add users.
@@ -261,7 +290,7 @@ public class AuthController : OLabController
       }
 
       return HttpContext.Request.CreateResponse(
-        OLabObjectListResult<AddUserResponse>.Result(responses));
+        OLabObjectListResult<Users>.Result(responses));
 
     }
     catch (Exception ex)
@@ -289,7 +318,7 @@ public class AuthController : OLabController
 
       var response = await _userService.EditUserAsync(request);
       return HttpContext.Request.CreateResponse(
-        OLabObjectResult<AddUserResponse>.Result(response));
+        OLabObjectResult<Users>.Result(response));
     }
     catch (Exception ex)
     {

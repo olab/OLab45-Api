@@ -3,6 +3,7 @@ using Dawn;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NuGet.Packaging;
+using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -219,8 +220,8 @@ public class UserService : IUserService
 
       foreach (var item in items)
       {
-        var response = await AddUserAsync(item);
-        responses.Add(response);
+        var user = await AddUserAsync(item);
+        responses.Add(new AddUserResponse(user));
       }
 
       return responses;
@@ -237,18 +238,12 @@ public class UserService : IUserService
   /// </summary>
   /// <param name="userRequest">USer request</param>
   /// <returns>Add user response</returns>
-  public async Task<AddUserResponse> EditUserAsync(AddUserRequest userRequest)
+  public async Task<Users> EditUserAsync(AddUserRequest userRequest)
   {
     var user = GetById(userRequest.Id);
     if (user == null)
-    {
-      return new AddUserResponse
-      {
-        Id = userRequest.Id.Value,
-        Username = userRequest.Username.ToLower(),
-        Error = $"User does not exist"
-      };
-    }
+      throw new OLabBadRequestException($"user id: {userRequest.Id} does not exist");
+
 
     // need to set the logger and the dbContext since
     // they are not present when AddUserRequest created by webApi
@@ -276,32 +271,19 @@ public class UserService : IUserService
     GetDbContext().Users.Update(user);
     await GetDbContext().SaveChangesAsync();
 
-    var response = new AddUserResponse
-    {
-      Username = user.Username,
-      Password = user.Password
-    };
-
-    return response;
+    return user;
   }
 
   /// <summary>
   /// Add user based on add user request
   /// </summary>
-  /// <param name="userRequest">USer request</param>
+  /// <param name="userRequest">User request</param>
   /// <returns>ADd user response</returns>
-  public async Task<AddUserResponse> AddUserAsync(AddUserRequest userRequest)
+  public async Task<Users> AddUserAsync(AddUserRequest userRequest)
   {
     var user = GetByUserName(userRequest.Username);
     if (user != null)
-    {
-      return new AddUserResponse
-      {
-        Id = userRequest.Id.Value,
-        Username = userRequest.Username.ToLower(),
-        Error = $"Already exists"
-      };
-    }
+      throw new OLabBadRequestException($"'{userRequest.Username}' already exists");
 
     var newUser = Users.UpsertFromRequest(null, userRequest);
     newUser.UserGrouproles.AddRange(
@@ -317,13 +299,7 @@ public class UserService : IUserService
     await GetDbContext().Users.AddAsync(newUser);
     await GetDbContext().SaveChangesAsync();
 
-    var response = new AddUserResponse
-    {
-      Username = newUser.Username,
-      Password = newPassword
-    };
-
-    return response;
+    return newUser;
   }
 
   public Task<AddUserResponse> GetUsersAsync(AddUserRequest item)
