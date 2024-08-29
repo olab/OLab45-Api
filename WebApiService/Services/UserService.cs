@@ -184,7 +184,14 @@ public class UserService : IUserService
 
   public async Task<AddUserResponse> DeleteUserAsync(DeleteUsersRequest userRequest)
   {
-    var user = GetById(userRequest.Id);
+    Users user = null;
+
+    // allow for either id or user name to search for
+    if ( userRequest.Id > 0 )
+      user = GetById(userRequest.Id);
+    else if ( !string.IsNullOrEmpty( userRequest.UserName ) )
+      user = GetByUserName(userRequest.UserName);
+
     if (user == null)
     {
       return new AddUserResponse
@@ -251,7 +258,7 @@ public class UserService : IUserService
     userRequest.BuildGroupRoleObjects();
 
     // build physical User object from request
-    Users.UpsertFromRequest(user, userRequest);
+    Users.CreatePhysFromRequest(user, userRequest);
 
     // update and encrypt password if one was passed in
     if (!string.IsNullOrEmpty(userRequest.Password))
@@ -284,21 +291,19 @@ public class UserService : IUserService
     if (user != null)
       throw new OLabBadRequestException($"'{userRequest.Username}' already exists");
 
-    var newUser = Users.UpsertFromRequest(null, userRequest);
-    newUser.UserGrouproles.AddRange(
+    var newUserPhys = Users.CreatePhysFromRequest(null, userRequest);
+    newUserPhys.UserGrouproles.AddRange(
       UserGrouproles.StringToObjectList(GetDbContext(), userRequest.GroupRoles));
 
-    var newPassword = newUser.Password;
-
-    ChangePassword(newUser, new ChangePasswordRequest
+    ChangePassword(newUserPhys, new ChangePasswordRequest
     {
-      NewPassword = newUser.Password
+      NewPassword = newUserPhys.Password
     });
 
-    await GetDbContext().Users.AddAsync(newUser);
+    await GetDbContext().Users.AddAsync(newUserPhys);
     await GetDbContext().SaveChangesAsync();
 
-    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(newUser);
+    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(newUserPhys);
     return userDto;
   }
 
