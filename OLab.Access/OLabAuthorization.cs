@@ -166,7 +166,7 @@ public class OLabAuthorization : IOLabAuthorization
     var groupPhys = await _groupReaderWriter.GetAsync(groupName);
     if (groupPhys == null)
     {
-      _logger.LogError($"group '{groupName}' not defined.");
+      GetLogger().LogError($"group '{groupName}' not defined.");
       return false;
     }
 
@@ -183,7 +183,7 @@ public class OLabAuthorization : IOLabAuthorization
     var superUserRolePhys = await _roleReaderWriter.GetAsync(Roles.SuperUserRole);
     if (superUserRolePhys == null)
     {
-      _logger.LogError($"system role {Roles.SuperUserRole} not defined.");
+      GetLogger().LogError($"system role {Roles.SuperUserRole} not defined.");
       return false;
     }
 
@@ -254,7 +254,11 @@ public class OLabAuthorization : IOLabAuthorization
       x.ImageableId == objectId);
 
     if (acl != null)
-      return (acl.Acl2 & requestedAcl) == requestedAcl;
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"ACL: g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {rc}");
+      return rc;
+    }
 
     // group  
     // role   
@@ -267,7 +271,11 @@ public class OLabAuthorization : IOLabAuthorization
       x.ImageableId == null);
 
     if (acl != null)
-      return (acl.Acl2 & requestedAcl) == requestedAcl;
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"ACL: g: {groupId} r: {roleId} t: {objectType} i: null = {rc}");
+      return rc;
+    }
 
     // group  
     // role   
@@ -280,7 +288,11 @@ public class OLabAuthorization : IOLabAuthorization
       x.ImageableId == null);
 
     if (acl != null)
-      return (acl.Acl2 & requestedAcl) == requestedAcl;
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"ACL: g: {groupId} r: {roleId} t: null i: null = {rc}");
+      return rc;
+    }
 
     // group  
     // role        = *
@@ -293,7 +305,11 @@ public class OLabAuthorization : IOLabAuthorization
       x.ImageableId == objectId);
 
     if (acl != null)
-      return (acl.Acl2 & requestedAcl) == requestedAcl;
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"ACL: g: {groupId} r: null t: {objectType} i: {objectId} = {rc}");
+      return rc;
+    }
 
 
     // group       = *
@@ -307,7 +323,11 @@ public class OLabAuthorization : IOLabAuthorization
       x.ImageableId == objectId);
 
     if (acl != null)
-      return (acl.Acl2 & requestedAcl) == requestedAcl;
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"ACL: g: null r: null t: {objectType} i: {objectId} = {rc}");
+      return rc;
+    }
 
     // group  
     // role   
@@ -320,7 +340,11 @@ public class OLabAuthorization : IOLabAuthorization
       x.ImageableId == null);
 
     if (acl != null)
-      return (acl.Acl2 & requestedAcl) == requestedAcl;
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"ACL: g: {groupId} r: {roleId} t: {objectType} i: null = {rc}");
+      return rc;
+    }
 
 
     // group       = *
@@ -334,7 +358,11 @@ public class OLabAuthorization : IOLabAuthorization
       x.ImageableId == null );
 
     if (acl != null)
-      return (acl.Acl2 & requestedAcl) == requestedAcl;
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"ACL: g: null r: null t: null i: null = {rc}");
+      return rc;
+    }
 
     return null;
 
