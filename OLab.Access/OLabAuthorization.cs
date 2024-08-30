@@ -238,68 +238,100 @@ public class OLabAuthorization : IOLabAuthorization
     uint? objectId,
     ulong requestedAcl)
   {
-    // test if system superuser, meaning full access
+    // group = olab
+    // role = superuser
     if (await IsSystemSuperuserAsync())
       return true;
 
-    if (groupId.HasValue)
-    {
-      // test if group superuser, meaning full access
-      if (await IsGroupSuperUser(groupId.Value))
-        return true;
-    }
-
-    // test for explicit object type and id specified
-    // for specific group and role
+    // group  
+    // role
+    // object type
+    // object id
     var acl = _groupRoleAcls.FirstOrDefault(x =>
-      x.ImageableId == objectId &&
+      x.GroupId == groupId &&
+      x.RoleId == roleId &&
       x.ImageableType == objectType &&
-      x.GroupId == groupId &&
-      x.RoleId == roleId);
+      x.ImageableId == objectId);
 
     if (acl != null)
       return (acl.Acl2 & requestedAcl) == requestedAcl;
 
-    // test for explicit object type and id specified
-    // for specific group (all roles)
+    // group  
+    // role   
+    // object type
+    // object id   = *
     acl = _groupRoleAcls.FirstOrDefault(x =>
-      x.ImageableId == objectId &&
+      x.GroupId == groupId &&
+      x.RoleId == roleId &&
       x.ImageableType == objectType &&
-      x.GroupId == groupId &&
-      x.RoleId == null);
+      x.ImageableId == null);
 
     if (acl != null)
       return (acl.Acl2 & requestedAcl) == requestedAcl;
 
-
-    // test for any object of type specified
-    // for specific group and role
+    // group  
+    // role   
+    // object type = *
+    // object id   = *
     acl = _groupRoleAcls.FirstOrDefault(x =>
-    !x.ImageableId.HasValue &&
+      x.GroupId == groupId &&
+      x.RoleId == roleId &&
+      x.ImageableType == null &&
+      x.ImageableId == null);
+
+    if (acl != null)
+      return (acl.Acl2 & requestedAcl) == requestedAcl;
+
+    // group  
+    // role        = *
+    // object type
+    // object id 
+    acl = _groupRoleAcls.FirstOrDefault(x =>
+      x.GroupId == groupId &&
+      x.RoleId == null &&
       x.ImageableType == objectType &&
-      x.GroupId == groupId &&
-      x.RoleId == roleId);
+      x.ImageableId == objectId);
 
     if (acl != null)
       return (acl.Acl2 & requestedAcl) == requestedAcl;
 
-    // test for object of any type specified
-    // for specific group and role
+
+    // group       = *
+    // role        = *
+    // object type
+    // object id  
     acl = _groupRoleAcls.FirstOrDefault(x =>
-      !x.ImageableId.HasValue &&
-      string.IsNullOrEmpty(x.ImageableType) &&
-      x.GroupId == groupId &&
-      x.RoleId == roleId);
+      x.GroupId == null &&
+      x.RoleId == null &&
+      x.ImageableType == objectType &&
+      x.ImageableId == objectId);
 
     if (acl != null)
       return (acl.Acl2 & requestedAcl) == requestedAcl;
 
-    // else return default acl
+    // group  
+    // role   
+    // object type
+    // object id   = *
     acl = _groupRoleAcls.FirstOrDefault(x =>
-      !x.GroupId.HasValue &&
-      !x.RoleId.HasValue &&
-      !x.ImageableId.HasValue &&
-      string.IsNullOrEmpty(x.ImageableType));
+      x.GroupId == groupId &&
+      x.RoleId == roleId &&
+      x.ImageableType == objectType &&
+      x.ImageableId == null);
+
+    if (acl != null)
+      return (acl.Acl2 & requestedAcl) == requestedAcl;
+
+
+    // group       = *
+    // role        = *
+    // object type = *
+    // object id   = *
+    acl = _groupRoleAcls.FirstOrDefault(x =>
+      x.GroupId == null &&
+      x.RoleId == null &&
+      x.ImageableType == null && 
+      x.ImageableId == null );
 
     if (acl != null)
       return (acl.Acl2 & requestedAcl) == requestedAcl;
