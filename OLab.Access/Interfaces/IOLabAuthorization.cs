@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Dto;
+using OLab.Api.Model;
 using System.Threading.Tasks;
 
 namespace OLab.Api.Data.Interface;
@@ -19,4 +21,6 @@ public interface IOLabAuthorization
   void ApplyUserContext(IUserContext userContext);
   Task<bool> IsSystemSuperuserAsync();
   Task<bool> IsGroupSuperUser(uint groupId);
+  Task<bool> HasAccessToAppAsync(Users userPhys, string appName);
+
 }

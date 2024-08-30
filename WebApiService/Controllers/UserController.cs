@@ -24,6 +24,9 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
+using OLab.Api.Data.Interface;
+using OLab.Access;
+using Microsoft.Extensions.Primitives;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
@@ -61,6 +64,8 @@ public class AuthController : OLabController
   [HttpPost]
   public async Task<IActionResult> Login(LoginRequest model)
   {
+    IOLabAuthorization auth = null;
+
     var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
 
     if (string.IsNullOrEmpty(ipAddress))
@@ -69,7 +74,7 @@ public class AuthController : OLabController
     bool impersonateMode = false;
     try
     {
-      var auth = GetAuthorization(HttpContext);
+      auth = GetAuthorization(HttpContext);
       // if have token and user is superuser, then we can impersonate requested user
       impersonateMode = await auth.IsSystemSuperuserAsync();
     }
@@ -85,6 +90,16 @@ public class AuthController : OLabController
     var user = _authentication.Authenticate(model, impersonateMode);
     if (user == null)
       return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
+
+    // test if user has access to application
+    var authorization = new OLabAuthorization(Logger, DbContext);
+    StringValues refererValues;
+    if (Request.Headers.TryGetValue("Referer", out refererValues))
+    {
+      var referer = refererValues.First();
+      if (!await authorization.HasAccessToAppAsync(user, referer))
+        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("User does not have access to this application"));
+    }
 
     var response = _authentication.GenerateJwtToken(user);
     return HttpContext.Request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));

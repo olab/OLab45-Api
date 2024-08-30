@@ -2,7 +2,9 @@ using Dawn;
 using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Humanizer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
 using OLab.Api.Common;
@@ -17,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace OLab.Access;
 
@@ -54,7 +57,32 @@ public class OLabAuthorization : IOLabAuthorization
   }
 
   /// <summary>
-  /// Add user context to Authorization and load user-specific acl
+  /// Add user Authorization and load group/role acls
+  /// </summary>
+  /// <param name="userPhys">User to evaluate</param>
+  public void ApplyUserContext(Users userPhys)
+  {
+    // load all the user's group/roles acl records
+    foreach (var userGroups in userPhys.UserGrouproles.Select(x => x.Group).Distinct())
+    {
+      var groupsPhys = GrouproleAcls.FindByGroup(
+        _dbContext,
+        userGroups.Name);
+
+      _groupRoleAcls.AddRange(groupsPhys);
+
+      // add default no-group acls
+      groupsPhys = GrouproleAcls.FindByGroup(
+        _dbContext,
+        string.Empty);
+
+      _groupRoleAcls.AddRange(groupsPhys);
+
+    }
+  }
+
+  /// <summary>
+  /// Add user context to Authorization and load group/role acls
   /// </summary>
   /// <param name="userContext">User context</param>
   public void ApplyUserContext(IUserContext userContext)
@@ -85,31 +113,31 @@ public class OLabAuthorization : IOLabAuthorization
     }
 
     // if local user, read the user-level acls
-    var user = GetDbContext().Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
-    if (user != null)
-    {
-      _logger.LogInformation($"Local user '{userName}' found");
+    //var user = GetDbContext().Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
+    //if (user != null)
+    //{
+    //  _logger.LogInformation($"Local user '{userName}' found");
 
-      OLabUser = user;
-      userId = user.Id;
-      _userAcls = GetDbContext().UserAcls.Where(x => x.UserId == userId).ToList();
+    //  OLabUser = user;
+    //  userId = user.Id;
+    //  _userAcls = GetDbContext().UserAcls.Where(x => x.UserId == userId).ToList();
 
-      // if user is anonymous user, add user access to anon-flagged maps
-      if (OLabUser.Username == Users.AnonymousUserName)
-      {
-        var anonymousMaps = GetDbContext().Maps.Where(x => x.SecurityId == 1).ToList();
-        foreach (var item in anonymousMaps)
-          _userAcls.Add(new UserAcls
-          {
-            Id = item.Id,
-            ImageableId = item.Id,
-            ImageableType = Constants.ScopeLevelMap,
-            Acl2 =
-              IOLabAuthorization.AclBitMaskRead |
-              IOLabAuthorization.AclBitMaskExecute
-          });
-      }
-    }
+    //  // if user is anonymous user, add user access to anon-flagged maps
+    //  if (OLabUser.Username == Users.AnonymousUserName)
+    //  {
+    //    var anonymousMaps = GetDbContext().Maps.Where(x => x.SecurityId == 1).ToList();
+    //    foreach (var item in anonymousMaps)
+    //      _userAcls.Add(new UserAcls
+    //      {
+    //        Id = item.Id,
+    //        ImageableId = item.Id,
+    //        ImageableType = Constants.ScopeLevelMap,
+    //        Acl2 =
+    //          IOLabAuthorization.AclBitMaskRead |
+    //          IOLabAuthorization.AclBitMaskExecute
+    //      });
+    //  }
+    //}
   }
 
   /// <summary>
@@ -222,7 +250,7 @@ public class OLabAuthorization : IOLabAuthorization
       x.GroupId == groupId &&
       x.RoleId == roleId);
 
-    if (acl != null) 
+    if (acl != null)
       return (acl.Acl2 & requestedAcl) == requestedAcl;
 
     // test for explicit object type and id specified
@@ -376,5 +404,46 @@ public class OLabAuthorization : IOLabAuthorization
   public async Task<bool> HasAccessAsync(ulong requestedPerm, string operationType)
   {
     return await HasAccessAsync(requestedPerm, operationType, 0);
+  }
+
+  /// <summary>
+  /// Test if user has access to application
+  /// </summary>
+  /// <param name="userPhys">User to evaluate</param>
+  /// <param name="refererValue">Request referer header value</param>
+  /// <returns></returns>
+  public async Task<bool> HasAccessToAppAsync(Users userPhys, string refererValue)
+  {
+    var uri = new Uri(refererValue);
+
+    GetLogger().LogInformation($"Testing referrer: '{uri.IdnHost}', '{uri.PathAndQuery}'");
+
+    // if no path, and referrer from locahost then this is probably local
+    if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
+      return true;
+
+    var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == refererValue);
+
+    if (appPhys == null)
+    {
+      GetLogger().LogError($"Could not find application {refererValue} in database");
+      return false;
+    }
+
+    foreach (var userGroupRolePhys in userPhys.UserGrouproles)
+    {
+      var accessResult = await HasRequestedAccessAsync(
+        userGroupRolePhys.GroupId,
+        userGroupRolePhys.RoleId,
+        Constants.ScopeLevelApp,
+        appPhys.Id,
+        GrouproleAcls.ExecuteMask);
+
+      if (accessResult.HasValue && accessResult.Value == true)
+        return true;
+    }
+
+    return false;
+
   }
 }

@@ -212,3 +212,10 @@ INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `rol
 
 
 UPDATE `maps` SET created_at = NOW() WHERE created_at is NULL;
+
+CREATE TABLE `system_applications` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
