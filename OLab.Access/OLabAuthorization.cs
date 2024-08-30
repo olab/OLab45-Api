@@ -416,13 +416,14 @@ public class OLabAuthorization : IOLabAuthorization
   {
     var uri = new Uri(refererValue);
 
-    GetLogger().LogInformation($"Testing referrer: '{uri.IdnHost}', '{uri.PathAndQuery}'");
-
     // if no path, and referrer from locahost then this is probably local
     if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
       return true;
 
-    var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == refererValue);
+    var appName = uri.PathAndQuery.Replace('/', '');
+    GetLogger().LogInformation($"Testing referrer: '{uri.IdnHost}', '{appName}'");
+
+    var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == appName);
 
     if (appPhys == null)
     {
