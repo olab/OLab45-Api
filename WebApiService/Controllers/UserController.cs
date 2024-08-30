@@ -266,7 +266,7 @@ public class AuthController : OLabController
   /// <returns>Array of AddUserResponse records</returns>
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> AddUsers(IFormFile file)
+  public async Task<IActionResult> ImportUsers(IFormFile file)
   {
     try
     {
@@ -278,102 +278,8 @@ public class AuthController : OLabController
         return OLabUnauthorizedResult.Result();
 
       var fileStream = file.OpenReadStream();
-      using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileStream, false))
-      {
 
-        WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart ?? spreadsheetDocument.AddWorkbookPart();
-        WorksheetPart worksheetPart = workbookPart.WorksheetParts.First();
-        Worksheet sheet = worksheetPart.Worksheet;
-
-        SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
-        SharedStringTable sst = sstpart.SharedStringTable;
-
-        var cells = sheet.Descendants<Cell>();
-        var rows = sheet.Descendants<Row>();
-
-        Logger.LogInformation($"Row count = {rows.LongCount()}");
-        Logger.LogInformation($"Cell count = {cells.LongCount()}");
-
-        foreach (Row row in rows)
-        {
-          int column = 0;
-          var userRequest = new AddUserRequest(
-            Logger,
-            DbContext);
-
-          var groupRoleStrings = new List<string>();
-
-          foreach (Cell c in row.Elements<Cell>())
-          {
-            if ((c.DataType != null) && (c.DataType == CellValues.SharedString))
-            {
-              int ssid = int.Parse(c.CellValue.Text);
-              string str = sst.ChildElements[ssid].InnerText;
-              Logger.LogInformation($"String: {str}");
-
-              switch (column)
-              {
-                case 0:
-                  userRequest.Operation = str;
-                  break;
-                case 1:
-                  userRequest.Username = str;
-                  break;
-                case 2:
-                  userRequest.NickName = str;
-                  break;
-                case 3:
-                  userRequest.EMail = str;
-                  break;
-                default:
-                  groupRoleStrings.Add(str);
-                  break;
-              }
-
-            }
-
-            column++;
-          }
-
-          userRequest.GroupRoles = string.Join(",", groupRoleStrings);
-
-          if (string.IsNullOrEmpty(userRequest.Operation) || userRequest.Operation == "+")
-          {
-            var response = await _userService.AddUserAsync(userRequest);
-            responses.Add(response);
-          }
-
-          else if (userRequest.Operation == "*")
-          {
-            var response = await _userService.EditUserAsync(userRequest);
-            responses.Add(response);
-          }
-
-          else if (userRequest.Operation == "-")
-          {
-            var list = new List<DeleteUsersRequest>();
-            list.Add(new DeleteUsersRequest { UserName = userRequest.Username });
-            await _userService.DeleteUsersAsync(list);
-          }
-        }
-      }
-
-      //var result = new List<string>();
-      //using (var reader = new StreamReader(file.OpenReadStream()))
-      //{
-      //  while (reader.Peek() >= 0)
-      //  {
-      //    var userRequestText = reader.ReadLine();
-      //    var userRequest = new AddUserRequest(
-      //      Logger,
-      //      DbContext);
-
-      //    userRequest.ProcessAddUserText(userRequestText);
-
-      //    var response = await _userService.AddUserAsync(userRequest);
-      //    responses.Add(response);
-      //  }
-      //}
+      responses = await _userService.ImportUsersAsync(fileStream);
 
       return HttpContext.Request.CreateResponse(
         OLabObjectListResult<UsersDto>.Result(responses));

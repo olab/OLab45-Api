@@ -1,4 +1,7 @@
+using Azure;
 using Dawn;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NuGet.Packaging;
@@ -11,10 +14,12 @@ using OLab.Data.Interface;
 using OLab.Data.Mappers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Users = OLab.Api.Model.Users;
 
 namespace OLabWebAPI.Services;
 
@@ -187,9 +192,9 @@ public class UserService : IUserService
     Users user = null;
 
     // allow for either id or user name to search for
-    if ( userRequest.Id > 0 )
+    if (userRequest.Id > 0)
       user = GetById(userRequest.Id);
-    else if ( !string.IsNullOrEmpty( userRequest.UserName ) )
+    else if (!string.IsNullOrEmpty(userRequest.UserName))
       user = GetByUserName(userRequest.UserName);
 
     if (user == null)
@@ -307,11 +312,6 @@ public class UserService : IUserService
     return userDto;
   }
 
-  public Task<AddUserResponse> GetUsersAsync(AddUserRequest item)
-  {
-    throw new NotImplementedException();
-  }
-
   public IList<UsersDto> GetUsers(string name)
   {
     IList<Users> users = new List<Users>();
@@ -333,5 +333,95 @@ public class UserService : IUserService
 
     var dtoList = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(users);
     return dtoList;
+  }
+
+  public async Task<List<UsersDto>> ImportUsersAsync(Stream fileStream)
+  {
+    var responses = new List<UsersDto>();
+
+    using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileStream, false))
+    {
+
+      var workbookPart =
+        spreadsheetDocument.WorkbookPart ?? spreadsheetDocument.AddWorkbookPart();
+      var worksheetPart = workbookPart.WorksheetParts.First();
+      var sheet = worksheetPart.Worksheet;
+
+      var sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
+      var sst = sstpart.SharedStringTable;
+
+      var cells = sheet.Descendants<Cell>();
+      var rows = sheet.Descendants<Row>();
+
+      Logger.LogInformation($"Import row count = {rows.LongCount()}");
+      Logger.LogInformation($"       cell count = {cells.LongCount()}");
+
+      foreach (Row row in rows)
+      {
+        int column = 0;
+        var userRequest = new AddUserRequest(
+          Logger,
+          GetDbContext());
+
+        var groupRoleStrings = new List<string>();
+
+        foreach (Cell c in row.Elements<Cell>())
+        {
+          if ((c.DataType != null) && (c.DataType == CellValues.SharedString))
+          {
+            int ssid = int.Parse(c.CellValue.Text);
+            string str = sst.ChildElements[ssid].InnerText;
+
+            switch (column)
+            {
+              case 0:
+                userRequest.Operation = str;
+                break;
+              case 1:
+                userRequest.Username = str;
+                break;
+              case 2:
+                userRequest.NickName = str;
+                break;
+              case 3:
+                userRequest.EMail = str;
+                break;
+              case 4:
+                userRequest.Password = str;
+                break;
+              default:
+                groupRoleStrings.Add(str);
+                break;
+            }
+
+          }
+
+          column++;
+        }
+
+        userRequest.GroupRoles = string.Join(",", groupRoleStrings);
+
+        if (string.IsNullOrEmpty(userRequest.Operation) || userRequest.Operation == "+")
+        {
+          var response = await AddUserAsync(userRequest);
+          responses.Add(response);
+        }
+
+        else if (userRequest.Operation == "*")
+        {
+          var response = await EditUserAsync(userRequest);
+          responses.Add(response);
+        }
+
+        else if (userRequest.Operation == "-")
+        {
+          var list = new List<DeleteUsersRequest>();
+          list.Add(new DeleteUsersRequest { UserName = userRequest.Username });
+          await DeleteUsersAsync(list);
+        }
+      }
+    }
+
+    return responses;
   }
 }
