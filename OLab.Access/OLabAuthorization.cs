@@ -241,17 +241,20 @@ public class OLabAuthorization : IOLabAuthorization
     // group = olab
     // role = superuser
     if (await IsSystemSuperuserAsync())
+    {
+      GetLogger().LogInformation($"ACL: superuser");
       return true;
+    }
 
     // group  
     // role
     // object type
     // object id
     var acl = _groupRoleAcls.FirstOrDefault(x =>
-      x.GroupId == groupId &&
-      x.RoleId == roleId &&
-      x.ImageableType == objectType &&
-      x.ImageableId == objectId);
+    x.GroupId == groupId &&
+    x.RoleId == roleId &&
+    x.ImageableType == objectType &&
+    x.ImageableId == objectId);
 
     if (acl != null)
     {
@@ -354,8 +357,8 @@ public class OLabAuthorization : IOLabAuthorization
     acl = _groupRoleAcls.FirstOrDefault(x =>
       x.GroupId == null &&
       x.RoleId == null &&
-      x.ImageableType == null && 
-      x.ImageableId == null );
+      x.ImageableType == null &&
+      x.ImageableId == null);
 
     if (acl != null)
     {
