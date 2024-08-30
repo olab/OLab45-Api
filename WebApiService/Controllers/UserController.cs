@@ -92,11 +92,11 @@ public class AuthController : OLabController
       return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 
     // test if user has access to application
-    var authorization = new OLabAuthorization(Logger, DbContext);
     StringValues refererValues;
     if (Request.Headers.TryGetValue("Referer", out refererValues))
     {
       var referer = refererValues.First();
+      var authorization = new OLabAuthorization(Logger, DbContext);
       if (!await authorization.HasAccessToAppAsync(user, referer))
         return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("User does not have access to this application"));
     }

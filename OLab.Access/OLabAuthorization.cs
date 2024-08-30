@@ -32,6 +32,7 @@ public class OLabAuthorization : IOLabAuthorization
 
   public IUserContext UserContext { get; set; }
   protected IList<GrouproleAcls> _groupRoleAcls = new List<GrouproleAcls>();
+  protected IList<UserGrouproles> _userGroupRoles = new List<UserGrouproles>();
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
   public Users OLabUser;
 
@@ -62,8 +63,13 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="userPhys">User to evaluate</param>
   public void ApplyUserContext(Users userPhys)
   {
+    Guard.Argument(userPhys).NotNull(nameof(userPhys));
+
+    OLabUser = userPhys;
+    _userGroupRoles = OLabUser.UserGrouproles.ToList();
+
     // load all the user's group/roles acl records
-    foreach (var userGroups in userPhys.UserGrouproles.Select(x => x.Group).Distinct())
+    foreach (var userGroups in _userGroupRoles.Select(x => x.Group).Distinct())
     {
       var groupsPhys = GrouproleAcls.FindByGroup(
         _dbContext,
@@ -90,12 +96,13 @@ public class OLabAuthorization : IOLabAuthorization
     Guard.Argument(userContext).NotNull(nameof(userContext));
 
     UserContext = userContext;
+    _userGroupRoles = UserContext.GroupRoles.ToList();
 
     var userName = UserContext.UserName;
     var userId = UserContext.UserId;
 
     // load all the user's group/roles acl records
-    foreach (var userGroups in UserContext.GroupRoles.Select(x => x.Group).Distinct())
+    foreach (var userGroups in _userGroupRoles.Select(x => x.Group).Distinct())
     {
       var groupsPhys = GrouproleAcls.FindByGroup(
         _dbContext,
@@ -180,7 +187,7 @@ public class OLabAuthorization : IOLabAuthorization
       return false;
     }
 
-    return UserContext.GroupRoles.Any(x => (x.GroupId == groupId) && (x.RoleId == superUserRolePhys.Id));
+    return _userGroupRoles.Any(x => (x.GroupId == groupId) && (x.RoleId == superUserRolePhys.Id));
   }
 
   /// <summary>
@@ -317,7 +324,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (mapNodePhys == null)
       throw new OLabObjectNotFoundException(Constants.ScopeLevelNode, mapNodeId);
 
-    foreach (var userGroupRolePhys in UserContext.GroupRoles)
+    foreach (var userGroupRolePhys in _userGroupRoles)
     {
       var roleResult = await HasRequestedAccessAsync(
         userGroupRolePhys.GroupId,
@@ -361,7 +368,7 @@ public class OLabAuthorization : IOLabAuthorization
       if (!UserContext.GroupRoles.Any(x => x.GroupId == mapGroupPhys.GroupId))
         continue;
 
-      foreach (var userGroupRolePhys in UserContext.GroupRoles.Where(x => x.GroupId == mapGroupPhys.GroupId))
+      foreach (var userGroupRolePhys in _userGroupRoles.Where(x => x.GroupId == mapGroupPhys.GroupId))
       {
         var roleResult = await HasRequestedAccessAsync(
           userGroupRolePhys.GroupId,
@@ -414,6 +421,9 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns></returns>
   public async Task<bool> HasAccessToAppAsync(Users userPhys, string refererValue)
   {
+    // load the user's acls
+    ApplyUserContext(userPhys);
+
     var uri = new Uri(refererValue);
 
     // if no path, and referrer from locahost then this is probably local
