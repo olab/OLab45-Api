@@ -253,7 +253,7 @@ public class OLabAuthorization : IOLabAuthorization
     x.GroupId == groupId &&
     x.RoleId == roleId &&
     x.ImageableType == objectType &&
-    x.ImageableId == objectId);
+    (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
 
     if (acl != null)
     {
@@ -304,7 +304,7 @@ public class OLabAuthorization : IOLabAuthorization
       x.GroupId == groupId &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
-      x.ImageableId == objectId);
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
 
     if (acl != null)
     {
@@ -322,7 +322,7 @@ public class OLabAuthorization : IOLabAuthorization
       x.GroupId == null &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
-      x.ImageableId == objectId);
+      ( x.ImageableId.HasValue && x.ImageableId.Value == objectId));
 
     if (acl != null)
     {
