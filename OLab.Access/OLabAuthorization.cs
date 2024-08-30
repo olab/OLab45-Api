@@ -420,7 +420,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
       return true;
 
-    var appName = uri.PathAndQuery.Replace('/', '');
+    var appName = uri.PathAndQuery.Replace("/", "");
     GetLogger().LogInformation($"Testing referrer: '{uri.IdnHost}', '{appName}'");
 
     var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == appName);
