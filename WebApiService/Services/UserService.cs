@@ -403,18 +403,21 @@ public class UserService : IUserService
 
         if (string.IsNullOrEmpty(userRequest.Operation) || userRequest.Operation == "+")
         {
+          Logger.LogInformation($" adding user {userRequest.Username}");
           var response = await AddUserAsync(userRequest);
           responses.Add(response);
         }
 
         else if (userRequest.Operation == "*")
         {
+          Logger.LogInformation($" editing user {userRequest.Username}");
           var response = await EditUserAsync(userRequest);
           responses.Add(response);
         }
 
         else if (userRequest.Operation == "-")
         {
+          Logger.LogInformation($" deleting user {userRequest.Username}");
           var list = new List<DeleteUsersRequest>();
           list.Add(new DeleteUsersRequest { UserName = userRequest.Username });
           await DeleteUsersAsync(list);
