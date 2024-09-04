@@ -243,7 +243,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (await IsSystemSuperuserAsync())
       return true;
 
-    GetLogger().LogInformation($"Testing: g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {requestedAcl}");
+    GetLogger().LogInformation($"Testing: grp: {groupId} rl: {roleId} typ: {objectType} id: {objectId} = {requestedAcl}");
 
     // group  
     // role
@@ -258,7 +258,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: {objectType} id: {objectId} = {rc}");
       return rc;
     }
 

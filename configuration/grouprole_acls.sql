@@ -61,4 +61,4 @@ WHERE
     gra.role_id IS NULL AND
     gra.group_id = g.id 
 ORDER BY
-	`group`, role, imageable_id, imageable_type
+	imageable_id, imageable_type, `group`, role
