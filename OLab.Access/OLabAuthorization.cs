@@ -497,7 +497,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
       appName = "localhost";
     else
-      appName = uri.AbsolutePath.Split("/").First();
+      appName = uri.AbsolutePath.Trim('/').Split("/").First();
 
     GetLogger().LogInformation($"Testing referrer: host '{uri.IdnHost}', appName '{appName}'");
 
