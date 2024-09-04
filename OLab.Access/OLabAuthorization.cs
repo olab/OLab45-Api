@@ -491,6 +491,8 @@ public class OLabAuthorization : IOLabAuthorization
     var uri = new Uri(refererValue);
     var appName = string.Empty;
 
+    GetLogger().LogInformation($"referrer AbsolutePath: '{uri.AbsolutePath}'");
+
     // if no path, and referrer from locahost then this is probably local
     if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
       appName = "localhost";
