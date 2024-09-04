@@ -96,10 +96,15 @@ public class AuthController : OLabController
     if (Request.Headers.TryGetValue("Referer", out refererValues))
     {
       var referer = refererValues.First();
+
+      Logger.LogInformation($"referer url: '{referer}'");
+
       var authorization = new OLabAuthorization(Logger, DbContext);
       if (!await authorization.HasAccessToAppAsync(user, referer))
         return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("User does not have access to this application"));
     }
+    else
+      Logger.LogInformation($"no referer url provided");
 
     var response = _authentication.GenerateJwtToken(user);
     return HttpContext.Request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));

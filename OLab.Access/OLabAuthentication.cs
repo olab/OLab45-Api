@@ -210,7 +210,7 @@ public class OLabAuthentication : IOLabAuthentication
       foreach (var claim in claimsPrincipal.Claims)
       {
         var added = Claims.TryAdd(claim.Type, claim.Value);
-        GetLogger().LogInformation($" claim: {claim.Type} = {claim.Value}. added: {added}");
+        GetLogger().LogDebug($" claim: {claim.Type} = {claim.Value}. added: {added}");
       }
 
       GetLogger().LogInformation("bearer token validated");
@@ -236,7 +236,7 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument(user, nameof(user)).NotNull();
 
-    GetLogger().LogDebug($"generatring token");
+    GetLogger().LogDebug($"generating token");
 
     var secretBytes = Encoding.Default.GetBytes(_config.GetAppSettings().Secret[..40]);
 

@@ -322,7 +322,7 @@ public class OLabAuthorization : IOLabAuthorization
       x.GroupId == null &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
-      ( x.ImageableId.HasValue && x.ImageableId.Value == objectId));
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
 
     if (acl != null)
     {
@@ -487,13 +487,15 @@ public class OLabAuthorization : IOLabAuthorization
     ApplyUserContext(userPhys);
 
     var uri = new Uri(refererValue);
+    var appName = string.Empty;
 
     // if no path, and referrer from locahost then this is probably local
     if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
-      return true;
+      appName = "localhost";
+    else
+      appName = uri.AbsolutePath.Split("/").First();
 
-    var appName = uri.PathAndQuery.Replace("/", "");
-    GetLogger().LogInformation($"Testing referrer: '{uri.IdnHost}', '{appName}'");
+    GetLogger().LogInformation($"Testing referrer: host '{uri.IdnHost}', appName '{appName}'");
 
     var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == appName);
 
