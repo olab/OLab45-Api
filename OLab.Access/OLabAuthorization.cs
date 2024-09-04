@@ -313,6 +313,23 @@ public class OLabAuthorization : IOLabAuthorization
       return rc;
     }
 
+    // group  
+    // role        = *
+    // object type
+    // object id   = *
+    acl = _groupRoleAcls.FirstOrDefault(x =>
+      x.GroupId == groupId &&
+      x.RoleId == null &&
+      x.ImageableType == objectType &&
+      x.ImageableId == null);
+
+    if (acl != null)
+    {
+      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: null typ: {objectType} id: null = {rc}");
+      return rc;
+    }
+
 
     // group       = *
     // role        = *
