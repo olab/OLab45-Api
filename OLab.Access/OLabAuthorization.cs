@@ -486,6 +486,8 @@ public class OLabAuthorization : IOLabAuthorization
     // load the user's acls
     ApplyUserContext(userPhys);
 
+    GetLogger().LogInformation($"referrer: '{refererValue}'");
+
     var uri = new Uri(refererValue);
     var appName = string.Empty;
 
