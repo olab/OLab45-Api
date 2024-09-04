@@ -340,10 +340,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
       var physicalPath = GetPhysicalPath(folderName);
 
       if (!Directory.Exists(physicalPath))
-      {
-        logger.LogInformation($"source folder '{folderName}' does not exist");
         return fileNames;
-      }
 
       var contents = Directory.GetFiles(physicalPath).ToList();
 
