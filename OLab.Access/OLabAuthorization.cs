@@ -275,7 +275,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: g: {groupId} r: {roleId} t: {objectType} i: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: {objectType} id: null = {rc}");
       return rc;
     }
 
@@ -292,7 +292,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: g: {groupId} r: {roleId} t: null i: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: null id: null = {rc}");
       return rc;
     }
 
@@ -309,7 +309,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: g: {groupId} r: null t: {objectType} i: {objectId} = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: null typ: {objectType} id: {objectId} = {rc}");
       return rc;
     }
 
@@ -327,7 +327,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: g: null r: null t: {objectType} i: {objectId} = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: null rl: null typ: {objectType} id: {objectId} = {rc}");
       return rc;
     }
 
@@ -344,7 +344,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: g: {groupId} r: {roleId} t: {objectType} i: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: {objectType} id: null = {rc}");
       return rc;
     }
 
@@ -362,7 +362,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: g: null r: null t: null i: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: null rl: null typ: null id: null = {rc}");
       return rc;
     }
 
@@ -486,7 +486,7 @@ public class OLabAuthorization : IOLabAuthorization
     // load the user's acls
     ApplyUserContext(userPhys);
 
-    GetLogger().LogInformation($"referrer: '{refererValue}'");
+    GetLogger().LogInformation($"referrerl: '{refererValue}'");
 
     var uri = new Uri(refererValue);
     var appName = string.Empty;
@@ -499,7 +499,7 @@ public class OLabAuthorization : IOLabAuthorization
     else
       appName = uri.AbsolutePath.Trim('/').Split("/").First();
 
-    GetLogger().LogInformation($"Testing referrer: host '{uri.IdnHost}', appName '{appName}'");
+    GetLogger().LogInformation($"Testing referrerl: host '{uri.IdnHost}', appName '{appName}'");
 
     var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == appName);
 

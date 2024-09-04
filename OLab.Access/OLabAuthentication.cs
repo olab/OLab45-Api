@@ -56,7 +56,7 @@ public class OLabAuthentication : IOLabAuthentication
 
     _logger = logger;
     GetLogger().LogInformation($"Authorization ctor");
-    GetLogger().LogInformation($"appSetting aud: '{_config.GetAppSettings().Audience}', secret: '{_config.GetAppSettings().Secret[..4]}...'");
+    GetLogger().LogInformation($"appSetting aud: '{_config.GetAppSettings().Audience}', secretyp: '{_config.GetAppSettings().Secret[..4]}...'");
   }
 
   /// <summary>
