@@ -378,6 +378,10 @@ public class OLabAuthorization : IOLabAuthorization
     if (mapNodePhys == null)
       throw new OLabObjectNotFoundException(Constants.ScopeLevelNode, mapNodeId);
 
+    // test of root node, meaning we always have access to it
+    if (mapNodePhys.TypeId.Value == ( uint) MapNodes.NodeType.RootNode )
+      return true;
+
     foreach (var userGroupRolePhys in _userGroupRoles)
     {
       var roleResult = await HasRequestedAccessAsync(
