@@ -243,12 +243,9 @@ public class OLabAuthorization : IOLabAuthorization
     if (await IsSystemSuperuserAsync())
       return true;
 
-    GetLogger().LogInformation($"Testing: grp: {groupId} rl: {roleId} typ: {objectType} id: {objectId} = {requestedAcl}");
+    GetLogger().LogInformation($"Testing: g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {requestedAcl}");
 
-    // group  
-    // role
-    // object type
-    // object id
+    // # # # #
     var acl = _groupRoleAcls.FirstOrDefault(x =>
     x.GroupId == groupId &&
     x.RoleId == roleId &&
@@ -258,14 +255,11 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: {objectType} id: {objectId} = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: {objectId} = {rc}");
       return rc;
     }
 
-    // group  
-    // role   
-    // object type
-    // object id   = *
+    // # # # -
     acl = _groupRoleAcls.FirstOrDefault(x =>
       x.GroupId == groupId &&
       x.RoleId == roleId &&
@@ -275,14 +269,11 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: {objectType} id: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: null = {rc}");
       return rc;
     }
 
-    // group  
-    // role   
-    // object type = *
-    // object id   = *
+    // # # - -
     acl = _groupRoleAcls.FirstOrDefault(x =>
       x.GroupId == groupId &&
       x.RoleId == roleId &&
@@ -292,16 +283,13 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: null id: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: {roleId} typ: null id: null = {rc}");
       return rc;
     }
 
-    // group  
-    // role        = *
-    // object type
-    // object id 
+    // # - # #
     acl = _groupRoleAcls.FirstOrDefault(x =>
-      x.GroupId == groupId &&
+    x.GroupId == groupId &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
       (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
@@ -309,14 +297,12 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: null typ: {objectType} id: {objectId} = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: null typ: {objectType} id: {objectId} = {rc}");
       return rc;
     }
 
-    // group  
-    // role        = *
-    // object type
-    // object id   = *
+
+    // # - # -
     acl = _groupRoleAcls.FirstOrDefault(x =>
       x.GroupId == groupId &&
       x.RoleId == null &&
@@ -326,15 +312,11 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: null typ: {objectType} id: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: null typ: {objectType} id: null = {rc}");
       return rc;
     }
 
-
-    // group       = *
-    // role        = *
-    // object type
-    // object id  
+    // - - # #
     acl = _groupRoleAcls.FirstOrDefault(x =>
       x.GroupId == null &&
       x.RoleId == null &&
@@ -344,32 +326,25 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: null rl: null typ: {objectType} id: {objectId} = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: null rol: null typ: {objectType} id: {objectId} = {rc}");
       return rc;
     }
 
-    // group  
-    // role   
-    // object type
-    // object id   = *
+    // - - # -
     acl = _groupRoleAcls.FirstOrDefault(x =>
-      x.GroupId == groupId &&
-      x.RoleId == roleId &&
+      x.GroupId == null &&
+      x.RoleId == null &&
       x.ImageableType == objectType &&
       x.ImageableId == null);
 
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rl: {roleId} typ: {objectType} id: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: null rol: null typ: {objectType} id: null = {rc}");
       return rc;
     }
 
-
-    // group       = *
-    // role        = *
-    // object type = *
-    // object id   = *
+    // - - - -
     acl = _groupRoleAcls.FirstOrDefault(x =>
       x.GroupId == null &&
       x.RoleId == null &&
@@ -379,7 +354,7 @@ public class OLabAuthorization : IOLabAuthorization
     if (acl != null)
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: null rl: null typ: null id: null = {rc}");
+      GetLogger().LogInformation($"    ACL: grp: null rol: null typ: null id: null = {rc}");
       return rc;
     }
 
@@ -503,20 +478,14 @@ public class OLabAuthorization : IOLabAuthorization
     // load the user's acls
     ApplyUserContext(userPhys);
 
-    GetLogger().LogInformation($"referrerl: '{refererValue}'");
-
     var uri = new Uri(refererValue);
-    var appName = string.Empty;
-
-    GetLogger().LogInformation($"referrer AbsolutePath: '{uri.AbsolutePath}'");
 
     // if no path, and referrer from locahost then this is probably local
     if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
-      appName = "localhost";
-    else
-      appName = uri.AbsolutePath.Trim('/').Split("/").First();
+      return true;
 
-    GetLogger().LogInformation($"Testing referrerl: host '{uri.IdnHost}', appName '{appName}'");
+    var appName = uri.PathAndQuery.Replace("/", "");
+    GetLogger().LogInformation($"Testing referrer: '{uri.IdnHost}', '{appName}'");
 
     var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == appName);
 
