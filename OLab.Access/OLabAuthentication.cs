@@ -1,4 +1,4 @@
-﻿using Dawn;
+using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

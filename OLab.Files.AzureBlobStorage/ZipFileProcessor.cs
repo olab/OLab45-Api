@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using OLab.Common.Interfaces;
 using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
