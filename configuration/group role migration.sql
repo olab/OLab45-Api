@@ -223,15 +223,14 @@ CREATE TABLE `system_applications` (
 CREATE TABLE `map_node_grouproles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node_id` int(10) unsigned NOT NULL,
-  `group_id` int(10) unsigned NOT NULL,
-  `role_id` int(10) unsigned NOT NULL,
+  `group_id` int(10) unsigned DEFAULT NULL,
+  `role_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `ifk_mngr_role_idx` (`role_id`),
-  KEY `ifk_mngr_group_idx` (`group_id`),
-  KEY `ifk_mngr_node_idx` (`node_id`),  
-  CONSTRAINT `ifk_mngr_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
-  CONSTRAINT `ifk_mngr_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
-  CONSTRAINT `ifk_mngr_node` FOREIGN KEY (`node_id`) REFERENCES `map_nodes` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION  
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
+  KEY `group_id` (`group_id`),
+  KEY `role_id` (`role_id`),
+  KEY `mngr_ibfk_node_idx` (`node_id`),
+  CONSTRAINT `mngr_ibfk_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `mngr_ibfk_node` FOREIGN KEY (`node_id`) REFERENCES `map_nodes` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `mngr_ibfk_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
