@@ -12,21 +12,6 @@ CREATE TABLE IF NOT EXISTS `roles` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 
 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
-CREATE TABLE IF NOT EXISTS `grouprole_acls` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `imageable_id` int(10) unsigned DEFAULT NULL,
-  `imageable_type` varchar(45) DEFAULT NULL,
-  `group_id` int(10) unsigned DEFAULT NULL,
-  `role_id` int(10) unsigned DEFAULT NULL,
-  `acl2` bit(3) NOT NULL DEFAULT b'0',
-  PRIMARY KEY (`id`),
-  KEY `ifk_gra_role_idx` (`role_id`),
-  KEY `ifk_gra_group_idx` (`group_id`),
-  CONSTRAINT `ifk_gra_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
-  CONSTRAINT `ifk_gra_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
-
 CREATE TABLE IF NOT EXISTS `user_grouproles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `iss` VARCHAR(45) NOT NULL DEFAULT 'olab',
@@ -60,19 +45,7 @@ UPDATE `roles` SET is_system = 1;
 ALTER TABLE `security_users` 
 	CHANGE COLUMN `user_id` `user_id` INT(10) UNSIGNED NOT NULL ;
 ALTER TABLE `system_questions` 
-	CHANGE COLUMN `counter_id` `counter_id` INT(10) UNSIGNED ;
-
-ALTER TABLE `map_groups` 
-	ADD CONSTRAINT `mp_ibfk_map`
-	  FOREIGN KEY (`map_id`)
-	  REFERENCES `maps` (`id`)
-	  ON DELETE CASCADE
-	  ON UPDATE NO ACTION,
-	ADD CONSTRAINT `mp_ibfk_group`
-	  FOREIGN KEY (`group_id`)
-	  REFERENCES `groups` (`id`)
-	  ON DELETE NO ACTION
-	  ON UPDATE NO ACTION;        
+	CHANGE COLUMN `counter_id` `counter_id` INT(10) UNSIGNED ;    
 
 /* ????  */
 INSERT INTO `user_grouproles` (`user_id`, `group_id`, `role`)
@@ -83,9 +56,6 @@ UPDATE `user_grouproles`
 ALTER IGNORE TABLE `user_grouproles` 
 	MODIFY `role_id` INT(10) UNSIGNED NOT NULL,
     DROP COLUMN `role`;
-  
-INSERT INTO map_groups (map_id, group_id ) 
- SELECT id, (SELECT id from `groups` WHERE name = 'olab' ) FROM `maps` WHERE is_template = 0;
  
 DROP VIEW IF EXISTS `orphanedconstantsview`;
 DROP VIEW IF EXISTS `orphanedquestionsview`;
@@ -121,24 +91,12 @@ ADD CONSTRAINT `user_grouproles_ibfk_3`
   REFERENCES `roles` (`id`)
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
-  
-ALTER TABLE `security_users` 
-  RENAME TO  `user_acls` ;
-  
-ALTER TABLE `user_acls` 
-  ADD COLUMN `acl2` BIT(3) NOT NULL DEFAULT b'0' AFTER `acl`;    
-  
-UPDATE `user_acls` SET `acl2` = `acl2` | 4 WHERE `acl` LIKE '%R%';
-UPDATE `user_acls` SET `acl2` = `acl2` | 2 WHERE `acl` LIKE '%W%';
-UPDATE `user_acls` SET `acl2` = `acl2` | 1 WHERE `acl` LIKE '%X%';
-  
--- add anonymous group to all anonymous maps
-INSERT INTO `map_groups` (`map_id`, `group_id` )
-	SELECT id, (SELECT id from `groups` WHERE name = 'anonymous' ) FROM `maps` WHERE security_id = 1;  
     
 -- clean up not-needed roles    
 DELETE FROM `user_grouproles` WHERE `role_id` IN (2, 7, 8, 9, 11 );  
 DELETE FROM `roles` WHERE `id` IN (2, 7, 8, 9, 11 );  
+
+UPDATE `maps` SET created_at = NOW() WHERE created_at is NULL;
 
 -- give everyone default olab:learner access
 DELETE FROM `user_grouproles` WHERE 
@@ -151,76 +109,15 @@ INSERT INTO `user_grouproles` ( `iss`, `user_id`, `group_id`, `role_id` )
         (SELECT id from `groups` WHERE name = 'olab'), 
         (SELECT id from `roles` WHERE name = 'learner') 
 	FROM `users` WHERE username <> 'anonymous';
-	
-ALTER TABLE `grouprole_acls` 
-DROP FOREIGN KEY `ifk_gra_group`;
-ALTER TABLE `grouprole_acls` 
-CHANGE COLUMN `group_id` `group_id` INT(10) UNSIGNED NULL DEFAULT NULL ;
-ALTER TABLE `grouprole_acls` 
-ADD CONSTRAINT `ifk_gra_group`
-  FOREIGN KEY (`group_id`)
-  REFERENCES `groups` (`id`)
-  ON DELETE CASCADE
-  ON UPDATE NO ACTION;
 
--- defaults
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, NULL, NULL, null, 0 );
-    
--- olab
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, NULL, ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Maps', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'olab' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
-
--- external
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, NULL, ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Maps', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'external' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
-
--- anonymous
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, NULL, ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'superuser' ), 7 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Maps', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'learner' ), 5 );
-
-INSERT INTO `grouprole_acls` (`imageable_id`, `imageable_type`, `group_id`, `role_id`, `acl2` )
-	VALUES ( NULL, 'Nodes', ( SELECT id FROM `groups` where name = 'anonymous' ), ( SELECT id FROM `roles` where name = 'author' ), 7 );
-
-
-UPDATE `maps` SET created_at = NOW() WHERE created_at is NULL;
-
-CREATE TABLE `system_applications` (
+CREATE TABLE IF NOT EXISTS `system_applications` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
-CREATE TABLE `map_node_grouproles` (
+CREATE TABLE IF NOT EXISTS `map_node_grouproles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node_id` int(10) unsigned NOT NULL,
   `group_id` int(10) unsigned DEFAULT NULL,
@@ -234,3 +131,24 @@ CREATE TABLE `map_node_grouproles` (
   CONSTRAINT `mngr_ibfk_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE IF NOT EXISTS `map_grouproles` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `map_id` int(10) unsigned NOT NULL,
+  `group_id` int(10) unsigned DEFAULT NULL,
+  `role_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `group_id` (`group_id`),
+  KEY `role_id` (`role_id`),
+  KEY `mgr_ibfk_node_idx` (`map_id`),
+  CONSTRAINT `mgr_ibfk_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `mgr_ibfk_node` FOREIGN KEY (`map_id`) REFERENCES `maps` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `mgr_ibfk_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- add anonymous group to all anonymous maps
+INSERT INTO `map_grouproles` (`map_id`, `group_id`, `role_id` )
+	SELECT id, (SELECT id from `groups` WHERE name = 'anonymous' ), NULL FROM `maps` WHERE security_id = 1;  
+    
+-- add olab group to all anonymous maps
+INSERT INTO `map_grouproles` (`map_id`, `group_id`, `role_id` )
+	SELECT id, (SELECT id from `groups` WHERE name = 'olab' ), NULL FROM `maps`;
