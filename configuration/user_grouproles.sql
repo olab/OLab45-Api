@@ -1,15 +1,18 @@
-SELECT 
-	u.id,
-    u.username,
-    CONCAT( g.name, " (", g.id, ")" ) as `group`,
-    CONCAT( r.name, " (", r.id, ")" ) as `role`    
+SELECT
+	ugr.id,
+    CONCAT( u.username, " (", ugr.user_id, ")" ) as `user`,
+    CONCAT( g.name, " (", ugr.group_id, ")" ) as `group`,
+    CONCAT( r.name, " (", ugr.role_id, ")" ) as `role`
 FROM 
-	`users` u, 
-    `user_grouproles` ugr,
-	`groups` g,
-    `roles` r
-WHERE
-	u.id = ugr.user_id AND
+	user_grouproles ugr, 
+	users u,
+    `groups` g,
+    `roles` r    
+WHERE 
+	ugr.user_id = u.id AND
+    ugr.group_id IS NOT NULL AND
+    ugr.role_id IS NOT NULL AND    
     ugr.group_id = g.id AND
     ugr.role_id = r.id
-ORDER BY username    
+ORDER BY user
+    
