@@ -1,4 +1,5 @@
 using Dawn;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Humanizer;
@@ -153,7 +154,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   public async Task<bool> IsSystemSuperuserAsync()
   {
-    return await IsGroupSuperUser(Groups.OLabGroup);
+    return await IsGroupSuperUserAsync(Groups.OLabGroup);
   }
 
   /// <summary>
@@ -161,7 +162,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// </summary>
   /// <param name="groupName">Group name to check</param>
   /// <returns>true/false</returns>
-  public async Task<bool> IsGroupSuperUser(string groupName)
+  public async Task<bool> IsGroupSuperUserAsync(string groupName)
   {
     var groupPhys = await _groupReaderWriter.GetAsync(groupName);
     if (groupPhys == null)
@@ -170,7 +171,7 @@ public class OLabAuthorization : IOLabAuthorization
       return false;
     }
 
-    return await IsGroupSuperUser(groupPhys.Id);
+    return await IsGroupSuperUserAsync(groupPhys.Id);
   }
 
   /// <summary>
@@ -178,7 +179,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// </summary>
   /// <param name="groupId">Group id to check</param>
   /// <returns>true/false</returns>
-  public async Task<bool> IsGroupSuperUser(uint groupId)
+  public async Task<bool> IsGroupSuperUserAsync(uint groupId)
   {
     var superUserRolePhys = await _roleReaderWriter.GetAsync(Roles.SuperUserRole);
     if (superUserRolePhys == null)
@@ -370,38 +371,48 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   private async Task<bool> HasRequestedAccessToNodeAsync(ulong requestedAcl, uint mapNodeId)
   {
-    bool result = false;
-
     var mapNodePhys = await MapNodesReaderWriter.Instance(GetLogger(), GetDbContext(), null)
       .GetNodeAsync(mapNodeId);
 
     if (mapNodePhys == null)
       throw new OLabObjectNotFoundException(Constants.ScopeLevelNode, mapNodeId);
 
-    // test of root node, meaning we always have access to it
-    if (mapNodePhys.TypeId.Value == (uint)MapNodes.NodeType.RootNode)
-      return true;
-
-    foreach (var userGroupRolePhys in _userGroupRoles)
+    // test base case of node not having any group/roles defined,
+    // meaning check owning map for access
+    if (mapNodePhys.MapNodeGrouproles.Count == 0)
+      return await HasRequestedAccessToMapAsync(requestedAcl, mapNodePhys.MapId);
+    else
     {
-      var roleResult = await HasRequestedAccessAsync(
-        userGroupRolePhys.GroupId,
-        userGroupRolePhys.RoleId,
-        Constants.ScopeLevelNode,
-        mapNodePhys.Id,
-        requestedAcl);
-
-      if (roleResult.HasValue)
+      foreach (var nodeGroupRolePhys in mapNodePhys.MapNodeGrouproles)
       {
-        result = roleResult.Value;
-        break;
+        // test if map has group and role and user has same
+        if ((nodeGroupRolePhys.GroupId != null) &&
+            (nodeGroupRolePhys.RoleId != null) &&
+            UserContext.GroupRoles.Any(x => (x.GroupId == nodeGroupRolePhys.GroupId) && (x.RoleId == nodeGroupRolePhys.RoleId)))
+          return true;
+
+        // test if map has no group and role and user has same role
+        if ((nodeGroupRolePhys.GroupId == null) &&
+            (nodeGroupRolePhys.RoleId != null) &&
+            UserContext.GroupRoles.Any(x => x.RoleId == nodeGroupRolePhys.RoleId))
+          return true;
+
+        // test if map has group and no role specified and
+        // user belongs to any role in same group
+        if ((nodeGroupRolePhys.GroupId != null) &&
+            (nodeGroupRolePhys.RoleId == null) &&
+            UserContext.GroupRoles.Any(x => (x.GroupId == nodeGroupRolePhys.GroupId)))
+          return true;
+
+        // test if map has no group and no role specified 
+        // meaning unconditional 'accept'
+        if ((nodeGroupRolePhys.GroupId == null) &&
+            (nodeGroupRolePhys.RoleId == null))
+          return true;
       }
-      else
-        // test if no acl at node level, try the owning map
-        result = await HasRequestedAccessToMapAsync(requestedAcl, mapNodePhys.MapId);
     }
 
-    return result;
+    return false;
   }
 
   /// <summary>
@@ -412,41 +423,55 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   private async Task<bool> HasRequestedAccessToMapAsync(ulong requestedAcl, uint mapId)
   {
-    bool result = false;
-
     var mapPhys = await MapsReaderWriter.Instance(GetLogger(), GetDbContext())
       .GetSingleWithGroupRolesAsync(mapId);
 
     if (mapPhys == null)
       throw new OLabObjectNotFoundException(Constants.ScopeLevelMap, mapId);
 
-    foreach (var mapGroupPhys in mapPhys.MapGrouproles)
+    // test base case of map not having any group/roles defined,
+    // meaning unconditional 'accept'
+    if (mapPhys.MapGrouproles.Count == 0)
+      return true;
+
+    // loop thru map group roles and see if user has access based
+    // on USER's group roles
+    foreach (var mapGroupRolePhys in mapPhys.MapGrouproles)
     {
-      // see if user has any perms for the current map group
-      if (!UserContext.GroupRoles.Any(x => (x.GroupId == mapGroupPhys.GroupId) && (x.RoleId == mapGroupPhys.RoleId)))
-        continue;
+      // test if user is a superuser for the group that the map is in
+      if (mapGroupRolePhys.GroupId.HasValue && 
+          await IsGroupSuperUserAsync(mapGroupRolePhys.GroupId.Value))
+        return true;
 
-      foreach (var userGroupRolePhys in _userGroupRoles.Where(x => x.GroupId == mapGroupPhys.GroupId))
-      {
-        var roleResult = await HasRequestedAccessAsync(
-          userGroupRolePhys.GroupId,
-          userGroupRolePhys.RoleId,
-          Constants.ScopeLevelMap,
-          mapPhys.Id,
-          requestedAcl);
+      // test if map has group and role and user has same
+      if ((mapGroupRolePhys.GroupId != null) &&
+          (mapGroupRolePhys.RoleId != null) &&
+          UserContext.GroupRoles.Any(x => 
+            (x.GroupId == mapGroupRolePhys.GroupId) && 
+            (x.RoleId == mapGroupRolePhys.RoleId)))
+        return true;
 
-        if (roleResult.HasValue)
-        {
-          result = roleResult.Value;
-          break;
-        }
-      }
+      // test if map has no group and has role and user has same role
+      if ((mapGroupRolePhys.GroupId == null) &&
+          (mapGroupRolePhys.RoleId != null) &&
+          UserContext.GroupRoles.Any(x => x.RoleId == mapGroupRolePhys.RoleId))
+        return true;
 
-      if (result)
-        break;
+      // test if map has group and no role specified and
+      // user belongs to any role in same group
+      if ((mapGroupRolePhys.GroupId != null) &&
+          (mapGroupRolePhys.RoleId == null) &&
+          UserContext.GroupRoles.Any(x => (x.GroupId == mapGroupRolePhys.GroupId)))
+        return true;
+
+      // test if map has no group and no role specified 
+      // meaning unconditional 'accept'
+      if ((mapGroupRolePhys.GroupId == null) &&
+          (mapGroupRolePhys.RoleId == null))
+        return true;
     }
 
-    return result;
+    return false;
   }
 
   public async Task<bool> HasAccessAsync(
@@ -456,12 +481,20 @@ public class OLabAuthorization : IOLabAuthorization
   {
     bool result = false;
 
+    // test if system superuser meaning unconditional access
+    if (await IsSystemSuperuserAsync())
+      return true;
+
     // test if user has access to map.
     if (objectType == Constants.ScopeLevelMap)
       result = await HasRequestedAccessToMapAsync(requestedAcl, objectId.Value);
 
+    // test if user has access to node
     else if (objectType == Constants.ScopeLevelNode)
       result = await HasRequestedAccessToNodeAsync(requestedAcl, objectId.Value);
+
+    if (!result)
+      GetLogger().LogWarning($"  user {UserContext.Issuer}:{UserContext.UserId} no access to {objectType} id {objectId.Value}");
 
     return result;
   }

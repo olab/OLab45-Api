@@ -20,7 +20,7 @@ public interface IOLabAuthorization
   IUserContext UserContext { get; set; }
   void ApplyUserContext(IUserContext userContext);
   Task<bool> IsSystemSuperuserAsync();
-  Task<bool> IsGroupSuperUser(uint groupId);
+  Task<bool> IsGroupSuperUserAsync(uint groupId);
   Task<bool> HasAccessToAppAsync(Users userPhys, string appName);
 
 }
