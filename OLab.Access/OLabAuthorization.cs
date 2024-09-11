@@ -543,8 +543,10 @@ public class OLabAuthorization : IOLabAuthorization
 
       if (accessResult.HasValue && accessResult.Value == true)
         return true;
+
     }
 
+    GetLogger().LogError($"user '{userPhys.Username}' does not have access to application '{appPhys.Name}'");
     return false;
 
   }
