@@ -59,7 +59,7 @@ public class MapAuthorizationController : OLabController
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> ReplaceAsync(
     uint mapId,
-    IList<GroupsDto> dtos,
+    IList<MapGrouprolesDto> dtos,
     CancellationToken token)
   {
     try
@@ -70,7 +70,7 @@ public class MapAuthorizationController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var response = await _endpoint.ReplaceAsync(auth, mapId, dtos, token);
-      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(response));
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGrouprolesDto>.Result(response));
     }
     catch (Exception ex)
     {
@@ -87,7 +87,7 @@ public class MapAuthorizationController : OLabController
   [HttpPost]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> AddAsync(
-    MapGroupsDto dto,
+    MapGrouprolesDto dto,
     CancellationToken token)
   {
     try
@@ -98,7 +98,7 @@ public class MapAuthorizationController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var response = await _endpoint.AddAsync(auth, dto, token);
-      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(response));
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGrouprolesDto>.Result(response));
     }
     catch (Exception ex)
     {
@@ -115,7 +115,7 @@ public class MapAuthorizationController : OLabController
   [HttpDelete]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public async Task<IActionResult> DeleteAsync(
-    MapGroupsDto dto,
+    MapGrouprolesDto dto,
     CancellationToken token)
   {
     try
@@ -126,7 +126,7 @@ public class MapAuthorizationController : OLabController
       var auth = GetAuthorization(HttpContext);
 
       var response = await _endpoint.DeleteAsync(auth, dto, token);
-      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(response));
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGrouprolesDto>.Result(response));
     }
     catch (Exception ex)
     {

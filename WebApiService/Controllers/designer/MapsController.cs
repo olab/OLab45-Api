@@ -554,7 +554,7 @@ public partial class MapsController : OLabController
 
       var result = await _endpoint.GetMapGroupsAsync(auth, mapId);
 
-      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(result));
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGrouprolesDto>.Result(result));
     }
     catch (Exception ex)
     {
@@ -568,11 +568,11 @@ public partial class MapsController : OLabController
   /// <param name="mapId">Map Id</param>
   /// <param name="groupIds">List of group ids</param>
   /// <returns></returns>
-  [HttpPut("{mapId}/groups")]
+  [HttpPut("{mapId}/grouproles")]
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-  public async Task<IActionResult> PutMapGroupsAsync(
+  public async Task<IActionResult> PutMapGroupRolesAsync(
     uint mapId,
-    [FromBody] uint[] body)
+    [FromBody] IList<MapGrouprolesDto> body)
   {
     try
     {
@@ -581,7 +581,7 @@ public partial class MapsController : OLabController
 
       var result = await _endpoint.PutMapGroupsAsync(auth, mapId, body);
 
-      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGroupsDto>.Result(result));
+      return HttpContext.Request.CreateResponse(OLabObjectListResult<MapGrouprolesDto>.Result(result));
     }
     catch (Exception ex)
     {

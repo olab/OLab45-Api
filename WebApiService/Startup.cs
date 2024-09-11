@@ -63,7 +63,7 @@ public class Startup
       options.AddPolicy("CorsPolicy",
          builder => builder
           // .AllowAnyOrigin()
-          .WithOrigins("http://localhost:4000", "http://localhost:3000", "https://dev.olab.ca", "https://demo.olab.ca")
+          .WithOrigins("http://localhost:4000", "http://localhost:3000", "http://localhost:3001", "https://dev.olab.ca", "https://demo.olab.ca")
           .AllowAnyMethod()
           .AllowAnyHeader()
           .AllowCredentials()

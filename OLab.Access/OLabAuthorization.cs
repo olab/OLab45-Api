@@ -379,7 +379,7 @@ public class OLabAuthorization : IOLabAuthorization
       throw new OLabObjectNotFoundException(Constants.ScopeLevelNode, mapNodeId);
 
     // test of root node, meaning we always have access to it
-    if (mapNodePhys.TypeId.Value == ( uint) MapNodes.NodeType.RootNode )
+    if (mapNodePhys.TypeId.Value == (uint)MapNodes.NodeType.RootNode)
       return true;
 
     foreach (var userGroupRolePhys in _userGroupRoles)
@@ -415,15 +415,15 @@ public class OLabAuthorization : IOLabAuthorization
     bool result = false;
 
     var mapPhys = await MapsReaderWriter.Instance(GetLogger(), GetDbContext())
-      .GetSingleWithGroupsAsync(mapId);
+      .GetSingleWithGroupRolesAsync(mapId);
 
     if (mapPhys == null)
       throw new OLabObjectNotFoundException(Constants.ScopeLevelMap, mapId);
 
-    foreach (var mapGroupPhys in mapPhys.MapGroups)
+    foreach (var mapGroupPhys in mapPhys.MapGrouproles)
     {
       // see if user has any perms for the current map group
-      if (!UserContext.GroupRoles.Any(x => x.GroupId == mapGroupPhys.GroupId))
+      if (!UserContext.GroupRoles.Any(x => (x.GroupId == mapGroupPhys.GroupId) && (x.RoleId == mapGroupPhys.RoleId)))
         continue;
 
       foreach (var userGroupRolePhys in _userGroupRoles.Where(x => x.GroupId == mapGroupPhys.GroupId))
