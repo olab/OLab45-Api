@@ -339,8 +339,11 @@ public class UserService : IUserService
             // remove previous before adding edited user
             var existingUser = responses.FirstOrDefault(x => x.Id == response.Id);
             if (existingUser != null)
+            {
               responses.Remove(existingUser);
-
+              responses.Add(new UsersImportDto(response) { Message = "added, edited" });
+            }
+            else
             responses.Add(new UsersImportDto(response) { Message = "edited" });
 
           }
