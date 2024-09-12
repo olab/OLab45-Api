@@ -164,29 +164,6 @@ public class UserService : IUserService
     return epoch.AddSeconds(unixTime);
   }
 
-  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<DeleteUsersRequest> items)
-  {
-    try
-    {
-      var responses = new List<AddUserResponse>();
-
-      Logger.LogDebug($"DeleteUserAsync(items count '{items.Count}')");
-
-      foreach (var item in items)
-      {
-        var response = await DeleteUserAsync(item);
-        responses.Add(response);
-      }
-
-      return responses;
-    }
-    catch (Exception ex)
-    {
-      Logger.LogError($"DeleteUserAsync exception {ex.Message}");
-      throw;
-    }
-  }
-
   public async Task<AddUserResponse> DeleteUserAsync(DeleteUsersRequest userRequest)
   {
     Users user = null;
@@ -243,75 +220,6 @@ public class UserService : IUserService
     }
   }
 
-  /// <summary>
-  /// Edit user based on add user request
-  /// </summary>
-  /// <param name="userRequest">USer request</param>
-  /// <returns>Add user response</returns>
-  public async Task<UsersDto> EditUserAsync(AddUserRequest userRequest)
-  {
-    var user = GetById(userRequest.Id);
-    if (user == null)
-      throw new OLabBadRequestException($"user id: {userRequest.Id} does not exist");
-
-
-    // need to set the logger and the dbContext since
-    // they are not present when AddUserRequest created by webApi
-    userRequest.SetInfrastructure(GetLogger(), GetDbContext());
-
-    // parse any GroupRole string(s)
-    userRequest.BuildGroupRoleObjects();
-
-    // build physical User object from request
-    Users.CreatePhysFromRequest(user, userRequest);
-
-    // update and encrypt password if one was passed in
-    if (!string.IsNullOrEmpty(userRequest.Password))
-    {
-      ChangePassword(user, new ChangePasswordRequest
-      {
-        NewPassword = userRequest.Password
-      });
-    }
-
-    GetDbContext().Users.Update(user);
-    await GetDbContext().SaveChangesAsync();
-
-    user.UserGrouproles.AddRange(userRequest.GroupRoleObjects);
-    GetDbContext().Users.Update(user);
-    await GetDbContext().SaveChangesAsync();
-
-    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(user);
-    return userDto;
-  }
-
-  /// <summary>
-  /// Add user based on add user request
-  /// </summary>
-  /// <param name="userRequest">User request</param>
-  /// <returns>ADd user response</returns>
-  public async Task<UsersDto> AddUserAsync(AddUserRequest userRequest)
-  {
-    var user = GetByUserName(userRequest.Username);
-    if (user != null)
-      throw new OLabBadRequestException($"'{userRequest.Username}' already exists");
-
-    var newUserPhys = Users.CreatePhysFromRequest(null, userRequest);
-    newUserPhys.UserGrouproles.AddRange(
-      UserGrouproles.StringToObjectList(GetDbContext(), userRequest.GroupRoles));
-
-    ChangePassword(newUserPhys, new ChangePasswordRequest
-    {
-      NewPassword = newUserPhys.Password
-    });
-
-    await GetDbContext().Users.AddAsync(newUserPhys);
-    await GetDbContext().SaveChangesAsync();
-
-    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(newUserPhys);
-    return userDto;
-  }
-
   public IList<UsersDto> GetUsers(string name)
   {
     IList<Users> users = new List<Users>();
@@ -335,9 +243,9 @@ public class UserService : IUserService
     return dtoList;
   }
 
-  public async Task<List<UsersDto>> ImportUsersAsync(Stream fileStream)
+  public async Task<List<UsersImportDto>> ImportUsersAsync(Stream fileStream)
   {
-    var responses = new List<UsersDto>();
+    var responses = new List<UsersImportDto>();
 
     using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileStream, false))
     {
@@ -403,28 +311,173 @@ public class UserService : IUserService
 
         if (string.IsNullOrEmpty(userRequest.Operation) || userRequest.Operation == "+")
         {
-          Logger.LogInformation($" adding user {userRequest.Username}");
-          var response = await AddUserAsync(userRequest);
-          responses.Add(response);
+          try
+          {
+            Logger.LogInformation($" adding user {userRequest.Username}");
+            var response = await AddUserAsync(userRequest);
+            responses.Add(new UsersImportDto(response) { Message = "added" });
+          }
+          catch (Exception ex)
+          {
+            responses.Add(new UsersImportDto
+            {
+              UserName = userRequest.Username,
+              Status = false,
+              Message = ex.Message
+            });
+          }
         }
 
         else if (userRequest.Operation == "*")
         {
-          Logger.LogInformation($" editing user {userRequest.Username}");
-          var response = await EditUserAsync(userRequest);
-          responses.Add(response);
+          try
+          {
+            Logger.LogInformation($" editing user {userRequest.Username}");
+            var response = await EditUserAsync(userRequest);
+
+            // test if user previously added (in the responses), if so then
+            // remove previous before adding edited user
+            var existingUser = responses.FirstOrDefault(x => x.Id == response.Id);
+            if (existingUser != null)
+              responses.Remove(existingUser);
+
+            responses.Add(new UsersImportDto(response) { Message = "edited" });
+
+          }
+          catch (Exception ex)
+          {
+            responses.Add(new UsersImportDto
+            {
+              UserName = userRequest.Username,
+              Status = false,
+              Message = ex.Message
+            });
+          }
         }
 
         else if (userRequest.Operation == "-")
         {
-          Logger.LogInformation($" deleting user {userRequest.Username}");
-          var list = new List<DeleteUsersRequest>();
-          list.Add(new DeleteUsersRequest { UserName = userRequest.Username });
-          await DeleteUsersAsync(list);
+          try
+          {
+            Logger.LogInformation($" deleting user {userRequest.Username}");
+            var list = new List<DeleteUsersRequest>();
+            list.Add(new DeleteUsersRequest { UserName = userRequest.Username });
+            await DeleteUsersAsync(list);
+
+            //responses.Add(new UsersImportDto
+            //{
+            //  UserName = userRequest.Username,
+            //  Message = "deleted"
+            //});
+
+          }
+          catch (Exception ex)
+          {
+            responses.Add(new UsersImportDto
+            {
+              UserName = userRequest.Username,
+              Status = false,
+              Message = ex.Message
+            });
+          }
+
         }
       }
     }
 
     return responses;
   }
+
+  /// <summary>
+  /// Add user based on add user request
+  /// </summary>
+  /// <param name="userRequest">User request</param>
+  /// <returns>ADd user response</returns>
+  public async Task<UsersDto> AddUserAsync(AddUserRequest userRequest)
+  {
+    var user = GetByUserName(userRequest.Username);
+    if (user != null)
+      throw new OLabBadRequestException($"'{userRequest.Username}' already exists");
+
+    var newUserPhys = Users.CreatePhysFromRequest(null, userRequest);
+    newUserPhys.UserGrouproles.AddRange(
+      UserGrouproles.StringToObjectList(GetDbContext(), userRequest.GroupRoles));
+
+    ChangePassword(newUserPhys, new ChangePasswordRequest
+    {
+      NewPassword = newUserPhys.Password
+    });
+
+    await GetDbContext().Users.AddAsync(newUserPhys);
+    await GetDbContext().SaveChangesAsync();
+
+    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(newUserPhys);
+    return userDto;
+  }
+
+  /// <summary>
+  /// Edit user based on add user request
+  /// </summary>
+  /// <param name="userRequest">USer request</param>
+  /// <returns>Add user response</returns>
+  public async Task<UsersDto> EditUserAsync(AddUserRequest userRequest)
+  {
+    var user = GetByUserName(userRequest.Username);
+    if (user == null)
+      throw new OLabBadRequestException($"user: '{userRequest.Username}' does not exist");
+
+
+    // need to set the logger and the dbContext since
+    // they are not present when AddUserRequest created by webApi
+    userRequest.SetInfrastructure(GetLogger(), GetDbContext());
+
+    // parse any GroupRole string(s)
+    userRequest.BuildGroupRoleObjects();
+
+    // build physical User object from request
+    Users.CreatePhysFromRequest(user, userRequest);
+
+    // update and encrypt password if one was passed in
+    if (!string.IsNullOrEmpty(userRequest.Password))
+    {
+      ChangePassword(user, new ChangePasswordRequest
+      {
+        NewPassword = userRequest.Password
+      });
+    }
+
+    GetDbContext().Users.Update(user);
+    await GetDbContext().SaveChangesAsync();
+
+    user.UserGrouproles.AddRange(userRequest.GroupRoleObjects);
+    GetDbContext().Users.Update(user);
+    await GetDbContext().SaveChangesAsync();
+
+    var userDto = new UsersMapper(GetLogger(), GetDbContext()).PhysicalToDto(user);
+    return userDto;
+  }
+
+  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<DeleteUsersRequest> items)
+  {
+    try
+    {
+      var responses = new List<AddUserResponse>();
+
+      Logger.LogDebug($"DeleteUserAsync(items count '{items.Count}')");
+
+      foreach (var item in items)
+      {
+        var response = await DeleteUserAsync(item);
+        responses.Add(response);
+      }
+
+      return responses;
+    }
+    catch (Exception ex)
+    {
+      Logger.LogError($"DeleteUserAsync exception {ex.Message}");
+      throw;
+    }
+  }
+
 }

@@ -287,7 +287,7 @@ public class AuthController : OLabController
   {
     try
     {
-      var responses = new List<UsersDto>();
+      var responses = new List<UsersImportDto>();
       var auth = GetAuthorization(HttpContext);
 
       // test if user has access to add users.
@@ -299,7 +299,7 @@ public class AuthController : OLabController
       responses = await _userService.ImportUsersAsync(fileStream);
 
       return HttpContext.Request.CreateResponse(
-        OLabObjectListResult<UsersDto>.Result(responses));
+        OLabObjectListResult<UsersImportDto>.Result(responses));
 
     }
     catch (Exception ex)
