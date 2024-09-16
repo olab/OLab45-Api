@@ -412,15 +412,15 @@ public class OLabAuthorization : IOLabAuthorization
     foreach (var mapGroupRolePhys in mapPhys.MapGrouproles)
     {
       // test if user is a superuser for the group that the map is in
-      if (mapGroupRolePhys.GroupId.HasValue && 
+      if (mapGroupRolePhys.GroupId.HasValue &&
           await IsGroupSuperUserAsync(mapGroupRolePhys.GroupId.Value))
         return true;
 
       // test if map has group and role and user has same
       if ((mapGroupRolePhys.GroupId != null) &&
           (mapGroupRolePhys.RoleId != null) &&
-          UserContext.GroupRoles.Any(x => 
-            (x.GroupId == mapGroupRolePhys.GroupId) && 
+          UserContext.GroupRoles.Any(x =>
+            (x.GroupId == mapGroupRolePhys.GroupId) &&
             (x.RoleId == mapGroupRolePhys.RoleId)))
         return true;
 
@@ -526,4 +526,32 @@ public class OLabAuthorization : IOLabAuthorization
     var appName = uri.PathAndQuery.Trim('/').Split('/').First();
     return appName;
   }
+
+  /// <summary>
+  /// Get default group/role for map created by user
+  /// </summary>
+  /// <returns>MapGrouproles record</returns>
+  /// <exception cref="Exception">If missing configuration roles</exception>
+  public async Task<MapGrouproles> GetMapCreationGroupRole()
+  {
+    var roleIds = new List<uint>();
+    var userGroupRoles = UserContext.GroupRoles;
+
+    // look for first author role for user
+    var rolePhys = await _roleReaderWriter.GetAsync(Roles.AuthorRole);
+    if (rolePhys == null)
+      throw new Exception($"missing {Roles.AuthorRole} role configuration");
+    roleIds.Add(rolePhys.Id);
+
+    // look for first superuser role for user
+    rolePhys = await _roleReaderWriter.GetAsync(Roles.SuperUserRole);
+    if (rolePhys == null)
+      throw new Exception($"missing {Roles.SuperUserRole} role configuration");
+    roleIds.Add(rolePhys.Id);
+
+    // find first user group role that is a author then superuser
+    var groupRole = userGroupRoles.FirstOrDefault(x => roleIds.Contains(x.RoleId));
+    return new MapGrouproles {  GroupId = groupRole.Id, RoleId = groupRole.Id };
+  }
+
 }

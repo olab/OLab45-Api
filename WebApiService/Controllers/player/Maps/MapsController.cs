@@ -166,7 +166,7 @@ public partial class MapsController : OLabController
       // validate token/setup up common properties
       var auth = GetAuthorization(HttpContext);
 
-      var dto = await _endpoint.PostCreateMapAsync(auth, body);
+      var dto = await _endpoint.CreateMapAsync(auth, body);
       return HttpContext.Request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
     }
     catch (Exception ex)
