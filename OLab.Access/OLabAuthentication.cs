@@ -232,6 +232,7 @@ public class OLabAuthentication : IOLabAuthentication
   /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
   public AuthenticateResponse GenerateJwtToken(
     Users user,
+    string referrer,
     string issuedBy = "olab")
   {
     Guard.Argument(user, nameof(user)).NotNull();
@@ -252,7 +253,8 @@ public class OLabAuthentication : IOLabAuthentication
         new Claim("name", user.Nickname),
         new Claim("sub", user.Username),
         new Claim("id", $"{user.Id}"),
-        new Claim(ClaimTypes.UserData, $"{user.Settings}")
+        new Claim(ClaimTypes.UserData, $"{user.Settings}"),
+        new Claim("app", referrer),
       }),
       Expires = DateTime.UtcNow.AddDays(7),
       Issuer = issuedBy,
@@ -380,11 +382,12 @@ public class OLabAuthentication : IOLabAuthentication
 
     if (user != null)
     {
-      // do check for anonymous user
+      // check if non-anonymous user
       if (model.Username.ToLower() != Users.AnonymousUserName.ToLower())
       {
         if (!impersonateMode)
         {
+          // not impersonating, so check password
           if (!ValidatePassword(model.Password, user))
             return null;
         }

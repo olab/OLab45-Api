@@ -101,6 +101,18 @@ public class OLabController : ControllerBase
     return content;
   }
 
+  [NonAction]
+  protected IUserContext GetUserContext(HttpContext hostContext)
+  {
+    if (hostContext.Items.TryGetValue("usercontext", out var value) && value is IUserContext userContext)
+    {
+      Logger.LogInformation($"User context: {userContext}");
+      return userContext;
+    }
+
+    return null;
+  }
+
   /// <summary>
   /// ReadAsync the _authentication context from the host context
   /// </summary>

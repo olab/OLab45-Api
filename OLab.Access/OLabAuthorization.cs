@@ -119,33 +119,6 @@ public class OLabAuthorization : IOLabAuthorization
       _groupRoleAcls.AddRange(groupsPhys);
 
     }
-
-    // if local user, read the user-level acls
-    //var user = GetDbContext().Users.FirstOrDefault(x => x.Username == userName && x.Id == userId);
-    //if (user != null)
-    //{
-    //  _logger.LogInformation($"Local user '{userName}' found");
-
-    //  OLabUser = user;
-    //  userId = user.Id;
-    //  _userAcls = GetDbContext().UserAcls.Where(x => x.UserId == userId).ToList();
-
-    //  // if user is anonymous user, add user access to anon-flagged maps
-    //  if (OLabUser.Username == Users.AnonymousUserName)
-    //  {
-    //    var anonymousMaps = GetDbContext().Maps.Where(x => x.SecurityId == 1).ToList();
-    //    foreach (var item in anonymousMaps)
-    //      _userAcls.Add(new UserAcls
-    //      {
-    //        Id = item.Id,
-    //        ImageableId = item.Id,
-    //        ImageableType = Constants.ScopeLevelMap,
-    //        Acl2 =
-    //          IOLabAuthorization.AclBitMaskRead |
-    //          IOLabAuthorization.AclBitMaskExecute
-    //      });
-    //  }
-    //}
   }
 
   /// <summary>
@@ -510,25 +483,16 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="userPhys">User to evaluate</param>
   /// <param name="refererValue">Request referer header value</param>
   /// <returns></returns>
-  public async Task<bool> HasAccessToAppAsync(Users userPhys, string refererValue)
+  public async Task<bool> HasAccessToAppAsync(Users userPhys, string appName)
   {
     // load the user's acls
     ApplyUserContext(userPhys);
-
-    var uri = new Uri(refererValue);
-
-    // if no path, and referrer from locahost then this is probably local
-    if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
-      return true;
-
-    var appName = uri.PathAndQuery.Trim('/').Split('/').First();
-    GetLogger().LogInformation($"Testing referrer: '{uri.IdnHost}', '{appName}'");
+    GetLogger().LogInformation($"Testing referrer: '{appName}'");
 
     var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == appName);
-
     if (appPhys == null)
     {
-      GetLogger().LogError($"Could not find application {refererValue} in database");
+      GetLogger().LogError($"Could not find application '{appName}' in database");
       return false;
     }
 
@@ -549,5 +513,17 @@ public class OLabAuthorization : IOLabAuthorization
     GetLogger().LogError($"user '{userPhys.Username}' does not have access to application '{appPhys.Name}'");
     return false;
 
+  }
+
+  public static string ExtractApplication(string refererValue)
+  {
+    var uri = new Uri(refererValue);
+
+    // if no path, and referrer from locahost then this is probably local
+    if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
+      return string.Empty;
+
+    var appName = uri.PathAndQuery.Trim('/').Split('/').First();
+    return appName;
   }
 }

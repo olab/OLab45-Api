@@ -27,6 +27,7 @@ using System.Runtime.Intrinsics.X86;
 using OLab.Api.Data.Interface;
 using OLab.Access;
 using Microsoft.Extensions.Primitives;
+using NuGet.Protocol;
 
 namespace OLabWebAPI.Endpoints.WebApi;
 
@@ -38,6 +39,7 @@ namespace OLabWebAPI.Endpoints.WebApi;
 public class AuthController : OLabController
 {
   protected readonly IUserService _userService;
+  private readonly IOLabAuthorization _authorization;
   private readonly IOLabAuthentication _authentication;
 
   public AuthController(
@@ -53,6 +55,9 @@ public class AuthController : OLabController
     Logger = OLabLogger.CreateNew<AuthController>(loggerFactory);
     _authentication = authentication;
     _userService = userService;
+
+    _authorization = new OLabAuthorization(Logger, DbContext);
+
   }
 
   /// <summary>
@@ -64,47 +69,54 @@ public class AuthController : OLabController
   [HttpPost]
   public async Task<IActionResult> Login(LoginRequest model)
   {
-    IOLabAuthorization auth = null;
 
     var ipAddress = HttpContext.Request.Headers["x-forwarded-for"].ToString();
 
     if (string.IsNullOrEmpty(ipAddress))
       ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
 
+    var userContext = GetUserContext(HttpContext);
+
     bool impersonateMode = false;
-    try
+    if (userContext != null)
     {
-      auth = GetAuthorization(HttpContext);
+      _authorization.ApplyUserContext(userContext);
       // if have token and user is superuser, then we can impersonate requested user
-      impersonateMode = await auth.IsSystemSuperuserAsync();
+      impersonateMode = await _authorization.IsSystemSuperuserAsync();
     }
-    catch (Exception)
-    {
-      Logger.LogInformation($"Normal login w/o impersonate");
-    }
+
+    Logger.LogInformation($"Impersonation login? {impersonateMode}");
 
     model.Username = model.Username.ToLower();
-
     Logger.LogDebug($"Login(user = '{model.Username}' ip: {ipAddress})");
 
     var user = _authentication.Authenticate(model, impersonateMode);
     if (user == null)
-      return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
+      return HttpContext
+        .Request
+        .CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 
-    // test if user has access to application
+    // test if user has access to application based on referrer URL
     StringValues refererValues;
+    string referrer = string.Empty;
+
     if (Request.Headers.TryGetValue("Referer", out refererValues))
     {
-      var referer = refererValues.First();
-      var authorization = new OLabAuthorization(Logger, DbContext);
-      if (!await authorization.HasAccessToAppAsync(user, referer))
-        return HttpContext.Request.CreateResponse(OLabUnauthorizedObjectResult.Result("User does not have access to this application"));
+      referrer = OLabAuthorization.ExtractApplication(refererValues.First());
+      if (!await _authorization.HasAccessToAppAsync(user, referrer))
+        return 
+          HttpContext
+            .Request
+            .CreateResponse(OLabUnauthorizedObjectResult.Result("User does not have access to this application"));
     }
     else
       Logger.LogInformation($"no referer url provided");
 
-    var response = _authentication.GenerateJwtToken(user);
-    return HttpContext.Request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
+    var response = _authentication.GenerateJwtToken(user, referrer);
+    return 
+      HttpContext
+        .Request
+        .CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
   }
 
   /// <summary>
@@ -170,13 +182,14 @@ public class AuthController : OLabController
   {
     try
     {
-      var items = JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
-      var auth = GetAuthorization(HttpContext);
+      _authorization.ApplyUserContext(GetUserContext(HttpContext));
 
       // test if user has access to add users.
-      if (!await auth.IsSystemSuperuserAsync())
+      if (!await _authorization.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
+      var items = 
+        JsonConvert.DeserializeObject<List<AddUserRequest>>(jsonStringData.ToString());
       var responses = await _userService.AddUsersAsync(items);
       return HttpContext.Request.CreateResponse(
         OLabObjectListResult<UsersDto>.Result(responses));
@@ -199,10 +212,10 @@ public class AuthController : OLabController
   {
     try
     {
-      var auth = GetAuthorization(HttpContext);
+      _authorization.ApplyUserContext(GetUserContext(HttpContext));
 
       // test if user has access to add users.
-      if (!await auth.IsSystemSuperuserAsync())
+      if (!await _authorization.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
       var response = await _userService.AddUserAsync(body);
@@ -228,13 +241,14 @@ public class AuthController : OLabController
   {
     try
     {
-      var items = JsonConvert.DeserializeObject<List<DeleteUsersRequest>>(jsonStringData.ToString());
-      var auth = GetAuthorization(HttpContext);
+      _authorization.ApplyUserContext(GetUserContext(HttpContext));
 
       // test if user has access to add users.
-      if (!await auth.IsSystemSuperuserAsync())
+      if (!await _authorization.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
+      var items =
+        JsonConvert.DeserializeObject<List<DeleteUsersRequest>>(jsonStringData.ToString());
       var responses = await _userService.DeleteUsersAsync(items);
       return HttpContext.Request.CreateResponse(
         OLabObjectListResult<AddUserResponse>.Result(responses));
@@ -258,10 +272,10 @@ public class AuthController : OLabController
     try
     {
       var responses = new List<AddUserResponse>();
-      var auth = GetAuthorization(HttpContext);
+      _authorization.ApplyUserContext(GetUserContext(HttpContext));
 
       // test if user has access to add users.
-      if (!await auth.IsSystemSuperuserAsync())
+      if (!await _authorization.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
       var response = _userService.GetUsers(name);
@@ -288,14 +302,13 @@ public class AuthController : OLabController
     try
     {
       var responses = new List<UsersImportDto>();
-      var auth = GetAuthorization(HttpContext);
+      _authorization.ApplyUserContext(GetUserContext(HttpContext));
 
       // test if user has access to add users.
-      if (!await auth.IsSystemSuperuserAsync())
+      if (!await _authorization.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
       var fileStream = file.OpenReadStream();
-
       responses = await _userService.ImportUsersAsync(fileStream);
 
       return HttpContext.Request.CreateResponse(
@@ -319,10 +332,10 @@ public class AuthController : OLabController
   {
     try
     {
-      var auth = GetAuthorization(HttpContext);
+      _authorization.ApplyUserContext(GetUserContext(HttpContext));
 
       // test if user has access to add users.
-      if (!await auth.IsSystemSuperuserAsync())
+      if (!await _authorization.IsSystemSuperuserAsync())
         return OLabUnauthorizedResult.Result();
 
       var response = await _userService.EditUserAsync(request);

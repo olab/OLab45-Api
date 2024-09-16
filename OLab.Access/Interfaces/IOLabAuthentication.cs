@@ -14,7 +14,7 @@ public interface IOLabAuthentication
   bool ValidateToken(string token);
   IDictionary<string, string> Claims { get; }
   TokenValidationParameters GetValidationParameters();
-  AuthenticateResponse GenerateJwtToken(Users user, string issuedBy = "olab");
+  AuthenticateResponse GenerateJwtToken(Users user, string referrer, string issuedBy = "olab");
   AuthenticateResponse GenerateAnonymousJwtToken(uint mapId);
   AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model);
 

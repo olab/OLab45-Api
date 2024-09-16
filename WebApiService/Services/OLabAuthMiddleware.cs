@@ -94,7 +94,7 @@ public class OLabAuthMiddleware
 
           var accessToken = OLabAuthentication.ExtractAccessToken(
             context.Request,
-            path.Value.Contains("/login"));
+            path.Value.Contains("/login") || path.Value.Contains("/groups"));
 
           context.Token = accessToken;
 
