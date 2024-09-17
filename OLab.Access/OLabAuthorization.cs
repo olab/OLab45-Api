@@ -1,11 +1,5 @@
 using Dawn;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using Humanizer;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
 using OLab.Api.Common;
@@ -20,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace OLab.Access;
 
@@ -181,7 +174,7 @@ public class OLabAuthorization : IOLabAuthorization
     // test if user has access to parent map.
     if (dto.ImageableType == Constants.ScopeLevelMap)
     {
-      bool result = await HasRequestedAccessToMapAsync(requestedAcl, dto.ImageableId);
+      var result = await HasRequestedAccessToMapAsync(requestedAcl, dto.ImageableId);
 
       if (!result)
         return OLabUnauthorizedResult.Result();
@@ -191,7 +184,7 @@ public class OLabAuthorization : IOLabAuthorization
     // test if user has access to parent node.
     if (dto.ImageableType == Constants.ScopeLevelNode)
     {
-      bool result = await HasRequestedAccessToNodeAsync(requestedAcl, dto.ImageableId);
+      var result = await HasRequestedAccessToNodeAsync(requestedAcl, dto.ImageableId);
 
       if (!result)
         return OLabUnauthorizedResult.Result();
@@ -456,7 +449,7 @@ public class OLabAuthorization : IOLabAuthorization
     string objectType,
     uint? objectId)
   {
-    bool result = false;
+    var result = false;
 
     // test if system superuser meaning unconditional access
     if (await IsSystemSuperuserAsync())
@@ -556,7 +549,7 @@ public class OLabAuthorization : IOLabAuthorization
 
     // find first user group role that is a author then superuser
     var groupRole = userGroupRoles.FirstOrDefault(x => roleIds.Contains(x.RoleId));
-    return new MapGrouproles {  MapId = map.Id, GroupId = groupRole.GroupId, RoleId = null };
+    return new MapGrouproles { MapId = map.Id, GroupId = groupRole.GroupId, RoleId = null };
   }
 
 }
