@@ -72,14 +72,14 @@ public class OLabAuthentication : IOLabAuthentication
   public static TokenValidationParameters BuildTokenValidationObject(IOLabConfiguration config)
   {
     // get and extract the valid token issuers
-    var jwtIssuers = config.GetValue<string>("Issuer");
+    var jwtIssuers = config.GetAppSettings().Issuer;
 
     var issuerParts = jwtIssuers.Split(',');
     var validIssuers = issuerParts.Select(x => x.Trim()).ToList();
 
-    var jwtAudience = config.GetValue<string>("Audience");
+    var jwtAudience = config.GetAppSettings().Audience;
 
-    var signingSecret = config.GetValue<string>("Secret");
+    var signingSecret = config.GetAppSettings().Secret;
     var secretBytes = Encoding.Default.GetBytes(signingSecret[..40]);
     var securityKey =
       new SymmetricSecurityKey(secretBytes);

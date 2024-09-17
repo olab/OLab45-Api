@@ -56,7 +56,7 @@ public class AuthController : OLabController
     _authentication = authentication;
     _userService = userService;
 
-    _authorization = new OLabAuthorization(Logger, DbContext);
+    _authorization = new OLabAuthorization(Logger, DbContext, configuration);
 
   }
 
@@ -102,7 +102,7 @@ public class AuthController : OLabController
 
     if (Request.Headers.TryGetValue("Referer", out refererValues))
     {
-      referrer = OLabAuthorization.ExtractApplication(refererValues.First());
+      referrer = _authorization.ExtractApplication(refererValues.First());
       if (!await _authorization.HasAccessToAppAsync(user, referrer))
         return 
           HttpContext

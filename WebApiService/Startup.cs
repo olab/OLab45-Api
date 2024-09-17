@@ -58,12 +58,15 @@ public class Startup
 #endif
     };
 
+    var appSettings = Configuration.GetSection("AppSettings").Get<AppSettings>();
+
     services.AddCors(options =>
     {
       options.AddPolicy("CorsPolicy",
          builder => builder
           // .AllowAnyOrigin()
-          .WithOrigins("http://localhost:4000", "http://localhost:3000", "http://localhost:3001", "https://dev.olab.ca", "https://demo.olab.ca")
+          .WithOrigins(appSettings.Cors)
+          //.WithOrigins("http://localhost:4000", "http://localhost:3000", "http://localhost:3001", "https://dev.olab.ca", "https://demo.olab.ca")
           .AllowAnyMethod()
           .AllowAnyHeader()
           .AllowCredentials()

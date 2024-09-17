@@ -28,6 +28,7 @@ public class OLabAuthorization : IOLabAuthorization
 {
   private readonly IOLabLogger _logger;
   private readonly OLabDBContext _dbContext;
+  private readonly IOLabConfiguration _configuration;
   private readonly GroupReaderWriter _groupReaderWriter;
   private readonly RoleReaderWriter _roleReaderWriter;
 
@@ -46,14 +47,17 @@ public class OLabAuthorization : IOLabAuthorization
 
   public OLabAuthorization(
     IOLabLogger logger,
-    OLabDBContext dbContext
+    OLabDBContext dbContext,
+    IOLabConfiguration configuration
   )
   {
     Guard.Argument(logger).NotNull(nameof(logger));
     Guard.Argument(dbContext).NotNull(nameof(dbContext));
+    Guard.Argument(configuration).NotNull(nameof(configuration));
 
     _logger = logger;
     _dbContext = dbContext;
+    _configuration = configuration;
     _groupReaderWriter = GroupReaderWriter.Instance(logger, dbContext);
     _roleReaderWriter = RoleReaderWriter.Instance(logger, dbContext);
   }
@@ -515,13 +519,14 @@ public class OLabAuthorization : IOLabAuthorization
 
   }
 
-  public static string ExtractApplication(string refererValue)
+  public string ExtractApplication(string refererValue)
   {
+    refererValue = refererValue.Trim('/');
     var uri = new Uri(refererValue);
 
-    // if no path, and referrer from locahost then this is probably local
-    if (uri.PathAndQuery == "/" && uri.IdnHost == "localhost")
-      return string.Empty;
+    // if no path, and referrer from localhost then this is probably local
+    if (uri.PathAndQuery == "/" && _configuration.GetAppSettings().Cors.Contains(refererValue))
+      return "localhost";
 
     var appName = uri.PathAndQuery.Trim('/').Split('/').First();
     return appName;
@@ -532,7 +537,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// </summary>
   /// <returns>MapGrouproles record</returns>
   /// <exception cref="Exception">If missing configuration roles</exception>
-  public async Task<MapGrouproles> GetMapCreationGroupRole()
+  public async Task<MapGrouproles> GetMapCreationGroupRoleAsync(Maps map)
   {
     var roleIds = new List<uint>();
     var userGroupRoles = UserContext.GroupRoles;
@@ -551,7 +556,7 @@ public class OLabAuthorization : IOLabAuthorization
 
     // find first user group role that is a author then superuser
     var groupRole = userGroupRoles.FirstOrDefault(x => roleIds.Contains(x.RoleId));
-    return new MapGrouproles {  GroupId = groupRole.Id, RoleId = groupRole.Id };
+    return new MapGrouproles {  MapId = map.Id, GroupId = groupRole.GroupId, RoleId = null };
   }
 
 }

@@ -22,6 +22,8 @@ public interface IOLabAuthorization
   Task<bool> IsSystemSuperuserAsync();
   Task<bool> IsGroupSuperUserAsync(uint groupId);
   Task<bool> HasAccessToAppAsync(Users userPhys, string appName);
-  Task<MapGrouproles> GetMapCreationGroupRole();
+  Task<MapGrouproles> GetMapCreationGroupRoleAsync(Maps map);
+  string ExtractApplication(string refererValue);
+
 
 }
