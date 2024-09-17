@@ -22,6 +22,8 @@ using OLab.Common.Utils;
 using OLab.Data;
 using OLab.Data.Interface;
 using OLabWebAPI.Services;
+using System;
+using System.Linq;
 
 namespace OLabWebAPI;
 
@@ -60,13 +62,14 @@ public class Startup
 
     var appSettings = Configuration.GetSection("AppSettings").Get<AppSettings>();
 
+    if ((appSettings.Cors == null) || (appSettings.Cors.Count() == 0))
+      throw new Exception("Missing appSetting 'Cors'");
+
     services.AddCors(options =>
     {
       options.AddPolicy("CorsPolicy",
          builder => builder
-          // .AllowAnyOrigin()
           .WithOrigins(appSettings.Cors)
-          //.WithOrigins("http://localhost:4000", "http://localhost:3000", "http://localhost:3001", "https://dev.olab.ca", "https://demo.olab.ca")
           .AllowAnyMethod()
           .AllowAnyHeader()
           .AllowCredentials()
@@ -121,7 +124,6 @@ public class Startup
     var dbContext = sp.GetService<OLabDBContext>();
     OLabAuthMiddleware.SetupServices(Configuration, services, dbContext);
 
-    //services.AddScoped<IOLabSession, OLabSession>();
     services.AddScoped<IUserService, UserService>();
     services.AddScoped<IOLabAuthentication, OLabAuthentication>();
     services.AddScoped<IOLabAuthorization, OLabAuthorization>();
