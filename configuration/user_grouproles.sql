@@ -1,8 +1,7 @@
 SELECT
 	ugr.id,
-    CONCAT( u.username, " (", ugr.user_id, ")" ) as `user`,
-    CONCAT( g.name, " (", ugr.group_id, ")" ) as `group`,
-    CONCAT( r.name, " (", ugr.role_id, ")" ) as `role`
+    CONCAT( u.username, "(", ugr.user_id, ")" ) as `user`,
+    CONCAT( CONCAT( g.name, "(", ugr.group_id, ")" ), ":", CONCAT( r.name, "(", ugr.role_id, ")" ) ) as `group/role`
 FROM 
 	user_grouproles ugr, 
 	users u,

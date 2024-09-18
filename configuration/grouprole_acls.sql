@@ -1,64 +1,17 @@
-SELECT 
+SELECT DISTINCT
     gra.id,
-    gra.group_id as `group`,
-    gra.role_id as `role`,    
-    gra.imageable_type, 
-    gra.imageable_id, 
-    gra.acl2 
-FROM 
-	`grouprole_acls` gra
-WHERE 
-	gra.group_id is NULL AND
-  	gra.role_id is NULL     
-UNION
-
-SELECT 
-    gra.id,
-    CONCAT( g.name, " (", g.id, ")" ) as `group`,
-    CONCAT( r.name, " (", r.id, ")" ) as `role`,    
-    gra.imageable_type, 
-    gra.imageable_id, 
+    IF( gra.group_id IS NOT NULL, ( SELECT CONCAT( name, " (", id, ")" ) from `groups` WHERE id = gra.group_id ), null ) as `group`,
+    IF( gra.role_id IS NOT NULL, ( SELECT CONCAT( name, " (", id, ")" ) from `roles` WHERE id = gra.role_id ), null ) as `role`,
+    gra.imageable_type as `type`, 
+	IF( gra.imageable_id IS NOT NULL, CONCAT( sa.name, " (", sa.id, ")" ), null ) as `application`,    
     gra.acl2 
 FROM 
 	`grouprole_acls` gra,  
-    `groups` g,
-    `roles` r
+    `system_applications` sa
 WHERE 
-	gra.group_id is not NULL AND
-  	gra.role_id is not NULL AND
-    gra.group_id = g.id AND
-    gra.role_id = r.id
-    
-UNION
-SELECT 
-    gra.id,
-    gra.group_id as `group`, 
-    CONCAT( r.name, " (", r.id, ")" ) as `role`,    
-    gra.imageable_type, 
-    gra.imageable_id, 
-    gra.acl2 
-FROM 
-	`grouprole_acls` gra,  
-    `roles` r
-WHERE 
-    gra.group_id IS NULL AND
-    gra.role_id IS NOT NULL AND
-    gra.role_id = r.id    
-
-UNION
-SELECT 
-    gra.id,
-    CONCAT( g.name, " (", g.id, ")" ) as `group`,
-    gra.role_id as role, 
-    gra.imageable_type, 
-    gra.imageable_id, 
-    gra.acl2 
-FROM 
-	`grouprole_acls` gra,  
-    `groups` g
-WHERE 
-    gra.group_id IS NOT NULL AND
-    gra.role_id IS NULL AND
-    gra.group_id = g.id 
+    gra.imageable_type = 'Apps' AND
+    ( gra.imageable_id = sa.id OR gra.imageable_id is null)
 ORDER BY
-	imageable_id, imageable_type, `group`, role
+	`group`, `role`, `application`
+    
+    
