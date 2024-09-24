@@ -166,6 +166,8 @@ public class UserService : IUserService
 
   public async Task<AddUserResponse> DeleteUserAsync(DeleteUsersRequest userRequest)
   {
+    Logger.LogInformation($" deleting user '{userRequest.UserName}'");
+
     Users user = null;
 
     // allow for either id or user name to search for
@@ -313,7 +315,6 @@ public class UserService : IUserService
         {
           try
           {
-            Logger.LogInformation($" adding user {userRequest.Username}");
             var response = await AddUserAsync(userRequest);
             responses.Add(new UsersImportDto(response) { Message = "added" });
           }
@@ -332,7 +333,6 @@ public class UserService : IUserService
         {
           try
           {
-            Logger.LogInformation($" editing user {userRequest.Username}");
             var response = await EditUserAsync(userRequest);
 
             // test if user previously added (in the responses), if so then
@@ -362,7 +362,6 @@ public class UserService : IUserService
         {
           try
           {
-            Logger.LogInformation($" deleting user {userRequest.Username}");
             var list = new List<DeleteUsersRequest>();
             list.Add(new DeleteUsersRequest { UserName = userRequest.Username });
             await DeleteUsersAsync(list);
@@ -402,14 +401,22 @@ public class UserService : IUserService
     if (user != null)
       throw new OLabBadRequestException($"'{userRequest.Username}' already exists");
 
+    Logger.LogInformation($"adding user '{userRequest.Username}'");
+
     var newUserPhys = Users.CreatePhysFromRequest(null, userRequest);
     newUserPhys.UserGrouproles.AddRange(
       UserGrouproles.StringToObjectList(GetDbContext(), userRequest.GroupRoles));
 
-    ChangePassword(newUserPhys, new ChangePasswordRequest
+    // if salt not passed in, then the incoming password is 
+    // cleartext, so we need to do a 'change password'
+    // on it to convert it to a hash before saving to database.
+    if (string.IsNullOrEmpty(newUserPhys.Salt))
     {
-      NewPassword = newUserPhys.Password
-    });
+      ChangePassword(newUserPhys, new ChangePasswordRequest
+      {
+        NewPassword = newUserPhys.Password
+      });
+    }
 
     await GetDbContext().Users.AddAsync(newUserPhys);
     await GetDbContext().SaveChangesAsync();
@@ -429,6 +436,7 @@ public class UserService : IUserService
     if (user == null)
       throw new OLabBadRequestException($"user: '{userRequest.Username}' does not exist");
 
+    Logger.LogInformation($"editing user '{userRequest.Username}'");
 
     // need to set the logger and the dbContext since
     // they are not present when AddUserRequest created by webApi
