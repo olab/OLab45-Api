@@ -180,7 +180,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="stream">File stream</param>
   /// <param name="filePath">Relative to root file path</param>
   /// <param name="token">CancellationToken</param>
-  public override async Task ReadFileAsync(
+  public override async Task<bool> ReadFileAsync(
     Stream stream,
     string filePath,
     CancellationToken token = default)
@@ -198,6 +198,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       logger.LogInformation($"ReadFileAsync: {_containerName} {filePath}. File size: {stream.Length}");
 
       stream.Position = 0;
+      return true;
     }
     catch (Exception ex)
     {
@@ -260,7 +261,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="extractDirectory">TTarget extreaction sourceFolderName</param>
   /// <param name="token">Cancellation token</param>
   /// <returns></returns>
-  public override async Task<bool> ExtractFileToStorageAsync(
+  public override async Task<string> ExtractFileToStorageAsync(
     string archiveFileName,
     string extractDirectory,
     CancellationToken token = default)
@@ -288,7 +289,8 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
         extractDirectory,
         token);
 
-      return true;
+      // TODO: correct this later
+      return extractDirectory;
     }
     catch (Exception ex)
     {
