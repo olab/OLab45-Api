@@ -25,6 +25,11 @@ using System.Collections.Generic;
 using HttpMultipartParser;
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.Primitives;
+using Azure.Core;
+using System.Net;
+using OLab.Api.Data.Interface;
+using OLab.Access;
 
 namespace OLab.FunctionApp.Functions.API;
 
@@ -32,6 +37,7 @@ public class UserFunction : OLabFunction
 {
   protected readonly IUserService _userService;
   private readonly IOLabAuthentication _authentication;
+  private readonly IOLabAuthorization _authorization;
 
   public UserFunction(
       ILoggerFactory loggerFactory,
@@ -45,6 +51,8 @@ public class UserFunction : OLabFunction
     Logger = OLabLogger.CreateNew<UserFunction>(loggerFactory);
     _authentication = authentication;
     _userService = userService;
+
+    _authorization = new OLabAuthorization( Logger, DbContext, configuration );
   }
 
   [Function("Login")]
@@ -60,12 +68,24 @@ public class UserFunction : OLabFunction
 
       Logger.LogDebug($"Login(user = '{model.Username}' ip: ???)");
 
-      //var user = _userService.Authenticate(model);
       var user = _authentication.Authenticate(model);
       if (user == null)
         return request.CreateResponse(OLabUnauthorizedObjectResult.Result("Username or password is incorrect"));
 
-      var response = _authentication.GenerateJwtToken(user);
+      // test if user has access to application based on referrer URL
+      IEnumerable<string> refererValues;
+      string referrer = string.Empty;
+
+      if ( request.Headers.TryGetValues( "Referer", out refererValues ) )
+      {
+        referrer = _authorization.ExtractApplication( refererValues.First() );
+        if ( !await _authorization.HasAccessToAppAsync( user, referrer ) )
+          return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "User does not have access to this application" ) );
+      }
+      else
+        Logger.LogInformation( $"no referer url provided" );
+
+      var response = _authentication.GenerateJwtToken(user, referrer);
       return request.CreateResponse(OLabObjectResult<AuthenticateResponse>.Result(response));
 
     }

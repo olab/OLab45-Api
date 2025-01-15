@@ -1,17 +1,19 @@
 using Dawn;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging;
+using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Contracts;
+using OLab.Data.Dtos;
 using OLab.Data.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using OLab.Data.Mappers;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using Users = OLab.Api.Model.Users;
 
 namespace OLab.FunctionApp.Services;
 
@@ -21,6 +23,9 @@ public class UserService : IUserService
   private readonly OLabDBContext _dbContext;
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger Logger;
+
+  public OLabDBContext GetDbContext() { return _dbContext; }
+  public IOLabLogger GetLogger() { return Logger; }
 
   public bool IsValid { get; private set; }
   public bool UserName { get; private set; }
@@ -47,26 +52,150 @@ public class UserService : IUserService
 
   }
 
-  /// <summary>
-  /// Authenticate user
-  /// </summary>
-  /// <param name="model">Login model</param>
-  /// <returns>Authenticate response, or null</returns>
-  //public Users Authenticate(LoginRequest model)
-  //{
-  //  Guard.Argument(model, nameof(model)).NotNull();
+  public async Task<List<UsersImportDto>> ImportUsersAsync(Stream fileStream)
+  {
+    var responses = new List<UsersImportDto>();
 
-  //  Logger.LogInformation($"Authenticating {model.Username}, ***{model.Password[^3..]}");
-  //  var user = _dbContext.Users.SingleOrDefault(x => x.Username.ToLower() == model.Username.ToLower());
+    using ( SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open( fileStream, false ) )
+    {
 
-  //  if (user != null)
-  //  {
-  //    if (!ValidatePassword(model.Password, user))
-  //      return null;
-  //  }
+      var workbookPart =
+        spreadsheetDocument.WorkbookPart ?? spreadsheetDocument.AddWorkbookPart();
+      var worksheetPart = workbookPart.WorksheetParts.First();
+      var sheet = worksheetPart.Worksheet;
 
-  //  return user;
-  //}
+      var sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
+      var sst = sstpart.SharedStringTable;
+
+      var cells = sheet.Descendants<Cell>();
+      var rows = sheet.Descendants<Row>();
+
+      Logger.LogInformation( $"Import row count = {rows.LongCount()}" );
+      Logger.LogInformation( $"       cell count = {cells.LongCount()}" );
+
+      foreach ( Row row in rows )
+      {
+        int column = 0;
+        var userRequest = new AddUserRequest(
+          Logger,
+          GetDbContext() );
+
+        var groupRoleStrings = new List<string>();
+
+        foreach ( Cell c in row.Elements<Cell>() )
+        {
+          if ( (c.DataType != null) && (c.DataType == CellValues.SharedString) )
+          {
+            int ssid = int.Parse( c.CellValue.Text );
+            string str = sst.ChildElements[ ssid ].InnerText;
+
+            switch ( column )
+            {
+              case 0:
+                userRequest.Operation = str;
+                break;
+              case 1:
+                userRequest.Username = str;
+                break;
+              case 2:
+                userRequest.NickName = str;
+                break;
+              case 3:
+                userRequest.EMail = str;
+                break;
+              case 4:
+                userRequest.Password = str;
+                break;
+              default:
+                groupRoleStrings.Add( str );
+                break;
+            }
+
+          }
+
+          column++;
+        }
+
+        userRequest.GroupRoles = string.Join( ",", groupRoleStrings );
+
+        if ( string.IsNullOrEmpty( userRequest.Operation ) || userRequest.Operation == "+" )
+        {
+          try
+          {
+            var response = await AddUserAsync( userRequest );
+            responses.Add( new UsersImportDto( response ) { Message = "added" } );
+          }
+          catch ( Exception ex )
+          {
+            responses.Add( new UsersImportDto
+            {
+              UserName = userRequest.Username,
+              Status = false,
+              Message = ex.Message
+            } );
+          }
+        }
+
+        else if ( userRequest.Operation == "*" )
+        {
+          try
+          {
+            var response = await EditUserAsync( userRequest );
+
+            // test if user previously added (in the responses), if so then
+            // remove previous before adding edited user
+            var existingUser = responses.FirstOrDefault( x => x.Id == response.Id );
+            if ( existingUser != null )
+            {
+              responses.Remove( existingUser );
+              responses.Add( new UsersImportDto( response ) { Message = "added, edited" } );
+            }
+            else
+              responses.Add( new UsersImportDto( response ) { Message = "edited" } );
+
+          }
+          catch ( Exception ex )
+          {
+            responses.Add( new UsersImportDto
+            {
+              UserName = userRequest.Username,
+              Status = false,
+              Message = ex.Message
+            } );
+          }
+        }
+
+        else if ( userRequest.Operation == "-" )
+        {
+          try
+          {
+            var list = new List<DeleteUsersRequest>();
+            list.Add( new DeleteUsersRequest { UserName = userRequest.Username } );
+            await DeleteUsersAsync( list );
+
+            //responses.Add(new UsersImportDto
+            //{
+            //  UserName = userRequest.Username,
+            //  Message = "deleted"
+            //});
+
+          }
+          catch ( Exception ex )
+          {
+            responses.Add( new UsersImportDto
+            {
+              UserName = userRequest.Username,
+              Status = false,
+              Message = ex.Message
+            } );
+          }
+
+        }
+      }
+    }
+
+    return responses;
+  }
 
   /// <summary>
   /// Updates a user record with a new password
@@ -102,13 +231,18 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// Get user by Id
+  /// ReadAsync user by Id
   /// </summary>
   /// <param name="id">User id</param>
   /// <returns>User record</returns>
-  public Users GetById(int id)
+  public Users GetById(uint? id)
   {
-    return _dbContext.Users.FirstOrDefault(x => x.Id == id);
+    if ( !id.HasValue )
+      return null;
+    return GetDbContext()
+      .Users
+      .Include( "UserGrouproles" )
+      .FirstOrDefault( x => x.Id == id.Value );
   }
 
   /// <summary>
@@ -121,137 +255,187 @@ public class UserService : IUserService
     return _dbContext.Users.FirstOrDefault(x => x.Username.ToLower() == userName.ToLower());
   }
 
-  /// <summary>
-  /// Validate user password
-  /// </summary>
-  /// <param name="clearText">Password</param>
-  /// <param name="user">Corresponding user record</param>
-  /// <returns>true/false</returns>
-  //public bool ValidatePassword(string clearText, Users user)
-  //{
-  //  Guard.Argument(user, nameof(user)).NotNull();
-  //  Guard.Argument(clearText, nameof(clearText)).NotEmpty();
-
-  //  var result = false;
-
-  //  if (!string.IsNullOrEmpty(user.Salt))
-  //  {
-  //    clearText += user.Salt;
-  //    var hash = SHA1.Create();
-  //    var plainTextBytes = Encoding.ASCII.GetBytes(clearText);
-  //    var hashBytes = hash.ComputeHash(plainTextBytes);
-  //    var localChecksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-
-  //    result = localChecksum == user.Password;
-  //  }
-
-  //  Logger.LogInformation($"Password validated = {result}");
-  //  return result;
-  //}
-
-  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<AddUserRequest> items)
+  public IList<UsersDto> GetUsers(string name)
   {
-    try
+    IList<Users> users = new List<Users>();
+
+    if ( !string.IsNullOrEmpty( name ) )
     {
-      var responses = new List<AddUserResponse>();
-
-      Logger.LogDebug($"DeleteUserAsync(items count '{items.Count}')");
-
-      foreach (AddUserRequest item in items)
-      {
-        AddUserResponse response = await DeleteUserAsync(item);
-        responses.Add(response);
-      }
-
-      return responses;
+      users = GetDbContext().Users
+        .Include( "UserGrouproles" )
+        .Include( "UserGrouproles.Group" )
+        .Include( "UserGrouproles.Role" )
+        .Where( x => x.Nickname.Contains( name ) || x.Username.Contains( name ) ).ToList();
     }
-    catch (Exception ex)
-    {
-      Logger.LogError($"DeleteUserAsync exception {ex.Message}");
-      throw;
-    }
+    else
+      users = GetDbContext().Users
+        .Include( "UserGrouproles" )
+        .Include( "UserGrouproles.Group" )
+        .Include( "UserGrouproles.Role" )
+        .ToList();
+
+    var dtoList = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( users );
+    return dtoList;
   }
 
-  public async Task<AddUserResponse> DeleteUserAsync(AddUserRequest userRequest)
+  /// <summary>
+  /// Edit user based on add user request
+  /// </summary>
+  /// <param name="userRequest">USer request</param>
+  /// <returns>Add user response</returns>
+  public async Task<UsersDto> EditUserAsync(AddUserRequest userRequest)
   {
-    Users user = GetByUserName(userRequest.Username);
-    if (user == null)
+    var user = GetByUserName( userRequest.Username );
+    if ( user == null )
+      throw new OLabBadRequestException( $"user: '{userRequest.Username}' does not exist" );
+
+    Logger.LogInformation( $"editing user '{userRequest.Username}'" );
+
+    // need to set the logger and the dbContext since
+    // they are not present when AddUserRequest created by webApi
+    userRequest.SetInfrastructure( GetLogger(), GetDbContext() );
+
+    // parse any GroupRole string(s)
+    userRequest.BuildGroupRoleObjects();
+
+    // build physical User object from request
+    Users.CreatePhysFromRequest( user, userRequest );
+
+    // update and encrypt password if one was passed in
+    if ( !string.IsNullOrEmpty( userRequest.Password ) )
+    {
+      ChangePassword( user, new ChangePasswordRequest
+      {
+        NewPassword = userRequest.Password
+      } );
+    }
+
+    GetDbContext().Users.Update( user );
+    await GetDbContext().SaveChangesAsync();
+
+    user.UserGrouproles.AddRange( userRequest.GroupRoleObjects );
+    GetDbContext().Users.Update( user );
+    await GetDbContext().SaveChangesAsync();
+
+    var userDto = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( user );
+    return userDto;
+  }
+
+
+  public async Task<AddUserResponse> DeleteUserAsync(DeleteUsersRequest userRequest)
+  {
+    Logger.LogInformation( $" deleting user '{userRequest.UserName}'" );
+
+    Users user = null;
+
+    // allow for either id or user name to search for
+    if ( userRequest.Id > 0 )
+      user = GetById( userRequest.Id );
+    else if ( !string.IsNullOrEmpty( userRequest.UserName ) )
+      user = GetByUserName( userRequest.UserName );
+
+    if ( user == null )
     {
       return new AddUserResponse
       {
-        Username = userRequest.Username.ToLower(),
-        Message = $"User does not exist"
+        Id = userRequest.Id,
+        Error = $"User does not exist"
       };
     }
 
     var physUser =
-      await _dbContext.Users.FirstOrDefaultAsync(x => x.Username == userRequest.Username);
+      await GetDbContext().Users.FirstOrDefaultAsync( x => x.Id == userRequest.Id );
 
-    _dbContext.Users.Remove(physUser);
-    await _dbContext.SaveChangesAsync();
+    GetDbContext().Users.Remove( physUser );
+    await GetDbContext().SaveChangesAsync();
 
     var response = new AddUserResponse
     {
-      Username = physUser.Username,
-      Message = "Deleted"
+      Id = userRequest.Id
     };
 
     return response;
   }
 
-  public async Task<List<AddUserResponse>> AddUsersAsync(List<AddUserRequest> items)
+  public async Task<List<AddUserResponse>> DeleteUsersAsync(List<DeleteUsersRequest> items)
   {
     try
     {
       var responses = new List<AddUserResponse>();
 
-      Logger.LogDebug($"AddUserAsync(items count '{items.Count}')");
+      Logger.LogDebug( $"DeleteUserAsync(items count '{items.Count}')" );
 
-      foreach (AddUserRequest item in items)
+      foreach ( var item in items )
       {
-        AddUserResponse response = await AddUserAsync(item);
-        responses.Add(response);
+        var response = await DeleteUserAsync( item );
+        responses.Add( response );
       }
 
       return responses;
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError($"AddUserAsync exception {ex.Message}");
+      Logger.LogError( $"DeleteUserAsync exception {ex.Message}" );
       throw;
     }
   }
 
-  public async Task<AddUserResponse> AddUserAsync(AddUserRequest userRequest)
+  /// <summary>
+  /// Add user based on add user request
+  /// </summary>
+  /// <param name="userRequest">User request</param>
+  /// <returns>ADd user response</returns>
+  public async Task<UsersDto> AddUserAsync(AddUserRequest userRequest)
   {
-    Users user = GetByUserName(userRequest.Username);
-    if (user != null)
+    var user = GetByUserName( userRequest.Username );
+    if ( user != null )
+      throw new OLabBadRequestException( $"'{userRequest.Username}' already exists" );
+
+    Logger.LogInformation( $"adding user '{userRequest.Username}'" );
+
+    var newUserPhys = Users.CreatePhysFromRequest( null, userRequest );
+    newUserPhys.UserGrouproles.AddRange(
+      UserGrouproles.StringToObjectList( GetDbContext(), userRequest.GroupRoles ) );
+
+    // if salt not passed in, then the incoming password is 
+    // cleartext, so we need to do a 'change password'
+    // on it to convert it to a hash before saving to database.
+    if ( string.IsNullOrEmpty( newUserPhys.Salt ) )
     {
-      return new AddUserResponse
+      ChangePassword( newUserPhys, new ChangePasswordRequest
       {
-        Username = userRequest.Username.ToLower(),
-        Message = $"Already exists"
-      };
+        NewPassword = newUserPhys.Password
+      } );
     }
 
-    var newUser = Users.CreateDefault(userRequest);
-    var newPassword = newUser.Password;
+    await GetDbContext().Users.AddAsync( newUserPhys );
+    await GetDbContext().SaveChangesAsync();
 
-    ChangePassword(newUser, new ChangePasswordRequest
-    {
-      NewPassword = newUser.Password
-    });
-
-    await _dbContext.Users.AddAsync(newUser);
-    await _dbContext.SaveChangesAsync();
-
-    var response = new AddUserResponse
-    {
-      Username = newUser.Username,
-      Password = newPassword,
-      Id = newUser.Id
-    };
-
-    return response;
+    var userDto = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( newUserPhys );
+    return userDto;
   }
+
+  public async Task<List<UsersDto>> AddUsersAsync(List<AddUserRequest> items)
+  {
+    try
+    {
+      var responses = new List<UsersDto>();
+
+      Logger.LogDebug( $"AddUserAsync(items count '{items.Count}')" );
+
+      foreach ( var item in items )
+      {
+        var user = await AddUserAsync( item );
+        responses.Add( user );
+      }
+
+      return responses;
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( $"AddUserAsync exception {ex.Message}" );
+      throw;
+    }
+  }
+
 }

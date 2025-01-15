@@ -7,6 +7,11 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Functions\TurkTalk\**" />
+    <EmbeddedResource Remove="Functions\TurkTalk\**" />
+    <None Remove="Functions\TurkTalk\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="D:\Client\olab\devel\repos\configs\FunctionApp\local.settings.json" Link="local.settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
@@ -25,6 +30,7 @@
     <PackageReference Include="HttpMultipartParser" Version="8.4.0" />
     <PackageReference Include="JsonDiffPatch.Net" Version="2.3.0" />
     <PackageReference Include="JWT" Version="11.0.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.12" />
     <PackageReference Include="Microsoft.Azure.AppConfiguration.Functions.Worker" Version="8.0.0" />
@@ -65,8 +71,6 @@
     <ProjectReference Include="..\..\Common\Endpoints\OLab.Endpoints.csproj" />
     <ProjectReference Include="..\..\Common\Import\OLab.Import.csproj" />
     <ProjectReference Include="..\..\Common\WikiTags\OLab.WikiTags.csproj" />
-    <ProjectReference Include="..\..\Turktalk\Data\OLab.TurkTalk.Data.csproj" />
-    <ProjectReference Include="..\..\Turktalk\Endpoints\OLab.TurkTalk.Endpoints.csproj" />
     <ProjectReference Include="..\OLab.Access\OLab.Access.csproj" />
     <ProjectReference Include="..\OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj" />
     <ProjectReference Include="..\OLab.Files.FileSystem\OLab.Files.FileSystem.csproj" />

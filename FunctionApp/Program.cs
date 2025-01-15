@@ -17,11 +17,12 @@ using OLab.Data.Interface;
 using OLab.Api.Model;
 using OLab.FunctionApp.Middleware;
 using OLab.FunctionApp.Services;
-using OLab.TurkTalk.Endpoints.BusinessObjects;
-using OLab.TurkTalk.Endpoints.Interface;
+//using OLab.TurkTalk.Endpoints.BusinessObjects;
+//using OLab.TurkTalk.Endpoints.Interface;
 using System;
 using OLab.Api.Data.Interface;
-using OLab.TurkTalk.Data;
+using OLab.Api.WikiTag;
+//using OLab.TurkTalk.Data;
 
 namespace OLab.FunctionApp;
 
@@ -71,9 +72,9 @@ var host = new HostBuilder()
           .EnableDetailedErrors(), ServiceLifetime.Scoped);
       //.AddLogging(options => options.SetMinimumLevel(LogLevel.Information));
 
-      services.AddDbContext<TTalkDBContext>(options =>
-        options.UseMySql(connectionString, serverVersion)
-          .EnableDetailedErrors(), ServiceLifetime.Scoped);
+      //services.AddDbContext<TTalkDBContext>(options =>
+      //  options.UseMySql(connectionString, serverVersion)
+      //    .EnableDetailedErrors(), ServiceLifetime.Scoped);
 
       services.AddOptions<AppSettings>()
         .Configure<IConfiguration>((options, c) =>
@@ -89,10 +90,10 @@ var host = new HostBuilder()
       services.AddScoped<IOLabAuthentication, OLabAuthentication>();
       services.AddScoped<IUserService, UserService>();
       services.AddSingleton(typeof(IOLabModuleProvider<>), typeof(OLabModuleProvider<>));
-      services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagProvider>();
+      services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>();
       services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
 
-      services.AddSingleton<IConference, Conference>();
+      //services.AddSingleton<IConference, Conference>();
       IdentityModelEventSource.ShowPII = true;
     })
 

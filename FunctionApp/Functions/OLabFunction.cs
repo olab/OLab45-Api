@@ -69,7 +69,7 @@ public class OLabFunction
     {
       Logger.LogInformation($"User context: {userContext}");
 
-      var auth = new OLabAuthorization(Logger, DbContext);
+      var auth = new OLabAuthorization(Logger, DbContext, _configuration );
       auth.ApplyUserContext(userContext);
 
       return auth;
