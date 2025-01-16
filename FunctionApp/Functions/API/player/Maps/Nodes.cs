@@ -20,9 +20,9 @@ public partial class MapsFunction : OLabFunction
   /// <param name="mapId">map id</param>
   /// <param name="nodeId">node id</param>
   /// <returns>IActionResult</returns>
-  [Function("PostNode")]
+  [Function( "PostNode" )]
   public async Task<HttpResponseData> PostMapNodeAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}/node/{nodeId}")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}/node/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
     uint nodeId)
@@ -30,20 +30,20 @@ public partial class MapsFunction : OLabFunction
 
     try
     {
-      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument( request ).NotNull( nameof( request ) );
 
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<DynamicScopedObjectsDto>();
-      var dto = await _endpoint.GetMapNodeAsync(auth, mapId, nodeId, body);
+      var dto = await _endpoint.PlayMapNodeAsync( auth, mapId, nodeId, body );
 
-      response = request.CreateResponse(OLabObjectResult<MapsNodesFullRelationsDto>.Result(dto));
+      response = request.CreateResponse( OLabObjectResult<MapsNodesFullRelationsDto>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -56,9 +56,9 @@ public partial class MapsFunction : OLabFunction
   /// <param name="mapId">map id that owns node</param>
   /// <param name="nodeId">node id</param>
   /// <returns>IActionResult</returns>
-  [Function("DeleteNode")]
+  [Function( "DeleteNode" )]
   public async Task<HttpResponseData> DeleteNodeAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "maps/{mapId}/nodes/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
     uint nodeId
@@ -66,18 +66,18 @@ public partial class MapsFunction : OLabFunction
   {
     try
     {
-      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument( request ).NotNull( nameof( request ) );
 
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.DeleteNodeAsync(auth, mapId, nodeId);
-      response = request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
+      var dto = await _endpoint.DeleteNodeAsync( auth, mapId, nodeId );
+      response = request.CreateResponse( OLabObjectResult<MapNodesPostResponseDto>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -91,9 +91,9 @@ public partial class MapsFunction : OLabFunction
   /// <param name="nodeId">node id</param>
   /// <param name="dto">node data</param>
   /// <returns>IActionResult</returns>
-  [Function("PutNode")]
+  [Function( "PutNode" )]
   public async Task<HttpResponseData> PutNodeAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
     uint nodeId
@@ -101,20 +101,20 @@ public partial class MapsFunction : OLabFunction
   {
     try
     {
-      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument( request ).NotNull( nameof( request ) );
 
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
-      var dto = await _endpoint.PutNodeAsync(auth, mapId, nodeId, body);
+      var dto = await _endpoint.PutNodeAsync( auth, mapId, nodeId, body );
 
-      response = request.CreateResponse(OLabObjectResult<MapNodesPostResponseDto>.Result(dto));
+      response = request.CreateResponse( OLabObjectResult<MapNodesPostResponseDto>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;

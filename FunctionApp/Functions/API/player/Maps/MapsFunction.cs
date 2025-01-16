@@ -31,19 +31,19 @@ public partial class MapsFunction : OLabFunction
       configuration,
       dbContext,
       wikiTagProvider,
-      fileStorageProvider)
+      fileStorageProvider )
 
   {
-    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+    Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 
-    Logger = OLabLogger.CreateNew<MapsFunction>(loggerFactory);
+    Logger = OLabLogger.CreateNew<MapsFunction>( loggerFactory );
 
     _endpoint = new MapsEndpoint(
       Logger,
       configuration,
       DbContext,
       wikiTagProvider,
-      fileStorageProvider);
+      fileStorageProvider );
 
   }
 
@@ -53,32 +53,32 @@ public partial class MapsFunction : OLabFunction
   /// <param name="take">Max number of records to return</param>
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
-  [Function("MapsGetPlayer")]
+  [Function( "MapsGetPlayer" )]
   public async Task<HttpResponseData> MapsGetPlayerAsync(
-      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps")] HttpRequestData request,
+      [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps" )] HttpRequestData request,
     FunctionContext hostContext
   )
   {
     try
     {
-      var queryTake = Convert.ToInt32(request.Query["take"]);
-      var querySkip = Convert.ToInt32(request.Query["skip"]);
+      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
+      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
       int? take = queryTake > 0 ? queryTake : null;
       int? skip = querySkip > 0 ? querySkip : null;
 
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var pagedResult = await _endpoint.GetAsync(auth, take, skip);
-      Logger.LogInformation(string.Format("Found {0} maps", pagedResult.Data.Count));
+      var pagedResult = await _endpoint.GetAsync( auth, take, skip );
+      Logger.LogInformation( string.Format( "Found {0} maps", pagedResult.Data.Count ) );
 
       response = request.CreateResponse(
-        OLabObjectPagedListResult<MapsDto>.Result(pagedResult.Data, pagedResult.Remaining));
+        OLabObjectPagedListResult<MapsDto>.Result( pagedResult.Data, pagedResult.Remaining ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -90,10 +90,10 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id">Map Id</param>
   /// <returns>MapStatusDto</returns>
-  [Function("MapGetStatusAbbreviated")]
+  [Function( "MapGetStatusAbbreviated" )]
   public async Task<HttpResponseData> MapGetStatusAbbreviatedsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/shortstatus")] HttpRequestData request,
-    FunctionContext hostContext, 
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/shortstatus" )] HttpRequestData request,
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint id
   )
@@ -101,15 +101,15 @@ public partial class MapsFunction : OLabFunction
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetStatusAbbreviatedAsync(auth, id, cancellationToken);
-      response = request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+      var dto = await _endpoint.GetStatusAbbreviatedAsync( auth, id, cancellationToken );
+      response = request.CreateResponse( OLabObjectResult<MapStatusDto>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -120,10 +120,10 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id">Map Id</param>
   /// <returns>MapStatusDto</returns>
-  [Function("MapGetStatus")]
+  [Function( "MapGetStatus" )]
   public async Task<HttpResponseData> MapGetStatusAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/status")] HttpRequestData request,
-    FunctionContext hostContext, 
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/status" )] HttpRequestData request,
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint id
   )
@@ -131,15 +131,15 @@ public partial class MapsFunction : OLabFunction
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetStatusAsync(auth, id, cancellationToken);
-      response = request.CreateResponse(OLabObjectResult<MapStatusDto>.Result(dto));
+      var dto = await _endpoint.GetStatusAsync( auth, id, cancellationToken );
+      response = request.CreateResponse( OLabObjectResult<MapStatusDto>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -150,10 +150,10 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function("MapGetPlayer")]
+  [Function( "MapGetPlayer" )]
   public async Task<HttpResponseData> MapGetPlayerAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}")] HttpRequestData request,
-    FunctionContext hostContext, 
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}" )] HttpRequestData request,
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint id
   )
@@ -161,15 +161,15 @@ public partial class MapsFunction : OLabFunction
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetAsync(auth, id);
-      response = request.CreateResponse(OLabObjectResult<MapsFullDto>.Result(dto));
+      var dto = await _endpoint.GetAsync( auth, id );
+      response = request.CreateResponse( OLabObjectResult<MapsFullDto>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -181,9 +181,9 @@ public partial class MapsFunction : OLabFunction
   /// <param name="mapId">Map to add template to</param>
   /// <param name="CreateMapRequest.templateId">Template to add to map</param>
   /// <returns>IActionResult</returns>
-  [Function("MapAppendTemplatePostPlayer")]
+  [Function( "MapAppendTemplatePostPlayer" )]
   public async Task<HttpResponseData> MapAppendTemplatePostPlayerAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId
   )
@@ -191,17 +191,17 @@ public partial class MapsFunction : OLabFunction
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
-      var dto = await _endpoint.PostExtendMapAsync(auth, mapId, body);
+      var dto = await _endpoint.PostExtendMapAsync( auth, mapId, body );
 
-      response = request.CreateResponse(OLabObjectResult<ExtendMapResponse>.Result(dto));
+      response = request.CreateResponse( OLabObjectResult<ExtendMapResponse>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -214,9 +214,9 @@ public partial class MapsFunction : OLabFunction
   /// <param name="mapId">Map to add template to</param>
   /// <param name="CreateMapRequest.templateId">Template to add to map</param>
   /// <returns>IActionResult</returns>
-  [Function("MapPutPlayer")]
+  [Function( "MapPutPlayer" )]
   public async Task<HttpResponseData> MapPutPlayerAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint mapId
@@ -225,18 +225,18 @@ public partial class MapsFunction : OLabFunction
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<MapsFullDto>();
-      await _endpoint.PutAsync(auth, mapId, body);
+      await _endpoint.PutAsync( auth, mapId, body );
 
-      return request.CreateResponse(OLabObjectResult<MapsFullDto>.Result(body));
+      return request.CreateResponse( OLabObjectResult<MapsFullDto>.Result( body ) );
 
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      return request.CreateResponse(ex);
+      Logger.LogError( ex );
+      return request.CreateResponse( ex );
     }
 
   }
@@ -246,26 +246,26 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="body">Create map request body</param>
   /// <returns>IActionResult</returns>
-  [Function("MapCreatePostPlayer")]
+  [Function( "MapCreatePostPlayer" )]
   public async Task<HttpResponseData> MapCreatePostPlayerAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "maps")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps" )] HttpRequestData request,
     FunctionContext hostContext
   )
   {
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<CreateMapRequest>();
-      var dto = await _endpoint.PostCreateMapAsync(auth, body);
+      var dto = await _endpoint.CreateMapAsync( auth, body );
 
-      response = request.CreateResponse(OLabObjectResult<MapsFullRelationsDto>.Result(dto));
+      response = request.CreateResponse( OLabObjectResult<MapsFullRelationsDto>.Result( dto ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -276,9 +276,9 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="mapId"></param>
   /// <returns>MapNodeLinks dto</returns>
-  [Function("MapLinksGetPlayer")]
+  [Function( "MapLinksGetPlayer" )]
   public async Task<HttpResponseData> MapLinksGetPlayerAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/links")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/links" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id
   )
@@ -286,17 +286,17 @@ public partial class MapsFunction : OLabFunction
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dtoList = await _endpoint.GetLinksAsync(auth, id);
-      Logger.LogInformation(string.Format("Found {0} map links", dtoList.Count));
+      var dtoList = await _endpoint.GetLinksAsync( auth, id );
+      Logger.LogInformation( string.Format( "Found {0} map links", dtoList.Count ) );
 
-      response = request.CreateResponse(OLabObjectListResult<MapNodeLinksFullDto>.Result(dtoList));
+      response = request.CreateResponse( OLabObjectListResult<MapNodeLinksFullDto>.Result( dtoList ) );
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
@@ -307,10 +307,10 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id">Map Id</param>
   /// <returns>MapStatusDto</returns>
-  [Function("MapDelete")]
+  [Function( "MapDelete" )]
   public async Task<HttpResponseData> MapDeleteAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "maps/{id}")] HttpRequestData request,
-    FunctionContext hostContext, 
+    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "maps/{id}" )] HttpRequestData request,
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint id
   )
@@ -318,15 +318,15 @@ public partial class MapsFunction : OLabFunction
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      await _endpoint.DeleteMapAsync(auth, id);
+      await _endpoint.DeleteMapAsync( auth, id );
       response = request.CreateNoContentResponse();
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      Logger.LogError(ex);
-      response = request.CreateResponse(ex);
+      Logger.LogError( ex );
+      response = request.CreateResponse( ex );
     }
 
     return response;
