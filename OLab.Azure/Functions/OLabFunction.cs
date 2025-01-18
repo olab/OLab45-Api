@@ -12,7 +12,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OLab.FunctionApp.Functions;
+namespace OLab.Azure.Functions;
 
 public class OLabFunction
 {
@@ -26,6 +26,7 @@ public class OLabFunction
   //protected readonly IUserService userService;
   protected IUserContext userContext;
   protected readonly IOLabConfiguration _configuration;
+  //protected readonly TTalkDBContext TtalkDbContext;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 
@@ -33,8 +34,8 @@ public class OLabFunction
     IOLabConfiguration configuration,
     OLabDBContext dbContext)
   {
-    Guard.Argument(configuration).NotNull(nameof(configuration));
-    Guard.Argument(dbContext).NotNull(nameof(dbContext));
+    Guard.Argument( configuration ).NotNull( nameof( configuration ) );
+    Guard.Argument( dbContext ).NotNull( nameof( dbContext ) );
 
     _configuration = configuration;
 
@@ -45,10 +46,10 @@ public class OLabFunction
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this(configuration, dbContext)
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : this( configuration, dbContext )
   {
-    Guard.Argument(wikiTagProvider).NotNull(nameof(wikiTagProvider));
-    Guard.Argument(fileStorageProvider).NotNull(nameof(fileStorageProvider));
+    Guard.Argument( wikiTagProvider ).NotNull( nameof( wikiTagProvider ) );
+    Guard.Argument( fileStorageProvider ).NotNull( nameof( fileStorageProvider ) );
 
     _wikiTagProvider = wikiTagProvider;
     _fileStorageProvider = fileStorageProvider;
@@ -64,17 +65,17 @@ public class OLabFunction
   protected IOLabAuthorization GetAuthorization(FunctionContext hostContext)
   {
     // Get the user context set by the middleware
-    if (hostContext.Items.TryGetValue("usercontext", out var value) && value is IUserContext userContext)
+    if ( hostContext.Items.TryGetValue( "usercontext", out var value ) && value is IUserContext userContext )
     {
-      Logger.LogInformation($"User context: {userContext}");
+      Logger.LogInformation( $"User context: {userContext}" );
 
-      var auth = new OLabAuthorization(Logger, DbContext, _configuration );
-      auth.ApplyUserContext(userContext);
+      var auth = new OLabAuthorization( Logger, DbContext, _configuration );
+      auth.ApplyUserContext( userContext );
 
       return auth;
     }
 
-    throw new Exception("unable to get auth RequestContext");
+    throw new Exception( "unable to get auth RequestContext" );
 
   }
 
@@ -87,8 +88,8 @@ public class OLabFunction
   protected async ValueTask<SystemQuestions> GetQuestionAsync(uint id)
   {
     var item = await DbContext.SystemQuestions
-        .Include(x => x.SystemQuestionResponses)
-        .FirstOrDefaultAsync(x => x.Id == id);
+        .Include( x => x.SystemQuestionResponses )
+        .FirstOrDefaultAsync( x => x.Id == id );
     return item;
   }
 }
