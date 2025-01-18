@@ -25,13 +25,13 @@ namespace OLab.Azure.Functions
     }
 
     [Function( "Bootstrap" )]
-    public HttpResponseData RunBootstrap(
+    public IActionResult RunBootstrap(
       [HttpTrigger( AuthorizationLevel.Anonymous, "get" )] HttpRequestData request)
     {
-      var maps = DbContext.Maps.FirstOrDefault( x => x.Id > 0 );
+      var mapCount = DbContext.Maps.Count( x => x.Id > 0 );
+      Logger.LogInformation( $"Found {mapCount} maps." );
 
-      var response = request.CreateResponse( HttpStatusCode.OK );
-      return response;
+      return new OkObjectResult( $"Bootstrap found {mapCount} maps." );
     }
 
     [Function( "HealthCheck" )]

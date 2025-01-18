@@ -1,4 +1,5 @@
 using Dawn;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Azure.Extensions;
@@ -15,7 +16,8 @@ public class ContextHelper
   public IReadOnlyDictionary<string, string> Headers { get; private set; }
   public IReadOnlyDictionary<string, object> BindingData { get; private set; }
   public IReadOnlyDictionary<string, BindingMetadata> InputBindings { get; private set; }
-  public HttpRequestData RequestData { get; private set; }
+  public HttpRequest Request { get; private set; }
+  public string Url { get; private set; }
 
   private readonly FunctionContext hostContext;
   private readonly IOLabLogger _logger;
@@ -51,9 +53,11 @@ public class ContextHelper
     foreach ( var inputBinding in InputBindings )
       _logger.LogInformation( $"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})" );
 
-    RequestData = hostContext.GetHttpRequestData();
-    if ( RequestData != null )
-      _logger.LogInformation( $"  url: {RequestData.Url}" );
+    var context = hostContext.Items[ "HttpRequestContext" ] as DefaultHttpContext;
+    Request = context.Request;
+    Url = $"{(Request.IsHttps ? "https" : "http")}://{Request.Host}/{Request.Path}";
+
+    _logger.LogInformation( $"  url: {Url}" );
 
   }
 
