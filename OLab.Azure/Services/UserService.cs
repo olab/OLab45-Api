@@ -48,9 +48,9 @@ public class UserService : IUserService
       _dbContext = context;
       _config = config;
 
-      defaultTokenExpiryMinutes = config.GetAppSettings().TokenExpiryMinutes;
+      defaultTokenExpiryMinutes = _config.GetAppSettings().TokenExpiryMinutes;
 
-      Logger.LogInformation( $"appSetting aud: '{config.GetAppSettings().Audience}', secret: '{config.GetAppSettings().Secret[ ..4 ]}...'" );
+      Logger.LogInformation( $"appSetting aud: '{_config.GetAppSettings().Audience}', secret: '{_config.GetAppSettings().Secret[ ..4 ]}...'" );
 
     }
     catch ( Exception ex )

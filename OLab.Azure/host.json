@@ -9,9 +9,13 @@
     },
     "logLevel": {
       "default": "Information",
+      "Microsoft": "Error",
+      "Microsoft.EntityFrameworkCore": "Error",
+      "Microsoft.Hosting.Lifetime": "Information",
+      "Microsoft.AspNetCore": "Error",
       "Host.Results": "Information",
       "Function": "Information",
-      "Host.AggregatorInformation": "Trace"
+      "Host.AggregatorInformation": "Information"
     }
   },
   "extensions": {

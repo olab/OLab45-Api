@@ -79,12 +79,14 @@ public class UserFunction : OLabFunction
 
       if ( request.Headers.TryGetValues( "Referer", out refererValues ) )
       {
+        Logger.LogInformation( $"referrer: {string.Join(",", refererValues)}" );
+
         referrer = _authorization.ExtractApplication( refererValues.First() );
         if ( !await _authorization.HasAccessToAppAsync( user, referrer ) )
           return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "User does not have access to this application" ) );
       }
       else
-        Logger.LogInformation( $"no referer url provided" );
+        Logger.LogWarning( $"no referer url provided" );
 
       var response = _authentication.GenerateJwtToken( user, referrer );
       return request.CreateResponse( OLabObjectResult<AuthenticateResponse>.Result( response ) );

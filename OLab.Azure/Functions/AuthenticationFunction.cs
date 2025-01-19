@@ -87,7 +87,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex.Message );
+      Logger.LogError( ex, "Login" );
       throw;
       //return OLabServerErrorResult.Result( ex.Message );
     }
