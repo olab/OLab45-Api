@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Humanizer;
 using OLab.Api.Dto;
+using OLab.Data.Contracts;
+using Microsoft.Identity.Client;
 
 namespace OLab.Azure.Functions;
 
@@ -47,7 +49,7 @@ public class AuthenticationFunction : OLabFunction
     CancellationToken cancellationToken)
   {
     try
-    {
+    {       
       Guard.Argument( request ).NotNull( nameof( request ) );
 
       var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
@@ -75,6 +77,7 @@ public class AuthenticationFunction : OLabFunction
 
       var json = JsonConvert.SerializeObject( response );
       return new OLabObjectResult<AuthenticateResponse>( response );
+
     }
     catch ( Exception ex )
     {
