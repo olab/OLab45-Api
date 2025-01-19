@@ -74,11 +74,13 @@ public class AuthenticationFunction : OLabFunction
       var response = _authentication.GenerateJwtToken( user, referrer );
 
       var json = JsonConvert.SerializeObject( response );
-      return new OkObjectResult( json );
+      return new OLabObjectResult<AuthenticateResponse>( response );
     }
     catch ( Exception ex )
     {
-      return OLabServerErrorResult.Result( ex.Message );
+      Logger.LogError( ex.Message );
+      throw;
+      //return OLabServerErrorResult.Result( ex.Message );
     }
   }
 

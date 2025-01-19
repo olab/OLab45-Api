@@ -96,7 +96,7 @@ public static class HttpRequestDataExtensions
     this HttpRequestData request, 
     ObjectResult objectResult)
   {
-    var olabResponse = objectResult as OLabAPIResponse<T>;
+    var olabResponse = objectResult as OLabApiResult<T>;
 
     var response = request.CreateResponse((HttpStatusCode)olabResponse.Status);
 
@@ -110,7 +110,7 @@ public static class HttpRequestDataExtensions
 
   public static HttpResponseData CreateResponse<T>(
     this HttpRequestData request, 
-    OLabAPIResponse<T> apiResponse)
+    OLabApiResult<T> apiResponse)
   {
     var response = request.CreateResponse(apiResponse.ErrorCode);
     response.Headers.Add("Content-Type", "application/json; charset=utf-8");
