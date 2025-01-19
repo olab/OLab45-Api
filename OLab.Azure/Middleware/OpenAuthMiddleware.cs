@@ -35,13 +35,13 @@ public class OpenAuthMiddleware : IFunctionsWorkerMiddleware
     return !requestData.Headers.Contains( "authorization" );
   }
 
-  public async Task Invoke(FunctionContext hostContext, FunctionExecutionDelegate next)
+  public async Task Invoke(FunctionContext executionContext, FunctionExecutionDelegate next)
   {
     _logger.LogInformation( "OpenAuthMiddleware invoke" );
 
-    var contextInfo = hostContext.Items[ "contextHelper" ] as ContextHelper;
+    var contextInfo = executionContext.Items[ "contextHelper" ] as ContextHelper;
     Guard.Argument( contextInfo ).NotNull( nameof( contextInfo ) );
 
-    await next( hostContext );
+    await next( executionContext );
   }
 }

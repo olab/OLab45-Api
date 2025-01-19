@@ -21,15 +21,15 @@ public class FunctionUserContextService : UserContextService
 
   public FunctionUserContextService(
     IOLabLogger logger,
-    FunctionContext hostContext,
+    FunctionContext executionContext,
     OLabDBContext dbContext) : base( logger, dbContext )
   {
     Guard.Argument( logger ).NotNull( nameof( logger ) );
-    Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
+    Guard.Argument( executionContext ).NotNull( nameof( executionContext ) );
 
     GetLogger().LogInformation( $"UserContext ctor" );
 
-    LoadHostContext( hostContext );
+    LoadHostContext( executionContext );
   }
 
   private string GetRequestIpAddress(HttpRequestData req)
@@ -58,16 +58,16 @@ public class FunctionUserContextService : UserContextService
     return "<unknown>";
   }
 
-  protected void LoadHostContext(FunctionContext hostContext)
+  protected void LoadHostContext(FunctionContext executionContext)
   {
-    var req = hostContext.GetHttpRequestData();
+    var req = executionContext.GetHttpRequestData();
     IPAddress = GetRequestIpAddress( req );
 
-    if ( !hostContext.Items.TryGetValue( "headers", out var headersObjects ) )
+    if ( !executionContext.Items.TryGetValue( "headers", out var headersObjects ) )
       throw new Exception( "unable to retrieve headers from host context" );
     SetHeaders( (Dictionary<string, string>)headersObjects );
 
-    if ( !hostContext.Items.TryGetValue( "claims", out var claimsObject ) )
+    if ( !executionContext.Items.TryGetValue( "claims", out var claimsObject ) )
       throw new Exception( "unable to retrieve claims from host context" );
     SetClaims( (IDictionary<string, string>)claimsObject );
 

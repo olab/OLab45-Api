@@ -15,50 +15,60 @@ public class ContextHelper
   public string FunctionName { get; private set; }
   public IReadOnlyDictionary<string, string> Headers { get; private set; }
   public IReadOnlyDictionary<string, object> BindingData { get; private set; }
-  public IReadOnlyDictionary<string, BindingMetadata> InputBindings { get; private set; }
+  //public IReadOnlyDictionary<string, BindingMetadata> InputBindings { get; private set; }
   public HttpRequest Request { get; private set; }
   public string Url { get; private set; }
 
-  private readonly FunctionContext hostContext;
+  private readonly FunctionContext executionContext;
   private readonly IOLabLogger _logger;
 
-  public ContextHelper(FunctionContext hostContext, IOLabLogger logger)
+  public ContextHelper(FunctionContext executionContext, IOLabLogger logger)
   {
-    FunctionName = hostContext.FunctionDefinition.Name.ToLower();
-    Guard.Argument( FunctionName ).NotEmpty( nameof( FunctionName ) );
-
-    this.hostContext = hostContext;
+    this.executionContext = executionContext;
     _logger = logger;
+
+    var httpRequestData = executionContext.GetHttpRequestDataAsync().GetAwaiter().GetResult();
+
+    FunctionName = executionContext.FunctionDefinition.Name.ToLower();
+    Guard.Argument( FunctionName ).NotEmpty( nameof( FunctionName ) );
 
     _logger.LogInformation( $"ContextInformation:" );
     _logger.LogInformation( $"  function name: {FunctionName}" );
 
-    var headerDict = hostContext.GetHttpRequestData().Headers.ToDictionary();
-    var flatHeaderDict = new Dictionary<string, string>();
-    foreach ( var header in headerDict )
-      flatHeaderDict.Add( header.Key, header.Value.First() );
-    Headers = flatHeaderDict;
+    Headers = ExtractHeaders( httpRequestData );
 
-    Guard.Argument( Headers ).NotNull( nameof( Headers ) );
-
-    foreach ( var header in Headers )
-      logger.LogInformation( $"  header: {header.Key} = {header.Value}" );
-
-    BindingData = hostContext.BindingContext.BindingData;
+    BindingData = executionContext.BindingContext.BindingData;
     Guard.Argument( BindingData ).NotNull( nameof( BindingData ) );
 
-    _logger.LogInformation( $"  binding context: {JsonSerializer.Serialize( hostContext.BindingContext ).Replace( "\u0022", "\"" )}" );
+    _logger.LogInformation( $"  binding context: {JsonSerializer.Serialize( executionContext.BindingContext ).Replace( "\u0022", "\"" )}" );
 
-    InputBindings = hostContext.FunctionDefinition.InputBindings;
-    foreach ( var inputBinding in InputBindings )
-      _logger.LogInformation( $"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})" );
+    //InputBindings = executionContext.FunctionDefinition.InputBindings;
+    //foreach ( var inputBinding in InputBindings )
+    //  _logger.LogInformation( $"  input binding: {inputBinding.Key} = {inputBinding.Value.Name}({inputBinding.Value.Type})" );
 
-    var context = hostContext.Items[ "HttpRequestContext" ] as DefaultHttpContext;
+    var context = executionContext.Items[ "HttpRequestContext" ] as DefaultHttpContext;
     Request = context.Request;
     Url = $"{(Request.IsHttps ? "https" : "http")}://{Request.Host}/{Request.Path}";
 
     _logger.LogInformation( $"  url: {Url}" );
 
+  }
+
+  /// <summary>
+  /// Extracts headers from the given HttpRequestData and returns them as a dictionary.
+  /// </summary>
+  /// <param name="httpRequestData">The HttpRequestData containing the headers to extract.</param>
+  /// <returns>A dictionary containing the headers as key-value pairs.</returns>
+  private Dictionary<string, string> ExtractHeaders(HttpRequestData httpRequestData)
+  {
+    var flatHeaderDict = new Dictionary<string, string>();
+    foreach ( var header in httpRequestData.Headers )
+      flatHeaderDict.Add( header.Key, header.Value.First() );
+
+    foreach ( var header in flatHeaderDict )
+      _logger.LogInformation( $"  header: {header.Key} = {header.Value}" );
+
+    return flatHeaderDict;
   }
 
   public override string ToString()

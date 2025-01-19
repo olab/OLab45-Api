@@ -6,6 +6,8 @@ using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Api.Model;
 using OLab.Azure.Utils;
+using System.Threading;
+using DocumentFormat.OpenXml.InkML;
 
 namespace OLab.Azure.Middleware;
 public class BootstrapMiddleware : IFunctionsWorkerMiddleware
@@ -28,13 +30,13 @@ public class BootstrapMiddleware : IFunctionsWorkerMiddleware
     _dbContext = dbContext;
   }
 
-  public async Task Invoke(FunctionContext hostContext, FunctionExecutionDelegate next)
+  public async Task Invoke(FunctionContext executionContext, FunctionExecutionDelegate next)
   {
-    var contextInfo = new ContextHelper( hostContext, _logger );
+    var contextInfo = new ContextHelper( executionContext, _logger );
     Guard.Argument( contextInfo ).NotNull( nameof( contextInfo ) );
 
-    hostContext.Items.Add( "contextHelper", contextInfo );
+    executionContext.Items.Add( "contextHelper", contextInfo );
 
-    await next( hostContext );
+    await next( executionContext );
   }
 }

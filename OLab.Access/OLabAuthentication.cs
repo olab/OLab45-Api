@@ -33,6 +33,17 @@ public class OLabAuthentication : IOLabAuthentication
   /// </summary>
   public IDictionary<string, string> Claims { get; private set; }
 
+  public OLabAuthentication(
+  IOLabLogger logger,
+  IOLabConfiguration config,
+  OLabDBContext dbContext) : this( config, dbContext )
+  {
+    Guard.Argument( logger ).NotNull( nameof( logger ) );
+
+    _logger = logger;
+    GetLogger().LogInformation( $"OLabAuthentication ctor" );
+  }
+
   private OLabAuthentication(
     IOLabConfiguration config,
     OLabDBContext dbContext)
@@ -45,18 +56,6 @@ public class OLabAuthentication : IOLabAuthentication
 
     defaultTokenExpiryMinutes = _config.GetAppSettings().TokenExpiryMinutes;
     _tokenParameters = BuildTokenValidationObject(_config);
-  }
-
-  public OLabAuthentication(
-    IOLabLogger logger,
-    IOLabConfiguration config,
-    OLabDBContext dbContext) : this(config, dbContext)
-  {
-    Guard.Argument(logger).NotNull(nameof(logger));
-
-    _logger = logger;
-    GetLogger().LogInformation($"Authorization ctor");
-    GetLogger().LogInformation($"appSetting aud: '{_config.GetAppSettings().Audience}', secretyp: '{_config.GetAppSettings().Secret[..4]}...'");
   }
 
   /// <summary>
@@ -152,7 +151,6 @@ public class OLabAuthentication : IOLabAuthentication
 
     var token = string.Empty;
 
-
     // handler for external logins
     if ((bindingData != null) && bindingData.TryGetValue("token", out var externalToken))
     {
@@ -213,7 +211,7 @@ public class OLabAuthentication : IOLabAuthentication
         GetLogger().LogDebug($" claim: {claim.Type} = {claim.Value}. added: {added}");
       }
 
-      GetLogger().LogInformation("bearer token validated");
+      GetLogger().LogInformation("Bearer token validated");
 
       return true;
     }

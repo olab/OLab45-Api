@@ -36,19 +36,28 @@ public class UserService : IUserService
     OLabDBContext context,
     IOLabConfiguration config)
   {
-    Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
-    Guard.Argument( context ).NotNull( nameof( context ) );
-    Guard.Argument( config ).NotNull( nameof( config ) );
+    try
+    {
+      Logger = OLabLogger.CreateNew<UserService>( loggerFactory );
+      Logger.LogInformation( $"UserService ctor" );
 
-    _dbContext = context;
-    _config = config;
+      Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
+      Guard.Argument( context ).NotNull( nameof( context ) );
+      Guard.Argument( config ).NotNull( nameof( config ) );
 
-    defaultTokenExpiryMinutes = config.GetAppSettings().TokenExpiryMinutes;
+      _dbContext = context;
+      _config = config;
 
-    Logger = OLabLogger.CreateNew<UserService>( loggerFactory );
+      defaultTokenExpiryMinutes = config.GetAppSettings().TokenExpiryMinutes;
 
-    Logger.LogInformation( $"UserService ctor" );
-    Logger.LogInformation( $"appSetting aud: '{config.GetAppSettings().Audience}', secret: '{config.GetAppSettings().Secret[ ..4 ]}...'" );
+      Logger.LogInformation( $"appSetting aud: '{config.GetAppSettings().Audience}', secret: '{config.GetAppSettings().Secret[ ..4 ]}...'" );
+
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, $"{this.GetType().Name} exception" );
+      throw;
+    }
 
   }
 

@@ -18,6 +18,7 @@ using Humanizer;
 using OLab.Api.Dto;
 using OLab.Data.Contracts;
 using Microsoft.Identity.Client;
+using DocumentFormat.OpenXml.Drawing;
 
 namespace OLab.Azure.Functions;
 
@@ -49,8 +50,13 @@ public class AuthenticationFunction : OLabFunction
     CancellationToken cancellationToken)
   {
     try
-    {       
+    {
       Guard.Argument( request ).NotNull( nameof( request ) );
+
+      // Access HttpRequestData directly from the parameter
+      var headers = request.Headers;
+      var body = request.Body;
+      var url = request.Url;
 
       var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
 

@@ -59,13 +59,13 @@ public class OLabFunction
   /// <summary>
   /// Builds the authentication context from the host context
   /// </summary>
-  /// <param name="hostContext">Function context</param>
+  /// <param name="executionContext">Function context</param>
   /// <returns>IOLabAuthentication</returns>
   /// <exception cref="Exception"></exception>
-  protected IOLabAuthorization GetAuthorization(FunctionContext hostContext)
+  protected IOLabAuthorization GetAuthorization(FunctionContext executionContext)
   {
     // Get the user context set by the middleware
-    if ( hostContext.Items.TryGetValue( "usercontext", out var value ) && value is IUserContext userContext )
+    if ( executionContext.Items.TryGetValue( "usercontext", out var value ) && value is IUserContext userContext )
     {
       Logger.LogInformation( $"User context: {userContext}" );
 
