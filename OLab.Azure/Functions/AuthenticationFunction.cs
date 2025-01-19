@@ -5,7 +5,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.Api.Model;
@@ -19,6 +18,12 @@ using OLab.Api.Dto;
 using OLab.Data.Contracts;
 using Microsoft.Identity.Client;
 using DocumentFormat.OpenXml.Drawing;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using OLab.Common.Utils;
+using Azure.Core;
+using OLab.Api.Utils;
+using Newtonsoft.Json.Serialization;
 
 namespace OLab.Azure.Functions;
 
@@ -53,11 +58,6 @@ public class AuthenticationFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      // Access HttpRequestData directly from the parameter
-      var headers = request.Headers;
-      var body = request.Body;
-      var url = request.Url;
-
       var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
 
       Logger.LogInformation( $"Login(user = '{model.Username}' ip: ???)" );
@@ -72,6 +72,7 @@ public class AuthenticationFunction : OLabFunction
 
       if ( request.Headers.TryGetValues( "Referer", out refererValues ) )
       {
+        Logger.LogInformation( $"referer urls provided: {string.Join(",", refererValues)}" ); 
         referrer = _authorization.ExtractApplication( refererValues.First() );
         if ( !await _authorization.HasAccessToAppAsync( user, referrer ) )
           return OLabUnauthorizedResult.Result();
@@ -79,18 +80,19 @@ public class AuthenticationFunction : OLabFunction
       else
         Logger.LogInformation( $"no referer url provided" );
 
-      var response = _authentication.GenerateJwtToken( user, referrer );
+      var authResponse = _authentication.GenerateJwtToken( user, referrer );
 
-      var json = JsonConvert.SerializeObject( response );
-      return new OLabObjectResult<AuthenticateResponse>( response );
-
+      return request
+        .CreateResponse( OLabObjectResult<AuthenticateResponse>.Result( authResponse ) );
     }
     catch ( Exception ex )
     {
       Logger.LogError( ex, "Login" );
-      throw;
-      //return OLabServerErrorResult.Result( ex.Message );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
+
   }
 
   /// <summary>
@@ -112,11 +114,15 @@ public class AuthenticationFunction : OLabFunction
       if ( response == null )
         return OLabUnauthorizedResult.Result();
 
-      return OLabObjectResult<AuthenticateResponse>.Result( response );
+      return request
+        .CreateResponse( OLabObjectResult<AuthenticateResponse>.Result( response ) );
     }
     catch ( Exception ex )
     {
-      return OLabServerErrorResult.Result( ex.Message );
+      Logger.LogError( ex, "LoginAnonymous" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
 
   }
@@ -140,11 +146,15 @@ public class AuthenticationFunction : OLabFunction
       if ( response == null )
         return OLabUnauthorizedResult.Result();
 
-      return OLabObjectResult<AuthenticateResponse>.Result( response );
+      return request
+        .CreateResponse( OLabObjectResult<AuthenticateResponse>.Result( response ) );
     }
     catch ( Exception ex )
     {
-      return OLabServerErrorResult.Result( ex.Message );
+      Logger.LogError( ex, "LoginExternalAsync" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
   }
 

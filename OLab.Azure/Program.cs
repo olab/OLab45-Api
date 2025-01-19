@@ -7,10 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OLab.Access.Interfaces;
 using OLab.Access;
-using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Api.WikiTag;
 using OLab.Azure.Services;
 using OLab.Common.Interfaces;
@@ -18,6 +16,10 @@ using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.Data;
 using OLab.Azure.Middleware;
+using OLab.Common.Contracts;
+using OLab.Common;
+using OLab.Api.Utils;
+using OLab.Api.Common;
 
 internal class Program
 {

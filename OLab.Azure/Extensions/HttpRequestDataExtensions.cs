@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NuGet.Protocol;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
@@ -31,35 +32,6 @@ public static class HttpRequestDataExtensions
       httpContext.Request.Headers[ header.Key ] = header.Value.ToArray();
     httpContext.Request.Body = req.Body;
     return httpContext;
-  }
-
-  /// <summary>
-  /// Create an HttpResponseData object from an exception
-  /// </summary>
-  /// <param name="request">HttpRequestData object</param>
-  /// <param name="ex">Caught exception</param>
-  /// <returns>HttpResponseData</returns>
-  public static HttpResponseData CreateResponse(this HttpRequestData request, Exception ex)
-  {
-    HttpResponseData response = null;
-
-    try
-    {
-      if ( ex is OLabObjectNotFoundException )
-        response = request.CreateResponse( OLabNotFoundResult<string>.Result( ex.Message ) );
-
-      else if ( ex is OLabUnauthorizedException )
-        response = request.CreateResponse(
-          OLabUnauthorizedObjectResult.Result( ex.Message ) );
-      else
-        response = request.CreateResponse( OLabServerErrorResult.Result( ex.Message ) );
-    }
-    catch ( Exception )
-    {
-      // eat all exceptions
-    }
-
-    return response;
   }
 
   /// <summary>
@@ -92,33 +64,39 @@ public static class HttpRequestDataExtensions
     return response;
   }
 
-  public static HttpResponseData CreateResponse<T>(
-    this HttpRequestData request,
-    ObjectResult objectResult)
-  {
-    var olabResponse = objectResult as OLabApiResult<T>;
-
-    var response = request.CreateResponse( (HttpStatusCode)olabResponse.Status );
-
-    response.Headers.Add( "Content-Type", "application/json; charset=utf-8" );
-
-    var json = JsonConvert.SerializeObject( objectResult.ToJson() );
-    response.WriteString( json );
-
-    return response;
-  }
-
-  public static HttpResponseData CreateResponse<T>(
+  public static ContentResult CreateResponse<T>(
     this HttpRequestData request,
     OLabApiResult<T> apiResponse)
   {
-    var response = request.CreateResponse( apiResponse.ErrorCode );
-    response.Headers.Add( "Content-Type", "application/json; charset=utf-8" );
+    var contractResolver = new DefaultContractResolver
+    {
+      NamingStrategy = new CamelCaseNamingStrategy()
+    };
 
-    var json = JsonConvert.SerializeObject( apiResponse );
-    response.WriteString( json );
+    var content = new ContentResult
+    {
+      StatusCode = (int)apiResponse.ErrorCode,
+      ContentType = "application/json",
+      Content = JsonConvert.SerializeObject( apiResponse, new JsonSerializerSettings
+      {
+        ContractResolver = contractResolver
+      } )
+    };
 
-    return response;
+    return content;
+
+  }
+
+  public static ContentResult CreateNoContentResponse(
+    this HttpRequest request)
+  {
+    var content = new ContentResult
+    {
+      StatusCode = (int)HttpStatusCode.NoContent,
+      ContentType = "application/json"
+    };
+
+    return content;
   }
 
   public static async Task<T> ParseBodyFromRequestAsync<T>(

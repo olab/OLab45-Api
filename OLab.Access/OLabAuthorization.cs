@@ -535,6 +535,9 @@ public class OLabAuthorization : IOLabAuthorization
       return "localhost";
 
     var appName = uri.PathAndQuery.Trim('/').Split('/').First();
+    if ( string.IsNullOrEmpty(appName ) )
+      return "localhost";
+
     return appName;
   }
 

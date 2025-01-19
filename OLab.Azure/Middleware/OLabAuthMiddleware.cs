@@ -4,7 +4,6 @@ using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Api.Model;
 using System;
@@ -13,6 +12,8 @@ using System.Threading.Tasks;
 using OLab.Azure.Utils;
 using OLab.Azure.Services;
 using OLab.Azure.Extensions;
+using OLab.Common.Utils;
+using OLab.Api.Utils;
 
 namespace OLab.Azure.Middleware;
 
