@@ -39,10 +39,11 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     _dbContext = dbContext;
   }
 
-  public static bool CanInvoke(FunctionContext context)
+  public static bool CanInvoke(FunctionContext executionContext)
   {
-    var requestData = context.GetHttpResponseData();
-    return requestData.Headers.Contains( "authorization" );
+    var httpRequestData = executionContext.GetHttpRequestDataAsync().GetAwaiter().GetResult();
+    var haveAuthorization = httpRequestData.Headers.Contains( "authorization" );
+    return haveAuthorization;
   }
 
   public async Task Invoke(

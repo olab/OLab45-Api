@@ -30,10 +30,12 @@ public class OpenAuthMiddleware : IFunctionsWorkerMiddleware
     _config = configuration;
   }
 
-  public static bool CanInvoke(FunctionContext context)
+  public bool CanInvoke(FunctionContext context)
   {
     var requestData = context.GetHttpResponseData();
-    return !requestData.Headers.Contains( "authorization" );
+    var haveNoAuthorization = !requestData.Headers.Contains( "authorization" );
+    return haveNoAuthorization;
+
   }
 
   public async Task Invoke(FunctionContext executionContext, FunctionExecutionDelegate next)

@@ -73,7 +73,7 @@ internal class Program
     builder.Services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
 
     builder.UseMiddleware<BootstrapMiddleware>();
-    //builder.UseWhen<OLabAuthMiddleware>( OLabAuthMiddleware.CanInvoke );
+    builder.UseWhen<OLabAuthMiddleware>( OLabAuthMiddleware.CanInvoke );
     //builder.UseWhen<OpenAuthMiddleware>( OpenAuthMiddleware.CanInvoke );
 
     builder.Build().Run();

@@ -12,18 +12,7 @@ using OLab.Api.Data.Interface;
 using OLab.Access;
 using OLab.Azure.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Humanizer;
-using OLab.Api.Dto;
-using OLab.Data.Contracts;
-using Microsoft.Identity.Client;
-using DocumentFormat.OpenXml.Drawing;
-using Microsoft.AspNetCore.Http;
-using System.Net;
-using OLab.Common.Utils;
-using Azure.Core;
 using OLab.Api.Utils;
-using Newtonsoft.Json.Serialization;
 
 namespace OLab.Azure.Functions;
 
