@@ -24,11 +24,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace OLab.Azure.Functions.ImportExport;
 
-public class Import3 : OLabFunction
+public class Import3Function : OLabFunction
 {
   private readonly Import3Endpoint _endpoint;
 
-  public Import3(
+  public Import3Function(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -41,7 +41,7 @@ public class Import3 : OLabFunction
   {
     Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 
-    Logger = OLabLogger.CreateNew<Import4>( loggerFactory, true );
+    Logger = OLabLogger.CreateNew<Import3Function>( loggerFactory, true );
 
     _endpoint = new Import3Endpoint(
       Logger,

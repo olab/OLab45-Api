@@ -8,28 +8,22 @@ using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.Contracts;
 using OLab.Api.Dto;
 using OLab.Data.Interface;
 using OLab.Api.Model;
 using OLab.Endpoints;
 using OLab.Azure.Extensions;
-using System;
-using System.IO;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
 using OLab.Api.Data.Interface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace OLab.Azure.Functions.ImportExport;
 
-public class Import4 : OLabFunction
+public class Import4Function : OLabFunction
 {
   private readonly Import4Endpoint _endpoint;
 
-  public Import4(
+  public Import4Function(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -42,7 +36,7 @@ public class Import4 : OLabFunction
   {
     Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 
-    Logger = OLabLogger.CreateNew<Import4>( loggerFactory, true );
+    Logger = OLabLogger.CreateNew<Import4Function>( loggerFactory, true );
 
     _endpoint = new Import4Endpoint(
       Logger,
@@ -170,23 +164,28 @@ public class Import4 : OLabFunction
 
         var fileDownloadName = $"OLab4Export.map{id}.{now.ToString( "yyyyMMddHHmm" )}.zip";
 
-        response = request.CreateResponse( HttpStatusCode.OK );
-        response.WriteBytes( memoryStream.ToArray() );
-        response.Headers.Add( "Content-Type", "application/zip" );
+        var result = new ObjectResult( memoryStream.ToArray().ToString() )
+        {
+          StatusCode = (int)HttpStatusCode.OK,
+          ContentTypes = new Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection()
+          {
+            "application/zip"
+          }
+        };
+
         response.Headers.Add( "Content-Length", $"{memoryStream.Length}" );
         response.Headers.Add( "Content-Disposition", $"attachment; filename={fileDownloadName}; filename*=UTF-8'{fileDownloadName}" );
-      }
 
+        return result;
+      }
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetShortStatusAsync" );
+      Logger.LogError( ex, "Export4" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
-
-    return response;
 
   }
 }

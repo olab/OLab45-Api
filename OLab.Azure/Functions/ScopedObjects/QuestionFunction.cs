@@ -15,14 +15,15 @@ using OLab.Azure.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Humanizer;
 
 namespace OLab.Azure.Functions.ScopedObjects;
 
-public class Questions : OLabFunction
+public class QuestionFunction : OLabFunction
 {
   private readonly QuestionsEndpoint _endpoint;
 
-  public Questions(
+  public QuestionFunction(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -31,7 +32,7 @@ public class Questions : OLabFunction
   {
     Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 
-    Logger = OLabLogger.CreateNew<Questions>( loggerFactory );
+    Logger = OLabLogger.CreateNew<QuestionFunction>( loggerFactory );
     _endpoint = new QuestionsEndpoint(
       Logger,
       configuration,
@@ -61,18 +62,19 @@ public class Questions : OLabFunction
       int? take = queryTake > 0 ? queryTake : null;
       int? skip = querySkip > 0 ? querySkip : null;
 
-      var pagedResult = await _endpoint.GetAsync( take, skip );
-      Logger.LogInformation( string.Format( "Found {0} questions", pagedResult.Data.Count ) );
+      var result = await _endpoint.GetAsync( take, skip );
+      Logger.LogInformation( string.Format( "Found {0} questions", result.Data.Count ) );
 
-      response = request.CreateResponse(
-        OLabObjectPagedListResult<QuestionsDto>.Result( pagedResult.Data, pagedResult.Remaining ) );
+      return request
+        .CreateResponse( OLabObjectPagedListResult<QuestionsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "QuestionsGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -97,15 +99,16 @@ public class Questions : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       var dto = await _endpoint.GetAsync( auth, id );
-
-      response = request.CreateResponse( OLabObjectResult<QuestionsFullDto>.Result( dto ) );
+      return request
+        .CreateResponse( OLabObjectResult<QuestionsFullDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "QuestionsGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -131,15 +134,15 @@ public class Questions : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
 
       await _endpoint.PutAsync( auth, id, body );
-
-      response = request.CreateNoContentResponse();
+      return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "QuestionPut" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -159,16 +162,18 @@ public class Questions : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
-      var dto = await _endpoint.PostAsync( auth, body );
 
-      response = request.CreateResponse( OLabObjectResult<QuestionsFullDto>.Result( dto ) );
+      var dto = await _endpoint.PostAsync( auth, body );
+      return request
+        .CreateResponse( OLabObjectResult<QuestionsFullDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "QuestionPost" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -189,13 +194,14 @@ public class Questions : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       await _endpoint.DeleteAsync( auth, id );
-      response = request.CreateNoContentResponse();
+      return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "QuestionDelete" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 }

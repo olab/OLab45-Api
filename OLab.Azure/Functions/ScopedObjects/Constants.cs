@@ -11,6 +11,7 @@ using OLab.Common.Interfaces;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Azure.Extensions;
+using Humanizer;
 
 namespace OLab.Azure.Functions.ScopedObjects;
 
@@ -55,17 +56,19 @@ public class Constants : OLabFunction
 
       var auth = GetAuthorization( hostContext );
 
-      var pagedResult = await _endpoint.GetAsync( auth, take, skip );
-      Logger.LogInformation( string.Format( "Found {0} constants", pagedResult.Data.Count ) );
+      var result = await _endpoint.GetAsync( auth, take, skip );
+      Logger.LogInformation( string.Format( "Found {0} constants", result.Data.Count ) );
 
-      response = request.CreateResponse( OLabObjectPagedListResult<ConstantsDto>.Result( pagedResult.Data, pagedResult.Remaining ) );
+      return request
+        .CreateResponse( OLabObjectPagedListResult<ConstantsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "MapsGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -88,14 +91,16 @@ public class Constants : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       var dto = await _endpoint.GetAsync( auth, id );
-      response = request.CreateResponse( OLabObjectResult<ConstantsDto>.Result( dto ) );
+      return request
+        .CreateResponse( OLabObjectResult<ConstantsDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "ConstantGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -120,14 +125,15 @@ public class Constants : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
 
       await _endpoint.PutAsync( auth, id, body );
-      response = request.CreateNoContentResponse();
+      return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "ConstantPut" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
 
   }
 
@@ -151,14 +157,16 @@ public class Constants : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       var dto = await _endpoint.PostAsync( auth, body );
-      response = request.CreateResponse( OLabObjectResult<ConstantsDto>.Result( dto ) );
+      return request
+        .CreateResponse( OLabObjectResult<ConstantsDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "ConstantPost" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -181,15 +189,15 @@ public class Constants : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       await _endpoint.DeleteAsync( auth, id );
-      response = request.CreateNoContentResponse();
-
+      return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "ConstantDelete" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
 
   }
 }

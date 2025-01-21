@@ -19,14 +19,16 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Humanizer;
+using Azure;
 
 namespace OLab.Azure.Functions.ScopedObjects;
 
-public class Files : OLabFunction
+public class FileFunction : OLabFunction
 {
   private readonly FilesEndpoint _endpoint;
 
-  public Files(
+  public FileFunction(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -35,7 +37,7 @@ public class Files : OLabFunction
   {
     Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 
-    Logger = OLabLogger.CreateNew<Files>( loggerFactory );
+    Logger = OLabLogger.CreateNew<FileFunction>( loggerFactory );
     _endpoint = new FilesEndpoint( Logger, configuration, dbContext, wikiTagProvider, fileStorageProvider );
   }
 
@@ -126,18 +128,19 @@ public class Files : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var pagedResult = await _endpoint.GetAsync( take, skip );
-      Logger.LogInformation( string.Format( "Found {0} files", pagedResult.Data.Count ) );
+      var result = await _endpoint.GetAsync( take, skip );
+      Logger.LogInformation( string.Format( "Found {0} files", result.Data.Count ) );
 
-      response = request.CreateResponse(
-        OLabObjectPagedListResult<FilesDto>.Result( pagedResult.Data, pagedResult.Remaining ) );
+      return request
+        .CreateResponse( OLabObjectPagedListResult<FilesDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "FilesGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
 
   }
 
@@ -165,18 +168,16 @@ public class Files : OLabFunction
       var dto = await _endpoint.GetAsync( auth, id );
       var blobName = BuildStaticFileName( dto );
 
-      // generate short-lived blob download url
-      //var sasGenerator = new AzureStorageBlobOptionsTokenGenerator(_appSettings);
-      //dto.Url = sasGenerator.GenerateSasToken(_configuration.GetValue<string>("WebsitePublicFilesDirectory"), blobName);
-
-      response = request.CreateResponse( OLabObjectResult<FilesFullDto>.Result( dto ) );
+      return request
+        .CreateResponse( OLabObjectResult<FilesFullDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "FileGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -208,32 +209,33 @@ public class Files : OLabFunction
         var dto = new FilesFullDto( formHelper );
         dto = await _endpoint.PostAsync( auth, dto, token );
 
-        response = request.CreateResponse( OLabObjectResult<FilesFullDto>.Result( dto ) );
+        return request
+          .CreateResponse( OLabObjectResult<FilesFullDto>.Result( dto ) );
       }
 
     }
     catch ( Exception ex )
     {
-      if ( ex is Azure.RequestFailedException )
+      if ( ex is RequestFailedException )
       {
-        var azureException = ex as Azure.RequestFailedException;
+        var azureException = ex as RequestFailedException;
         if ( azureException.Status == 409 )
-          response = request.CreateResponse(
-            OLabServerErrorResult.Result(
+          return request
+            .CreateResponse( OLabServerErrorResult.Result(
               $"File '{fileName}' already exists",
               HttpStatusCode.Conflict ) );
         else
-          response = request.CreateResponse(
-            OLabServerErrorResult.Result(
+          return request
+            .CreateResponse( OLabServerErrorResult.Result(
               $"Error creating static file '{fileName}'.  {ex.Message}",
               (HttpStatusCode)azureException.Status ) );
       }
       else
-        response = request.CreateResponse( ex );
-
+        return request
+          .CreateResponse( OLabServerErrorResult.Result(
+              $"Error creating static file '{fileName}'.  {ex.Message}",
+              HttpStatusCode.InternalServerError ) );
     }
-
-    return response;
   }
 
   /// <summary>
@@ -253,18 +255,18 @@ public class Files : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
       await _endpoint.DeleteAsync( auth, id );
 
-      response = request.CreateNoContentResponse();
-
+      return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
+      Logger.LogError( ex, "FileDelete" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
 
-    return response;
   }
 
 }

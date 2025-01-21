@@ -57,17 +57,19 @@ public class Counters : OLabFunction
 
       var auth = GetAuthorization( hostContext );
 
-      var pagedResult = await _endpoint.GetAsync( auth, take, skip );
-      Logger.LogInformation( string.Format( "Found {0} counters", pagedResult.Data.Count ) );
+      var result = await _endpoint.GetAsync( auth, take, skip );
+      Logger.LogInformation( string.Format( "Found {0} counters", result.Data.Count ) );
 
-      response = request.CreateResponse( OLabObjectPagedListResult<CountersDto>.Result( pagedResult.Data, pagedResult.Remaining ) );
+      return request
+        .CreateResponse( OLabObjectPagedListResult<CountersDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "CountersGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -91,14 +93,16 @@ public class Counters : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       var dto = await _endpoint.GetAsync( auth, id );
-      response = request.CreateResponse( OLabObjectResult<CountersDto>.Result( dto ) );
+      return request
+        .CreateResponse( OLabObjectResult<CountersDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "CounterGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -123,15 +127,15 @@ public class Counters : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
 
       await _endpoint.PutAsync( auth, id, body );
-      response = request.CreateNoContentResponse();
-
+      return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "CounterPut" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
 
   }
 
@@ -152,15 +156,16 @@ public class Counters : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       var dto = await _endpoint.PostAsync( auth, body );
-
-      response = request.CreateResponse( OLabObjectResult<CountersFullDto>.Result( dto ) );
+      return request
+        .CreateResponse( OLabObjectResult<CountersFullDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "MapsGet" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
   /// <summary>
@@ -181,13 +186,15 @@ public class Counters : OLabFunction
       await _endpoint.DeleteAsync( auth, id );
 
       response = request.CreateNoContentResponse();
+      return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      response = request.CreateResponse( ex );
-    }
+      Logger.LogError( ex, "CounterDelete" );
 
-    return response;
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
 
   }
 }
