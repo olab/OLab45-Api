@@ -12,7 +12,7 @@ using OLab.Api.Model;
 using OLab.Azure.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
-namespace OLab.Azure.Functions.player.maps;
+namespace OLab.Azure.Functions.Player.Maps;
 
 public partial class MapsFunction : OLabFunction
 {
@@ -44,13 +44,13 @@ public partial class MapsFunction : OLabFunction
   }
 
   /// <summary>
-  /// Get a list of maps
+  /// Get a pageable list of maps
   /// </summary>
   /// <param name="take">Max number of records to return</param>
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
-  [Function( "MapsGetPlayer" )]
-  public async Task<IActionResult> MapsGetPlayerAsync(
+  [Function( "MapsGet" )]
+  public async Task<IActionResult> MapsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -65,20 +65,276 @@ public partial class MapsFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
 
-      var pagedResult = await _endpoint.GetAsync( auth, take, skip );
-      Logger.LogInformation( string.Format( "Found {0} maps", pagedResult.Data.Count ) );
+      var result = await _endpoint.GetAsync( auth, take, skip );
+      Logger.LogInformation( string.Format( "Found {0} maps", result.Data.Count ) );
 
       return request
-        .CreateResponse( OLabObjectPagedListResult<MapsDto>.Result( pagedResult.Data, pagedResult.Remaining ) );
+        .CreateResponse( OLabObjectPagedListResult<MapsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapsGetPlayer" );
+      Logger.LogError( ex, "MapsGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
 
+  }
+
+  /// <summary>
+  /// Gets the short status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [Function( "MapGetShortStatus" )]
+  public async Task<IActionResult> MapGetShortStatusAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/shortstatus" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var dto = await _endpoint.GetStatusAbbreviatedAsync( auth, id, cancellationToken );
+
+      return request
+        .CreateResponse( OLabObjectResult<MapStatusDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapGetShortStatusAsync" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+
+  }
+
+  /// <summary>
+  /// Gets the full status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [Function( "MapGetStatus" )]
+  public async Task<IActionResult> MapGetStatusAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/status" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var dto = await _endpoint.GetStatusAsync( auth, id, cancellationToken );
+      return request
+        .CreateResponse( OLabObjectResult<MapStatusDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapGetStatusAsync" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+  }
+
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [Function( "MapGetFull" )]
+  public async Task<IActionResult> MapGetFullAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var dto = await _endpoint.GetAsync( auth, id );
+      return request
+        .CreateResponse( OLabObjectResult<MapsFullDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapGetFullAsync" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+  }
+
+  /// <summary>
+  /// Append template to an existing map
+  /// </summary>
+  /// <param name="mapId">Map to add template to</param>
+  /// <param name="CreateMapRequest.templateId">Template to add to map</param>
+  /// <returns>IActionResult</returns>
+  [Function( "MapCreateFromTemplate" )]
+  public async Task<IActionResult> MapCreateFromTemplateAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}" )] HttpRequestData request,
+    FunctionContext executionContext, CancellationToken cancellationToken,
+    uint mapId
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
+
+      var dto = await _endpoint.PostExtendMapAsync( auth, mapId, body );
+      return request
+        .CreateResponse( OLabObjectResult<ExtendMapResponse>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapCreateFromTemplateAsync" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+  }
+
+  /// <summary>
+  /// Append template to an existing map
+  /// </summary  
+  /// <param name="mapId">Map to add template to</param>
+  /// <param name="CreateMapRequest.templateId">Template to add to map</param>
+  /// <returns>IActionResult</returns>
+  [Function( "MapPutFull" )]
+  public async Task<IActionResult> MapPutFullAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken,
+    uint mapId
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var body = await request.ParseBodyFromRequestAsync<MapsFullDto>();
+
+      await _endpoint.PutAsync( auth, mapId, body );
+      return request
+        .CreateResponse( OLabObjectResult<MapsFullDto>.Result( body ) );
+
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapPutFullAsync" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+  }
+
+  /// <summary>
+  /// Create new map (using optional template)
+  /// </summary>
+  /// <param name="body">Create map request body</param>
+  /// <returns>IActionResult</returns>
+  [Function( "MapPostFullRelations" )]
+  public async Task<IActionResult> MapPostFullRelationsAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps" )] HttpRequestData request,
+    FunctionContext executionContext
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var body = await request.ParseBodyFromRequestAsync<CreateMapRequest>();
+
+      var dto = await _endpoint.CreateMapAsync( auth, body );
+      return request
+        .CreateResponse( OLabObjectResult<MapsFullRelationsDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapPostFullRelations" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+  }
+
+  /// <summary>
+  /// Gets the links for a map
+  /// </summary>
+  /// <param name="mapId"></param>
+  /// <returns>MapNodeLinks dto</returns>
+  [Function( "MapGetLinks" )]
+  public async Task<IActionResult> MapGetLinksAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/links" )] HttpRequestData request,
+    FunctionContext executionContext, CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var dto = await _endpoint.GetLinksAsync( auth, id );
+      Logger.LogInformation( string.Format( "Found {0} map links", dto.Count ) );
+
+      return request
+        .CreateResponse( OLabObjectListResult<MapNodeLinksFullDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapGetLinksAsync" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+  }
+
+  /// <summary>
+  /// Gets the full status information for a map
+  /// </summary>
+  /// <param name="id">Map Id</param>
+  /// <returns>MapStatusDto</returns>
+  [Function( "MapDelete" )]
+  public async Task<IActionResult> MapDeleteAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "maps/{id}" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken,
+    uint id
+  )
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      await _endpoint.DeleteMapAsync( auth, id );
+      return new NoContentResult();
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "MapDelete" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
   }
 
 }
