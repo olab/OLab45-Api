@@ -8,7 +8,7 @@ using OLab.Api.Dto;
 using OLab.Azure.Extensions;
 
 
-namespace OLab.Azure.Functions.Player.Maps;
+namespace OLab.Azure.Functions.Maps;
 
 public partial class MapNodesFunction : OLabFunction
 {
@@ -44,7 +44,7 @@ public partial class MapNodesFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetDynamicScopedObjectsRawAsync( auth, mapId, nodeId, sinceTime );
+      var dto = await _playerEndpoint.GetDynamicScopedObjectsRawAsync( auth, mapId, nodeId, sinceTime );
       return request
         .CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result( dto ) );
 
@@ -90,7 +90,7 @@ public partial class MapNodesFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetDynamicScopedObjectsTranslatedAsync( auth, mapId, nodeId, sinceTime );
+      var dto = await _playerEndpoint.GetDynamicScopedObjectsTranslatedAsync( auth, mapId, nodeId, sinceTime );
       return request
         .CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result( dto ) );
     }
