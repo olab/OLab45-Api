@@ -19,8 +19,8 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="nodeId"></param>
   /// <param name="sinceTime"></param>
   /// <returns></returns>
-  [Function( "NodeGetDynamicObjectsRaw" )]
-  public async Task<IActionResult> NodeGetScopedObjectsRawAsync(
+  [Function( "NodeDynamicObjectsRawGet" )]
+  public async Task<IActionResult> NodeDynamicObjectsRawGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext, 
     CancellationToken cancellationToken,
@@ -51,7 +51,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeGetScopedObjectsRaw" );
+      Logger.LogError( ex, "NodeDynamicObjectsRawGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -66,8 +66,8 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="nodeId"></param>
   /// <param name="sinceTime"></param>
   /// <returns></returns>
-  [Function( "NodeGetDynamicObjects" )]
-  public async Task<IActionResult> NodeGetDynamicObjectsAsync(
+  [Function( "NodeDynamicObjectsGet" )]
+  public async Task<IActionResult> NodeDynamicObjectsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects" )] HttpRequestData request,
     FunctionContext hostContext, 
     CancellationToken cancellationToken,
@@ -96,7 +96,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeGetDynamicObjects" );
+      Logger.LogError( ex, "NodeDynamicObjectsGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );

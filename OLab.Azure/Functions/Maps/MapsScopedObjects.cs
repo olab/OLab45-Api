@@ -20,8 +20,8 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function("MapGetScopedObjectsRaw")]
-  public async Task<IActionResult> MapGetScopedObjectsRawAsync(
+  [Function("MapScopedObjectsRawGet")]
+  public async Task<IActionResult> MapScopedObjectsRawGetAsync(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects/raw")] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
@@ -40,7 +40,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetScopedObjectsRaw" );
+      Logger.LogError( ex, "MapScopedObjectsRawGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -71,7 +71,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePostAsync" );
+      Logger.LogError( ex, "MapScopedObjectsGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );

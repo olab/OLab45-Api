@@ -54,8 +54,8 @@ public class TemplateFunction : OLabFunction
   /// <param name="logger"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  [Function( "TemplateGDesignerGet" )]
-  public async Task<IActionResult> TemplateGDesignerGetAsync(
+  [Function( "TemplateDesignerGet" )]
+  public async Task<IActionResult> TemplateDesignerGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "templates" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken)
@@ -81,7 +81,7 @@ public class TemplateFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "TemplateGDesignerGet" );
+      Logger.LogError( ex, "TemplateDesignerGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );

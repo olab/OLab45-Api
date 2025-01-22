@@ -125,8 +125,8 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id">Map Id</param>
   /// <returns>MapStatusDto</returns>
-  [Function( "MapGetStatus" )]
-  public async Task<IActionResult> MapGetStatusAsync(
+  [Function( "MapStatusGet" )]
+  public async Task<IActionResult> MapStatusGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/status" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -144,7 +144,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetStatusAsync" );
+      Logger.LogError( ex, "MapStatusGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -156,8 +156,8 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function( "MapGetFull" )]
-  public async Task<IActionResult> MapGetFullAsync(
+  [Function( "MapFullGet" )]
+  public async Task<IActionResult> MapFullGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -175,7 +175,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetFullAsync" );
+      Logger.LogError( ex, "MapFullGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -221,8 +221,8 @@ public partial class MapsFunction : OLabFunction
   /// <param name="mapId">Map to add template to</param>
   /// <param name="CreateMapRequest.templateId">Template to add to map</param>
   /// <returns>IActionResult</returns>
-  [Function( "MapPutFull" )]
-  public async Task<IActionResult> MapPutFullAsync(
+  [Function( "MapFullPut" )]
+  public async Task<IActionResult> MapFullPutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -243,7 +243,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapPutFullAsync" );
+      Logger.LogError( ex, "MapFullPut" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -286,8 +286,8 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="mapId"></param>
   /// <returns>MapNodeLinks dto</returns>
-  [Function( "MapGetLinks" )]
-  public async Task<IActionResult> MapGetLinksAsync(
+  [Function( "MapLinksGet" )]
+  public async Task<IActionResult> MapLinksGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/links" )] HttpRequestData request,
     FunctionContext executionContext, CancellationToken cancellationToken,
     uint id
@@ -306,7 +306,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetLinksAsync" );
+      Logger.LogError( ex, "MapLinksGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
