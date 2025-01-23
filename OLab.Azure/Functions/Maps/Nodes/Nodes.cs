@@ -1,6 +1,5 @@
 using Dawn;
 using FluentValidation;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;

@@ -6,10 +6,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
-using OLab.Azure.Functions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions.Player;
 
@@ -20,20 +16,20 @@ public partial class NodesFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function("MapNodeScopedObjectsRawGet")]
+  [Function( "MapNodeScopedObjectsRawGet" )]
   public async Task<IActionResult> MapScopedObjectsRawGetAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects/raw")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId)
   {
     try
     {
-      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument( request ).NotNull( nameof( request ) );
 
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetScopedObjectsAsync(nodeId, false);
+      var dto = await _endpoint.GetScopedObjectsAsync( nodeId, false );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
     }
@@ -52,20 +48,20 @@ public partial class NodesFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function("MapNodeScopedObjectsGet")]
+  [Function( "MapNodeScopedObjectsGet" )]
   public async Task<IActionResult> MapScopedObjectsGetAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId)
   {
     try
     {
-      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument( request ).NotNull( nameof( request ) );
 
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetScopedObjectsAsync(nodeId, true);
+      var dto = await _endpoint.GetScopedObjectsAsync( nodeId, true );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
     }

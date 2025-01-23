@@ -30,7 +30,7 @@ public abstract class FileProcessorBase : IFileProcessor
     IEnumerable<IArchiveEntry> archiveEntries,
     CancellationToken token)
   {
-    foreach (var archiveEntry in archiveEntries.Where(entry => !entry.IsDirectory))
+    foreach ( var archiveEntry in archiveEntries.Where( entry => !entry.IsDirectory ) )
     {
       var targetFile = $"{extractDirectory}/{archiveEntry.Key}";
 
@@ -38,11 +38,11 @@ public abstract class FileProcessorBase : IFileProcessor
 
       //await _containerClient.UploadBlobAsync(targetFile, fileStream, token);
 
-      var blobClient = _containerClient.GetBlobClient(targetFile);
-      blobClient.Upload(fileStream, true, token);
+      var blobClient = _containerClient.GetBlobClient( targetFile );
+      blobClient.Upload( fileStream, true, token );
 
       Logger.LogInformation(
-          $"Processed '{archiveEntry.Key}' -> '{targetFile}'");
+          $"Processed '{archiveEntry.Key}' -> '{targetFile}'" );
     }
   }
 }

@@ -2,11 +2,7 @@ using Dawn;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text.Json;
 
 namespace OLab.Azure.Utils;
 

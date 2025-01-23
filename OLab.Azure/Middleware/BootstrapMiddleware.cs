@@ -2,13 +2,9 @@ using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
-using OLab.Common.Interfaces;
-using OLab.Api.Model;
-using OLab.Azure.Utils;
-using System.Threading;
-using DocumentFormat.OpenXml.InkML;
-using OLab.Common.Utils;
 using OLab.Api.Utils;
+using OLab.Azure.Utils;
+using OLab.Common.Interfaces;
 
 namespace OLab.Azure.Middleware;
 public class BootstrapMiddleware : IFunctionsWorkerMiddleware

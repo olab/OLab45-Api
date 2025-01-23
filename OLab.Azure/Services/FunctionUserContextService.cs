@@ -5,7 +5,6 @@ using OLab.Api.Data;
 using OLab.Api.Model;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
-using System.Security.Claims;
 
 #nullable disable
 

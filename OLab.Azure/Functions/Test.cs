@@ -3,17 +3,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
 using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
+using OLab.Common.Contracts;
 using OLab.Common.Interfaces;
-using OLab.Common.Utils;
 using OLab.Data.Contracts;
+using System.Diagnostics;
 using System.Net;
+using System.Reflection;
 
 namespace OLab.Azure.Functions
 {
@@ -29,7 +29,7 @@ namespace OLab.Azure.Functions
     }
 
     [Function( "Bootstrap" )]
-    public IActionResult RunBootstrap(
+    public IActionResult Bootstrap(
       [HttpTrigger( AuthorizationLevel.Anonymous, "get" )] HttpRequestData request)
     {
       var mapCount = DbContext.Maps.Count( x => x.Id > 0 );
@@ -40,11 +40,55 @@ namespace OLab.Azure.Functions
     }
 
     [Function( "HealthCheck" )]
-    public IActionResult Run([HttpTrigger( AuthorizationLevel.Function, "get" )] HttpRequest req)
+    public IActionResult HealthCheck(
+      [HttpTrigger( AuthorizationLevel.Anonymous, "get" )] HttpRequest req)
     {
       Logger.LogInformation( "C# HTTP trigger function processed a request." );
       var response = new StringMessageResponse { Message = $"Welcome to Azure Functions." };
       return new OLabObjectResult<StringMessageResponse>( response );
+    }
+
+    [Function( "Modules" )]
+    public IActionResult Modules(
+      [HttpTrigger( AuthorizationLevel.Anonymous, "get" )] HttpRequest req)
+    {
+      var asms = AppDomain.CurrentDomain.GetAssemblies().ToList();
+      var olabAsms = asms.Where( x => x.FullName.ToLower().Contains( "olab" ) );
+
+      var modules = new Dictionary<string, string>();
+
+      var assembly = Assembly.GetEntryAssembly(); // Assembly.GetExecutingAssembly();
+      var exeFvi = FileVersionInfo.GetVersionInfo( assembly.Location );
+      var exeFileName = Path.GetFileNameWithoutExtension( exeFvi.FileName );
+
+      var mainMetadata = AssemblyMetadata.CreateFromFile( exeFvi.FileName );
+      var mainModule = mainMetadata.GetModules().First();
+      var mainReader = mainModule.GetMetadataReader();
+      var mainAssemblyDef = mainReader.GetAssemblyDefinition();
+
+      foreach ( var olabAsm in olabAsms )
+      {
+        var fvi = FileVersionInfo.GetVersionInfo( olabAsm.Location );
+        var fileName = Path.GetFileName( fvi.FileName );
+
+        var metadata = AssemblyMetadata.CreateFromFile( fvi.FileName );
+        var module = metadata.GetModules().First();
+        var reader = module.GetMetadataReader();
+        var assemblyDef = reader.GetAssemblyDefinition();
+
+        Logger.LogInformation( $"  {fileName} {assemblyDef.Version}" );
+        modules.TryAdd( fileName, assemblyDef.Version.ToString() );
+      }
+
+      var dto = new HealthResult
+      {
+        statusCode = HttpStatusCode.OK,
+        main = mainAssemblyDef.Version,
+        modules = modules,
+        message = "Hello there!"
+      };
+
+      return new OLabObjectResult<HealthResult>( dto );
     }
   }
 }

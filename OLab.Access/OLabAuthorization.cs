@@ -44,15 +44,15 @@ public class OLabAuthorization : IOLabAuthorization
     IOLabConfiguration configuration
   )
   {
-    Guard.Argument(logger).NotNull(nameof(logger));
-    Guard.Argument(dbContext).NotNull(nameof(dbContext));
-    Guard.Argument(configuration).NotNull(nameof(configuration));
+    Guard.Argument( logger ).NotNull( nameof( logger ) );
+    Guard.Argument( dbContext ).NotNull( nameof( dbContext ) );
+    Guard.Argument( configuration ).NotNull( nameof( configuration ) );
 
     _logger = logger;
     _dbContext = dbContext;
     _configuration = configuration;
-    _groupReaderWriter = GroupReaderWriter.Instance(logger, dbContext);
-    _roleReaderWriter = RoleReaderWriter.Instance(logger, dbContext);
+    _groupReaderWriter = GroupReaderWriter.Instance( logger, dbContext );
+    _roleReaderWriter = RoleReaderWriter.Instance( logger, dbContext );
   }
 
   /// <summary>
@@ -61,26 +61,26 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="userPhys">User to evaluate</param>
   public void ApplyUserContext(Users userPhys)
   {
-    Guard.Argument(userPhys).NotNull(nameof(userPhys));
+    Guard.Argument( userPhys ).NotNull( nameof( userPhys ) );
 
     OLabUser = userPhys;
     _userGroupRoles = OLabUser.UserGrouproles.ToList();
 
     // load all the user's group/roles acl records
-    foreach (var userGroups in _userGroupRoles.Select(x => x.Group).Distinct())
+    foreach ( var userGroups in _userGroupRoles.Select( x => x.Group ).Distinct() )
     {
       var groupsPhys = GrouproleAcls.FindByGroup(
         _dbContext,
-        userGroups.Name);
+        userGroups.Name );
 
-      _groupRoleAcls.AddRange(groupsPhys);
+      _groupRoleAcls.AddRange( groupsPhys );
 
       // add default no-group acls
       groupsPhys = GrouproleAcls.FindByGroup(
         _dbContext,
-        string.Empty);
+        string.Empty );
 
-      _groupRoleAcls.AddRange(groupsPhys);
+      _groupRoleAcls.AddRange( groupsPhys );
 
     }
   }
@@ -91,7 +91,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="userContext">User context</param>
   public void ApplyUserContext(IUserContext userContext)
   {
-    Guard.Argument(userContext).NotNull(nameof(userContext));
+    Guard.Argument( userContext ).NotNull( nameof( userContext ) );
 
     UserContext = userContext;
     _userGroupRoles = UserContext.GroupRoles.ToList();
@@ -100,20 +100,20 @@ public class OLabAuthorization : IOLabAuthorization
     var userId = UserContext.UserId;
 
     // load all the user's group/roles acl records
-    foreach (var userGroups in _userGroupRoles.Select(x => x.Group).Distinct())
+    foreach ( var userGroups in _userGroupRoles.Select( x => x.Group ).Distinct() )
     {
       var groupsPhys = GrouproleAcls.FindByGroup(
         _dbContext,
-        userGroups.Name);
+        userGroups.Name );
 
-      _groupRoleAcls.AddRange(groupsPhys);
+      _groupRoleAcls.AddRange( groupsPhys );
 
       // add default no-group acls
       groupsPhys = GrouproleAcls.FindByGroup(
         _dbContext,
-        string.Empty);
+        string.Empty );
 
-      _groupRoleAcls.AddRange(groupsPhys);
+      _groupRoleAcls.AddRange( groupsPhys );
 
     }
   }
@@ -124,7 +124,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   public async Task<bool> IsSystemSuperuserAsync()
   {
-    return await IsGroupSuperUserAsync(Groups.OLabGroup);
+    return await IsGroupSuperUserAsync( Groups.OLabGroup );
   }
 
   /// <summary>
@@ -134,14 +134,14 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   public async Task<bool> IsGroupSuperUserAsync(string groupName)
   {
-    var groupPhys = await _groupReaderWriter.GetAsync(groupName);
-    if (groupPhys == null)
+    var groupPhys = await _groupReaderWriter.GetAsync( groupName );
+    if ( groupPhys == null )
     {
-      GetLogger().LogError($"group '{groupName}' not defined.");
+      GetLogger().LogError( $"group '{groupName}' not defined." );
       return false;
     }
 
-    return await IsGroupSuperUserAsync(groupPhys.Id);
+    return await IsGroupSuperUserAsync( groupPhys.Id );
   }
 
   /// <summary>
@@ -151,14 +151,14 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   public async Task<bool> IsGroupSuperUserAsync(uint groupId)
   {
-    var superUserRolePhys = await _roleReaderWriter.GetAsync(Roles.SuperUserRole);
-    if (superUserRolePhys == null)
+    var superUserRolePhys = await _roleReaderWriter.GetAsync( Roles.SuperUserRole );
+    if ( superUserRolePhys == null )
     {
-      GetLogger().LogError($"system role {Roles.SuperUserRole} not defined.");
+      GetLogger().LogError( $"system role {Roles.SuperUserRole} not defined." );
       return false;
     }
 
-    return _userGroupRoles.Any(x => (x.GroupId == groupId) && (x.RoleId == superUserRolePhys.Id));
+    return _userGroupRoles.Any( x => (x.GroupId == groupId) && (x.RoleId == superUserRolePhys.Id) );
   }
 
   /// <summary>
@@ -172,21 +172,21 @@ public class OLabAuthorization : IOLabAuthorization
     ScopedObjectDto dto)
   {
     // test if user has access to parent map.
-    if (dto.ImageableType == Constants.ScopeLevelMap)
+    if ( dto.ImageableType == Constants.ScopeLevelMap )
     {
-      var result = await HasRequestedAccessToMapAsync(requestedAcl, dto.ImageableId);
+      var result = await HasRequestedAccessToMapAsync( requestedAcl, dto.ImageableId );
 
-      if (!result)
+      if ( !result )
         return OLabUnauthorizedResult.Result();
     }
 
 
     // test if user has access to parent node.
-    if (dto.ImageableType == Constants.ScopeLevelNode)
+    if ( dto.ImageableType == Constants.ScopeLevelNode )
     {
-      var result = await HasRequestedAccessToNodeAsync(requestedAcl, dto.ImageableId);
+      var result = await HasRequestedAccessToNodeAsync( requestedAcl, dto.ImageableId );
 
-      if (!result)
+      if ( !result )
         return OLabUnauthorizedResult.Result();
     }
 
@@ -211,134 +211,134 @@ public class OLabAuthorization : IOLabAuthorization
   {
     // group = olab
     // role = superuser
-    if (await IsSystemSuperuserAsync())
+    if ( await IsSystemSuperuserAsync() )
       return true;
 
-    GetLogger().LogInformation($"Testing: g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {requestedAcl}");
+    GetLogger().LogInformation( $"Testing: g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {requestedAcl}" );
 
     // # # # #
-    var acl = _groupRoleAcls.FirstOrDefault(x =>
+    var acl = _groupRoleAcls.FirstOrDefault( x =>
     x.GroupId == groupId &&
     x.RoleId == roleId &&
     x.ImageableType == objectType &&
-    (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
+    (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: {objectId} = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: {objectId} = {rc}" );
       return rc;
     }
 
     // # # # -
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
       x.GroupId == groupId &&
       x.RoleId == roleId &&
       x.ImageableType == objectType &&
-      x.ImageableId == null);
+      x.ImageableId == null );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: null = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: null = {rc}" );
       return rc;
     }
 
     // # # - -
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
       x.GroupId == groupId &&
       x.RoleId == roleId &&
       x.ImageableType == null &&
-      x.ImageableId == null);
+      x.ImageableId == null );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: {roleId} typ: null id: null = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: {roleId} typ: null id: null = {rc}" );
       return rc;
     }
 
     // # - # #
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
     x.GroupId == groupId &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
-      (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: null typ: {objectType} id: {objectId} = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: null typ: {objectType} id: {objectId} = {rc}" );
       return rc;
     }
 
     // - # # #
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
       x.GroupId == null &&
       x.RoleId == roleId &&
       x.ImageableType == objectType &&
-      (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: null rol: {roleId} typ: {objectType} id: {objectId} = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: null rol: {roleId} typ: {objectType} id: {objectId} = {rc}" );
       return rc;
     }
 
     // # - # -
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
       x.GroupId == groupId &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
-      x.ImageableId == null);
+      x.ImageableId == null );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: {groupId} rol: null typ: {objectType} id: null = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: null typ: {objectType} id: null = {rc}" );
       return rc;
     }
 
     // - - # #
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
       x.GroupId == null &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
-      (x.ImageableId.HasValue && x.ImageableId.Value == objectId));
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: null rol: null typ: {objectType} id: {objectId} = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: null rol: null typ: {objectType} id: {objectId} = {rc}" );
       return rc;
     }
 
     // - - # -
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
       x.GroupId == null &&
       x.RoleId == null &&
       x.ImageableType == objectType &&
-      x.ImageableId == null);
+      x.ImageableId == null );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: null rol: null typ: {objectType} id: null = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: null rol: null typ: {objectType} id: null = {rc}" );
       return rc;
     }
 
     // - - - -
-    acl = _groupRoleAcls.FirstOrDefault(x =>
+    acl = _groupRoleAcls.FirstOrDefault( x =>
       x.GroupId == null &&
       x.RoleId == null &&
       x.ImageableType == null &&
-      x.ImageableId == null);
+      x.ImageableId == null );
 
-    if (acl != null)
+    if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      GetLogger().LogInformation($"    ACL: grp: null rol: null typ: null id: null = {rc}");
+      GetLogger().LogInformation( $"    ACL: grp: null rol: null typ: null id: null = {rc}" );
       return rc;
     }
 
@@ -354,43 +354,43 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   private async Task<bool> HasRequestedAccessToNodeAsync(ulong requestedAcl, uint mapNodeId)
   {
-    var mapNodePhys = await MapNodesReaderWriter.Instance(GetLogger(), GetDbContext(), null)
-      .GetNodeAsync(mapNodeId);
+    var mapNodePhys = await MapNodesReaderWriter.Instance( GetLogger(), GetDbContext(), null )
+      .GetNodeAsync( mapNodeId );
 
-    if (mapNodePhys == null)
-      throw new OLabObjectNotFoundException(Constants.ScopeLevelNode, mapNodeId);
+    if ( mapNodePhys == null )
+      throw new OLabObjectNotFoundException( Constants.ScopeLevelNode, mapNodeId );
 
     // test base case of node not having any group/roles defined,
     // meaning check owning map for access
-    if (mapNodePhys.MapNodeGrouproles.Count == 0)
-      return await HasRequestedAccessToMapAsync(requestedAcl, mapNodePhys.MapId);
+    if ( mapNodePhys.MapNodeGrouproles.Count == 0 )
+      return await HasRequestedAccessToMapAsync( requestedAcl, mapNodePhys.MapId );
     else
     {
-      foreach (var nodeGroupRolePhys in mapNodePhys.MapNodeGrouproles)
+      foreach ( var nodeGroupRolePhys in mapNodePhys.MapNodeGrouproles )
       {
         // test if map has group and role and user has same
-        if ((nodeGroupRolePhys.GroupId != null) &&
+        if ( (nodeGroupRolePhys.GroupId != null) &&
             (nodeGroupRolePhys.RoleId != null) &&
-            UserContext.GroupRoles.Any(x => (x.GroupId == nodeGroupRolePhys.GroupId) && (x.RoleId == nodeGroupRolePhys.RoleId)))
+            UserContext.GroupRoles.Any( x => (x.GroupId == nodeGroupRolePhys.GroupId) && (x.RoleId == nodeGroupRolePhys.RoleId) ) )
           return true;
 
         // test if map has no group and role and user has same role
-        if ((nodeGroupRolePhys.GroupId == null) &&
+        if ( (nodeGroupRolePhys.GroupId == null) &&
             (nodeGroupRolePhys.RoleId != null) &&
-            UserContext.GroupRoles.Any(x => x.RoleId == nodeGroupRolePhys.RoleId))
+            UserContext.GroupRoles.Any( x => x.RoleId == nodeGroupRolePhys.RoleId ) )
           return true;
 
         // test if map has group and no role specified and
         // user belongs to any role in same group
-        if ((nodeGroupRolePhys.GroupId != null) &&
+        if ( (nodeGroupRolePhys.GroupId != null) &&
             (nodeGroupRolePhys.RoleId == null) &&
-            UserContext.GroupRoles.Any(x => (x.GroupId == nodeGroupRolePhys.GroupId)))
+            UserContext.GroupRoles.Any( x => (x.GroupId == nodeGroupRolePhys.GroupId) ) )
           return true;
 
         // test if map has no group and no role specified 
         // meaning unconditional 'accept'
-        if ((nodeGroupRolePhys.GroupId == null) &&
-            (nodeGroupRolePhys.RoleId == null))
+        if ( (nodeGroupRolePhys.GroupId == null) &&
+            (nodeGroupRolePhys.RoleId == null) )
           return true;
       }
     }
@@ -406,51 +406,51 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   private async Task<bool> HasRequestedAccessToMapAsync(ulong requestedAcl, uint mapId)
   {
-    var mapPhys = await MapsReaderWriter.Instance(GetLogger(), GetDbContext())
-      .GetSingleWithGroupRolesAsync(mapId);
+    var mapPhys = await MapsReaderWriter.Instance( GetLogger(), GetDbContext() )
+      .GetSingleWithGroupRolesAsync( mapId );
 
-    if (mapPhys == null)
-      throw new OLabObjectNotFoundException(Constants.ScopeLevelMap, mapId);
+    if ( mapPhys == null )
+      throw new OLabObjectNotFoundException( Constants.ScopeLevelMap, mapId );
 
     // test base case of map not having any group/roles defined,
     // meaning unconditional 'accept'
-    if (mapPhys.MapGrouproles.Count == 0)
+    if ( mapPhys.MapGrouproles.Count == 0 )
       return true;
 
     // loop thru map group roles and see if user has access based
     // on USER's group roles
-    foreach (var mapGroupRolePhys in mapPhys.MapGrouproles)
+    foreach ( var mapGroupRolePhys in mapPhys.MapGrouproles )
     {
       // test if user is a superuser for the group that the map is in
-      if (mapGroupRolePhys.GroupId.HasValue &&
-          await IsGroupSuperUserAsync(mapGroupRolePhys.GroupId.Value))
+      if ( mapGroupRolePhys.GroupId.HasValue &&
+          await IsGroupSuperUserAsync( mapGroupRolePhys.GroupId.Value ) )
         return true;
 
       // test if map has group and role and user has same
-      if ((mapGroupRolePhys.GroupId != null) &&
+      if ( (mapGroupRolePhys.GroupId != null) &&
           (mapGroupRolePhys.RoleId != null) &&
-          UserContext.GroupRoles.Any(x =>
+          UserContext.GroupRoles.Any( x =>
             (x.GroupId == mapGroupRolePhys.GroupId) &&
-            (x.RoleId == mapGroupRolePhys.RoleId)))
+            (x.RoleId == mapGroupRolePhys.RoleId) ) )
         return true;
 
       // test if map has no group and has role and user has same role
-      if ((mapGroupRolePhys.GroupId == null) &&
+      if ( (mapGroupRolePhys.GroupId == null) &&
           (mapGroupRolePhys.RoleId != null) &&
-          UserContext.GroupRoles.Any(x => x.RoleId == mapGroupRolePhys.RoleId))
+          UserContext.GroupRoles.Any( x => x.RoleId == mapGroupRolePhys.RoleId ) )
         return true;
 
       // test if map has group and no role specified and
       // user belongs to any role in same group
-      if ((mapGroupRolePhys.GroupId != null) &&
+      if ( (mapGroupRolePhys.GroupId != null) &&
           (mapGroupRolePhys.RoleId == null) &&
-          UserContext.GroupRoles.Any(x => (x.GroupId == mapGroupRolePhys.GroupId)))
+          UserContext.GroupRoles.Any( x => (x.GroupId == mapGroupRolePhys.GroupId) ) )
         return true;
 
       // test if map has no group and no role specified 
       // meaning unconditional 'accept'
-      if ((mapGroupRolePhys.GroupId == null) &&
-          (mapGroupRolePhys.RoleId == null))
+      if ( (mapGroupRolePhys.GroupId == null) &&
+          (mapGroupRolePhys.RoleId == null) )
         return true;
     }
 
@@ -465,26 +465,26 @@ public class OLabAuthorization : IOLabAuthorization
     var result = false;
 
     // test if system superuser meaning unconditional access
-    if (await IsSystemSuperuserAsync())
+    if ( await IsSystemSuperuserAsync() )
       return true;
 
     // test if user has access to map.
-    if (objectType == Constants.ScopeLevelMap)
-      result = await HasRequestedAccessToMapAsync(requestedAcl, objectId.Value);
+    if ( objectType == Constants.ScopeLevelMap )
+      result = await HasRequestedAccessToMapAsync( requestedAcl, objectId.Value );
 
     // test if user has access to node
-    else if (objectType == Constants.ScopeLevelNode)
-      result = await HasRequestedAccessToNodeAsync(requestedAcl, objectId.Value);
+    else if ( objectType == Constants.ScopeLevelNode )
+      result = await HasRequestedAccessToNodeAsync( requestedAcl, objectId.Value );
 
-    if (!result)
-      GetLogger().LogWarning($"  user {UserContext.Issuer}:{UserContext.UserId} no access to {objectType} id {objectId.Value}");
+    if ( !result )
+      GetLogger().LogWarning( $"  user {UserContext.Issuer}:{UserContext.UserId} no access to {objectType} id {objectId.Value}" );
 
     return result;
   }
 
   public async Task<bool> HasAccessAsync(ulong requestedPerm, string operationType)
   {
-    return await HasAccessAsync(requestedPerm, operationType, 0);
+    return await HasAccessAsync( requestedPerm, operationType, 0 );
   }
 
   /// <summary>
@@ -496,46 +496,46 @@ public class OLabAuthorization : IOLabAuthorization
   public async Task<bool> HasAccessToAppAsync(Users userPhys, string appName)
   {
     // load the user's acls
-    ApplyUserContext(userPhys);
-    GetLogger().LogInformation($"Testing referrer: '{appName}'");
+    ApplyUserContext( userPhys );
+    GetLogger().LogInformation( $"Testing referrer: '{appName}'" );
 
-    var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync(x => x.Name == appName);
-    if (appPhys == null)
+    var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync( x => x.Name == appName );
+    if ( appPhys == null )
     {
-      GetLogger().LogError($"Could not find application '{appName}' in database");
+      GetLogger().LogError( $"Could not find application '{appName}' in database" );
       return false;
     }
 
-    foreach (var userGroupRolePhys in userPhys.UserGrouproles)
+    foreach ( var userGroupRolePhys in userPhys.UserGrouproles )
     {
       var accessResult = await HasRequestedAccessAsync(
         userGroupRolePhys.GroupId,
         userGroupRolePhys.RoleId,
         Constants.ScopeLevelApp,
         appPhys.Id,
-        GrouproleAcls.ExecuteMask);
+        GrouproleAcls.ExecuteMask );
 
-      if (accessResult.HasValue && accessResult.Value == true)
+      if ( accessResult.HasValue && accessResult.Value == true )
         return true;
 
     }
 
-    GetLogger().LogError($"user '{userPhys.Username}' does not have access to application '{appPhys.Name}'");
+    GetLogger().LogError( $"user '{userPhys.Username}' does not have access to application '{appPhys.Name}'" );
     return false;
 
   }
 
   public string ExtractApplication(string refererValue)
   {
-    refererValue = refererValue.Trim('/');
-    var uri = new Uri(refererValue);
+    refererValue = refererValue.Trim( '/' );
+    var uri = new Uri( refererValue );
 
     // if no path, and referrer from localhost then this is probably local
-    if (uri.PathAndQuery == "/" && _configuration.GetAppSettings().Cors.Contains(refererValue))
+    if ( uri.PathAndQuery == "/" && _configuration.GetAppSettings().Cors.Contains( refererValue ) )
       return "localhost";
 
-    var appName = uri.PathAndQuery.Trim('/').Split('/').First();
-    if ( string.IsNullOrEmpty(appName ) )
+    var appName = uri.PathAndQuery.Trim( '/' ).Split( '/' ).First();
+    if ( string.IsNullOrEmpty( appName ) )
       return "localhost";
 
     return appName;
@@ -552,19 +552,19 @@ public class OLabAuthorization : IOLabAuthorization
     var userGroupRoles = UserContext.GroupRoles;
 
     // look for first author role for user
-    var rolePhys = await _roleReaderWriter.GetAsync(Roles.AuthorRole);
-    if (rolePhys == null)
-      throw new Exception($"missing {Roles.AuthorRole} role configuration");
-    roleIds.Add(rolePhys.Id);
+    var rolePhys = await _roleReaderWriter.GetAsync( Roles.AuthorRole );
+    if ( rolePhys == null )
+      throw new Exception( $"missing {Roles.AuthorRole} role configuration" );
+    roleIds.Add( rolePhys.Id );
 
     // look for first superuser role for user
-    rolePhys = await _roleReaderWriter.GetAsync(Roles.SuperUserRole);
-    if (rolePhys == null)
-      throw new Exception($"missing {Roles.SuperUserRole} role configuration");
-    roleIds.Add(rolePhys.Id);
+    rolePhys = await _roleReaderWriter.GetAsync( Roles.SuperUserRole );
+    if ( rolePhys == null )
+      throw new Exception( $"missing {Roles.SuperUserRole} role configuration" );
+    roleIds.Add( rolePhys.Id );
 
     // find first user group role that is a author then superuser
-    var groupRole = userGroupRoles.FirstOrDefault(x => roleIds.Contains(x.RoleId));
+    var groupRole = userGroupRoles.FirstOrDefault( x => roleIds.Contains( x.RoleId ) );
     return new MapGrouproles { MapId = map.Id, GroupId = groupRole.GroupId, RoleId = null };
   }
 

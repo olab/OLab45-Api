@@ -22,7 +22,7 @@ public partial class MapNodesFunction : OLabFunction
   [Function( "NodeDynamicObjectsRawGet" )]
   public async Task<IActionResult> NodeDynamicObjectsRawGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw" )] HttpRequestData request,
-    FunctionContext hostContext, 
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint mapId,
     uint nodeId
@@ -69,7 +69,7 @@ public partial class MapNodesFunction : OLabFunction
   [Function( "NodeDynamicObjectsGet" )]
   public async Task<IActionResult> NodeDynamicObjectsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects" )] HttpRequestData request,
-    FunctionContext hostContext, 
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint mapId,
     uint nodeId

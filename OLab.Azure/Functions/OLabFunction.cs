@@ -8,9 +8,6 @@ using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions;
 

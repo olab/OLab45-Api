@@ -2,6 +2,7 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
@@ -10,7 +11,11 @@ using System.IO.Compression;
 
 namespace OLab.Files.AzureBlobStorage;
 
-[OLabModule("AZUREBLOBSTORAGE")]
+[OLabModule( "AZUREBLOBSTORAGE" )]
+/// <summary>
+/// AzureBlobFileSystemModule is a file storage module that interacts with Azure Blob Storage.
+/// It provides methods to perform file operations such as reading, writing, moving, and deleting files.
+/// </summary>
 public class AzureBlobFileSystemModule : OLabFileStorageModule
 {
   private readonly BlobServiceClient _blobServiceClient;
@@ -27,40 +32,58 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <exception cref="ConfigurationErrorsException"></exception>
   public AzureBlobFileSystemModule(
     IOLabLogger logger,
-    IOLabConfiguration configuration) : base(logger, configuration)
+    IOLabConfiguration configuration) : base( logger, configuration )
   {
     // if not set to use this module, then don't proceed further
-    if (GetModuleName().ToLower() != cfg.GetAppSettings().FileStorageType.ToLower())
+    if ( GetModuleName().ToLower() != cfg.GetAppSettings().FileStorageType.ToLower() )
       return;
 
-    logger.LogInformation($"Initializing AzureBlobFileSystemModule");
+    logger.LogInformation( $"Initializing AzureBlobFileSystemModule" );
 
     var connectionString = cfg.GetAppSettings().FileStorageConnectionString;
-    if (string.IsNullOrEmpty(connectionString))
-      throw new ConfigurationErrorsException("missing FileStorageConnectionString parameter");
-    _blobServiceClient = new BlobServiceClient(connectionString);
+    if ( string.IsNullOrEmpty( connectionString ) )
+      throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
+    _blobServiceClient = new BlobServiceClient( connectionString );
 
-    _containerName = Path.GetDirectoryName(cfg.GetAppSettings().FileStorageRoot);
-    if (string.IsNullOrEmpty(_containerName))
-      throw new ConfigurationErrorsException("missing FileStorageRoot parameter");
+    _containerName = Path.GetDirectoryName( cfg.GetAppSettings().FileStorageRoot );
+    if ( string.IsNullOrEmpty( _containerName ) )
+      throw new ConfigurationErrorsException( "missing FileStorageRoot parameter" );
 
-    logger.LogInformation($"Container: {_containerName}");
+    logger.LogInformation( $"Container: {_containerName}" );
 
     // need to prevent container name from being part of the file root
-    cfg.GetAppSettings().FileStorageRoot = Path.GetFileName(cfg.GetAppSettings().FileStorageRoot);
+    cfg.GetAppSettings().FileStorageRoot = Path.GetFileName( cfg.GetAppSettings().FileStorageRoot );
   }
 
+  /// <summary>
+  /// Gets the folder separator character.
+  /// </summary>
+  /// <returns>The folder separator character.</returns>
   public override char GetFolderSeparator() { return '/'; }
 
   /// <summary>
-  /// Test if a file exists
+  /// Gets the file path components.
   /// </summary>
-  /// <param name="filePath">Relative to root file path</param>
-  /// <returns>true/false</returns>
+  /// <param name="filePath">The file path.</param>
+  /// <returns>A tuple containing the container and path.</returns>
+  public (string container, string path) GetFilePath(string filePath)
+  {
+    var pathParts = filePath.Split( GetFolderSeparator() );
+    // remove 1st part of the path, which is probably the container
+    var folder = string.Join( GetFolderSeparator().ToString(), pathParts.Skip( 1 ) );
+
+    return (pathParts[ 0 ], folder);
+  }
+
+  /// <summary>
+  /// Tests if a file exists.
+  /// </summary>
+  /// <param name="filePath">Relative to root file path.</param>
+  /// <returns>true if the file exists; otherwise, false.</returns>
   public override bool FileExists(
     string filePath)
   {
-    Guard.Argument(filePath).NotEmpty(nameof(filePath));
+    Guard.Argument( filePath ).NotEmpty( nameof( filePath ) );
 
     var result = false;
 
@@ -70,34 +93,34 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
-      if (!_folderContentCache.ContainsKey(filePath))
+      if ( !_folderContentCache.ContainsKey( filePath ) )
       {
-        logger.LogInformation($"  searching '{filePath} for blobs'");
+        logger.LogInformation( $"  searching '{filePath} for blobs'" );
 
         blobs = _blobServiceClient
-          .GetBlobContainerClient(_containerName)
-          .GetBlobs(prefix: filePath).ToList();
+          .GetBlobContainerClient( _containerName )
+          .GetBlobs( prefix: filePath ).ToList();
 
-        _folderContentCache[filePath] = blobs;
+        _folderContentCache[ filePath ] = blobs;
 
-        foreach (var blob in blobs)
-          logger.LogInformation($"  found blob '{blob.Name}'");
+        foreach ( var blob in blobs )
+          logger.LogInformation( $"  found blob '{blob.Name}'" );
 
       }
       else
-        blobs = _folderContentCache[filePath];
+        blobs = _folderContentCache[ filePath ];
 
-      result = blobs.Any(x => x.Name.Contains(Path.GetFileName(filePath)));
+      result = blobs.Any( x => x.Name.Contains( Path.GetFileName( filePath ) ) );
 
-      if (!result)
-        logger.LogWarning($"  '{filePath}' not found");
+      if ( !result )
+        logger.LogWarning( $"  '{filePath}' not found" );
       else
-        logger.LogInformation($"  '{filePath}' exists");
+        logger.LogInformation( $"  '{filePath}' exists" );
 
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "FileExists error");
+      logger.LogError( ex, "FileExists error" );
       throw;
     }
 
@@ -105,208 +128,218 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   }
 
   /// <summary>
-  /// Move file between folders
+  /// Moves a file between folders.
   /// </summary>
-  /// <param name="sourceFilePath">Relative to root file path</param>
-  /// <param name="destinationFolder">Relative to root destination folder name</param>
+  /// <param name="sourceFilePath">Relative to root file path.</param>
+  /// <param name="destinationFolder">Relative to root destination folder name.</param>
+  /// <param name="token">Cancellation token.</param>
   public override async Task MoveFileAsync(
     string sourceFilePath,
     string destinationFolder,
     CancellationToken token = default)
   {
-    Guard.Argument(sourceFilePath).NotEmpty(nameof(sourceFilePath));
-    Guard.Argument(destinationFolder).NotEmpty(nameof(destinationFolder));
+    Guard.Argument( sourceFilePath ).NotEmpty( nameof( sourceFilePath ) );
+    Guard.Argument( destinationFolder ).NotEmpty( nameof( destinationFolder ) );
 
     try
     {
-      logger.LogInformation($"MoveFileAsync '{sourceFilePath} -> {destinationFolder}");
+      logger.LogInformation( $"MoveFileAsync '{sourceFilePath} -> {destinationFolder}" );
 
       using var stream = new MemoryStream();
 
-      await ReadFileAsync(stream, sourceFilePath, token);
+      await ReadFileAsync( stream, sourceFilePath, token );
       await WriteFileAsync(
         stream,
         BuildPath(
           destinationFolder,
-          Path.GetFileName(sourceFilePath)),
-        token);
-      await DeleteFileAsync(sourceFilePath);
+          Path.GetFileName( sourceFilePath ) ),
+        token );
+      await DeleteFileAsync( sourceFilePath );
 
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "MoveFileAsync error");
+      logger.LogError( ex, "MoveFileAsync error" );
       throw;
     }
   }
 
   /// <summary>
-  /// Copy file presented by stream to file store
+  /// Copies a file presented by stream to file store.
   /// </summary>
-  /// <param name="stream">File stream</param>
-  /// <param name="fileType">Target folderName</param>
-  /// <param name="filePath">Target folderName</param>
-  /// <param name="token"></param>
+  /// <param name="stream">File stream.</param>
+  /// <param name="filePath">Target folder name.</param>
+  /// <param name="token">Cancellation token.</param>
+  /// <returns>The file path.</returns>
   public override async Task<string> WriteFileAsync(
     Stream stream,
     string filePath,
     CancellationToken token = default)
   {
-    Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(filePath).NotEmpty(nameof(filePath));
+    Guard.Argument( stream ).NotNull( nameof( stream ) );
+    Guard.Argument( filePath ).NotEmpty( nameof( filePath ) );
 
     try
     {
-      logger.LogInformation($"WriteFileAsync: {_containerName} {filePath}");
+      logger.LogInformation( $"WriteFileAsync: {_containerName} {filePath}" );
+
+      (string container, string folder) = GetFilePath( filePath );
+      if ( container != _containerName )
+        throw new UnauthorizedAccessException( "Invalid container" );
 
       await _blobServiceClient
-            .GetBlobContainerClient(_containerName)
-            .GetBlobClient(filePath)
-            .UploadAsync(stream, overwrite: true, token);
+            .GetBlobContainerClient( _containerName )
+            .GetBlobClient( folder )
+            .UploadAsync( stream, overwrite: true, token );
 
       return filePath;
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "WriteFileAsync Exception");
+      logger.LogError( ex, "WriteFileAsync Exception" );
       throw;
     }
 
   }
 
   /// <summary>
-  /// Read file from storage into stream
+  /// Reads a file from storage into stream.
   /// </summary>
-  /// <param name="stream">File stream</param>
-  /// <param name="filePath">Relative to root file path</param>
-  /// <param name="token">CancellationToken</param>
+  /// <param name="stream">File stream.</param>
+  /// <param name="filePath">Relative to root file path.</param>
+  /// <param name="token">Cancellation token.</param>
+  /// <returns>true if the file was read successfully; otherwise, false.</returns>
   public override async Task<bool> ReadFileAsync(
     Stream stream,
     string filePath,
     CancellationToken token = default)
   {
-    Guard.Argument(stream).NotNull(nameof(stream));
-    Guard.Argument(filePath).NotEmpty(nameof(filePath));
+    Guard.Argument( stream ).NotNull( nameof( stream ) );
+    Guard.Argument( filePath ).NotEmpty( nameof( filePath ) );
 
     try
     {
-      await _blobServiceClient
-           .GetBlobContainerClient(_containerName)
-           .GetBlobClient(filePath)
-           .DownloadToAsync(stream);
+      (string container, string folder) = GetFilePath( filePath );
+      if ( container != _containerName )
+        throw new UnauthorizedAccessException( "Invalid container" );
 
-      logger.LogInformation($"ReadFileAsync: {_containerName} {filePath}. File size: {stream.Length}");
+      await _blobServiceClient
+           .GetBlobContainerClient( _containerName )
+           .GetBlobClient( folder )
+           .DownloadToAsync( stream );
+
+      logger.LogInformation( $"ReadFileAsync: {_containerName} {filePath}. File size: {stream.Length}" );
 
       stream.Position = 0;
       return true;
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "ReadFileAsync Exception");
+      logger.LogError( ex, "ReadFileAsync Exception" );
       throw;
     }
 
   }
 
   /// <summary>
-  /// Delete file from blob storage
+  /// Deletes a file from blob storage.
   /// </summary>
-  /// <param name="logger">OLabLogger</param>
-  /// <param name="filePath">Relative to root file path</param>
-  /// <returns></returns>
+  /// <param name="filePath">Relative to root file path.</param>
+  /// <returns>true if the file was deleted successfully; otherwise, false.</returns>
   public override async Task<bool> DeleteFileAsync(
     string filePath)
   {
-    Guard.Argument(filePath).NotEmpty(nameof(filePath));
+    Guard.Argument( filePath ).NotEmpty( nameof( filePath ) );
 
     try
     {
       var physicalFileName = filePath;
-      logger.LogInformation($"DeleteFileAsync '{physicalFileName}'");
+      logger.LogInformation( $"DeleteFileAsync '{physicalFileName}'" );
 
       await _blobServiceClient
-        .GetBlobContainerClient(_containerName)
-        .DeleteBlobAsync(physicalFileName);
+        .GetBlobContainerClient( _containerName )
+        .DeleteBlobAsync( physicalFileName );
 
       return true;
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "DeleteFileAsync Exception");
+      logger.LogError( ex, "DeleteFileAsync Exception" );
       throw;
     }
 
   }
 
   /// <summary>
-  /// Delete folder from blob storage
+  /// Deletes a folder from blob storage.
   /// </summary>
-  /// <param name="folderName">Folder to delete</param>
+  /// <param name="folderName">Folder to delete.</param>
   public override async Task DeleteFolderAsync(
     string folderName)
   {
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
+    Guard.Argument( folderName ).NotEmpty( nameof( folderName ) );
 
     await DeleteImportFilesAsync(
-      _blobServiceClient.GetBlobContainerClient(_containerName),
-      GetPhysicalPath(folderName),
-      null);
+      _blobServiceClient.GetBlobContainerClient( _containerName ),
+      GetPhysicalPath( folderName ),
+      null );
   }
 
   /// <summary>
-  /// Extract a file to blob storage
+  /// Extracts a file to blob storage.
   /// </summary>
-  /// <param name="logger">OLabLogger</param>
-  /// <param name="archiveFileName">Source file name</param>
-  /// <param name="extractDirectory">TTarget extreaction sourceFolderName</param>
-  /// <param name="token">Cancellation token</param>
-  /// <returns></returns>
+  /// <param name="archiveFileName">Source file name.</param>
+  /// <param name="extractDirectory">Target extraction folder name.</param>
+  /// <param name="token">Cancellation token.</param>
+  /// <returns>The extraction directory.</returns>
   public override async Task<string> ExtractFileToStorageAsync(
     string archiveFileName,
     string extractDirectory,
     CancellationToken token = default)
   {
-    Guard.Argument(archiveFileName).NotEmpty(nameof(archiveFileName));
-    Guard.Argument(extractDirectory).NotEmpty(nameof(extractDirectory));
+    Guard.Argument( archiveFileName ).NotEmpty( nameof( archiveFileName ) );
+    Guard.Argument( extractDirectory ).NotEmpty( nameof( extractDirectory ) );
 
     try
     {
-      logger.LogInformation($"extracting {archiveFileName} -> {extractDirectory}");
+      logger.LogInformation( $"extracting {archiveFileName} -> {extractDirectory}" );
 
       using var stream = new MemoryStream();
       var fileProcessor = new ZipFileProcessor(
-        _blobServiceClient.GetBlobContainerClient(_containerName),
+        _blobServiceClient.GetBlobContainerClient( _containerName ),
         logger,
-        cfg);
+        cfg );
 
       await ReadFileAsync(
         stream,
         archiveFileName,
-        token);
+        token );
 
       await fileProcessor.ProcessFileAsync(
         stream,
         extractDirectory,
-        token);
+        token );
 
       // TODO: correct this later
       return extractDirectory;
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "ExtractFileToStorageAsync Exception");
+      logger.LogError( ex, "ExtractFileToStorageAsync Exception" );
       throw;
     }
 
   }
 
   /// <summary>
-  /// Create archive file from a folderName
+  /// Creates an archive file from a folder.
   /// </summary>
-  /// <param name="archive">Archive file stream</param>
-  /// <param name="folderName">Source file folderName</param>
-  /// <param name="appendToStream">Append or replace stream contents</param>
-  /// <param name="token"></param>
+  /// <param name="archive">Archive file stream.</param>
+  /// <param name="folderName">Source file folder name.</param>
+  /// <param name="zipEntryFolderName">Zip entry folder name.</param>
+  /// <param name="appendToStream">Append or replace stream contents.</param>
+  /// <param name="token">Cancellation token.</param>
+  /// <returns>true if the folder was copied to the archive successfully; otherwise, false.</returns>
   public override async Task<bool> CopyFolderToArchiveAsync(
     ZipArchive archive,
     string folderName,
@@ -314,8 +347,8 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     bool appendToStream,
     CancellationToken token = default)
   {
-    Guard.Argument(archive).NotNull(nameof(archive));
-    Guard.Argument(folderName).NotEmpty(nameof(folderName));
+    Guard.Argument( archive ).NotNull( nameof( archive ) );
+    Guard.Argument( folderName ).NotEmpty( nameof( folderName ) );
 
     var result = false;
 
@@ -323,38 +356,38 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      var physicalFolder = GetPhysicalPath(folderName);
-      logger.LogInformation($"reading '{physicalFolder}' for files to add to stream");
+      var physicalFolder = GetPhysicalPath( folderName );
+      logger.LogInformation( $"reading '{physicalFolder}' for files to add to stream" );
 
       blobs = _blobServiceClient
-        .GetBlobContainerClient(_containerName)
-        .GetBlobs(prefix: physicalFolder).ToList();
+        .GetBlobContainerClient( _containerName )
+        .GetBlobs( prefix: physicalFolder ).ToList();
 
-      foreach (var blob in blobs)
+      foreach ( var blob in blobs )
       {
         var blobStream = new MemoryStream();
 
         await _blobServiceClient
-             .GetBlobContainerClient(_containerName)
-             .GetBlobClient(blob.Name)
-             .DownloadToAsync(blobStream);
+             .GetBlobContainerClient( _containerName )
+             .GetBlobClient( blob.Name )
+             .DownloadToAsync( blobStream );
 
         blobStream.Position = 0;
 
-        var entryPath = BuildPath(zipEntryFolderName, Path.GetFileName(blob.Name));
-        logger.LogInformation($"  adding '{blob.Name}' to archive '{entryPath}'. size = {blobStream.Length}");
+        var entryPath = BuildPath( zipEntryFolderName, Path.GetFileName( blob.Name ) );
+        logger.LogInformation( $"  adding '{blob.Name}' to archive '{entryPath}'. size = {blobStream.Length}" );
 
-        var entry = archive.CreateEntry(entryPath);
+        var entry = archive.CreateEntry( entryPath );
         using var entryStream = entry.Open();
-        blobStream.CopyTo(entryStream);
+        blobStream.CopyTo( entryStream );
         entryStream.Close();
 
       }
 
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "CopyFolderToArchiveAsync error");
+      logger.LogError( ex, "CopyFolderToArchiveAsync error" );
       throw;
     }
 
@@ -363,11 +396,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   }
 
   /// <summary>
-  /// Get files in folder
+  /// Gets files in a folder.
   /// </summary>
-  /// <param name="folderName"></param>
-  /// <param name="token"></param>
-  /// <returns></returns>
+  /// <param name="folderName">Folder name.</param>
+  /// <param name="token">Cancellation token.</param>
+  /// <returns>A list of file names.</returns>
   public override IList<string> GetFiles(
     string folderName,
     CancellationToken token = default)
@@ -376,31 +409,37 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      logger.LogInformation($"looking in '{folderName}' for files");
+      logger.LogInformation( $"looking in '{folderName}' for files" );
 
       var blobs = _blobServiceClient
-        .GetBlobContainerClient(_containerName)
-        .GetBlobs(prefix: folderName).ToList();
+        .GetBlobContainerClient( _containerName )
+        .GetBlobs( prefix: folderName ).ToList();
 
-      if (blobs.Count == 0)
+      if ( blobs.Count == 0 )
         return fileNames;
 
-      logger.LogInformation($"  found '{blobs.Count}' files");
-      fileNames = blobs.Select(blob => Path.GetFileName(blob.Name)).ToList();
+      logger.LogInformation( $"  found '{blobs.Count}' files" );
+      fileNames = blobs.Select( blob => Path.GetFileName( blob.Name ) ).ToList();
 
-      foreach (var fileName in fileNames)
-        logger.LogInformation($"  {fileName}");
+      foreach ( var fileName in fileNames )
+        logger.LogInformation( $"  {fileName}" );
 
       return fileNames;
     }
-    catch (Exception ex)
+    catch ( Exception ex )
     {
-      logger.LogError(ex, "GetFiles error");
+      logger.LogError( ex, "GetFiles error" );
       throw;
     }
 
   }
 
+  /// <summary>
+  /// Deletes import files asynchronously.
+  /// </summary>
+  /// <param name="containerClient">Blob container client.</param>
+  /// <param name="prefix">Prefix for the files to delete.</param>
+  /// <param name="segmentSize">Segment size for the deletion.</param>
   private async Task DeleteImportFilesAsync(
     BlobContainerClient containerClient,
     string prefix,
@@ -411,27 +450,27 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       var zipFile = $"{prefix}.zip";
 
       // Call the listing operation and return pages of the specified size.
-      var resultSegment = containerClient.GetBlobsByHierarchyAsync(prefix: prefix, delimiter: "/")
-          .AsPages(default, segmentSize);
+      var resultSegment = containerClient.GetBlobsByHierarchyAsync( prefix: prefix, delimiter: "/" )
+          .AsPages( default, segmentSize );
 
       // Enumerate the blobs returned for each page.
-      await foreach (var blobPage in resultSegment)
+      await foreach ( var blobPage in resultSegment )
       {
         // A hierarchical listing may return both virtual directories and blobs.
-        foreach (var blobhierarchyItem in blobPage.Values)
+        foreach ( var blobhierarchyItem in blobPage.Values )
         {
-          if (blobhierarchyItem.IsPrefix)
+          if ( blobhierarchyItem.IsPrefix )
           {
             // Call recursively with the prefix to traverse the virtual directory.
-            await DeleteImportFilesAsync(containerClient, blobhierarchyItem.Prefix, null);
+            await DeleteImportFilesAsync( containerClient, blobhierarchyItem.Prefix, null );
           }
           else
           {
             // don't delete the original import zip file
-            if (zipFile != blobhierarchyItem.Blob.Name)
+            if ( zipFile != blobhierarchyItem.Blob.Name )
             {
-              logger.LogInformation($" deleting existing: {blobhierarchyItem.Blob.Name}");
-              await containerClient.DeleteBlobAsync(blobhierarchyItem.Blob.Name);
+              logger.LogInformation( $" deleting existing: {blobhierarchyItem.Blob.Name}" );
+              await containerClient.DeleteBlobAsync( blobhierarchyItem.Blob.Name );
             }
           }
         }
@@ -439,43 +478,26 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
         Console.WriteLine();
       }
     }
-    catch (RequestFailedException e)
+    catch ( RequestFailedException e )
     {
-      Console.WriteLine(e.Message);
+      Console.WriteLine( e.Message );
       Console.ReadLine();
       throw;
     }
   }
 
   /// <summary>
-  /// Calculate physical target directory for scoped type and id
+  /// Gets the public URL for the file.
   /// </summary>
-  /// <param name="parentType">Scoped object type (e.g. 'Maps')</param>
-  /// <param name="parentId">Scoped object id</param>
-  /// <param name="fileName">Optional file name</param>
-  /// <returns>Public directory for scope</returns>
-  //public override string GetPublicFileDirectory(string parentType, uint parentId, string fileName = "")
-  //{
-  //  var targetDirectory = BuildPath(parentType, parentId.ToString());
-
-  //  if (!string.IsNullOrEmpty(fileName))
-  //    targetDirectory = $"{targetDirectory}{GetFolderSeparator()}{fileName}";
-
-  //  return targetDirectory;
-  //}
-
-  /// <summary>
-  /// Gets the public URL for the file
-  /// </summary>
-  /// <param name="path"></param>
-  /// <param name="fileName"></param>
-  /// <returns></returns>
+  /// <param name="path">The path.</param>
+  /// <param name="fileName">The file name.</param>
+  /// <returns>The public URL for the file.</returns>
   public override string GetUrlPath(string path, string fileName)
   {
     var physicalPath = BuildPath(
       cfg.GetAppSettings().FileStorageUrl,
       path,
-      fileName);
+      fileName );
 
     return physicalPath;
   }

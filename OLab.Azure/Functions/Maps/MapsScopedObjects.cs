@@ -6,10 +6,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
-using OLab.Azure.Functions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions.Maps;
 
@@ -20,21 +16,21 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function("MapScopedObjectsRawGet")]
+  [Function( "MapScopedObjectsRawGet" )]
   public async Task<IActionResult> MapScopedObjectsRawGetAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects/raw")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint id)
   {
     try
     {
-      Guard.Argument(request).NotNull(nameof(request));
+      Guard.Argument( request ).NotNull( nameof( request ) );
 
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _playerEndpoint.GetScopedObjectsRawAsync(auth, id);
+      var dto = await _playerEndpoint.GetScopedObjectsRawAsync( auth, id );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
     }
@@ -53,18 +49,18 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function("MapScopedObjectsGet")]
+  [Function( "MapScopedObjectsGet" )]
   public async Task<IActionResult> MapScopedObjectsGetAsync(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects")] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
   uint id)
   {
     try
     {
       // validate token/setup up common properties
-      var auth = GetAuthorization(hostContext);
+      var auth = GetAuthorization( hostContext );
 
-      var dto = await _playerEndpoint.GetScopedObjectsAsync(auth, id);
+      var dto = await _playerEndpoint.GetScopedObjectsAsync( auth, id );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
 

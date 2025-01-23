@@ -1,18 +1,18 @@
 using Dawn;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
+using OLab.Api.Data.Interface;
+using OLab.Api.Model;
+using OLab.Api.Utils;
+using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
-using OLab.Api.Model;
-using OLab.Api.Data.Interface;
-using OLab.Access;
-using OLab.Azure.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using OLab.Api.Utils;
 
 namespace OLab.Azure.Functions;
 
@@ -61,7 +61,7 @@ public class AuthenticationFunction : OLabFunction
 
       if ( request.Headers.TryGetValues( "Referer", out refererValues ) )
       {
-        Logger.LogInformation( $"referer urls provided: {string.Join(",", refererValues)}" ); 
+        Logger.LogInformation( $"referer urls provided: {string.Join( ",", refererValues )}" );
         referrer = _authorization.ExtractApplication( refererValues.First() );
         if ( !await _authorization.HasAccessToAppAsync( user, referrer ) )
           return OLabUnauthorizedResult.Result();

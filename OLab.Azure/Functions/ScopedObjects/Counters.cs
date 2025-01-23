@@ -5,15 +5,12 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Common;
-using OLab.Api.Endpoints;
-using OLab.Api.Utils;
-using OLab.Common.Interfaces;
 using OLab.Api.Dto;
+using OLab.Api.Endpoints;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Azure.Extensions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using OLab.Common.Interfaces;
 
 namespace OLab.Azure.Functions.ScopedObjects;
 

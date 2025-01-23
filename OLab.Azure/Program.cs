@@ -1,25 +1,23 @@
-using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OLab.Access.Interfaces;
 using OLab.Access;
+using OLab.Access.Interfaces;
+using OLab.Api.Common;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Api.WikiTag;
+using OLab.Azure.Middleware;
 using OLab.Azure.Services;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
-using OLab.Data.Interface;
 using OLab.Data;
-using OLab.Azure.Middleware;
-using OLab.Common.Contracts;
-using OLab.Common;
-using OLab.Api.Utils;
-using OLab.Api.Common;
+using OLab.Data.Interface;
 
 internal class Program
 {
@@ -49,17 +47,17 @@ internal class Program
         c.GetSection( "AppSettings" ).Bind( options );
       } );
 
-    builder.Logging.Services.Configure<LoggerFilterOptions>( options =>
-    {
-      // The Application Insights SDK adds a default logging filter that instructs ILogger to capture only Warning
-      // and more severe logs. Application Insights requires an explicit override.
-      // Log levels can also be configured using appsettings.json. For more information,
-      // see https://learn.microsoft.com/azure/azure-monitor/app/worker-service#ilogger-logs
-      var defaultRule = options.Rules.FirstOrDefault( rule => rule.ProviderName
-          == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider" );
-      if ( defaultRule is not null )
-        options.Rules.Remove( defaultRule );
-    } );
+    //builder.Logging.Services.Configure<LoggerFilterOptions>( options =>
+    //{
+    //  // The Application Insights SDK adds a default logging filter that instructs ILogger to capture only Warning
+    //  // and more severe logs. Application Insights requires an explicit override.
+    //  // Log levels can also be configured using appsettings.json. For more information,
+    //  // see https://learn.microsoft.com/azure/azure-monitor/app/worker-service#ilogger-logs
+    //  var defaultRule = options.Rules.FirstOrDefault( rule => rule.ProviderName
+    //      == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider" );
+    //  if ( defaultRule is not null )
+    //    options.Rules.Remove( defaultRule );
+    //} );
 
     builder.Services.AddAzureAppConfiguration();
 
