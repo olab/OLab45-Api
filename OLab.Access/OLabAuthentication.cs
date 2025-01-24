@@ -17,22 +17,43 @@ using System.Text;
 
 namespace OLab.Access;
 
+/// <summary>
+/// Provides authentication services for OLab, including token generation, validation, and user authentication.
+/// </summary>
 public class OLabAuthentication : IOLabAuthentication
 {
+  /// <summary>
+  /// Default token expiry time in minutes.
+  /// </summary>
   public static int defaultTokenExpiryMinutes = 120;
   private static IOLabConfiguration _config;
   private readonly OLabDBContext _dbContext;
   private readonly IOLabLogger _logger;
   private readonly TokenValidationParameters _tokenParameters;
 
+  /// <summary>
+  /// Gets the database context.
+  /// </summary>
+  /// <returns>The OLabDBContext instance.</returns>
   public OLabDBContext GetDbContext() { return _dbContext; }
+
+  /// <summary>
+  /// Gets the logger instance.
+  /// </summary>
+  /// <returns>The IOLabLogger instance.</returns>
   public IOLabLogger GetLogger() { return _logger; }
 
   /// <summary>
-  /// Retreive Claims dictionary
+  /// Retrieves the claims dictionary.
   /// </summary>
   public IDictionary<string, string> Claims { get; private set; }
 
+  /// <summary>
+  /// Initializes a new instance of the <see cref="OLabAuthentication"/> class.
+  /// </summary>
+  /// <param name="logger">The logger instance.</param>
+  /// <param name="config">The configuration instance.</param>
+  /// <param name="dbContext">The database context instance.</param>
   public OLabAuthentication(
   IOLabLogger logger,
   IOLabConfiguration config,
@@ -59,15 +80,16 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Expose the centralized token validation parameters
+  /// Exposes the centralized token validation parameters.
   /// </summary>
-  /// <returns>TokenValidationParameters</returns>
+  /// <returns>The TokenValidationParameters instance.</returns>
   public TokenValidationParameters GetValidationParameters() { return _tokenParameters; }
 
   /// <summary>
-  /// Builds token validation object
+  /// Builds the token validation object.
   /// </summary>
-  /// <param name="configuration">App cfg</param>
+  /// <param name="config">The configuration instance.</param>
+  /// <returns>The TokenValidationParameters instance.</returns>
   public static TokenValidationParameters BuildTokenValidationObject(IOLabConfiguration config)
   {
     // get and extract the valid token issuers
@@ -104,12 +126,12 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Extract an access token from a HttpRequest
+  /// Extracts an access token from an HttpRequest.
   /// </summary>
-  /// <param name="request">HttpRequest</param>
-  /// <param name="allowAnonymous">Flag is anonymous is allowed when no token available</param>
-  /// <returns>Bearer token</returns>
-  /// <exception cref="OLabUnauthorizedException"></exception>
+  /// <param name="request">The HttpRequest instance.</param>
+  /// <param name="allowAnonymous">Flag indicating if anonymous access is allowed when no token is available.</param>
+  /// <returns>The extracted bearer token.</returns>
+  /// <exception cref="OLabUnauthorizedException">Thrown when unable to extract authorization token and anonymous access is not allowed.</exception>
   public static string ExtractAccessToken(HttpRequest request, bool allowAnonymous = false)
   {
     var token = "";
@@ -135,12 +157,12 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Gets the access token from request headers and binding Data
+  /// Gets the access token from request headers and binding data.
   /// </summary>
-  /// <param name="headers">Request headers dictionary</param>
-  /// <param name="bindingData">Binding data (optional)</param>
-  /// <returns>Bearer token</returns>
-  /// <exception cref="OLabUnauthorizedException"></exception>
+  /// <param name="headers">The request headers dictionary.</param>
+  /// <param name="bindingData">The binding data (optional).</param>
+  /// <returns>The extracted bearer token.</returns>
+  /// <exception cref="OLabUnauthorizedException">Thrown when no authorization token is provided.</exception>
   public virtual string ExtractAccessToken(
     IReadOnlyDictionary<string, string> headers,
     IReadOnlyDictionary<string, object> bindingData = null)
@@ -182,11 +204,11 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Validates a token
+  /// Validates a token.
   /// </summary>
-  /// <param name="token">Bearer token</param>
-  /// <returns>true, if success</returns>
-  /// <exception cref="OLabUnauthorizedException"></exception>
+  /// <param name="token">The bearer token.</param>
+  /// <returns>True if the token is valid; otherwise, false.</returns>
+  /// <exception cref="OLabUnauthorizedException">Thrown when the token cannot be validated.</exception>
   public virtual bool ValidateToken(string token)
   {
     Guard.Argument( token ).NotEmpty( nameof( token ) );
@@ -223,10 +245,12 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Generate JWT token
+  /// Generates a JWT token.
   /// </summary>
-  /// <param name="user">User record from database</param>
-  /// <returns>AuthenticateResponse</returns>
+  /// <param name="user">The user record from the database.</param>
+  /// <param name="referrer">The referrer information.</param>
+  /// <param name="issuedBy">The issuer of the token.</param>
+  /// <returns>The AuthenticateResponse instance containing the generated token.</returns>
   /// <remarks>https://duyhale.medium.com/generate-short-lived-symmetric-jwt-using-microsoft-identitymodel-d9c2478d2d5a</remarks>
   public AuthenticateResponse GenerateJwtToken(
     Users user,
@@ -277,10 +301,11 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Generate JWT token for anonymous use
+  /// Generates a JWT token for anonymous use.
   /// </summary>
-  /// <param name="mapId">map id to query</param>
-  /// <returns>AuthenticateResponse</returns>
+  /// <param name="mapId">The map ID to query.</param>
+  /// <returns>The AuthenticateResponse instance containing the generated token.</returns>
+  /// <exception cref="Exception">Thrown when no user is defined for anonymous map play or the map is not defined.</exception>
   public AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
   {
     // get user flagged for anonymous use
@@ -301,11 +326,6 @@ public class OLabAuthentication : IOLabAuthentication
     if ( map.SecurityId != 1 )
       GetLogger().LogError( $"Map {mapId} is not configured for anonymous map play" );
 
-    //var user = new Users();
-
-    //user.Username = serverUser.Username;
-    //user.Nickname = serverUser.Nickname;
-    //user.Id = serverUser.Id;
     var issuedBy = "olab";
 
     var authenticateResponse = GenerateJwtToken( serverUser, issuedBy );
@@ -313,12 +333,11 @@ public class OLabAuthentication : IOLabAuthentication
     return authenticateResponse;
   }
 
-
   /// <summary>
-  /// Generate JWT token from external one
+  /// Generates a JWT token from an external one.
   /// </summary>
-  /// <param name="model">token payload</param>
-  /// <returns>AuthenticateResponse</returns>
+  /// <param name="model">The token payload.</param>
+  /// <returns>The AuthenticateResponse instance containing the generated token.</returns>
   public AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model)
   {
     var externalAuth = new OLabAuthentication( _logger, _config, _dbContext );
@@ -356,11 +375,11 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Authenticate user
+  /// Authenticates a user.
   /// </summary>
-  /// <param name="model">Login model</param>
-  /// <param name="impersonateMode">user is superuser, impersonate as logged in user</param>
-  /// <returns>Authenticate response, or null</returns>
+  /// <param name="model">The login model.</param>
+  /// <param name="impersonateMode">Flag indicating if the user is a superuser impersonating another user.</param>
+  /// <returns>The authenticated user, or null if authentication fails.</returns>
   public Users Authenticate(LoginRequest model, bool impersonateMode = false)
   {
     Guard.Argument( model, nameof( model ) ).NotNull();
@@ -396,11 +415,11 @@ public class OLabAuthentication : IOLabAuthentication
   }
 
   /// <summary>
-  /// Validate user password
+  /// Validates a user's password.
   /// </summary>
-  /// <param name="clearText">Password</param>
-  /// <param name="user">Corresponding user record</param>
-  /// <returns>true/false</returns>
+  /// <param name="clearText">The clear text password.</param>
+  /// <param name="user">The corresponding user record.</param>
+  /// <returns>True if the password is valid; otherwise, false.</returns>
   public bool ValidatePassword(string clearText, Users user)
   {
     Guard.Argument( user, nameof( user ) ).NotNull();

@@ -17,6 +17,10 @@ using System.Threading.Tasks;
 
 namespace OLab.Access;
 
+/// <summary>
+/// Provides authorization services for OLab, including user context application,
+/// access checks, and superuser status verification.
+/// </summary>
 public class OLabAuthorization : IOLabAuthorization
 {
   private readonly IOLabLogger _logger;
@@ -457,6 +461,13 @@ public class OLabAuthorization : IOLabAuthorization
     return false;
   }
 
+  /// <summary>
+  /// Checks if the user has access to a specific object type and ID with the requested permissions.
+  /// </summary>
+  /// <param name="requestedAcl">The requested access control list (ACL) permissions.</param>
+  /// <param name="objectType">The type of the object to check access for.</param>
+  /// <param name="objectId">The ID of the object to check access for.</param>
+  /// <returns>A task that represents the asynchronous operation. The task result contains a boolean indicating whether the user has access.</returns>
   public async Task<bool> HasAccessAsync(
     ulong requestedAcl,
     string objectType,
@@ -525,6 +536,11 @@ public class OLabAuthorization : IOLabAuthorization
 
   }
 
+  /// <summary>
+  /// Extracts the application name from the given referer URL.
+  /// </summary>
+  /// <param name="refererValue">The referer URL from which to extract the application name.</param>
+  /// <returns>The extracted application name. If the referer URL is from localhost or has no path, returns "localhost".</returns>
   public string ExtractApplication(string refererValue)
   {
     refererValue = refererValue.Trim( '/' );
