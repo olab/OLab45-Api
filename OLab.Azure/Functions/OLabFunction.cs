@@ -72,7 +72,7 @@ public class OLabFunction
       return auth;
     }
 
-    throw new Exception( "unable to get auth RequestContext" );
+    throw new Exception( "unable to get executionContext item usercontext" );
 
   }
 

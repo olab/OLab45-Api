@@ -22,7 +22,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 internal class Program
 {
-  private static void Main(string[] args)
+  private static void Main1(string[] args)
   {
     var host = new HostBuilder();
 
@@ -142,7 +142,7 @@ internal class Program
     host.Build().Run();
   }
 
-  private static void Main2(string[] args)
+  private static void Main(string[] args)
   {
     var builder = FunctionsApplication.CreateBuilder( args );
 
