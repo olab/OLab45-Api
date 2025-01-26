@@ -7,6 +7,10 @@ using OLab.Common.Interfaces;
 
 namespace OLab.Azure.Utils;
 
+/// <summary>
+/// Helper class to manage and extract information
+/// from the Azure Function execution context.
+/// </summary>
 public class ExecutionContextHelper
 {
   public string FunctionName { get; private set; }
@@ -63,7 +67,7 @@ public class ExecutionContextHelper
   /// </summary>
   /// <param name="httpRequestData">The HttpRequestData containing the headers to extract.</param>
   /// <returns>A dictionary containing the headers as key-value pairs.</returns>
-  private Dictionary<string, string> ExtractHeaders(HttpRequestData httpRequestData)
+  private IDictionary<string, string> ExtractHeaders(HttpRequestData httpRequestData)
   {
     var flatHeaderDict = new Dictionary<string, string>();
     foreach ( var header in httpRequestData.Headers )
@@ -73,17 +77,6 @@ public class ExecutionContextHelper
     //  _logger.LogInformation( $"  header: {header.Key} = {header.Value}" );
 
     return flatHeaderDict;
-  }
-
-  protected string GetHeader(string key, bool isRequired = true)
-  {
-    if ( Headers.TryGetValue( key.ToLower(), out var value ) )
-      return value;
-
-    if ( isRequired )
-      throw new Exception( $"header value '{key}' does not exist" );
-
-    return string.Empty;
   }
 
   public override string ToString()
