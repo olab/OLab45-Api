@@ -61,7 +61,7 @@ internal class Program
 
     builder.Services.AddAzureAppConfiguration();
 
-    builder.Services.AddScoped<IUserContext, FunctionUserContextService>();
+    builder.Services.AddScoped<IUserContext, FunctionAppUserContext>();
     builder.Services.AddSingleton<IOLabLogger, OLabLogger>();
     builder.Services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
     builder.Services.AddScoped<IOLabAuthentication, OLabAuthentication>();

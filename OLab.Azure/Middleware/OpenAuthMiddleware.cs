@@ -39,10 +39,6 @@ public class OpenAuthMiddleware : IFunctionsWorkerMiddleware
   public async Task Invoke(FunctionContext executionContext, FunctionExecutionDelegate next)
   {
     _logger.LogInformation( "OpenAuthMiddleware invoke" );
-
-    var contextInfo = executionContext.Items[ "contextHelper" ] as ContextHelper;
-    Guard.Argument( contextInfo ).NotNull( nameof( contextInfo ) );
-
     await next( executionContext );
   }
 }

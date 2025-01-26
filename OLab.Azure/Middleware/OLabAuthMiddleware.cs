@@ -11,9 +11,13 @@ using OLab.Azure.Services;
 using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 using System.Net;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace OLab.Azure.Middleware;
 
+/// <summary>
+/// Middleware for handling authenticated requests.
+/// </summary>
 public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 {
   private readonly IOLabConfiguration _config;
@@ -53,22 +57,21 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     {
       _logger.LogInformation( "OLabAuthMiddleware invoke" );
 
-      var contextInfo = executionContext.Items[ "contextHelper" ] as ContextHelper;
-      Guard.Argument( contextInfo ).NotNull( nameof( contextInfo ) );
+      var executionContextHelper = executionContext.Items[ "ExecutionContextHelper" ] as ExecutionContextHelper;
+      Guard.Argument( executionContextHelper ).NotNull( nameof( executionContextHelper ) );
 
       try
       {
         var authentication = new OLabAuthentication( _logger, _config, _dbContext );
-        var token = authentication.ExtractAccessToken( contextInfo.Headers, contextInfo.BindingData );
-
+        var token 
+          = OLabAuthentication.ExtractAccessToken( executionContextHelper.Request, false );
         authentication.ValidateToken( token );
 
         // these must be set before building UserContextService 
-        executionContext.Items.Add( "headers", contextInfo.Headers );
         executionContext.Items.Add( "claims", authentication.Claims );
 
         // This is added pre-function execution, function will have access to this information
-        var userContext = new FunctionUserContextService( _logger, executionContext, _dbContext );
+        var userContext = new FunctionAppUserContext( _logger, executionContext, _dbContext );
         executionContext.Items.Add( "usercontext", userContext );
 
         // This happens after function execution. We can inspect the context after the function

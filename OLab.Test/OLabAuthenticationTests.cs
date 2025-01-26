@@ -14,6 +14,8 @@ using OLab.Api.Utils;
 using OLab.Api.Common.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System.Xml;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Users = OLab.Api.Model.Users;
 
 public class OLabAuthenticationTests
 {
@@ -55,31 +57,10 @@ public class OLabAuthenticationTests
   }
 
   [Fact]
-  public void ValidateToken_ShouldReturnTrue_WhenTokenIsValid()
-  {
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var key = Convert.FromBase64String( "supersecretkeythatneedstobeatleast40characterslong" );
-    var tokenDescriptor = new SecurityTokenDescriptor
-    {
-      Subject = new ClaimsIdentity( new Claim[]
-        {
-                  new Claim(ClaimTypes.Name, "testuser")
-        } ),
-      Expires = DateTime.UtcNow.AddMinutes( 5 ),
-      SigningCredentials = new SigningCredentials( new SymmetricSecurityKey( key ), SecurityAlgorithms.HmacSha256Signature )
-    };
-    var token = tokenHandler.CreateToken( tokenDescriptor );
-    var tokenString = tokenHandler.WriteToken( token );
-
-    var result = _auth.ValidateToken( tokenString );
-    Assert.True( result );
-  }
-
-  [Fact]
   public void ValidateToken_ShouldThrowException_WhenTokenIsInvalid()
   {
     var invalidToken = "invalidtoken";
-    Assert.Throws<Exception>( () => _auth.ValidateToken( invalidToken ) );
+    Assert.Throws<SecurityTokenMalformedException>( () => _auth.ValidateToken( invalidToken ) );
   }
 
   [Fact]

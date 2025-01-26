@@ -1,16 +1,29 @@
 {
   "version": "2.0",
   "logging": {
-    "aapplicationInsights": {
+
+    "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": false,
-        "excludedTypes": "Request"
+        "isEnabled": true,
+        "initialSamplingPercentage": 0.0,
+        "minSamplingPercentage": 0.0,
+        "maxSamplingPercentage": 0.0,
+        "excludedTypes": "Event;Exception"
       }
+    },
+    "enableLiveMetrics": false,
+    "enableDependencyTracking": false,
+    "enablePerformanceCountersCollection": false,
+    "httpAutoCollectionOptions": {
+      "enableHttpTriggerExtendedInfoCollection": false,
+      "enableW3CDistributedTracing": false,
+      "enableResponseHeaderInjection": false
     },
     "logLevel": {
       "default": "Information",
       "Microsoft": "Error",
       "Microsoft.EntityFrameworkCore": "Error",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Error",
       "Microsoft.Hosting.Lifetime": "Information",
       "Microsoft.AspNetCore": "Error",
       "Host.Results": "Information",

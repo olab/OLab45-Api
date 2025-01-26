@@ -255,8 +255,8 @@ public partial class MapsFunction : OLabFunction
   /// </summary>
   /// <param name="body">Create map request body</param>
   /// <returns>IActionResult</returns>
-  [Function( "MapPostFullRelations" )]
-  public async Task<IActionResult> MapPostFullRelationsAsync(
+  [Function( "MapFullRelationsPost" )]
+  public async Task<IActionResult> MapFullRelationsPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps" )] HttpRequestData request,
     FunctionContext executionContext
   )
@@ -274,7 +274,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapPostFullRelations" );
+      Logger.LogError( ex, "MapFullRelationsPost" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );

@@ -7,6 +7,10 @@ using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 
 namespace OLab.Azure.Middleware;
+
+/// <summary>
+/// Middleware for exposing the execution context
+/// </summary>
 public class BootstrapMiddleware : IFunctionsWorkerMiddleware
 {
   private readonly IOLabLogger _logger;
@@ -24,10 +28,8 @@ public class BootstrapMiddleware : IFunctionsWorkerMiddleware
 
   public async Task Invoke(FunctionContext executionContext, FunctionExecutionDelegate next)
   {
-    var contextInfo = new ContextHelper( executionContext, _logger );
-    Guard.Argument( contextInfo ).NotNull( nameof( contextInfo ) );
-
-    executionContext.Items.Add( "contextHelper", contextInfo );
+    var contextInfo = new ExecutionContextHelper( executionContext, _logger );
+    executionContext.Items.Add( "ExecutionContextHelper", contextInfo );
 
     await next( executionContext );
   }
