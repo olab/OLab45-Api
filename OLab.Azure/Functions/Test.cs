@@ -43,6 +43,11 @@ namespace OLab.Azure.Functions
     public IActionResult HealthCheck(
       [HttpTrigger( AuthorizationLevel.Anonymous, "get" )] HttpRequest req)
     {
+      Logger.LogDebug( "Test debug message." );
+      Logger.LogError( "Test error message" );
+      Logger.LogFatal( "Test fatal Message" );
+      Logger.LogInformation( "Test info Message" );
+
       Logger.LogInformation( "C# HTTP trigger function processed a request." );
       var response = new StringMessageResponse { Message = $"Welcome to Azure Functions." };
       return new OLabObjectResult<StringMessageResponse>( response );

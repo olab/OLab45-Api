@@ -8,7 +8,7 @@
         "initialSamplingPercentage": 0.0,
         "minSamplingPercentage": 0.0,
         "maxSamplingPercentage": 0.0,
-        "excludedTypes": "Event;Exception"
+        "excludedTypes": "Event;Exception;Request"
       }
     },
     "enableLiveMetrics": false,
