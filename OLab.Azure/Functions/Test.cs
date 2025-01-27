@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -85,15 +86,16 @@ namespace OLab.Azure.Functions
         modules.TryAdd( fileName, assemblyDef.Version.ToString() );
       }
 
-      var dto = new HealthResult
+      var response = new HealthResult
       {
-        statusCode = HttpStatusCode.OK,
-        main = mainAssemblyDef.Version,
-        modules = modules,
-        message = "Hello there!"
+        StatusCode = HttpStatusCode.OK,
+        Main = mainAssemblyDef.Version,
+        Modules = modules
       };
 
-      return new OLabObjectResult<HealthResult>( dto );
+      Logger.LogInformation( $"  {JsonConvert.SerializeObject(response)}" );
+
+      return new OLabObjectResult<HealthResult>( response );
     }
   }
 }
