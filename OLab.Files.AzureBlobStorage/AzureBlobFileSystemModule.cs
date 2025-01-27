@@ -3,11 +3,13 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
+using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using System.Configuration;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 
 namespace OLab.Files.AzureBlobStorage;
 
@@ -19,6 +21,7 @@ namespace OLab.Files.AzureBlobStorage;
 public class AzureBlobFileSystemModule : OLabFileStorageModule
 {
   private readonly BlobServiceClient _blobServiceClient;
+  private readonly string _hostname;
   private readonly string _containerName;
 
   private readonly Dictionary<string, IList<BlobItem>>
@@ -44,6 +47,8 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     if ( string.IsNullOrEmpty( connectionString ) )
       throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
     _blobServiceClient = new BlobServiceClient( connectionString );
+
+    _hostname = GetBlobStorageHostName( connectionString );
 
     _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty);
     if ( string.IsNullOrEmpty( _containerName ) )
@@ -492,13 +497,29 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="path">The path.</param>
   /// <param name="fileName">The file name.</param>
   /// <returns>The public URL for the file.</returns>
-  public override string GetUrlPath(string path, string fileName)
+  public override SystemFiles UpdateUrlPath(
+    string path, 
+    SystemFiles source)
   {
     var physicalPath = BuildPath(
       cfg.GetAppSettings().FileStorageUrl,
       path,
-      fileName );
+      source.Path );
 
-    return physicalPath;
+    source.OriginUrl = physicalPath;
+    source.HostName = _hostname;
+
+    return source;
+  }
+
+  private string GetBlobStorageHostName(string connectionString)
+  {
+    var match = Regex.Match( connectionString, @"AccountName=(?<accountName>[^;]+);" );
+    if ( !match.Success )
+    {
+      throw new ArgumentException( "Invalid connection string" );
+    }
+    var accountName = match.Groups[ "accountName" ].Value;
+    return $"https://{accountName}.blob.core.windows.net";
   }
 }

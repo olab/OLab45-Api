@@ -1,4 +1,5 @@
 using Dawn;
+using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
@@ -133,17 +134,19 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <param name="path">The path of the file</param>
   /// <param name="fileName">The name of the file</param>
   /// <returns>The public URL for the file</returns>
-  public override string GetUrlPath(string path, string fileName)
+  public override SystemFiles UpdateUrlPath(
+    string path,
+    SystemFiles source)
   {
     var physicalPath = BuildPath(
         cfg.GetAppSettings().FileStorageUrl,
         FilesRoot,
         path,
-        fileName );
+        source.Path );
 
-    physicalPath = physicalPath.Replace( "\\", "/" );
+    source.OriginUrl = physicalPath.Replace( "\\", "/" );
 
-    return physicalPath;
+    return source;
   }
 
   /// <summary>
