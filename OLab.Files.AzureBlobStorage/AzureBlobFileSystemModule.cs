@@ -45,7 +45,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
     _blobServiceClient = new BlobServiceClient( connectionString );
 
-    _containerName = Path.GetDirectoryName( cfg.GetAppSettings().FileStorageRoot );
+    _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty);
     if ( string.IsNullOrEmpty( _containerName ) )
       throw new ConfigurationErrorsException( "missing FileStorageRoot parameter" );
 
@@ -66,7 +66,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// </summary>
   /// <param name="filePath">The file path.</param>
   /// <returns>A tuple containing the container and path.</returns>
-  public (string container, string path) GetFilePath(string filePath)
+  public (string container, string path) SeparateFilePath(string filePath)
   {
     var pathParts = filePath.Split( GetFolderSeparator() );
     // remove 1st part of the path, which is probably the container
@@ -91,27 +91,27 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
+      (string container, string folder) = SeparateFilePath( filePath );
+
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
-      if ( !_folderContentCache.ContainsKey( filePath ) )
+      if ( !_folderContentCache.ContainsKey( folder ) )
       {
-        logger.LogInformation( $"  searching '{filePath} for blobs'" );
+        logger.LogInformation( $"  searching '{_containerName}/{folder} for blobs'" );
 
         blobs = _blobServiceClient
           .GetBlobContainerClient( _containerName )
-          .GetBlobs( prefix: filePath ).ToList();
-
-        _folderContentCache[ filePath ] = blobs;
+          .GetBlobs( prefix: folder ).ToList();
 
         foreach ( var blob in blobs )
           logger.LogInformation( $"  found blob '{blob.Name}'" );
 
+        _folderContentCache[ folder ] = blobs;
       }
       else
-        blobs = _folderContentCache[ filePath ];
+        blobs = _folderContentCache[ folder ];
 
-      result = blobs.Any( x => x.Name.Contains( Path.GetFileName( filePath ) ) );
-
+      result = blobs.Any( x => x.Name.Contains( Path.GetFileName( folder ) ) );
       if ( !result )
         logger.LogWarning( $"  '{filePath}' not found" );
       else
@@ -183,7 +183,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       logger.LogInformation( $"WriteFileAsync: {_containerName} {filePath}" );
 
-      (string container, string folder) = GetFilePath( filePath );
+      (string container, string folder) = SeparateFilePath( filePath );
       if ( container != _containerName )
         throw new UnauthorizedAccessException( "Invalid container" );
 
@@ -219,7 +219,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      (string container, string folder) = GetFilePath( filePath );
+      (string container, string folder) = SeparateFilePath( filePath );
       if ( container != _containerName )
         throw new UnauthorizedAccessException( "Invalid container" );
 

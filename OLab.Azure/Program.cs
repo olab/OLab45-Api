@@ -19,6 +19,7 @@ using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.Data;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.CodeAnalysis;
 
 internal class Program
 {
@@ -113,7 +114,7 @@ internal class Program
         logging.AddConfiguration( hostingContext.Configuration.GetSection( "Logging" ) );
       } )
 
-      .ConfigureServices( (hostingContext, services ) =>
+      .ConfigureServices( (hostingContext, services) =>
       {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
@@ -162,34 +163,43 @@ internal class Program
                 //.EnableDetailedErrors()
                 );
 
+    builder.Configuration
+      .AddEnvironmentVariables()
+      .AddJsonFile( "local.settings.json", optional: true )
+      .AddJsonFile( "host.json", optional: true );
+
     builder.Services.AddOptions<AppSettings>()
       .Configure<IConfiguration>( (options, c) =>
       {
         c.GetSection( "AppSettings" ).Bind( options );
       } );
 
-    //builder.Logging.Services.Configure<LoggerFilterOptions>( options =>
-    //{
-    //  // The Application Insights SDK adds a default logging filter that instructs ILogger to capture only Warning
-    //  // and more severe logs. Application Insights requires an explicit override.
-    //  // Log levels can also be configured using appsettings.json. For more information,
-    //  // see https://learn.microsoft.com/azure/azure-monitor/app/worker-service#ilogger-logs
-    //  var defaultRule = options.Rules.FirstOrDefault( rule => rule.ProviderName
-    //      == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider" );
-    //  if ( defaultRule is not null )
-    //    options.Rules.Remove( defaultRule );
-    //} );
+    builder.Logging.Services.Configure<LoggerFilterOptions>( options =>
+    {
+      //  // The Application Insights SDK adds a default logging filter that instructs ILogger to capture only Warning
+      //  // and more severe logs. Application Insights requires an explicit override.
+      //  // Log levels can also be configured using appsettings.json. For more information,
+      //  // see https://learn.microsoft.com/azure/azure-monitor/app/worker-service#ilogger-logs
+      var defaultRule = options.Rules.FirstOrDefault( rule => rule.ProviderName
+          == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider" );
+      if ( defaultRule is not null )
+        options.Rules.Remove( defaultRule );
+    } );
 
-    builder.Services.AddAzureAppConfiguration();
+    builder.Logging
+      .AddFilter( "System.Net.Http.HttpClient", LogLevel.Warning )
+      .AddFilter( "Microsoft.EntityFrameworkCore", LogLevel.Warning );
 
-    builder.Services.AddScoped<IUserContext, FunctionAppUserContext>();
-    builder.Services.AddSingleton<IOLabLogger, OLabLogger>();
-    builder.Services.AddSingleton<IOLabConfiguration, OLabConfiguration>();
-    builder.Services.AddScoped<IOLabAuthentication, OLabAuthentication>();
-    builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddSingleton( typeof( IOLabModuleProvider<> ), typeof( OLabModuleProvider<> ) );
-    builder.Services.AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>();
-    builder.Services.AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
+    builder.Services
+      .AddAzureAppConfiguration()
+      .AddScoped<IUserContext, FunctionAppUserContext>()
+      .AddSingleton<IOLabLogger, OLabLogger>()
+      .AddSingleton<IOLabConfiguration, OLabConfiguration>()
+      .AddScoped<IOLabAuthentication, OLabAuthentication>()
+      .AddScoped<IUserService, UserService>()
+      .AddSingleton( typeof( IOLabModuleProvider<> ), typeof( OLabModuleProvider<> ) )
+      .AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>()
+      .AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
 
     builder.UseMiddleware<BootstrapMiddleware>();
     builder.UseWhen<OLabAuthMiddleware>( OLabAuthMiddleware.CanInvoke );
