@@ -154,8 +154,8 @@ internal class Program
 
     // Application Insights isn't enabled by default. See https://aka.ms/AAt8mw4.
     builder.Services
-      .AddApplicationInsightsTelemetryWorkerService()
-      .ConfigureFunctionsApplicationInsights()
+      //.AddApplicationInsightsTelemetryWorkerService()
+      //.ConfigureFunctionsApplicationInsights()
       .AddDbContext<OLabDBContext>( options =>
             options.UseMySql( connectionString, serverVersion )
                 .LogTo( Console.WriteLine, LogLevel.Error )
