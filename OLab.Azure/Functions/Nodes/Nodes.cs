@@ -53,6 +53,8 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
+      Logger.LogDebug( $"NodeGet" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
@@ -83,6 +85,8 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
+      Logger.LogDebug( $"NodePut" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
       var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
@@ -107,8 +111,8 @@ public partial class NodesFunction : OLabFunction
   /// <param name="nodeId"></param>
   /// <param name="data"></param>
   /// <returns></returns>
-  [Function( "NodePostLinks" )]
-  public async Task<IActionResult> NodePostLinksAsync(
+  [Function( "NodeLinksPost" )]
+  public async Task<IActionResult> NodeLinksPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "nodes/{nodeId}/links" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId
@@ -116,6 +120,8 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
+      Logger.LogDebug( $"NodeLinksPost" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
@@ -127,7 +133,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePostLinks" );
+      Logger.LogError( ex, "NodeLinksPost" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -150,6 +156,8 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
+      Logger.LogDebug( $"NodePost" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 

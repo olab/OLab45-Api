@@ -2,6 +2,9 @@ using Azure;
 using Dawn;
 using FluentValidation;
 using HttpMultipartParser;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -290,4 +293,37 @@ public class FilesFunction : OLabFunction
 
   }
 
+  /// <summary>
+  /// Saves a object edit
+  /// </summary>
+  /// <param name="id">question id</param>
+  /// <returns>IActionResult</returns>
+  [Function( "FilePut" )]
+  public async Task<IActionResult> FilePutAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "fi/les{id}" )] HttpRequestData request,
+    FunctionContext hostContext, CancellationToken cancellationToken,
+    uint id)
+  {
+    try
+    {
+      Guard.Argument( request ).NotNull( nameof( request ) );
+      Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
+      Guard.Argument( id, nameof( id ) ).NotZero();
+
+      var auth = GetAuthorization( hostContext );
+
+      var body = await request.ParseBodyFromRequestAsync<FilesFullDto>();
+
+      await _endpoint.PutAsync( auth, id, body );
+      return new NoContentResult();
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "FilePut" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+
+  }
 }

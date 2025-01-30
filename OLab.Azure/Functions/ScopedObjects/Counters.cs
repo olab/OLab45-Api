@@ -52,6 +52,8 @@ public class Counters : OLabFunction
       int? take = queryTake > 0 ? queryTake : null;
       int? skip = querySkip > 0 ? querySkip : null;
 
+      Logger.LogDebug( $"CountersGet" );
+
       var auth = GetAuthorization( hostContext );
 
       var result = await _endpoint.GetAsync( auth, take, skip );
@@ -87,6 +89,8 @@ public class Counters : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
+      Logger.LogDebug( $"CounterGet" );
+
       var auth = GetAuthorization( hostContext );
 
       var dto = await _endpoint.GetAsync( auth, id );
@@ -119,6 +123,8 @@ public class Counters : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
+      Logger.LogDebug( $"CounterPut" );
+
       var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
@@ -148,8 +154,9 @@ public class Counters : OLabFunction
   {
     try
     {
-      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
+      Logger.LogDebug( $"CounterPost" );
 
+      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
       var auth = GetAuthorization( hostContext );
 
       var dto = await _endpoint.PostAsync( auth, body );
@@ -178,8 +185,9 @@ public class Counters : OLabFunction
   {
     try
     {
-      var auth = GetAuthorization( hostContext );
+      Logger.LogDebug( $"CounterDelete" );
 
+      var auth = GetAuthorization( hostContext );
       await _endpoint.DeleteAsync( auth, id );
 
       response = request.CreateNoContentResponse();

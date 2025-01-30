@@ -17,7 +17,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapNodeScopedObjectsRawGet" )]
-  public async Task<IActionResult> MapScopedObjectsRawGetAsync(
+  public async Task<IActionResult> MapNodeScopedObjectsRawGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId)
@@ -25,6 +25,8 @@ public partial class NodesFunction : OLabFunction
     try
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
+
+      Logger.LogDebug( $"NoMapNodeScopedObjectsRawGetdeGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -35,7 +37,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePostAsync" );
+      Logger.LogError( ex, "MapNodeScopedObjectsRawGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -49,7 +51,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapNodeScopedObjectsGet" )]
-  public async Task<IActionResult> MapScopedObjectsGetAsync(
+  public async Task<IActionResult> MapNodeScopedObjectsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId)
@@ -57,6 +59,8 @@ public partial class NodesFunction : OLabFunction
     try
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
+
+      Logger.LogDebug( $"MapNodeScopedObjectsGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -67,7 +71,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePostAsync" );
+      Logger.LogError( ex, "MapNodeScopedObjectsGet" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );

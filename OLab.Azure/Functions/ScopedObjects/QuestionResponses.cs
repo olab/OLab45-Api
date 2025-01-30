@@ -114,4 +114,41 @@ public class QuestionResponsesFunction : OLabFunction
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
   }
+
+  /// <summary>
+  /// Updates an existing question.
+  /// </summary>
+  /// <param name="request">The HTTP request data.</param>
+  /// <param name="hostContext">The function execution context.</param>
+  /// <param name="cancellationToken">The cancellation token.</param>
+  /// <param name="id">The ID of the question to update.</param>
+  /// <returns>An IActionResult indicating the result of the operation.</returns>
+  [Function( "QuestionResponsePut" )]
+  public async Task<IActionResult> QuestionResponsePutAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "questionresponses/{id}" )] HttpRequestData request,
+    FunctionContext hostContext,
+    CancellationToken cancellationToken,
+    uint id)
+  {
+    try
+    {
+      Guard.Argument( id, nameof( id ) ).NotZero();
+      Guard.Argument( request ).NotNull( nameof( request ) );
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
+
+      await _endpoint.PutAsync( auth, id, body );
+      return new NoContentResult();
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( ex, "QuestionResponsePut" );
+
+      return request
+        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+    }
+  }
+
 }
