@@ -35,7 +35,7 @@ public partial class Servers : OLabFunction
     Guard.Argument( wikiTagProvider ).NotNull( nameof( wikiTagProvider ) );
     Guard.Argument( fileStorageProvider ).NotNull( nameof( fileStorageProvider ) );
 
-    Logger = OLabLogger.CreateNew<ServerEndpoint>( loggerFactory );
+    Logger = OLabLogger.CreateNew<Servers>( loggerFactory );
 
     _endpoint = new ServerEndpoint(
       Logger,
