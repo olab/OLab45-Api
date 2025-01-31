@@ -158,10 +158,10 @@ internal class Program
       //.ConfigureFunctionsApplicationInsights()
       .AddDbContext<OLabDBContext>( options =>
             options.UseMySql( connectionString, serverVersion )
-                .LogTo( Console.WriteLine, LogLevel.Error )
+                .LogTo( Console.WriteLine, LogLevel.Error ),
                 //.EnableSensitiveDataLogging()
                 //.EnableDetailedErrors()
-                );
+                ServiceLifetime.Scoped );
 
     builder.Configuration
       .AddEnvironmentVariables()

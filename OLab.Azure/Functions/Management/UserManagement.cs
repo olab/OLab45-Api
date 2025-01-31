@@ -23,11 +23,11 @@ using System.Text;
 
 namespace OLab.Azure.Functions.Management;
 
-public partial class AuthenticationConfigurationFunction : OLabFunction
+public partial class UserManagement : OLabFunction
 {
   protected readonly IUserService _userService;
 
-  public AuthenticationConfigurationFunction(
+  public UserManagement(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -41,7 +41,7 @@ public partial class AuthenticationConfigurationFunction : OLabFunction
   {
     Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 
-    Logger = OLabLogger.CreateNew<AuthenticationConfigurationFunction>( loggerFactory );
+    Logger = OLabLogger.CreateNew<UserManagement>( loggerFactory );
 
     _userService = userService;
   }
