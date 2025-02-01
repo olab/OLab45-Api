@@ -52,7 +52,7 @@ public class Counters : OLabFunction
       int? take = queryTake > 0 ? queryTake : null;
       int? skip = querySkip > 0 ? querySkip : null;
 
-      Logger.LogDebug( $"CountersGet" );
+      Logger.LogInformation( $"CountersGet" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -89,7 +89,7 @@ public class Counters : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      Logger.LogDebug( $"CounterGet" );
+      Logger.LogInformation( $"CounterGet" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -123,7 +123,7 @@ public class Counters : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      Logger.LogDebug( $"CounterPut" );
+      Logger.LogInformation( $"CounterPut" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -154,7 +154,7 @@ public class Counters : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"CounterPost" );
+      Logger.LogInformation( $"CounterPost" );
 
       var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
       var auth = GetAuthorization( hostContext );
@@ -185,7 +185,7 @@ public class Counters : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"CounterDelete" );
+      Logger.LogInformation( $"CounterDelete" );
 
       var auth = GetAuthorization( hostContext );
       await _endpoint.DeleteAsync( auth, id );

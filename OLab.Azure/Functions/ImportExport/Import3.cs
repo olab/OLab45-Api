@@ -55,7 +55,7 @@ public class Import3Function : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"ImportAsync" );
+      Logger.LogInformation( $"ImportAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

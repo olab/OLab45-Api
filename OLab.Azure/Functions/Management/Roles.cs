@@ -57,7 +57,7 @@ public partial class RolesFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"RoleGet" );
+      Logger.LogInformation( $"RoleGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
@@ -95,7 +95,7 @@ public partial class RolesFunction : OLabFunction
       int? take = queryTake > 0 ? queryTake : null;
       int? skip = querySkip > 0 ? querySkip : null;
 
-      Logger.LogDebug( $"RolesGet" );
+      Logger.LogInformation( $"RolesGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
@@ -131,7 +131,7 @@ public partial class RolesFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogDebug( $"RolePost" );
+      Logger.LogInformation( $"RolePost" );
 
       var body = await request.ParseBodyFromRequestAsync<RolesDto>();
       var auth = GetAuthorization( hostContext );
@@ -165,7 +165,7 @@ public partial class RolesFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogDebug( $"RoleDelete" );
+      Logger.LogInformation( $"RoleDelete" );
 
       var auth = GetAuthorization( hostContext );
 

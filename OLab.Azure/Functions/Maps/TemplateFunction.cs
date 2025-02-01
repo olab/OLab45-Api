@@ -61,7 +61,7 @@ public class TemplateFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogDebug( $"TemplateDesignerGet" );
+      Logger.LogInformation( $"TemplateDesignerGet" );
 
       var queryTake = Convert.ToInt32( request.Query[ "take" ] );
       var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
@@ -100,7 +100,7 @@ public class TemplateFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogDebug( $"TemplateLinksDesignerGet" );
+      Logger.LogInformation( $"TemplateLinksDesignerGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -132,7 +132,7 @@ public class TemplateFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogDebug( $"TemplateMapNodeDesignerGet" );
+      Logger.LogInformation( $"TemplateMapNodeDesignerGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

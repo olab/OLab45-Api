@@ -31,7 +31,7 @@ public class FunctionAppUserContext : UserContext
     GetLogger().LogInformation( $"FunctionUserContext ctor" );
 
     var executionContextHelper = 
-      executionContext.Items[ "ExecutionContextHelper" ] as ExecutionContextHelper;
+      executionContext.Items[ nameof( ExecutionContextHelper ) ] as ExecutionContextHelper;
 
     LoadHostContext( executionContextHelper );
   }
@@ -74,7 +74,6 @@ public class FunctionAppUserContext : UserContext
     SetClaims( claims );
 
     SetHeaders( executionContextHelper.Headers );
-    GetLogger().LogInformation( $"found {Headers.Count} headers" );
 
     LoadUserContext();
 

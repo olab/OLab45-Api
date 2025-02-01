@@ -48,7 +48,7 @@ public class Constants : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogDebug( $"ConstantsGet" );
+      Logger.LogInformation( $"ConstantsGet" );
 
       var queryTake = Convert.ToInt32( request.Query[ "take" ] );
       var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
@@ -89,7 +89,7 @@ public class Constants : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      Logger.LogDebug( $"ConstantGet" );
+      Logger.LogInformation( $"ConstantGet" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -123,7 +123,7 @@ public class Constants : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      Logger.LogDebug( $"ConstantPut" );
+      Logger.LogInformation( $"ConstantPut" );
 
       var auth = GetAuthorization( hostContext );
       var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
@@ -156,7 +156,7 @@ public class Constants : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogDebug( $"ConstantPost" );
+      Logger.LogInformation( $"ConstantPost" );
 
       var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
       var auth = GetAuthorization( hostContext );

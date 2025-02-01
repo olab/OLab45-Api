@@ -10,15 +10,16 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
+using OLab.Data.Contracts;
 using OLab.Data.Interface;
 
 namespace OLab.Azure.Functions;
 
-public partial class ApplicationsFunction : OLabFunction
+public partial class GroupRoleAcls : OLabFunction
 {
-  private readonly ApplicationsEndpoint _endpoint;
+  private readonly GroupRoleAclsEndpoint _endpoint;
 
-  public ApplicationsFunction(
+  public GroupRoleAcls(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -35,43 +36,45 @@ public partial class ApplicationsFunction : OLabFunction
 
     Logger = OLabLogger.CreateNew<Servers>( loggerFactory );
 
-    _endpoint = new ApplicationsEndpoint(
+    _endpoint = new GroupRoleAclsEndpoint(
       Logger,
       configuration,
-      DbContext );
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider );
   }
 
   /// <summary>
-  /// ReadAsync a list of Roles
+  /// Get single object
   /// </summary>
-  /// <param name="take">Max number of records to return</param>
-  /// <param name="skip">SKip over a number of records</param>
-  /// <returns>IActionResult</returns>
-  [Function( "ApplicationsGet" )]
-  public async Task<IActionResult> ApplicationsGetAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "applications" )] HttpRequestData request,
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [Function( "GroupRolesAclPost" )]
+  public async Task<IActionResult> GroupRolesAclPostAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acls" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
   {
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
-
-      Logger.LogInformation( $"ApplicationsGet" );
+      Logger.LogInformation( $"GroupRolesAclPost" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
+      var body = await request.ParseBodyFromRequestAsync<GroupRoleAclRequest>();
 
-      var pagedResponse = await _endpoint.GetAsync( auth, take, skip );
+      // test if user has access to add users.
+      if ( !await auth.IsSystemSuperuserAsync() )
+        return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to post acls" ) );
+
+
+      var dto = await _endpoint.GetAsync( auth, body );
       return request
-        .CreateResponse( OLabObjectPagedListResult<ApplicationsDto>.Result( pagedResponse.Data, pagedResponse.Remaining ) );
+        .CreateResponse( OLabObjectListResult<GroupRoleAclDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ApplicationsGet" );
+      Logger.LogError( ex, "GroupRolesAclPost" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );

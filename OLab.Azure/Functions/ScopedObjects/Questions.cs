@@ -68,7 +68,7 @@ public class QuestionsFunction : OLabFunction
       int? take = queryTake > 0 ? queryTake : null;
       int? skip = querySkip > 0 ? querySkip : null;
 
-      Logger.LogDebug( $"QuestionsGet" );
+      Logger.LogInformation( $"QuestionsGet" );
 
       var result = await _endpoint.GetAsync( take, skip );
       Logger.LogInformation( string.Format( "Found {0} questions", result.Data.Count ) );
@@ -105,7 +105,7 @@ public class QuestionsFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      Logger.LogDebug( $"QuestionGet" );
+      Logger.LogInformation( $"QuestionGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -143,7 +143,7 @@ public class QuestionsFunction : OLabFunction
       Guard.Argument( id, nameof( id ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogDebug( $"QuestionPut" );
+      Logger.LogInformation( $"QuestionPut" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -174,7 +174,7 @@ public class QuestionsFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"QuestionPost" );
+      Logger.LogInformation( $"QuestionPost" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -209,7 +209,7 @@ public class QuestionsFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"QuestionDelete" );
+      Logger.LogInformation( $"QuestionDelete" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

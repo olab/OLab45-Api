@@ -26,7 +26,7 @@ public partial class NodesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogDebug( $"NoMapNodeScopedObjectsRawGetdeGet" );
+      Logger.LogInformation( $"NoMapNodeScopedObjectsRawGetdeGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -60,7 +60,7 @@ public partial class NodesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogDebug( $"MapNodeScopedObjectsGet" );
+      Logger.LogInformation( $"MapNodeScopedObjectsGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

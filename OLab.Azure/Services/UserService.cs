@@ -73,7 +73,7 @@ public class UserService : IUserService
     {
       var responses = new List<UsersDto>();
 
-      Logger.LogDebug( $"AddUserAsync(items count '{items.Count}')" );
+      Logger.LogInformation( $"AddUserAsync(items count '{items.Count}')" );
 
       foreach ( var item in items )
       {
@@ -242,7 +242,7 @@ public class UserService : IUserService
     {
       var responses = new List<AddUserResponse>();
 
-      Logger.LogDebug( $"DeleteUserAsync(items count '{items.Count}')" );
+      Logger.LogInformation( $"DeleteUserAsync(items count '{items.Count}')" );
 
       foreach ( var item in items )
       {

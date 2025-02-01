@@ -1,6 +1,7 @@
 using Dawn;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NuGet.Packaging;
 using OLab.Api.Common;
 using OLab.Api.Data.Exceptions;
@@ -40,7 +41,11 @@ public class OLabAuthorization : IOLabAuthorization
   public const string NonAccessAcl = "-";
 
   public OLabDBContext GetDbContext() { return _dbContext; }
-  public IOLabLogger GetLogger() { return _logger; }
+  
+  // public IOLabLogger GetLogger() { return _logger; }
+
+  protected ILogger GetLogger() { return _logger.GetLogger(); }
+
 
   public OLabAuthorization(
     IOLabLogger logger,
@@ -358,7 +363,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   private async Task<bool> HasRequestedAccessToNodeAsync(ulong requestedAcl, uint mapNodeId)
   {
-    var mapNodePhys = await MapNodesReaderWriter.Instance( GetLogger(), GetDbContext(), null )
+    var mapNodePhys = await MapNodesReaderWriter.Instance( _logger, GetDbContext(), null )
       .GetNodeAsync( mapNodeId );
 
     if ( mapNodePhys == null )
@@ -410,7 +415,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>true/false</returns>
   private async Task<bool> HasRequestedAccessToMapAsync(ulong requestedAcl, uint mapId)
   {
-    var mapPhys = await MapsReaderWriter.Instance( GetLogger(), GetDbContext() )
+    var mapPhys = await MapsReaderWriter.Instance( _logger, GetDbContext() )
       .GetSingleWithGroupRolesAsync( mapId );
 
     if ( mapPhys == null )

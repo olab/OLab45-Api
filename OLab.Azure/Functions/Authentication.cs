@@ -1,4 +1,5 @@
 using Dawn;
+using DnsClient.Internal;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -23,7 +24,7 @@ public class AuthenticationFunction : OLabFunction
   private readonly IOLabAuthorization _authorization;
 
   public AuthenticationFunction(
-      ILoggerFactory loggerFactory,
+      Microsoft.Extensions.Logging.ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       IUserService userService,
       IOLabAuthentication authentication,
@@ -49,7 +50,7 @@ public class AuthenticationFunction : OLabFunction
 
       var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
 
-      Logger.LogInformation( $"Login(user = '{model.Username}' ip: ???)" );
+      GetLogger().LogInformation( $"Login(user = '{model.Username}' ip: ???)" );
 
       var user = _authentication.Authenticate( model );
       if ( user == null )
@@ -61,13 +62,13 @@ public class AuthenticationFunction : OLabFunction
 
       if ( request.Headers.TryGetValues( "Referer", out refererValues ) )
       {
-        Logger.LogInformation( $"referer urls provided: {string.Join( ",", refererValues )}" );
+        GetLogger().LogInformation( $"referer urls provided: {string.Join( ",", refererValues )}" );
         referrer = _authorization.ExtractApplication( refererValues.First() );
         if ( !await _authorization.HasAccessToAppAsync( user, referrer ) )
           return OLabUnauthorizedResult.Result();
       }
       else
-        Logger.LogInformation( $"no referer url provided" );
+        GetLogger().LogInformation( $"no referer url provided" );
 
       var authResponse = _authentication.GenerateJwtToken( user, referrer );
 
@@ -76,7 +77,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "Login" );
+      GetLogger().LogError( ex, "Login" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -95,7 +96,7 @@ public class AuthenticationFunction : OLabFunction
     uint mapId,
     CancellationToken cancellationToken)
   {
-    Logger.LogInformation( $"LoginAnonymous(mapId = '{mapId}')" );
+    GetLogger().LogInformation( $"LoginAnonymous(mapId = '{mapId}')" );
 
     try
     {
@@ -108,7 +109,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "LoginAnonymous" );
+      GetLogger().LogError( ex, "LoginAnonymous" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );
@@ -129,7 +130,7 @@ public class AuthenticationFunction : OLabFunction
     try
     {
       var model = await request.ParseBodyFromRequestAsync<ExternalLoginRequest>();
-      Logger.LogInformation( $"LoginExternal(user = '{model.ExternalToken}')" );
+      GetLogger().LogInformation( $"LoginExternal(user = '{model.ExternalToken}')" );
 
       var response = _authentication.GenerateExternalJwtToken( model );
       if ( response == null )
@@ -140,7 +141,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "LoginExternalAsync" );
+      GetLogger().LogError( ex, "LoginExternalAsync" );
 
       return request
         .CreateResponse( OLabServerErrorResult.Result( ex ) );

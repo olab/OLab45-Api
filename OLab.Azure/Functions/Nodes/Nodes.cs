@@ -53,7 +53,7 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"NodeGet" );
+      Logger.LogInformation( $"NodeGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -85,7 +85,7 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"NodePut" );
+      Logger.LogInformation( $"NodePut" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -120,7 +120,7 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"NodeLinksPost" );
+      Logger.LogInformation( $"NodeLinksPost" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -156,7 +156,7 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"NodePost" );
+      Logger.LogInformation( $"NodePost" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

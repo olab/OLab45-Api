@@ -11,6 +11,7 @@ using OLab.Azure.Services;
 using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 using System.Net;
+using System.Reflection;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace OLab.Azure.Middleware;
@@ -57,7 +58,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     {
       _logger.LogInformation( "OLabAuthMiddleware invoke" );
 
-      var executionContextHelper = executionContext.Items[ "ExecutionContextHelper" ] as ExecutionContextHelper;
+      var executionContextHelper = executionContext.Items[ nameof( ExecutionContextHelper ) ] as ExecutionContextHelper;
       Guard.Argument( executionContextHelper ).NotNull( nameof( executionContextHelper ) );
 
       try
@@ -72,12 +73,15 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 
         // This is added pre-function execution, function will have access to this information
         var userContext = new FunctionAppUserContext( _logger, executionContext, _dbContext );
-        executionContext.Items.Add( "usercontext", userContext );
+        executionContext.Items.Add( nameof( FunctionAppUserContext ), userContext );
 
         // This happens after function execution. We can inspect the context after the function
         // was invoked
         //if (executionContext.Items.TryGetValue("functionitem", out var value) && value is string message)
         //  _logger.LogInformation($"From function: {message}");
+
+        var items = executionContext.Items.Select( x => x.Key );
+        _logger.LogInformation( $"OLabAuthMiddleware executionContext items: {string.Join( ", ", items )}" );
 
       }
       catch ( Exception ex )

@@ -23,6 +23,73 @@ using Microsoft.CodeAnalysis;
 
 internal class Program
 {
+  private static void Main(string[] args)
+  {
+    var builder = FunctionsApplication.CreateBuilder( args );
+
+    builder.ConfigureFunctionsWebApplication();
+
+    var connectionString = builder.Configuration.GetConnectionString( "DefaultDatabase" );
+    var serverVersion = ServerVersion.AutoDetect( connectionString );
+
+    // Application Insights isn't enabled by default. See https://aka.ms/AAt8mw4.
+    builder.Services
+      .AddApplicationInsightsTelemetryWorkerService()
+      .ConfigureFunctionsApplicationInsights()
+      .AddDbContext<OLabDBContext>( options =>
+            options.UseMySql( connectionString, serverVersion )
+                .LogTo( Console.WriteLine, LogLevel.Error ),
+                //.EnableSensitiveDataLogging()
+                //.EnableDetailedErrors()
+                ServiceLifetime.Transient );
+
+    builder.Configuration
+      .AddEnvironmentVariables()
+      .AddJsonFile( "local.settings.json", optional: true )
+      .AddJsonFile( "host.json", optional: true );
+
+    builder.Services.AddOptions<AppSettings>()
+      .Configure<IConfiguration>( (options, c) =>
+      {
+        c.GetSection( "AppSettings" ).Bind( options );
+      } );
+
+    builder.Logging.Services.Configure<LoggerFilterOptions>( options =>
+    {
+      //  // The Application Insights SDK adds a default logging filter that instructs ILogger to capture only Warning
+      //  // and more severe logs. Application Insights requires an explicit override.
+      //  // Log levels can also be configured using appsettings.json. For more information,
+      //  // see https://learn.microsoft.com/azure/azure-monitor/app/worker-service#ilogger-logs
+      var defaultRule = options.Rules.FirstOrDefault( rule => rule.ProviderName
+          == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider" );
+      if ( defaultRule is not null )
+        options.Rules.Remove( defaultRule );
+    } );
+
+    builder.Logging
+      .AddFilter( "System.Net.Http.HttpClient", LogLevel.Warning )
+      .AddFilter( "Microsoft.EntityFrameworkCore", LogLevel.Warning );
+
+    builder.Services
+      .AddAzureAppConfiguration()
+      .AddSingleton( typeof( IOLabModuleProvider<> ), typeof( OLabModuleProvider<> ) )
+      .AddSingleton<IOLabConfiguration, OLabConfiguration>()
+      .AddSingleton<IOLabLogger, OLabLogger>()
+      .AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>()
+      .AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>()
+      .AddTransient<IOLabAuthentication, OLabAuthentication>()
+      .AddTransient<IUserContext, FunctionAppUserContext>()
+      .AddTransient<IUserService, UserService>();
+
+    builder.UseMiddleware<BootstrapMiddleware>();
+    builder.UseWhen<OLabAuthMiddleware>( OLabAuthMiddleware.CanInvoke );
+    //builder.UseWhen<OpenAuthMiddleware>( OpenAuthMiddleware.CanInvoke );
+
+    builder.Build().Run();
+  }
+
+  #region Old Main
+
   private static void Main1(string[] args)
   {
     var host = new HostBuilder();
@@ -143,68 +210,5 @@ internal class Program
     host.Build().Run();
   }
 
-  private static void Main(string[] args)
-  {
-    var builder = FunctionsApplication.CreateBuilder( args );
-
-    builder.ConfigureFunctionsWebApplication();
-
-    var connectionString = builder.Configuration.GetConnectionString( "DefaultDatabase" );
-    var serverVersion = ServerVersion.AutoDetect( connectionString );
-
-    // Application Insights isn't enabled by default. See https://aka.ms/AAt8mw4.
-    builder.Services
-      //.AddApplicationInsightsTelemetryWorkerService()
-      //.ConfigureFunctionsApplicationInsights()
-      .AddDbContext<OLabDBContext>( options =>
-            options.UseMySql( connectionString, serverVersion )
-                .LogTo( Console.WriteLine, LogLevel.Error ),
-                //.EnableSensitiveDataLogging()
-                //.EnableDetailedErrors()
-                ServiceLifetime.Scoped );
-
-    builder.Configuration
-      .AddEnvironmentVariables()
-      .AddJsonFile( "local.settings.json", optional: true )
-      .AddJsonFile( "host.json", optional: true );
-
-    builder.Services.AddOptions<AppSettings>()
-      .Configure<IConfiguration>( (options, c) =>
-      {
-        c.GetSection( "AppSettings" ).Bind( options );
-      } );
-
-    builder.Logging.Services.Configure<LoggerFilterOptions>( options =>
-    {
-      //  // The Application Insights SDK adds a default logging filter that instructs ILogger to capture only Warning
-      //  // and more severe logs. Application Insights requires an explicit override.
-      //  // Log levels can also be configured using appsettings.json. For more information,
-      //  // see https://learn.microsoft.com/azure/azure-monitor/app/worker-service#ilogger-logs
-      var defaultRule = options.Rules.FirstOrDefault( rule => rule.ProviderName
-          == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider" );
-      if ( defaultRule is not null )
-        options.Rules.Remove( defaultRule );
-    } );
-
-    builder.Logging
-      .AddFilter( "System.Net.Http.HttpClient", LogLevel.Warning )
-      .AddFilter( "Microsoft.EntityFrameworkCore", LogLevel.Warning );
-
-    builder.Services
-      .AddAzureAppConfiguration()
-      .AddScoped<IUserContext, FunctionAppUserContext>()
-      .AddSingleton<IOLabLogger, OLabLogger>()
-      .AddSingleton<IOLabConfiguration, OLabConfiguration>()
-      .AddScoped<IOLabAuthentication, OLabAuthentication>()
-      .AddScoped<IUserService, UserService>()
-      .AddSingleton( typeof( IOLabModuleProvider<> ), typeof( OLabModuleProvider<> ) )
-      .AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>()
-      .AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>();
-
-    builder.UseMiddleware<BootstrapMiddleware>();
-    builder.UseWhen<OLabAuthMiddleware>( OLabAuthMiddleware.CanInvoke );
-    //builder.UseWhen<OpenAuthMiddleware>( OpenAuthMiddleware.CanInvoke );
-
-    builder.Build().Run();
-  }
+  #endregion
 }

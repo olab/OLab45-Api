@@ -78,7 +78,7 @@ public class FilesFunction : OLabFunction
 
     tempFileName = Path.Combine( dirName, dto.Name );
 
-    Logger.LogDebug( $"Static file name: {tempFileName}" );
+    Logger.LogInformation( $"Static file name: {tempFileName}" );
 
     return tempFileName;
   }
@@ -134,7 +134,7 @@ public class FilesFunction : OLabFunction
 
     try
     {
-      Logger.LogDebug( $"FilesGet" );
+      Logger.LogInformation( $"FilesGet" );
 
       var queryTake = Convert.ToInt32( request.Query[ "take" ] );
       var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
@@ -179,7 +179,7 @@ public class FilesFunction : OLabFunction
 
     try
     {
-      Logger.LogDebug( $"FileGet" );
+      Logger.LogInformation( $"FileGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -216,7 +216,7 @@ public class FilesFunction : OLabFunction
 
     try
     {
-      Logger.LogDebug( $"FilePost" );
+      Logger.LogInformation( $"FilePost" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -275,7 +275,7 @@ public class FilesFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"FileDelete" );
+      Logger.LogInformation( $"FileDelete" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

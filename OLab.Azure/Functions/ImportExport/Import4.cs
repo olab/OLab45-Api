@@ -59,7 +59,7 @@ public class Import4Function : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"ImportAsync" );
+      Logger.LogInformation( $"ImportAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -116,7 +116,7 @@ public class Import4Function : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"ExportAsJsonAsync" );
+      Logger.LogInformation( $"ExportAsJsonAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -147,7 +147,7 @@ public class Import4Function : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"Export" );
+      Logger.LogInformation( $"Export" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

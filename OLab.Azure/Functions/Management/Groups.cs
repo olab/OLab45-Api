@@ -57,7 +57,7 @@ public partial class GroupsFunction : OLabFunction
   {
     try
     {
-      Logger.LogDebug( $"GroupGet" );
+      Logger.LogInformation( $"GroupGet" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
@@ -129,7 +129,7 @@ public partial class GroupsFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogDebug( $"GroupPost" );
+      Logger.LogInformation( $"GroupPost" );
 
       var body = await request.ParseBodyFromRequestAsync<GroupsDto>();
       var auth = GetAuthorization( hostContext );
@@ -163,7 +163,7 @@ public partial class GroupsFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogDebug( $"GroupDelete" );
+      Logger.LogInformation( $"GroupDelete" );
 
       var auth = GetAuthorization( hostContext );
 

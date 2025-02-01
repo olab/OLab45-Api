@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Api.Data.Interface;
 using OLab.Api.Model;
+using OLab.Azure.Services;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 
@@ -26,6 +28,8 @@ public class OLabFunction
   //protected readonly TTalkDBContext TtalkDbContext;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
+
+  protected ILogger GetLogger() { return (ILogger)Logger.GetLogger(); }
 
   public OLabFunction(
     IOLabConfiguration configuration,
@@ -61,10 +65,13 @@ public class OLabFunction
   /// <exception cref="Exception"></exception>
   protected IOLabAuthorization GetAuthorization(FunctionContext executionContext)
   {
+    var items = executionContext.Items.Select( x => x.Key );
+    GetLogger().LogInformation( $"GetAuthorization executionContext items {string.Join( ", ", items )}" );
+
     // Get the user context set by the middleware
-    if ( executionContext.Items.TryGetValue( "usercontext", out var value ) && value is IUserContext userContext )
+    if ( executionContext.Items.TryGetValue( nameof( FunctionAppUserContext ), out var value ) && ( value is IUserContext userContext ) )
     {
-      Logger.LogInformation( $"User context: {userContext}" );
+      GetLogger().LogInformation( $"User context: {userContext}" );
 
       var auth = new OLabAuthorization( Logger, DbContext, _configuration );
       auth.ApplyUserContext( userContext );
