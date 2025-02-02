@@ -1,6 +1,7 @@
 using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
@@ -23,13 +24,11 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 {
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger _logger;
-  private readonly OLabDBContext _dbContext;
 
   public OLabAuthMiddleware(
     IOLabConfiguration configuration,
     ILoggerFactory loggerFactory,
-    IOLabAuthentication authentication,
-    OLabDBContext dbContext)
+    IOLabAuthentication authentication)
   {
     Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
     Guard.Argument( authentication ).NotNull( nameof( authentication ) );
@@ -38,7 +37,6 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     _logger.LogInformation( "OLabAuthMiddleware created" );
 
     _config = configuration;
-    _dbContext = dbContext;
   }
 
   public static bool CanInvoke(FunctionContext executionContext)
@@ -63,7 +61,10 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 
       try
       {
-        var authentication = new OLabAuthentication( _logger, _config, _dbContext );
+
+        var dbContext = executionContext.InstanceServices.GetRequiredService<OLabDBContext>();
+
+        var authentication = new OLabAuthentication( _logger, _config, dbContext );
         var token 
           = OLabAuthentication.ExtractAccessToken( executionContextHelper.Request, false );
         authentication.ValidateToken( token );
@@ -72,7 +73,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         executionContext.Items.Add( "claims", authentication.Claims );
 
         // This is added pre-function execution, function will have access to this information
-        var userContext = new FunctionAppUserContext( _logger, executionContext, _dbContext );
+        var userContext = new FunctionAppUserContext( _logger, executionContext, dbContext );
         executionContext.Items.Add( nameof( FunctionAppUserContext ), userContext );
 
         // This happens after function execution. We can inspect the context after the function
