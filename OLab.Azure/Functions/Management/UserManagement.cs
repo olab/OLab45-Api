@@ -1,11 +1,5 @@
-using Azure.Core;
 using Dawn;
-using DocumentFormat.OpenXml.Drawing;
 using HttpMultipartParser;
-using Humanizer;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -18,8 +12,11 @@ using OLab.Common.Interfaces;
 using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using System.IO;
-using System.Net;
 using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions.Management;
 

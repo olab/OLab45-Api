@@ -11,8 +11,11 @@ using OLab.Azure.Extensions;
 using OLab.Azure.Services;
 using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using System;
+using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace OLab.Azure.Middleware;

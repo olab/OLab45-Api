@@ -1,5 +1,4 @@
 using Dawn;
-using DnsClient.Internal;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -14,6 +13,11 @@ using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions;
 
