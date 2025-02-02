@@ -12,7 +12,7 @@ using System.Security.Claims;
 
 namespace OLabWebAPI.Services;
 
-public class WebApiUserContextService : UserContextService
+public class WebApiUserContextService : UserContext
 {
 
   public WebApiUserContextService(
@@ -37,7 +37,7 @@ public class WebApiUserContextService : UserContextService
       throw new Exception("unable to retrieve claims from host context");
     SetClaims((IDictionary<string, string>)claimsObject);
 
-    LoadContext();
+    LoadUserContext();
 
   }
 }

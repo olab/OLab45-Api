@@ -11,7 +11,7 @@ public static class HttpRequestExtensions
 {
   public static ContentResult CreateResponse<T>(
     this HttpRequest request,
-    OLabAPIResponse<T> apiResponse)
+    OLabApiResult<T> apiResponse)
   {
     var contractResolver = new DefaultContractResolver
     {
