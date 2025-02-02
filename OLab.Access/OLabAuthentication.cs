@@ -414,6 +414,7 @@ public class OLabAuthentication : IOLabAuthentication
     return user;
   }
 
+
   /// <summary>
   /// Validates a user's password.
   /// </summary>
@@ -441,4 +442,5 @@ public class OLabAuthentication : IOLabAuthentication
     GetLogger().LogInformation( $"Password validated = {result}" );
     return result;
   }
+
 }

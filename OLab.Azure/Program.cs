@@ -27,9 +27,8 @@ builder.ConfigureFunctionsWebApplication();
 
 builder.Configuration
   .AddEnvironmentVariables()
-  .AddJsonFile( "local.settings.json", optional: true )
   .AddJsonFile( "host.json", optional: true )
-  .AddJsonFile( "appsettings.Development.json", optional: true );
+  .AddJsonFile( "local.settings.json", optional: true );
 
 var connectionString = builder.Configuration.GetConnectionString( "DefaultDatabase" );
 var serverVersion = ServerVersion.AutoDetect( connectionString );
