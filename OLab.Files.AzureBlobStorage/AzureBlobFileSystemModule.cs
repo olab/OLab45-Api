@@ -50,7 +50,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     _hostname = GetBlobStorageHostName( connectionString );
 
-    _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty);
+    _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty );
     if ( string.IsNullOrEmpty( _containerName ) )
       throw new ConfigurationErrorsException( "missing FileStorageRoot parameter" );
 
@@ -58,6 +58,9 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     // need to prevent container name from being part of the file root
     cfg.GetAppSettings().FileStorageRoot = Path.GetFileName( cfg.GetAppSettings().FileStorageRoot );
+
+    // ensure storage url only has leading '/'
+    cfg.GetAppSettings().FileStorageUrl = $"/{cfg.GetAppSettings().FileStorageRoot.Trim( '/' )}";
   }
 
   /// <summary>

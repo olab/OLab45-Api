@@ -14,6 +14,7 @@
     <PackageReference Include="HttpMultipartParser" Version="8.4.0" />
     <PackageReference Include="JsonDiffPatch.Net" Version="2.3.0" />
     <PackageReference Include="JWT" Version="11.0.0" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.0.0" />
     
     <PackageReference Include="Microsoft.Azure.Core.NewtonsoftJson" Version="2.0.0" />    
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
@@ -41,5 +42,10 @@
     <ProjectReference Include="..\OLab.Access\OLab.Access.csproj" />
     <ProjectReference Include="..\OLab.Files.AzureBlobStorage\OLab.Files.AzureBlobStorage.csproj" />
     <ProjectReference Include="..\OLab.Files.FileSystem\OLab.Files.FileSystem.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="certificate.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
