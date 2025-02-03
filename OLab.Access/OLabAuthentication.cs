@@ -463,21 +463,25 @@ public class OLabAuthentication : IOLabAuthentication
     else
     {
       // test if new password same as old one
-      var passwordChanged = ValidatePassword( newPassword, physUser );
+      var validPassword = ValidatePassword( newPassword, physUser );
 
-      physUser.Salt = StringUtils.GenerateRandomString( SaltLength );
-      var clearText = newPassword + physUser.Salt;
-
-      using ( var hash = SHA1.Create() )
+      if ( !validPassword )
       {
-        var plainTextBytes = Encoding.ASCII.GetBytes( clearText );
-        var hashBytes = hash.ComputeHash( plainTextBytes );
-        var encryptedPassword 
-          = BitConverter.ToString( hashBytes ).Replace( "-", "" ).ToLowerInvariant();
+        physUser.Salt = StringUtils.GenerateRandomString( SaltLength );
+        var clearText = newPassword + physUser.Salt;
 
-        physUser.Password = encryptedPassword;
-        result = true;
+        using ( var hash = SHA1.Create() )
+        {
+          var plainTextBytes = Encoding.ASCII.GetBytes( clearText );
+          var hashBytes = hash.ComputeHash( plainTextBytes );
+          var encryptedPassword
+            = BitConverter.ToString( hashBytes ).Replace( "-", "" ).ToLowerInvariant();
+
+          physUser.Password = encryptedPassword;
+          result = true;
+        }
       }
+
     }
 
     GetLogger().LogInformation( $"Password changed for '{physUser.Username}'? {result}" );

@@ -187,5 +187,14 @@ public class OLabAuthenticationTests
 
     Assert.Throws<ArgumentNullException>( () => _auth.UpdatePassword( newPassword, user ) );
   }
+
+  [Fact]
+  public void UpdatePassword_ShouldThrowArgumentNullException_WhenUserIsNull()
+  {
+    Users? user = null;
+    var newPassword = "newpassword";
+
+    Assert.Throws<ArgumentNullException>( () => _auth.UpdatePassword( newPassword, user ) );
+  }
 }
 
