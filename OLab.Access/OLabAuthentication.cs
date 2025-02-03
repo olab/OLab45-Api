@@ -188,7 +188,7 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     // handle Authorization header token
-    else if ( headers.TryGetValue( "Authorization", out var authHeader ) )
+    else if ( headers.TryGetValue( "authorization", out var authHeader ) )
     {
       token = authHeader.Replace( "Bearer ", "" );
       GetLogger().LogInformation( "Authorization header bearer token provided" );
