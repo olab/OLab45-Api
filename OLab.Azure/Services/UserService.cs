@@ -4,7 +4,9 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NuGet.Packaging;
+using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
@@ -28,6 +30,7 @@ public class UserService : IUserService
   private readonly OLabDBContext _dbContext;
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger Logger;
+  private readonly IOLabAuthentication _auth;
 
   public OLabDBContext GetDbContext() { return _dbContext; }
   public IOLabLogger GetLogger() { return Logger; }
@@ -37,6 +40,7 @@ public class UserService : IUserService
   public bool Role { get; private set; }
 
   public UserService(
+    IOLabAuthentication auth,
     ILoggerFactory loggerFactory,
     OLabDBContext context,
     IOLabConfiguration config)
@@ -49,9 +53,11 @@ public class UserService : IUserService
       Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
       Guard.Argument( context ).NotNull( nameof( context ) );
       Guard.Argument( config ).NotNull( nameof( config ) );
+      Guard.Argument( auth ).NotNull( nameof( auth ) );
 
       _dbContext = context;
       _config = config;
+      _auth = auth;
 
       defaultTokenExpiryMinutes = _config.GetAppSettings().TokenExpiryMinutes;
 
@@ -64,35 +70,6 @@ public class UserService : IUserService
       throw;
     }
 
-  }
-
-  /// <summary>
-  /// Adds a list of users asynchronously.
-  /// </summary>
-  /// <param name="items">List of user requests to add.</param>
-  /// <returns>A list of user DTOs representing the added users.</returns>
-  /// <exception cref="Exception">Thrown when an error occurs while adding users.</exception>
-  public async Task<List<UsersDto>> AddUsersAsync(List<AddUserRequest> items)
-  {
-    try
-    {
-      var responses = new List<UsersDto>();
-
-      Logger.LogInformation( $"AddUserAsync(items count '{items.Count}')" );
-
-      foreach ( var item in items )
-      {
-        var user = await AddUserAsync( item );
-        responses.Add( user );
-      }
-
-      return responses;
-    }
-    catch ( Exception ex )
-    {
-      Logger.LogError( $"AddUserAsync exception {ex.Message}" );
-      throw;
-    }
   }
 
   /// <summary>
@@ -139,53 +116,53 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// Updates a user record with a new password
+  /// Adds a list of users asynchronously.
   /// </summary>
-  /// <param name="user">Existing user record from DB</param>
-  /// <param name="model">Change password request model</param>
-  /// <returns></returns>
-  public void ChangePassword(Users user, ChangePasswordRequest model)
+  /// <param name="items">List of user requests to add.</param>
+  /// <returns>A list of user DTOs representing the added users.</returns>
+  /// <exception cref="Exception">Thrown when an error occurs while adding users.</exception>
+  public async Task<List<UsersDto>> AddUsersAsync(List<AddUserRequest> items)
   {
-    var clearText = model.NewPassword;
+    try
+    {
+      var responses = new List<UsersDto>();
 
-    // add password salt, if it's defined
-    if ( !string.IsNullOrEmpty( user.Salt ) )
-      clearText += user.Salt;
+      Logger.LogInformation( $"AddUserAsync(items count '{items.Count}')" );
 
-    var hash = SHA1.Create();
-    var plainTextBytes = Encoding.ASCII.GetBytes( clearText );
-    var hashBytes = hash.ComputeHash( plainTextBytes );
+      foreach ( var item in items )
+      {
+        var user = await AddUserAsync( item );
+        responses.Add( user );
+      }
 
-    user.Password = BitConverter.ToString( hashBytes ).Replace( "-", "" ).ToLowerInvariant();
+      return responses;
+    }
+    catch ( Exception ex )
+    {
+      Logger.LogError( $"AddUserAsync exception {ex.Message}" );
+      throw;
+    }
   }
 
   /// <summary>
   /// Add user based on add user request
   /// </summary>
-  /// <param name="userRequest">User request</param>
+  /// <param name="model">User request</param>
   /// <returns>ADd user response</returns>
-  public async Task<UsersDto> AddUserAsync(AddUserRequest userRequest)
+  public async Task<UsersDto> AddUserAsync(AddUserRequest model)
   {
-    var user = GetByUserName( userRequest.Username );
+    var user = GetByUserName( model.Username );
     if ( user != null )
-      throw new OLabBadRequestException( $"'{userRequest.Username}' already exists" );
+      throw new OLabBadRequestException( $"'{model.Username}' already exists" );
 
-    Logger.LogInformation( $"adding user '{userRequest.Username}'" );
+    Logger.LogInformation( $"adding user '{model.Username}'" );
 
-    var newUserPhys = Users.CreatePhysFromRequest( null, userRequest );
+    var newUserPhys = Users.CreatePhysFromRequest( null, model );
     newUserPhys.UserGrouproles.AddRange(
-      UserGrouproles.StringToObjectList( GetDbContext(), userRequest.GroupRoles ) );
+      UserGrouproles.StringToObjectList( GetDbContext(), model.GroupRoles ) );
 
-    // if salt not passed in, then the incoming password is 
-    // cleartext, so we need to do a 'change password'
-    // on it to convert it to a hash before saving to database.
-    if ( string.IsNullOrEmpty( newUserPhys.Salt ) )
-    {
-      ChangePassword( newUserPhys, new ChangePasswordRequest
-      {
-        NewPassword = newUserPhys.Password
-      } );
-    }
+    if ( model.PasswordProvided() )
+      _auth.UpdatePassword( model.Password, newUserPhys );
 
     await GetDbContext().Users.AddAsync( newUserPhys );
     await GetDbContext().SaveChangesAsync();
@@ -424,43 +401,41 @@ public class UserService : IUserService
   /// <summary>
   /// Edit user based on add user request
   /// </summary>
-  /// <param name="userRequest">USer request</param>
+  /// <param name="model">USer request</param>
   /// <returns>Add user response</returns>
-  public async Task<UsersDto> EditUserAsync(AddUserRequest userRequest)
+  public async Task<UsersDto> EditUserAsync(AddUserRequest model)
   {
-    var user = GetByUserName( userRequest.Username );
-    if ( user == null )
-      throw new OLabBadRequestException( $"user: '{userRequest.Username}' does not exist" );
+    var physUser = GetByUserName( model.Username );
+    if ( physUser == null )
+      throw new OLabBadRequestException( $"user: '{model.Username}' does not exist" );
 
-    Logger.LogInformation( $"editing user '{userRequest.Username}'" );
+    Logger.LogInformation( $"editing user '{model.Username}'" );
 
     // need to set the logger and the dbContext since
     // they are not present when AddUserRequest created by webApi
-    userRequest.SetInfrastructure( GetLogger(), GetDbContext() );
+    model.SetInfrastructure( GetLogger(), GetDbContext() );
 
     // parse any GroupRole string(s)
-    userRequest.BuildGroupRoleObjects();
+    model.BuildGroupRoleObjects();
 
     // build physical User object from request
-    Users.CreatePhysFromRequest( user, userRequest );
+    Users.CreatePhysFromRequest( physUser, model );
 
-    // update and encrypt password if one was passed in
-    if ( !string.IsNullOrEmpty( userRequest.Password ) )
-    {
-      ChangePassword( user, new ChangePasswordRequest
-      {
-        NewPassword = userRequest.Password
-      } );
-    }
+    if ( model.PasswordProvided() )
+      _auth.UpdatePassword( model.Password, physUser );
 
-    GetDbContext().Users.Update( user );
+    GetDbContext().Users.Update( physUser );
     await GetDbContext().SaveChangesAsync();
 
-    user.UserGrouproles.AddRange( userRequest.GroupRoleObjects );
-    GetDbContext().Users.Update( user );
+    physUser.UserGrouproles.AddRange( model.GroupRoleObjects );
+    GetDbContext().Users.Update( physUser );
     await GetDbContext().SaveChangesAsync();
 
-    var userDto = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( user );
+    // send cleartext password back with response
+    if ( model.PasswordProvided() )
+      physUser.Password = model.Password;
+
+    var userDto = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( physUser );
     return userDto;
   }
 

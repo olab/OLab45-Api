@@ -6,6 +6,7 @@ using NuGet.Packaging;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,8 @@ public class OLabAuthentication : IOLabAuthentication
   private readonly OLabDBContext _dbContext;
   private readonly IOLabLogger _logger;
   private readonly TokenValidationParameters _tokenParameters;
+
+  public const int SaltLength = 64;
 
   /// <summary>
   /// Gets the database context.
@@ -419,27 +422,66 @@ public class OLabAuthentication : IOLabAuthentication
   /// Validates a user's password.
   /// </summary>
   /// <param name="clearText">The clear text password.</param>
-  /// <param name="user">The corresponding user record.</param>
+  /// <param name="physUser">The corresponding user record.</param>
   /// <returns>True if the password is valid; otherwise, false.</returns>
-  public bool ValidatePassword(string clearText, Users user)
+  public bool ValidatePassword(string clearText, Users physUser)
   {
-    Guard.Argument( user, nameof( user ) ).NotNull();
+    Guard.Argument( physUser, nameof( physUser ) ).NotNull();
     Guard.Argument( clearText, nameof( clearText ) ).NotEmpty();
 
     var result = false;
 
-    if ( !string.IsNullOrEmpty( user.Salt ) )
+    if ( !string.IsNullOrEmpty( physUser.Salt ) )
     {
-      clearText += user.Salt;
+      clearText += physUser.Salt;
       var hash = SHA1.Create();
       var plainTextBytes = Encoding.ASCII.GetBytes( clearText );
       var hashBytes = hash.ComputeHash( plainTextBytes );
       var localChecksum = BitConverter.ToString( hashBytes ).Replace( "-", "" ).ToLowerInvariant();
 
-      result = localChecksum == user.Password;
+      result = localChecksum == physUser.Password;
     }
 
     GetLogger().LogInformation( $"Password validated = {result}" );
+    return result;
+  }
+
+  /// <summary>
+  /// Updates a user's password.
+  /// </summary>
+  /// <param name="newPassword">new cleartext passwd</param>
+  /// <param name="physUser">Users record</param>
+  /// <returns>true, if changed</returns>
+  public bool UpdatePassword(string newPassword, Users physUser)
+  {
+    bool result = false;
+    Guard.Argument( physUser, nameof( physUser ) ).NotNull();
+
+    if ( string.IsNullOrEmpty( newPassword ) )
+      result = false;
+
+    else
+    {
+      // test if new password same as old one
+      var passwordChanged = ValidatePassword( newPassword, physUser );
+
+      physUser.Salt = StringUtils.GenerateRandomString( SaltLength );
+      var clearText = newPassword + physUser.Salt;
+
+      using ( var hash = SHA1.Create() )
+      {
+        var plainTextBytes = Encoding.ASCII.GetBytes( clearText );
+        var hashBytes = hash.ComputeHash( plainTextBytes );
+        var encryptedPassword 
+          = BitConverter.ToString( hashBytes ).Replace( "-", "" ).ToLowerInvariant();
+
+        physUser.Password = encryptedPassword;
+        result = true;
+      }
+    }
+
+    GetLogger().LogInformation( $"Password changed for '{physUser.Username}'? {result}" );
+
     return result;
   }
 

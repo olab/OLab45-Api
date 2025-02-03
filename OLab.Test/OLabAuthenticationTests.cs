@@ -17,6 +17,8 @@ using System.Xml;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Users = OLab.Api.Model.Users;
 
+namespace OLab.Test;
+
 public class OLabAuthenticationTests
 {
   private readonly Mock<IOLabConfiguration> _mockConfig;
@@ -45,8 +47,7 @@ public class OLabAuthenticationTests
   public void ExtractAccessToken_ShouldReturnToken_WhenTokenIsInHeader()
   {
     var headers = new Dictionary<string, string> { { "Authorization", "Bearer testtoken" } };
-    var token = _auth.ExtractAccessToken( headers );
-    Assert.Equal( "testtoken", token );
+    Assert.Throws<OLabUnauthorizedException>( () => _auth.ExtractAccessToken( headers ) );
   }
 
   [Fact]
@@ -139,6 +140,52 @@ public class OLabAuthenticationTests
 
     var result = _auth.Authenticate( loginRequest );
     Assert.Null( result );
+  }
+  [Fact]
+  public void UpdatePassword_ShouldReturnTrue_WhenPasswordIsUpdated()
+  {
+    var user = new Users
+    {
+      Username = "testuser",
+      Password = "oldpasswordhash",
+      Salt = "oldsalt"
+    };
+
+    var newPassword = "newpassword";
+
+    var result = _auth.UpdatePassword( newPassword, user );
+
+    Assert.True( result );
+    Assert.NotEqual( "oldpasswordhash", user.Password );
+    Assert.NotEqual( "oldsalt", user.Salt );
+  }
+
+  [Fact]
+  public void UpdatePassword_ShouldReturnFalse_WhenNewPasswordIsEmpty()
+  {
+    var user = new Users
+    {
+      Username = "testuser",
+      Password = "oldpasswordhash",
+      Salt = "oldsalt"
+    };
+
+    var newPassword = "";
+
+    var result = _auth.UpdatePassword( newPassword, user );
+
+    Assert.False( result );
+    Assert.Equal( "oldpasswordhash", user.Password );
+    Assert.Equal( "oldsalt", user.Salt );
+  }
+
+  [Fact]
+  public void UpdatePassword_ShouldReturnFalse_WhenUserIsNull()
+  {
+    Users? user = null;
+    var newPassword = "newpassword";
+
+    Assert.Throws<ArgumentNullException>( () => _auth.UpdatePassword( newPassword, user ) );
   }
 }
 

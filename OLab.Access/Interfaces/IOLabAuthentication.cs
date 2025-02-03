@@ -12,6 +12,8 @@ public interface IOLabAuthentication
     IReadOnlyDictionary<string, string> headers,
     IReadOnlyDictionary<string, object> bindingData = null);
   bool ValidateToken(string token);
+  bool UpdatePassword(string newPassword, Users physUser);
+
   IDictionary<string, string> Claims { get; }
   TokenValidationParameters GetValidationParameters();
   AuthenticateResponse GenerateJwtToken(Users user, string referrer, string issuedBy = "olab");

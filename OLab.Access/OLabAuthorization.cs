@@ -42,10 +42,7 @@ public class OLabAuthorization : IOLabAuthorization
 
   public OLabDBContext GetDbContext() { return _dbContext; }
   
-  // public IOLabLogger GetLogger() { return _logger; }
-
   protected ILogger GetLogger() { return _logger.GetLogger(); }
-
 
   public OLabAuthorization(
     IOLabLogger logger,
