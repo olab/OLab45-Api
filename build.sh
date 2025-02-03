@@ -17,12 +17,6 @@ popd
 
 git pull
 
-pushd WebApiService
-if [ ! -L "bin" ]; then
-	ln -s /opt/olab46/$1/api bin
-fi
-popd
-
 dotnet clean WebApp.sln
 dotnet build -c $1 WebApp.sln
 
