@@ -39,7 +39,7 @@ builder.Services
   .ConfigureFunctionsApplicationInsights()
   .AddDbContext<OLabDBContext>( options =>
             options.UseMySql( connectionString, serverVersion )
-                .LogTo( Console.WriteLine, LogLevel.Error ),
+                .LogTo( Console.WriteLine, LogLevel.None ),
                 //.EnableSensitiveDataLogging()
                 //.EnableDetailedErrors()
                 ServiceLifetime.Transient );

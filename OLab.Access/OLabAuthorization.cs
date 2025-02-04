@@ -31,7 +31,7 @@ public class OLabAuthorization : IOLabAuthorization
   private readonly IOLabConfiguration _configuration;
   private readonly GroupReaderWriter _groupReaderWriter;
   private readonly RoleReaderWriter _roleReaderWriter;
-
+  private readonly UserReaderWriter _userReaderWriter;
   protected IList<GrouproleAcls> _groupRoleAcls = new List<GrouproleAcls>();
   protected IList<UserGrouproles> _userGroupRoles = new List<UserGrouproles>();
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
@@ -62,6 +62,7 @@ public class OLabAuthorization : IOLabAuthorization
     _configuration = configuration;
     _groupReaderWriter = GroupReaderWriter.Instance( logger, dbContext );
     _roleReaderWriter = RoleReaderWriter.Instance( logger, dbContext );
+    _userReaderWriter = UserReaderWriter.Instance( _logger, GetDbContext() );
   }
 
   /// <summary>
@@ -87,9 +88,7 @@ public class OLabAuthorization : IOLabAuthorization
     Guard.Argument( userContext ).NotNull( nameof( userContext ) );
 
     UserContext = userContext;
-    OLabUser = await UserReaderWriter
-      .Instance( _logger, GetDbContext() )
-      .GetSingleAsync( UserContext.UserId );
+    OLabUser = await _userReaderWriter.GetSingleAsync( UserContext.UserId );
 
     // user might be external, so just create a virtual user
     if ( OLabUser == null )

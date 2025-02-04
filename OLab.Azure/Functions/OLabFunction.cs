@@ -82,7 +82,7 @@ public class OLabFunction
       GetLogger().LogInformation( $"User context: {userContext}" );
 
       var auth = new OLabAuthorization( Logger, DbContext, _configuration );
-      auth.ApplyUserContextAsync( userContext ).GetAwaiter();
+      auth.ApplyUserContextAsync( userContext ).GetAwaiter().GetResult();
 
       return auth;
     }
