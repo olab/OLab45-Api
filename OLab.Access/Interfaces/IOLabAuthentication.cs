@@ -1,12 +1,13 @@
 using Microsoft.IdentityModel.Tokens;
 using OLab.Api.Model;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OLab.Access.Interfaces;
 
 public interface IOLabAuthentication
 {
-  Users Authenticate(LoginRequest model, bool impersonateMode = false);
+  Task<Users> AuthenticateAsync(LoginRequest model, bool impersonateMode = false);
 
   string ExtractAccessToken(
     IReadOnlyDictionary<string, string> headers,
@@ -17,7 +18,7 @@ public interface IOLabAuthentication
   IDictionary<string, string> Claims { get; }
   TokenValidationParameters GetValidationParameters();
   AuthenticateResponse GenerateJwtToken(Users user, string referrer, string issuedBy = "olab");
-  AuthenticateResponse GenerateAnonymousJwtToken(uint mapId);
+  Task<AuthenticateResponse> GenerateAnonymousJwtTokenAsync(uint mapId);
   AuthenticateResponse GenerateExternalJwtToken(ExternalLoginRequest model);
 
 }

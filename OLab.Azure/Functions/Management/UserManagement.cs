@@ -66,7 +66,7 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to get user list" ) );
 
-      var dto = _userService.GetUsers( name );
+      var dto = await _userService.GetUsersAsync( name );
       return request
         .CreateResponse( OLabObjectListResult<UsersDto>.Result( dto ) );
     }

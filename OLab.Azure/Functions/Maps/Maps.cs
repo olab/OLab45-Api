@@ -196,32 +196,32 @@ public partial class MapsFunction : OLabFunction
   /// <param name="mapId">Map to add template to</param>
   /// <param name="CreateMapRequest.templateId">Template to add to map</param>
   /// <returns>IActionResult</returns>
-  [Function( "MapCreateFromTemplate" )]
-  public async Task<IActionResult> MapCreateFromTemplateAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}" )] HttpRequestData request,
-    FunctionContext executionContext, CancellationToken cancellationToken,
-    uint mapId
-  )
-  {
-    try
-    {
-      // validate token/setup up common properties
-      var auth = GetAuthorization( executionContext );
+  //[Function( "MapCreateFromTemplate" )]
+  //public async Task<IActionResult> MapCreateFromTemplateAsync(
+  //  [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}" )] HttpRequestData request,
+  //  FunctionContext executionContext, CancellationToken cancellationToken,
+  //  uint mapId
+  //)
+  //{
+  //  try
+  //  {
+  //    // validate token/setup up common properties
+  //    var auth = GetAuthorization( executionContext );
 
-      var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
+  //    var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
 
-      var dto = await _playerEndpoint.PostExtendMapAsync( auth, mapId, body );
-      return request
-        .CreateResponse( OLabObjectResult<ExtendMapResponse>.Result( dto ) );
-    }
-    catch ( Exception ex )
-    {
-      Logger.LogError( ex, "MapCreateFromTemplateAsync" );
+  //    var dto = await _playerEndpoint.PostExtendMapAsync( auth, mapId, body );
+  //    return request
+  //      .CreateResponse( OLabObjectResult<ExtendMapResponse>.Result( dto ) );
+  //  }
+  //  catch ( Exception ex )
+  //  {
+  //    Logger.LogError( ex, "MapCreateFromTemplateAsync" );
 
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
-    }
-  }
+  //    return request
+  //      .CreateResponse( OLabServerErrorResult.Result( ex ) );
+  //  }
+  //}
 
   /// <summary>
   /// Append template to an existing map

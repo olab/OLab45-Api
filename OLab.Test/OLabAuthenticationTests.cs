@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Xml;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Users = OLab.Api.Model.Users;
+using Moq.EntityFrameworkCore;
 
 namespace OLab.Test;
 
@@ -80,7 +81,7 @@ public class OLabAuthenticationTests
   }
 
   [Fact]
-  public void Authenticate_ShouldReturnUser_WhenCredentialsAreValid()
+  public async void Authenticate_ShouldReturnUser_WhenCredentialsAreValid()
   {
     var loginRequest = new LoginRequest
     {
@@ -104,15 +105,16 @@ public class OLabAuthenticationTests
     mockSet.As<IQueryable<Users>>().Setup( m => m.ElementType ).Returns( users.ElementType );
     mockSet.As<IQueryable<Users>>().Setup( m => m.GetEnumerator() ).Returns( users.GetEnumerator() );
 
-    _mockDbContext.Setup( c => c.Users ).Returns( mockSet.Object );
+    // https://stackoverflow.com/questions/51023223/the-provider-for-the-source-iqueryable-doesnt-implement-iasyncqueryprovider
+    _mockDbContext.Setup( x => x.Users ).ReturnsDbSet( mockSet.Object );
 
-    var result = _auth.Authenticate( loginRequest );
+    var result = await _auth.AuthenticateAsync( loginRequest );
     Assert.NotNull( result );
     Assert.Equal( loginRequest.Username, result.Username );
   }
 
   [Fact]
-  public void Authenticate_ShouldReturnNull_WhenCredentialsAreInvalid()
+  public async void Authenticate_ShouldReturnNull_WhenCredentialsAreInvalid()
   {
     var loginRequest = new LoginRequest
     {
@@ -136,9 +138,10 @@ public class OLabAuthenticationTests
     mockSet.As<IQueryable<Users>>().Setup( m => m.ElementType ).Returns( users.ElementType );
     mockSet.As<IQueryable<Users>>().Setup( m => m.GetEnumerator() ).Returns( users.GetEnumerator() );
 
-    _mockDbContext.Setup( c => c.Users ).Returns( mockSet.Object );
+    // https://stackoverflow.com/questions/51023223/the-provider-for-the-source-iqueryable-doesnt-implement-iasyncqueryprovider
+    _mockDbContext.Setup( x => x.Users ).ReturnsDbSet( mockSet.Object );
 
-    var result = _auth.Authenticate( loginRequest );
+    var result = await _auth.AuthenticateAsync( loginRequest );
     Assert.Null( result );
   }
   [Fact]

@@ -13,6 +13,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using OLab.Data.Mappers;
+using OLab.Data.ReaderWriters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,6 +21,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using Users = OLab.Api.Model.Users;
 
 namespace OLab.Azure.Services;
@@ -27,6 +29,7 @@ namespace OLab.Azure.Services;
 public class UserService : IUserService
 {
   public static int defaultTokenExpiryMinutes = 120;
+  private readonly UserReaderWriter _userReaderWriter;
   private readonly OLabDBContext _dbContext;
   private readonly IOLabConfiguration _config;
   private readonly IOLabLogger Logger;
@@ -61,6 +64,9 @@ public class UserService : IUserService
 
       defaultTokenExpiryMinutes = _config.GetAppSettings().TokenExpiryMinutes;
 
+      _userReaderWriter
+        = UserReaderWriter.Instance( GetLogger(), GetDbContext() );
+
       Logger.LogInformation( $"appSetting aud: '{_config.GetAppSettings().Audience}', secret: '{_config.GetAppSettings().Secret[ ..4 ]}...'" );
 
     }
@@ -73,43 +79,18 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// ReadAsync user by Id
-  /// </summary>
-  /// <param name="id">User id</param>
-  /// <returns>User record</returns>
-  public Users GetById(uint? id)
-  {
-    if ( !id.HasValue )
-      return null;
-    return GetDbContext()
-      .Users
-      .Include( "UserGrouproles" )
-      .FirstOrDefault( x => x.Id == id.Value );
-  }
-
-  /// <summary>
   /// Retrieves a list of users based on the provided name.
   /// </summary>
   /// <param name="name">The name to search for. If null or empty, all users are returned.</param>
   /// <returns>A list of user DTOs that match the search criteria.</returns>
-  public IList<UsersDto> GetUsers(string name)
+  public async Task<IList<UsersDto>> GetUsersAsync(string name)
   {
     IList<Users> users = new List<Users>();
 
     if ( !string.IsNullOrEmpty( name ) )
-    {
-      users = GetDbContext().Users
-        .Include( "UserGrouproles" )
-        .Include( "UserGrouproles.Group" )
-        .Include( "UserGrouproles.Role" )
-        .Where( x => x.Nickname.Contains( name ) || x.Username.Contains( name ) ).ToList();
-    }
+      users = await _userReaderWriter.GetNameLikeAsync( name );
     else
-      users = GetDbContext().Users
-        .Include( "UserGrouproles" )
-        .Include( "UserGrouproles.Group" )
-        .Include( "UserGrouproles.Role" )
-        .ToList();
+      users = await _userReaderWriter.GetAsync();
 
     var dtoList = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( users );
     return dtoList;
@@ -151,10 +132,6 @@ public class UserService : IUserService
   /// <returns>ADd user response</returns>
   public async Task<UsersDto> AddUserAsync(AddUserRequest model)
   {
-    var user = GetByUserName( model.Username );
-    if ( user != null )
-      throw new OLabBadRequestException( $"'{model.Username}' already exists" );
-
     Logger.LogInformation( $"adding user '{model.Username}'" );
 
     var newUserPhys = Users.CreatePhysFromRequest( null, model );
@@ -164,10 +141,12 @@ public class UserService : IUserService
     if ( model.PasswordProvided() )
       _auth.UpdatePassword( model.Password, newUserPhys );
 
-    await GetDbContext().Users.AddAsync( newUserPhys );
-    await GetDbContext().SaveChangesAsync();
+    newUserPhys = await _userReaderWriter.CreateAsync( newUserPhys );
+    if ( newUserPhys != null )
+      throw new OLabBadRequestException( $"'{model.Username}' already exists" );
 
-    var userDto = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( newUserPhys );
+    var userDto
+      = new UsersMapper( GetLogger(), GetDbContext() ).PhysicalToDto( newUserPhys );
     return userDto;
   }
 
@@ -185,9 +164,10 @@ public class UserService : IUserService
 
     // allow for either id or user name to search for
     if ( userRequest.Id > 0 )
-      user = GetById( userRequest.Id );
+      user = await _userReaderWriter.GetSingleAsync( userRequest.Id );
+
     else if ( !string.IsNullOrEmpty( userRequest.UserName ) )
-      user = GetByUserName( userRequest.UserName );
+      user = await _userReaderWriter.GetSingleAsync( userRequest.UserName );
 
     if ( user == null )
     {
@@ -198,11 +178,7 @@ public class UserService : IUserService
       };
     }
 
-    var physUser =
-      await GetDbContext().Users.FirstOrDefaultAsync( x => x.Id == userRequest.Id );
-
-    GetDbContext().Users.Remove( physUser );
-    await GetDbContext().SaveChangesAsync();
+    await _userReaderWriter.DeleteAsync( userRequest.Id );
 
     var response = new AddUserResponse
     {
@@ -386,26 +362,13 @@ public class UserService : IUserService
   }
 
   /// <summary>
-  /// ReadAsync user by name
-  /// </summary>
-  /// <param name="userName">User name</param>
-  /// <returns>User record</returns>
-  public Users GetByUserName(string userName)
-  {
-    return GetDbContext()
-      .Users
-      .Include( "UserGrouproles" )
-      .FirstOrDefault( x => x.Username.ToLower() == userName.ToLower() );
-  }
-
-  /// <summary>
   /// Edit user based on add user request
   /// </summary>
   /// <param name="model">USer request</param>
   /// <returns>Add user response</returns>
   public async Task<UsersDto> EditUserAsync(AddUserRequest model)
   {
-    var physUser = GetByUserName( model.Username );
+    var physUser = await _userReaderWriter.GetSingleAsync( model.Username );
     if ( physUser == null )
       throw new OLabBadRequestException( $"user: '{model.Username}' does not exist" );
 
@@ -424,12 +387,10 @@ public class UserService : IUserService
     if ( model.PasswordProvided() )
       _auth.UpdatePassword( model.Password, physUser );
 
-    GetDbContext().Users.Update( physUser );
-    await GetDbContext().SaveChangesAsync();
+    await _userReaderWriter.UpdateAsync( physUser );
 
     physUser.UserGrouproles.AddRange( model.GroupRoleObjects );
-    GetDbContext().Users.Update( physUser );
-    await GetDbContext().SaveChangesAsync();
+    await _userReaderWriter.UpdateAsync( physUser );
 
     // send cleartext password back with response
     if ( model.PasswordProvided() )
