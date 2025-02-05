@@ -1,5 +1,4 @@
 using Dawn;
-using Humanizer;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Api.Data;
@@ -33,7 +32,7 @@ public class FunctionAppUserContext : UserContext
 
     GetLogger().LogInformation( $"FunctionUserContext ctor" );
 
-    var executionContextHelper = 
+    var executionContextHelper =
       executionContext.Items[ nameof( ExecutionContextHelper ) ] as ExecutionContextHelper;
 
     LoadHostContext( executionContextHelper );

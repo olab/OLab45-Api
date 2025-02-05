@@ -1,0 +1,119 @@
+[
+  {
+    "Id": 1778,
+    "Username": "astevan",
+    "Password": "c7727c728b7a3963a5c29ddf2a0d9e2fe79745d7",
+    "Salt": "h3grzyfznppxx67k847oadjgdpy32ixr6jfbeee7s3u16f1odnmyvbbjcq7se3cd",
+    "Email": "adeline.stevan@usherbrooke.ca",
+    "Nickname": "Adeline Stevan",
+    "LanguageId": 0,
+    "TypeId": 0,
+    "ResetHashKey": null,
+    "ResetHashKeyTime": null,
+    "ResetAttempt": null,
+    "ResetTimestamp": null,
+    "VisualEditorAutosaveTime": 50000,
+    "OauthProviderId": null,
+    "OauthId": null,
+    "History": null,
+    "HistoryReadonly": null,
+    "HistoryTimestamp": null,
+    "ModeUi": "easy",
+    "IsLti": false,
+    "Settings": null,
+    "MapUsers": [],
+    "UserBookmarks": [],
+    "UserGrouproles": [
+      {
+        "Id": 6351,
+        "Iss": "olab",
+        "UserId": 1778,
+        "RoleId": 3,
+        "GroupId": 1,
+        "Group": {
+          "Id": 1,
+          "Name": "olab",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": [
+            {
+              "Id": 6352,
+              "Iss": "olab",
+              "UserId": 1778,
+              "RoleId": 10,
+              "GroupId": 1,
+              "Role": {
+                "Id": 10,
+                "Description": null,
+                "Name": "superuser",
+                "IsSystem": 1,
+                "GrouproleAcls": [],
+                "MapGrouproles": [],
+                "MapNodeGrouproles": [],
+                "UserGrouproles": []
+              }
+            }
+          ]
+        },
+        "Role": {
+          "Id": 3,
+          "Description": null,
+          "Name": "author",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        }
+      },
+      {
+        "Id": 6352,
+        "Iss": "olab",
+        "UserId": 1778,
+        "RoleId": 10,
+        "GroupId": 1,
+        "Group": {
+          "Id": 1,
+          "Name": "olab",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": [
+            {
+              "Id": 6351,
+              "Iss": "olab",
+              "UserId": 1778,
+              "RoleId": 3,
+              "GroupId": 1,
+              "Role": {
+                "Id": 3,
+                "Description": null,
+                "Name": "author",
+                "IsSystem": 1,
+                "GrouproleAcls": [],
+                "MapGrouproles": [],
+                "MapNodeGrouproles": [],
+                "UserGrouproles": []
+              }
+            }
+          ]
+        },
+        "Role": {
+          "Id": 10,
+          "Description": null,
+          "Name": "superuser",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        }
+      }
+    ],
+    "UserNotes": [],
+    "WebinarUsers": []
+  }
+]

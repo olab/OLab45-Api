@@ -97,7 +97,7 @@ namespace OLab.Azure.Functions
         Modules = modules
       };
 
-      Logger.LogInformation( $"  {JsonConvert.SerializeObject(response)}" );
+      Logger.LogInformation( $"  {JsonConvert.SerializeObject( response )}" );
 
       return new OLabObjectResult<HealthResult>( response );
     }

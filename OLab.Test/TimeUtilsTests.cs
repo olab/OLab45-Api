@@ -1,5 +1,4 @@
 using OLab.Common.Utils;
-using Xunit;
 
 namespace OLab.Test
 {

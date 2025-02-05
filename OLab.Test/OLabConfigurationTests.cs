@@ -1,10 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
-using OLab.Api.Utils;
 using OLab.Common.Utils;
-using Xunit;
 
 namespace OLab.Test
 {

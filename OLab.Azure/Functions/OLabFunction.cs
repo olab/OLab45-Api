@@ -11,12 +11,7 @@ using OLab.Azure.Services;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions;
@@ -37,7 +32,7 @@ public class OLabFunction
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 
-  protected ILogger GetLogger() { return (ILogger)Logger.GetLogger(); }
+  protected ILogger GetLogger() { return Logger.GetLogger(); }
 
   public OLabFunction(
     IOLabConfiguration configuration,
@@ -77,7 +72,7 @@ public class OLabFunction
     GetLogger().LogInformation( $"GetAuthorization executionContext items {string.Join( ", ", items )}" );
 
     // Get the user context set by the middleware
-    if ( executionContext.Items.TryGetValue( nameof( FunctionAppUserContext ), out var value ) && ( value is IUserContext userContext ) )
+    if ( executionContext.Items.TryGetValue( nameof( FunctionAppUserContext ), out var value ) && (value is IUserContext userContext) )
     {
       GetLogger().LogInformation( $"User context: {userContext}" );
 

@@ -1,10 +1,7 @@
-using OLab.Api.Data;
-using OLab.Common.Interfaces;
-using OLab.Api.Model;
 using Moq;
-using Xunit;
-using System.Collections.Generic;
-using System;
+using OLab.Api.Data;
+using OLab.Api.Model;
+using OLab.Common.Interfaces;
 using System.Security.Claims;
 
 namespace OLab.Test;

@@ -2,8 +2,7 @@ using Dawn;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using NuGet.Packaging;
-using NuGet.Packaging.Signing;
+using Newtonsoft.Json;
 using OLab.Api.Common;
 using OLab.Api.Data.Exceptions;
 using OLab.Api.Data.Interface;
@@ -16,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OLab.Access;
 
@@ -32,6 +30,7 @@ public class OLabAuthorization : IOLabAuthorization
   private readonly GroupReaderWriter _groupReaderWriter;
   private readonly RoleReaderWriter _roleReaderWriter;
   private readonly UserReaderWriter _userReaderWriter;
+  private readonly GroupRoleAclReaderWriter _groupRoleAclWriter;
   public IList<GrouproleAcls> GroupRoleAcls = new List<GrouproleAcls>();
   public IList<UserGrouproles> UserGroupRoles = new List<UserGrouproles>();
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
@@ -63,6 +62,7 @@ public class OLabAuthorization : IOLabAuthorization
     _groupReaderWriter = GroupReaderWriter.Instance( logger, dbContext );
     _roleReaderWriter = RoleReaderWriter.Instance( logger, dbContext );
     _userReaderWriter = UserReaderWriter.Instance( _logger, GetDbContext() );
+    _groupRoleAclWriter = GroupRoleAclReaderWriter.Instance( _logger, GetDbContext() );
   }
 
   /// <summary>
@@ -77,6 +77,13 @@ public class OLabAuthorization : IOLabAuthorization
     Issuer = "olab";
     UserGroupRoles = OLabUser.UserGrouproles.ToList();
     GroupRoleAcls = GetGroupRoleAcls();
+
+    //var rw = GroupRoleAclReaderWriter.Instance( _logger, _dbContext ).GetAsync().GetAwaiter().GetResult();
+    //var json = JsonConvert.SerializeObject( userPhys, new JsonSerializerSettings()
+    //{
+    //  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+    //  MaxDepth = 3
+    //} );
   }
 
   /// <summary>
@@ -107,21 +114,17 @@ public class OLabAuthorization : IOLabAuthorization
     // load all the user's group/roles acl records
     foreach ( var userGroups in UserGroupRoles.Select( x => x.Group ).Distinct() )
     {
-      var groupsPhys = GrouproleAcls.FindByGroup(
-        _dbContext,
-        userGroups.Name );
-
+      var groupsPhys
+        = _groupRoleAclWriter.FindByGroup( userGroups.Name );
       aclsList.AddRange( groupsPhys );
 
       // add default no-group acls
-      groupsPhys = GrouproleAcls.FindByGroup(
-        _dbContext,
-        string.Empty );
-
+      groupsPhys
+        = _groupRoleAclWriter.FindByGroup();
       aclsList.AddRange( groupsPhys );
     }
 
-    return aclsList;
+    return aclsList.Distinct().ToList();
   }
 
   /// <summary>

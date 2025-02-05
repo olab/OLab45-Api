@@ -1,5 +1,4 @@
 using OLab.Api.Model;
-using Xunit;
 
 namespace OLab.Test;
 

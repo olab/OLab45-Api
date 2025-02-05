@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Dto;
 using OLab.Api.Model;
-using System;
 using System.Threading.Tasks;
 
 namespace OLab.Api.Data.Interface;

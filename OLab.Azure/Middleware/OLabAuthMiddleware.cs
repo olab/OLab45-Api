@@ -14,9 +14,7 @@ using OLab.Common.Interfaces;
 using System;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace OLab.Azure.Middleware;
 
@@ -68,7 +66,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         var dbContext = executionContext.InstanceServices.GetRequiredService<OLabDBContext>();
 
         var authentication = new OLabAuthentication( _logger, _config, dbContext );
-        var token 
+        var token
           = OLabAuthentication.ExtractAccessToken( executionContextHelper.Request, false );
         authentication.ValidateToken( token );
 

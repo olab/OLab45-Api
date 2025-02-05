@@ -2,7 +2,6 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
@@ -99,7 +98,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      (string container, string folder) = SeparateFilePath( filePath );
+      (var container, var folder) = SeparateFilePath( filePath );
 
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
@@ -191,7 +190,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       logger.LogInformation( $"WriteFileAsync: {_containerName} {filePath}" );
 
-      (string container, string folder) = SeparateFilePath( filePath );
+      (var container, var folder) = SeparateFilePath( filePath );
       if ( container != _containerName )
         throw new UnauthorizedAccessException( "Invalid container" );
 
@@ -227,7 +226,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      (string container, string folder) = SeparateFilePath( filePath );
+      (var container, var folder) = SeparateFilePath( filePath );
       if ( container != _containerName )
         throw new UnauthorizedAccessException( "Invalid container" );
 
@@ -501,7 +500,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="fileName">The file name.</param>
   /// <returns>The public URL for the file.</returns>
   public override SystemFiles UpdateUrlPath(
-    string path, 
+    string path,
     SystemFiles source)
   {
     var physicalPath = BuildPath(

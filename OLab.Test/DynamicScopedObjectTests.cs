@@ -1,6 +1,4 @@
 using OLab.Api.Dto;
-using Xunit;
-using System.Collections.Generic;
 
 namespace OLab.Test
 {

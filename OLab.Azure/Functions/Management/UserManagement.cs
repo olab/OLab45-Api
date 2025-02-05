@@ -11,10 +11,10 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Dtos;
 using OLab.Data.Interface;
-using System.IO;
-using System.Text;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -51,7 +51,7 @@ public partial class UserManagement : OLabFunction
   [Function( "UsersGet" )]
   public async Task<IActionResult> UsersGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "auth/getusers/{name?}" )] HttpRequestData request,
-    FunctionContext hostContext, 
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     string name)
   {

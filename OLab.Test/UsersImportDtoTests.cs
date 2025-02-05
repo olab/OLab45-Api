@@ -1,6 +1,5 @@
 using OLab.Api.Model;
 using OLab.Data.Dtos;
-using Xunit;
 
 namespace OLab.Test;
 

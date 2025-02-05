@@ -1,6 +1,5 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
 using OLab.Access.Interfaces;
@@ -453,7 +452,7 @@ public class OLabAuthentication : IOLabAuthentication
   /// <returns>true, if changed</returns>
   public bool UpdatePassword(string newPassword, Users physUser)
   {
-    bool result = false;
+    var result = false;
     Guard.Argument( physUser, nameof( physUser ) ).NotNull();
 
     if ( string.IsNullOrEmpty( newPassword ) )
