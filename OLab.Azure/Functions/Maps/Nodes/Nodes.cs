@@ -260,12 +260,14 @@ public partial class MapNodesFunction : OLabFunction
       Guard.Argument( mapId, nameof( mapId ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodeDesignerPost" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
       var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>();
 
-      var dto = await _designerEndpoint.PostMapNodesAsync( auth, body );
+      var dto = await _designerEndpoint.PostMapNodesAsync( auth, mapId, body );
       return request
         .CreateResponse( OLabObjectResult<PostNewNodeResponse>.Result( dto ) );
 

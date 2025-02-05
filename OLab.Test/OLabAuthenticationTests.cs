@@ -200,4 +200,3 @@ public class OLabAuthenticationTests
     Assert.Throws<ArgumentNullException>( () => _auth.UpdatePassword( newPassword, user ) );
   }
 }
-
