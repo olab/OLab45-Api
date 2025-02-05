@@ -20,7 +20,6 @@ public class OLabAuthorizationTests
   private readonly Mock<IOLabConfiguration> _mockConfiguration;
   private readonly Mock<IUserContext> _mockUserContext;
   private readonly OLabAuthorization _authorization;
-  private readonly Api.Model.Users _testUser1;
 
   public OLabAuthorizationTests()
   {
@@ -45,20 +44,21 @@ public class OLabAuthorizationTests
         _mockConfiguration.Object
     );
 
-    _testUser1 = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserAStevan.json" ).First();
   }
 
   [Fact]
   public void ApplyUserContext_WithValidUser_SetsProperties()
   {
+    var testUser1 = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserAStevan.json" ).First();
+
     // Act
-    _authorization.ApplyUserContext( _testUser1 );
+    _authorization.ApplyUserContext( testUser1 );
 
     // Assert
-    Assert.Equal( _testUser1, _authorization.OLabUser );
+    Assert.Equal( testUser1, _authorization.OLabUser );
     Assert.Equal( "olab", _authorization.Issuer );
-    Assert.Equal( _testUser1.UserGrouproles.Count(), _authorization.UserGroupRoles.Count() );
-    Assert.Equal( 8, _authorization.GroupRoleAcls.Count() );
+    Assert.Equal( testUser1.UserGrouproles.Count, _authorization.UserGroupRoles.Count );
+    Assert.Equal( 8, _authorization.GroupRoleAcls.Count );
   }
 
 }

@@ -1,4 +1,5 @@
 using Dawn;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -78,8 +79,8 @@ public class OLabAuthorization : IOLabAuthorization
     UserGroupRoles = OLabUser.UserGrouproles.ToList();
     GroupRoleAcls = GetGroupRoleAcls();
 
-    //var rw = GroupRoleAclReaderWriter.Instance( _logger, _dbContext ).GetAsync().GetAwaiter().GetResult();
-    //var json = JsonConvert.SerializeObject( userPhys, new JsonSerializerSettings()
+    //var map = MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult();
+    //var json = JsonConvert.SerializeObject( map, new JsonSerializerSettings()
     //{
     //  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
     //  MaxDepth = 3
