@@ -1,0 +1,66 @@
+[
+	{
+		"Id": 1,
+		"Name": "olab",
+		"IsSystem": 1,
+		"GrouproleAcls": [
+			{
+				"Id": 187,
+				"ImageableId": null,
+				"ImageableType": "Apps",
+				"GroupId": 1,
+				"RoleId": 10,
+				"Acl2": 1,
+				"Role": null
+			},
+			{
+				"Id": 192,
+				"ImageableId": 1,
+				"ImageableType": "Apps",
+				"GroupId": 1,
+				"RoleId": 10,
+				"Acl2": 1,
+				"Role": null
+			},
+			{
+				"Id": 201,
+				"ImageableId": null,
+				"ImageableType": "Maps",
+				"GroupId": 1,
+				"RoleId": 3,
+				"Acl2": 7,
+				"Role": null
+			}
+		],
+		"MapGrouproles": [],
+		"MapNodeGrouproles": [],
+		"UserGrouproles": []
+	},
+	{
+		"Id": 2,
+		"Name": "anonymous",
+		"IsSystem": 1,
+		"GrouproleAcls": [],
+		"MapGrouproles": [],
+		"MapNodeGrouproles": [],
+		"UserGrouproles": []
+	},
+	{
+		"Id": 3,
+		"Name": "external",
+		"IsSystem": 1,
+		"GrouproleAcls": [],
+		"MapGrouproles": [],
+		"MapNodeGrouproles": [],
+		"UserGrouproles": []
+	},
+	{
+		"Id": 24,
+		"Name": "mru",
+		"IsSystem": 1,
+		"GrouproleAcls": [],
+		"MapGrouproles": [],
+		"MapNodeGrouproles": [],
+		"UserGrouproles": []
+	}
+]

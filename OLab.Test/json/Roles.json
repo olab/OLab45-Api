@@ -1,0 +1,139 @@
+[
+  {
+    "Id": 3,
+    "Description": null,
+    "Name": "author",
+    "IsSystem": 1,
+    "GrouproleAcls": [
+      {
+        "Id": 201,
+        "ImageableId": null,
+        "ImageableType": "Maps",
+        "GroupId": 1,
+        "RoleId": 3,
+        "Acl2": 7,
+        "Group": null
+      },
+      {
+        "Id": 194,
+        "ImageableId": 3,
+        "ImageableType": "Apps",
+        "GroupId": null,
+        "RoleId": 3,
+        "Acl2": 1,
+        "Group": null
+      },
+      {
+        "Id": 203,
+        "ImageableId": 5,
+        "ImageableType": "Apps",
+        "GroupId": null,
+        "RoleId": 3,
+        "Acl2": 7,
+        "Group": null
+      }
+    ],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 4,
+    "Description": null,
+    "Name": "director",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 5,
+    "Description": null,
+    "Name": "guest",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 6,
+    "Description": null,
+    "Name": "learner",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 10,
+    "Description": null,
+    "Name": "superuser",
+    "IsSystem": 1,
+    "GrouproleAcls": [
+      {
+        "Id": 187,
+        "ImageableId": null,
+        "ImageableType": "Apps",
+        "GroupId": 1,
+        "RoleId": 10,
+        "Acl2": 1,
+        "Group": null
+      },
+      {
+        "Id": 192,
+        "ImageableId": 1,
+        "ImageableType": "Apps",
+        "GroupId": 1,
+        "RoleId": 10,
+        "Acl2": 1,
+        "Group": null
+      }
+    ],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 17,
+    "Description": null,
+    "Name": "administrator",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 18,
+    "Description": null,
+    "Name": "student",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 19,
+    "Description": null,
+    "Name": "importer",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 20,
+    "Description": null,
+    "Name": "moderator",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  }
+]

@@ -45,7 +45,7 @@ public class OLabAuthorization : IOLabAuthorization
 
   public OLabDBContext GetDbContext() { return _dbContext; }
 
-  protected ILogger GetLogger() { return _logger.GetLogger(); }
+  protected IOLabLogger GetLogger() { return _logger; }
 
   public OLabAuthorization(
     IOLabLogger logger,
@@ -79,8 +79,11 @@ public class OLabAuthorization : IOLabAuthorization
     UserGroupRoles = OLabUser.UserGrouproles.ToList();
     GroupRoleAcls = GetGroupRoleAcls();
 
-    //var map = MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult();
-    //var json = JsonConvert.SerializeObject( map, new JsonSerializerSettings()
+    //var obj = MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult();
+    //var obj = RoleReaderWriter.Instance( _logger, _dbContext ).GetPagedAsync(null, null).GetAwaiter().GetResult();
+    //var obj = _dbContext.SystemApplications.ToList();
+    //var obj = UserReaderWriter.Instance( _logger, _dbContext ).GetSingleAsync("guest").GetAwaiter().GetResult();
+    //var json = JsonConvert.SerializeObject( obj, new JsonSerializerSettings()
     //{
     //  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
     //  MaxDepth = 3

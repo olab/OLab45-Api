@@ -28,15 +28,10 @@ public class OLabAuthorizationTests
     _mockConfiguration = new Mock<IOLabConfiguration>();
     _mockUserContext = new Mock<IUserContext>();
 
-    var groupRoleList = TestUtilities.LoadRecordsFromJson<GrouproleAcls>( "json\\GroupRoleAcls.json" );
-
-    var mockSet = new Mock<DbSet<GrouproleAcls>>();
-    mockSet.As<IQueryable<GrouproleAcls>>().Setup( m => m.Provider ).Returns( groupRoleList.Provider );
-    mockSet.As<IQueryable<GrouproleAcls>>().Setup( m => m.Expression ).Returns( groupRoleList.Expression );
-    mockSet.As<IQueryable<GrouproleAcls>>().Setup( m => m.ElementType ).Returns( groupRoleList.ElementType );
-    mockSet.As<IQueryable<GrouproleAcls>>().Setup( m => m.GetEnumerator() ).Returns( () => groupRoleList.GetEnumerator() );
-
-    _mockDbContext.Setup( c => c.GrouproleAcls ).Returns( mockSet.Object );
+    TestUtilities.LoadGroupRoleAclFile( _mockDbContext, "json\\GroupRoleAcls.json" );
+    TestUtilities.LoadGroupFile( _mockDbContext, "json\\Groups.json" );
+    TestUtilities.LoadRoleFile( _mockDbContext, "json\\Roles.json" );
+    TestUtilities.LoadSystemApplicationsFromJson( _mockDbContext, "json\\SystemApplications.json" );
 
     _authorization = new OLabAuthorization(
         _mockLogger.Object,
@@ -49,16 +44,43 @@ public class OLabAuthorizationTests
   [Fact]
   public void ApplyUserContext_WithValidUser_SetsProperties()
   {
-    var testUser1 = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserAStevan.json" ).First();
+    var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserAStevan.json" ).First();
 
     // Act
-    _authorization.ApplyUserContext( testUser1 );
+    _authorization.ApplyUserContext( testUser );
 
     // Assert
-    Assert.Equal( testUser1, _authorization.OLabUser );
+    Assert.Equal( testUser, _authorization.OLabUser );
     Assert.Equal( "olab", _authorization.Issuer );
-    Assert.Equal( testUser1.UserGrouproles.Count, _authorization.UserGroupRoles.Count );
+    Assert.Equal( testUser.UserGrouproles.Count, _authorization.UserGroupRoles.Count );
     Assert.Equal( 8, _authorization.GroupRoleAcls.Count );
+  }
+
+  [Fact]
+  public async Task ApplyAuth_WithValidUser_HasAccessToMapAsync()
+  {
+    var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserAStevan.json" ).First();
+    var mapList = TestUtilities.LoadRecordsFromJson<Maps>( "json\\Map5.json" );
+
+    // Act
+    _authorization.ApplyUserContext( testUser );
+    var result = await _authorization.HasAccessAsync( 7u, "Maps", 5 );
+
+    // Assert
+    Assert.True( result );
+  }
+
+  [Fact]
+  public async Task ApplyAuth_WithGuestUser_HasNoAccessToDesignerAsync()
+  {
+    var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserGuest.json" ).First();
+    var mapList = TestUtilities.LoadRecordsFromJson<Maps>( "json\\Map5.json" );
+
+    // Act
+    var result = await _authorization.HasAccessToAppAsync( testUser, "designer" );
+
+    // Assert
+    Assert.False( result );
   }
 
 }
