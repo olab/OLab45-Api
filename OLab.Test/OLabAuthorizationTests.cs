@@ -53,7 +53,7 @@ public class OLabAuthorizationTests
     Assert.Equal( testUser, _authorization.OLabUser );
     Assert.Equal( "olab", _authorization.Issuer );
     Assert.Equal( testUser.UserGrouproles.Count, _authorization.UserGroupRoles.Count );
-    Assert.Equal( 8, _authorization.GroupRoleAcls.Count );
+    Assert.Equal( 9, _authorization.GroupRoleAcls.Count );
   }
 
   [Fact]
@@ -64,7 +64,21 @@ public class OLabAuthorizationTests
 
     // Act
     _authorization.ApplyUserContext( testUser );
-    var result = await _authorization.HasAccessAsync( 7u, "Maps", 5 );
+    var result = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskFull, 
+      "Maps", 5 );
+
+    // Assert
+    Assert.True( result );
+  }
+
+  [Fact]
+  public async Task ApplyAuth_WithValidUser_HasAccessToDesignerAsync()
+  {
+    var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserAStevan.json" ).First();
+
+    // Act
+    var result = await _authorization.HasAccessToAppAsync( testUser, "designer" );
 
     // Assert
     Assert.True( result );
@@ -74,7 +88,6 @@ public class OLabAuthorizationTests
   public async Task ApplyAuth_WithGuestUser_HasNoAccessToDesignerAsync()
   {
     var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserGuest.json" ).First();
-    var mapList = TestUtilities.LoadRecordsFromJson<Maps>( "json\\Map5.json" );
 
     // Act
     var result = await _authorization.HasAccessToAppAsync( testUser, "designer" );
@@ -83,4 +96,16 @@ public class OLabAuthorizationTests
     Assert.False( result );
   }
 
+  [Fact]
+  public async Task ApplyAuth_WithGuestUser_HasNoAccessToPlayerAsync()
+  {
+    var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserGuest.json" ).First();
+    var mapList = TestUtilities.LoadRecordsFromJson<Maps>( "json\\Map5.json" );
+
+    // Act
+    var result = await _authorization.HasAccessToAppAsync( testUser, "player" );
+
+    // Assert
+    Assert.True( result );
+  }
 }

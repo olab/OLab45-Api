@@ -7,6 +7,7 @@ namespace OLab.Api.Data.Interface;
 
 public interface IOLabAuthorization
 {
+  public const ulong AclBitMaskFull = 7;
   public const ulong AclBitMaskRead = 4;
   public const ulong AclBitMaskWrite = 2;
   public const ulong AclBitMaskExecute = 1;

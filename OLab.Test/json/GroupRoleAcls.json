@@ -10,63 +10,7 @@
       "Id": 1,
       "Name": "olab",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 192,
-          "ImageableId": 1,
-          "ImageableType": "Apps",
-          "GroupId": 1,
-          "RoleId": 10,
-          "Acl2": 1,
-          "Role": {
-            "Id": 10,
-            "Description": null,
-            "Name": "superuser",
-            "IsSystem": 1,
-            "GrouproleAcls": [],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        },
-        {
-          "Id": 201,
-          "ImageableId": null,
-          "ImageableType": "Maps",
-          "GroupId": 1,
-          "RoleId": 3,
-          "Acl2": 7,
-          "Role": {
-            "Id": 3,
-            "Description": null,
-            "Name": "author",
-            "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 194,
-                "ImageableId": 3,
-                "ImageableType": "Apps",
-                "GroupId": null,
-                "RoleId": 3,
-                "Acl2": 1,
-                "Group": null
-              },
-              {
-                "Id": 203,
-                "ImageableId": 5,
-                "ImageableType": "Apps",
-                "GroupId": null,
-                "RoleId": 3,
-                "Acl2": 7,
-                "Group": null
-              }
-            ],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -88,45 +32,7 @@
             "Id": 1,
             "Name": "olab",
             "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 201,
-                "ImageableId": null,
-                "ImageableType": "Maps",
-                "GroupId": 1,
-                "RoleId": 3,
-                "Acl2": 7,
-                "Role": {
-                  "Id": 3,
-                  "Description": null,
-                  "Name": "author",
-                  "IsSystem": 1,
-                  "GrouproleAcls": [
-                    {
-                      "Id": 194,
-                      "ImageableId": 3,
-                      "ImageableType": "Apps",
-                      "GroupId": null,
-                      "RoleId": 3,
-                      "Acl2": 1,
-                      "Group": null
-                    },
-                    {
-                      "Id": 203,
-                      "ImageableId": 5,
-                      "ImageableType": "Apps",
-                      "GroupId": null,
-                      "RoleId": 3,
-                      "Acl2": 7,
-                      "Group": null
-                    }
-                  ],
-                  "MapGrouproles": [],
-                  "MapNodeGrouproles": [],
-                  "UserGrouproles": []
-                }
-              }
-            ],
+            "GrouproleAcls": [],
             "MapGrouproles": [],
             "MapNodeGrouproles": [],
             "UserGrouproles": []
@@ -179,63 +85,7 @@
       "Id": 1,
       "Name": "olab",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 187,
-          "ImageableId": null,
-          "ImageableType": "Apps",
-          "GroupId": 1,
-          "RoleId": 10,
-          "Acl2": 1,
-          "Role": {
-            "Id": 10,
-            "Description": null,
-            "Name": "superuser",
-            "IsSystem": 1,
-            "GrouproleAcls": [],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        },
-        {
-          "Id": 201,
-          "ImageableId": null,
-          "ImageableType": "Maps",
-          "GroupId": 1,
-          "RoleId": 3,
-          "Acl2": 7,
-          "Role": {
-            "Id": 3,
-            "Description": null,
-            "Name": "author",
-            "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 194,
-                "ImageableId": 3,
-                "ImageableType": "Apps",
-                "GroupId": null,
-                "RoleId": 3,
-                "Acl2": 1,
-                "Group": null
-              },
-              {
-                "Id": 203,
-                "ImageableId": 5,
-                "ImageableType": "Apps",
-                "GroupId": null,
-                "RoleId": 3,
-                "Acl2": 7,
-                "Group": null
-              }
-            ],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -245,63 +95,7 @@
       "Description": null,
       "Name": "superuser",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 187,
-          "ImageableId": null,
-          "ImageableType": "Apps",
-          "GroupId": 1,
-          "RoleId": 10,
-          "Acl2": 1,
-          "Group": {
-            "Id": 1,
-            "Name": "olab",
-            "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 201,
-                "ImageableId": null,
-                "ImageableType": "Maps",
-                "GroupId": 1,
-                "RoleId": 3,
-                "Acl2": 7,
-                "Role": {
-                  "Id": 3,
-                  "Description": null,
-                  "Name": "author",
-                  "IsSystem": 1,
-                  "GrouproleAcls": [
-                    {
-                      "Id": 194,
-                      "ImageableId": 3,
-                      "ImageableType": "Apps",
-                      "GroupId": null,
-                      "RoleId": 3,
-                      "Acl2": 1,
-                      "Group": null
-                    },
-                    {
-                      "Id": 203,
-                      "ImageableId": 5,
-                      "ImageableType": "Apps",
-                      "GroupId": null,
-                      "RoleId": 3,
-                      "Acl2": 7,
-                      "Group": null
-                    }
-                  ],
-                  "MapGrouproles": [],
-                  "MapNodeGrouproles": [],
-                  "UserGrouproles": []
-                }
-              }
-            ],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -320,89 +114,7 @@
       "Description": null,
       "Name": "author",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 201,
-          "ImageableId": null,
-          "ImageableType": "Maps",
-          "GroupId": 1,
-          "RoleId": 3,
-          "Acl2": 7,
-          "Group": {
-            "Id": 1,
-            "Name": "olab",
-            "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 187,
-                "ImageableId": null,
-                "ImageableType": "Apps",
-                "GroupId": 1,
-                "RoleId": 10,
-                "Acl2": 1,
-                "Role": {
-                  "Id": 10,
-                  "Description": null,
-                  "Name": "superuser",
-                  "IsSystem": 1,
-                  "GrouproleAcls": [
-                    {
-                      "Id": 192,
-                      "ImageableId": 1,
-                      "ImageableType": "Apps",
-                      "GroupId": 1,
-                      "RoleId": 10,
-                      "Acl2": 1
-                    }
-                  ],
-                  "MapGrouproles": [],
-                  "MapNodeGrouproles": [],
-                  "UserGrouproles": []
-                }
-              },
-              {
-                "Id": 192,
-                "ImageableId": 1,
-                "ImageableType": "Apps",
-                "GroupId": 1,
-                "RoleId": 10,
-                "Acl2": 1,
-                "Role": {
-                  "Id": 10,
-                  "Description": null,
-                  "Name": "superuser",
-                  "IsSystem": 1,
-                  "GrouproleAcls": [
-                    {
-                      "Id": 187,
-                      "ImageableId": null,
-                      "ImageableType": "Apps",
-                      "GroupId": 1,
-                      "RoleId": 10,
-                      "Acl2": 1
-                    }
-                  ],
-                  "MapGrouproles": [],
-                  "MapNodeGrouproles": [],
-                  "UserGrouproles": []
-                }
-              }
-            ],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        },
-        {
-          "Id": 203,
-          "ImageableId": 5,
-          "ImageableType": "Apps",
-          "GroupId": null,
-          "RoleId": 3,
-          "Acl2": 7,
-          "Group": null
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -429,25 +141,7 @@
       "Description": null,
       "Name": "learner",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 197,
-          "ImageableId": 2,
-          "ImageableType": "Apps",
-          "GroupId": 24,
-          "RoleId": 6,
-          "Acl2": 1,
-          "Group": {
-            "Id": 24,
-            "Name": "mru",
-            "IsSystem": 1,
-            "GrouproleAcls": [],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -474,25 +168,7 @@
       "Description": null,
       "Name": "learner",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 195,
-          "ImageableId": 2,
-          "ImageableType": "Apps",
-          "GroupId": 3,
-          "RoleId": 6,
-          "Acl2": 1,
-          "Group": {
-            "Id": 3,
-            "Name": "external",
-            "IsSystem": 1,
-            "GrouproleAcls": [],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -509,62 +185,7 @@
       "Id": 1,
       "Name": "olab",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 187,
-          "ImageableId": null,
-          "ImageableType": "Apps",
-          "GroupId": 1,
-          "RoleId": 10,
-          "Acl2": 1,
-          "Role": {
-            "Id": 10,
-            "Description": null,
-            "Name": "superuser",
-            "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 192,
-                "ImageableId": 1,
-                "ImageableType": "Apps",
-                "GroupId": 1,
-                "RoleId": 10,
-                "Acl2": 1
-              }
-            ],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        },
-        {
-          "Id": 192,
-          "ImageableId": 1,
-          "ImageableType": "Apps",
-          "GroupId": 1,
-          "RoleId": 10,
-          "Acl2": 1,
-          "Role": {
-            "Id": 10,
-            "Description": null,
-            "Name": "superuser",
-            "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 187,
-                "ImageableId": null,
-                "ImageableType": "Apps",
-                "GroupId": 1,
-                "RoleId": 10,
-                "Acl2": 1
-              }
-            ],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -574,26 +195,7 @@
       "Description": null,
       "Name": "author",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 194,
-          "ImageableId": 3,
-          "ImageableType": "Apps",
-          "GroupId": null,
-          "RoleId": 3,
-          "Acl2": 1,
-          "Group": null
-        },
-        {
-          "Id": 203,
-          "ImageableId": 5,
-          "ImageableType": "Apps",
-          "GroupId": null,
-          "RoleId": 3,
-          "Acl2": 7,
-          "Group": null
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
@@ -612,92 +214,20 @@
       "Description": null,
       "Name": "author",
       "IsSystem": 1,
-      "GrouproleAcls": [
-        {
-          "Id": 194,
-          "ImageableId": 3,
-          "ImageableType": "Apps",
-          "GroupId": null,
-          "RoleId": 3,
-          "Acl2": 1,
-          "Group": null
-        },
-        {
-          "Id": 201,
-          "ImageableId": null,
-          "ImageableType": "Maps",
-          "GroupId": 1,
-          "RoleId": 3,
-          "Acl2": 7,
-          "Group": {
-            "Id": 1,
-            "Name": "olab",
-            "IsSystem": 1,
-            "GrouproleAcls": [
-              {
-                "Id": 187,
-                "ImageableId": null,
-                "ImageableType": "Apps",
-                "GroupId": 1,
-                "RoleId": 10,
-                "Acl2": 1,
-                "Role": {
-                  "Id": 10,
-                  "Description": null,
-                  "Name": "superuser",
-                  "IsSystem": 1,
-                  "GrouproleAcls": [
-                    {
-                      "Id": 192,
-                      "ImageableId": 1,
-                      "ImageableType": "Apps",
-                      "GroupId": 1,
-                      "RoleId": 10,
-                      "Acl2": 1
-                    }
-                  ],
-                  "MapGrouproles": [],
-                  "MapNodeGrouproles": [],
-                  "UserGrouproles": []
-                }
-              },
-              {
-                "Id": 192,
-                "ImageableId": 1,
-                "ImageableType": "Apps",
-                "GroupId": 1,
-                "RoleId": 10,
-                "Acl2": 1,
-                "Role": {
-                  "Id": 10,
-                  "Description": null,
-                  "Name": "superuser",
-                  "IsSystem": 1,
-                  "GrouproleAcls": [
-                    {
-                      "Id": 187,
-                      "ImageableId": null,
-                      "ImageableType": "Apps",
-                      "GroupId": 1,
-                      "RoleId": 10,
-                      "Acl2": 1
-                    }
-                  ],
-                  "MapGrouproles": [],
-                  "MapNodeGrouproles": [],
-                  "UserGrouproles": []
-                }
-              }
-            ],
-            "MapGrouproles": [],
-            "MapNodeGrouproles": [],
-            "UserGrouproles": []
-          }
-        }
-      ],
+      "GrouproleAcls": [],
       "MapGrouproles": [],
       "MapNodeGrouproles": [],
       "UserGrouproles": []
     }
+  },
+  {
+    "Id": 204,
+    "ImageableId": 4,
+    "ImageableType": "Apps",
+    "GroupId": null,
+    "RoleId": null,
+    "Acl2": 7,
+    "Group": null,
+    "Role": null
   }
 ]
