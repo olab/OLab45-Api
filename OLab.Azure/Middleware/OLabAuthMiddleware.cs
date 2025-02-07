@@ -57,8 +57,8 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     {
       _logger.LogInformation( "OLabAuthMiddleware invoke" );
 
-      var executionContextHelper = executionContext.Items[ nameof( ExecutionContextHelper ) ] as ExecutionContextHelper;
-      Guard.Argument( executionContextHelper ).NotNull( nameof( executionContextHelper ) );
+      var bootstrapContext = executionContext.Items[ nameof( BootstrapMiddlewareContext ) ] as BootstrapMiddlewareContext;
+      Guard.Argument( bootstrapContext ).NotNull( nameof( bootstrapContext ) );
 
       try
       {
@@ -67,15 +67,15 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 
         var authentication = new OLabAuthentication( _logger, _config, dbContext );
         var token
-          = OLabAuthentication.ExtractAccessToken( executionContextHelper.Request, false );
+          = OLabAuthentication.ExtractAccessToken( bootstrapContext.Request, false );
         authentication.ValidateToken( token );
 
         // these must be set before building UserContextService 
         executionContext.Items.Add( "claims", authentication.Claims );
 
         // This is added pre-function execution, function will have access to this information
-        var userContext = new FunctionAppUserContext( _logger, executionContext, dbContext );
-        executionContext.Items.Add( nameof( FunctionAppUserContext ), userContext );
+        var userContext = new OLabAuthMiddlewareContext( _logger, executionContext, dbContext );
+        executionContext.Items.Add( nameof( OLabAuthMiddlewareContext ), userContext );
 
         // This happens after function execution. We can inspect the context after the function
         // was invoked

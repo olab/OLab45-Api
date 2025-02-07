@@ -549,6 +549,8 @@ public class OLabAuthorization : IOLabAuthorization
     var uri = new Uri( refererValue );
 
     // if no path, and referrer from localhost then this is probably local
+    var corsParts = _configuration.GetAppSettings().Cors.Replace(" ", "").Split( ',' ).ToList();
+
     if ( uri.PathAndQuery == "/" && _configuration.GetAppSettings().Cors.Contains( refererValue ) )
       return "localhost";
 

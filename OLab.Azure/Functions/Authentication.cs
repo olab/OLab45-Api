@@ -28,7 +28,7 @@ public class AuthenticationFunction : OLabFunction
   private readonly IOLabAuthorization _authorization;
 
   public AuthenticationFunction(
-      Microsoft.Extensions.Logging.ILoggerFactory loggerFactory,
+      ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
       IUserService userService,
       IOLabAuthentication authentication,

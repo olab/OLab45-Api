@@ -9,20 +9,21 @@ using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 #nullable disable
 
 namespace OLab.Azure.Services;
 
-public class FunctionAppUserContext : UserContext
+public class OLabAuthMiddlewareContext : UserContext
 {
   // default ctor, needed for services Dependancy Injection
-  public FunctionAppUserContext()
+  public OLabAuthMiddlewareContext()
   {
 
   }
 
-  public FunctionAppUserContext(
+  public OLabAuthMiddlewareContext(
     IOLabLogger logger,
     FunctionContext executionContext,
     OLabDBContext dbContext) : base( logger, dbContext )
@@ -33,7 +34,7 @@ public class FunctionAppUserContext : UserContext
     GetLogger().LogInformation( $"FunctionUserContext ctor" );
 
     var executionContextHelper =
-      executionContext.Items[ nameof( ExecutionContextHelper ) ] as ExecutionContextHelper;
+      executionContext.Items[ nameof( BootstrapMiddlewareContext ) ] as BootstrapMiddlewareContext;
 
     LoadHostContext( executionContextHelper );
   }
@@ -64,7 +65,7 @@ public class FunctionAppUserContext : UserContext
     return "<unknown>";
   }
 
-  protected void LoadHostContext(ExecutionContextHelper executionContextHelper)
+  protected void LoadHostContext(BootstrapMiddlewareContext executionContextHelper)
   {
     var req = executionContextHelper.ExecutionContext.GetHttpRequestData();
     IPAddress = GetRequestIpAddress( req );
@@ -75,7 +76,18 @@ public class FunctionAppUserContext : UserContext
     var claims = claimsObject as IDictionary<string, string>;
     SetClaims( claims );
 
-    SetHeaders( executionContextHelper.Headers );
+    var sessionId = executionContextHelper.GetHeader( HEADER_SESSIONID, false );
+    if ( sessionId != string.Empty )
+    {
+      if ( !string.IsNullOrEmpty( sessionId ) && sessionId != "null" )
+      {
+        SessionId = sessionId;
+        if ( !string.IsNullOrWhiteSpace( SessionId ) )
+          GetLogger().LogInformation( $"Found {HEADER_SESSIONID} '{SessionId}'." );
+      }
+    }
+    else
+      GetLogger().LogWarning( $"no {HEADER_SESSIONID} provided" );
 
     LoadUserContext();
 

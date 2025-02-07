@@ -13,7 +13,7 @@ namespace OLab.Azure.Utils;
 /// Helper class to manage and extract information
 /// from the Azure Function execution context.
 /// </summary>
-public class ExecutionContextHelper
+public class BootstrapMiddlewareContext
 {
   public string FunctionName { get; private set; }
   //public IReadOnlyDictionary<string, string> Headers { get; private set; }
@@ -26,14 +26,14 @@ public class ExecutionContextHelper
 
   private readonly IOLabLogger _logger;
 
-  public ExecutionContextHelper(FunctionContext executionContext, IOLabLogger logger)
+  public BootstrapMiddlewareContext(FunctionContext executionContext, IOLabLogger logger)
   {
     ExecutionContext = executionContext;
     _logger = logger;
 
     try
     {
-      _logger.LogInformation( $"ExecutionContextHelper ctor" );
+      _logger.LogInformation( $"BootstrapMiddlewareContext ctor" );
 
       FunctionName = executionContext.FunctionDefinition.Name.ToLower();
       Guard.Argument( FunctionName ).NotEmpty( nameof( FunctionName ) );
@@ -44,7 +44,6 @@ public class ExecutionContextHelper
 
       InputBindings = executionContext.FunctionDefinition.InputBindings;
       Headers = ExtractHeaders( httpRequestData );
-      _logger.LogInformation( $"found {Headers.Count} headers" );
 
       BindingData = executionContext.BindingContext.BindingData;
       Guard.Argument( BindingData ).NotNull( nameof( BindingData ) );
@@ -58,7 +57,7 @@ public class ExecutionContextHelper
     }
     catch ( Exception ex )
     {
-      _logger.LogError( ex, "ExecutionContextHelper exception" );
+      _logger.LogError( ex, "BootstrapMiddlewareContext exception" );
       throw;
     }
 
@@ -75,10 +74,29 @@ public class ExecutionContextHelper
     foreach ( var header in httpRequestData.Headers )
       flatHeaderDict.Add( header.Key.ToLower(), header.Value.First() );
 
-    //foreach ( var header in flatHeaderDict )
-    //  _logger.LogInformation( $"  header: {header.Key} = {header.Value}" );
+    _logger.LogInformation( $"found {Headers.Count} headers" );
+    foreach ( var header in flatHeaderDict )
+      _logger.LogInformation( $"  header: {header.Key} = {header.Value}" );
 
     return flatHeaderDict;
+  }
+
+  /// <summary>
+  /// Retrieves the value of a specified header from the request headers.
+  /// </summary>
+  /// <param name="key">The key of the header to retrieve.</param>
+  /// <param name="isRequired">Indicates whether the header is required. If true, an exception is thrown if the header is not found.</param>
+  /// <returns>The value of the specified header if found; otherwise, an empty string if the header is not required and not found.</returns>
+  /// <exception cref="Exception">Thrown if the header is required and not found.</exception>
+  public string GetHeader(string key, bool isRequired = true)
+  {
+    if ( Headers.TryGetValue( key.ToLower(), out var value ) )
+      return value;
+
+    if ( isRequired )
+      throw new Exception( $"header value '{key}' does not exist" );
+
+    return string.Empty;
   }
 
   public override string ToString()

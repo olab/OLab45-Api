@@ -32,7 +32,7 @@ public class OLabFunction
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 
-  protected ILogger GetLogger() { return Logger.GetLogger(); }
+  protected IOLabLogger GetLogger() { return Logger; }
 
   public OLabFunction(
     IOLabConfiguration configuration,
@@ -72,7 +72,7 @@ public class OLabFunction
     GetLogger().LogInformation( $"GetAuthorization executionContext items {string.Join( ", ", items )}" );
 
     // Get the user context set by the middleware
-    if ( executionContext.Items.TryGetValue( nameof( FunctionAppUserContext ), out var value ) && (value is IUserContext userContext) )
+    if ( executionContext.Items.TryGetValue( nameof( OLabAuthMiddlewareContext ), out var value ) && (value is IUserContext userContext) )
     {
       GetLogger().LogInformation( $"User context: {userContext}" );
 

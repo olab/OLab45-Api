@@ -29,8 +29,8 @@ public class BootstrapMiddleware : IFunctionsWorkerMiddleware
 
   public async Task Invoke(FunctionContext executionContext, FunctionExecutionDelegate next)
   {
-    var contextInfo = new ExecutionContextHelper( executionContext, _logger );
-    executionContext.Items.Add( nameof( ExecutionContextHelper ), contextInfo );
+    var contextInfo = new BootstrapMiddlewareContext( executionContext, _logger );
+    executionContext.Items.Add( nameof( BootstrapMiddlewareContext ), contextInfo );
 
     await next( executionContext );
   }
