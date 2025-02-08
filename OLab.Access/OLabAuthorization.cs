@@ -82,12 +82,12 @@ public class OLabAuthorization : IOLabAuthorization
     //var obj = MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult();
     //var obj = RoleReaderWriter.Instance( _logger, _dbContext ).GetPagedAsync(null, null).GetAwaiter().GetResult();
     //var obj = _dbContext.SystemApplications.ToList();
-    var obj = UserReaderWriter.Instance( _logger, _dbContext ).GetSingleAsync("guest").GetAwaiter().GetResult();
-    var json = JsonConvert.SerializeObject( obj, new JsonSerializerSettings()
-    {
-      ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-      MaxDepth = 3
-    } );
+    //var obj = UserReaderWriter.Instance( _logger, _dbContext ).GetSingleAsync("guest").GetAwaiter().GetResult();
+    //var json = JsonConvert.SerializeObject( obj, new JsonSerializerSettings()
+    //{
+    //  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+    //  MaxDepth = 3
+    //} );
   }
 
   /// <summary>

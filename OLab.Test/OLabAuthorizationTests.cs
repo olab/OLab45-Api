@@ -95,7 +95,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task ApplyAuth_WithGuestUser_HasNoAccessToPlayerAsync()
+  public async Task ApplyAuth_WithGuestUser_HasAccessToPlayerAsync()
   {
     var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserGuest.json" ).First();
     var mapList = TestUtilities.LoadRecordsFromJson<Maps>( "json\\Map5.json" );

@@ -8,6 +8,9 @@ internal static class TestUtilities
 {
   public static IQueryable<T> LoadRecordsFromJson<T>(string filePath)
   {
+    if ( !File.Exists( filePath ) )
+      throw new FileNotFoundException( $"File not found: {filePath}" );
+
     var json = File.ReadAllText( filePath );
     var data = JsonConvert.DeserializeObject<List<T>>( json );
     return data?.AsQueryable() ?? Enumerable.Empty<T>().AsQueryable();
