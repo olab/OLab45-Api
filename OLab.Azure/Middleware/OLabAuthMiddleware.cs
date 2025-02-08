@@ -9,7 +9,6 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Azure.Services;
-using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 using System;
 using System.Linq;
@@ -74,8 +73,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         executionContext.Items.Add( "claims", authentication.Claims );
 
         // This is added pre-function execution, function will have access to this information
-        var userContext = new OLabAuthMiddlewareContext( _logger, executionContext, dbContext );
-        executionContext.Items.Add( nameof( OLabAuthMiddlewareContext ), userContext );
+        AuthenticatedMiddlewareContext.CreateInjectInstance( executionContext, _logger, dbContext );
 
         // This happens after function execution. We can inspect the context after the function
         // was invoked
@@ -83,7 +81,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         //  _logger.LogInformation($"From function: {message}");
 
         var items = executionContext.Items.Select( x => x.Key );
-        _logger.LogInformation( $"OLabAuthMiddleware executionContext items: {string.Join( ", ", items )}" );
+        _logger.LogInformation( $"ExecutionContext items: {string.Join( ", ", items )}" );
 
       }
       catch ( Exception ex )

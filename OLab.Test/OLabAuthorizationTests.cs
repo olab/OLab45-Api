@@ -4,8 +4,8 @@ using Moq;
 using Newtonsoft.Json;
 using NuGet.Packaging;
 using OLab.Access;
+using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
@@ -18,7 +18,6 @@ public class OLabAuthorizationTests
   private readonly Mock<IOLabLogger> _mockLogger;
   private readonly Mock<OLabDBContext> _mockDbContext;
   private readonly Mock<IOLabConfiguration> _mockConfiguration;
-  private readonly Mock<IUserContext> _mockUserContext;
   private readonly OLabAuthorization _authorization;
 
   public OLabAuthorizationTests()
@@ -26,7 +25,6 @@ public class OLabAuthorizationTests
     _mockLogger = new Mock<IOLabLogger>();
     _mockDbContext = new Mock<OLabDBContext>();
     _mockConfiguration = new Mock<IOLabConfiguration>();
-    _mockUserContext = new Mock<IUserContext>();
 
     TestUtilities.LoadGroupRoleAclFile( _mockDbContext, "json\\GroupRoleAcls.json" );
     TestUtilities.LoadGroupFile( _mockDbContext, "json\\Groups.json" );
@@ -60,7 +58,7 @@ public class OLabAuthorizationTests
   public async Task ApplyAuth_WithValidUser_HasAccessToMapAsync()
   {
     var testUser = TestUtilities.LoadRecordsFromJson<Users>( "json\\UserAStevan.json" ).First();
-    var mapList = TestUtilities.LoadRecordsFromJson<Maps>( "json\\Map5.json" );
+    TestUtilities.LoadRecordsFromJson<Maps>( "json\\Map5.json" );
 
     // Act
     _authorization.ApplyUserContext( testUser );

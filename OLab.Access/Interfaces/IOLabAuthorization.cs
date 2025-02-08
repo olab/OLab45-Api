@@ -3,7 +3,7 @@ using OLab.Api.Dto;
 using OLab.Api.Model;
 using System.Threading.Tasks;
 
-namespace OLab.Api.Data.Interface;
+namespace OLab.Access.Interfaces;
 
 public interface IOLabAuthorization
 {
@@ -17,10 +17,10 @@ public interface IOLabAuthorization
   Task<bool> HasAccessAsync(ulong acl, string objectType, uint? objectId);
 
   Users OLabUser { get; set; }
-  IUserContext UserContext { get; set; }
+  IAuthenticatedContext UserContext { get; set; }
 
   string Issuer { get; set; }
-  Task ApplyUserContextAsync(IUserContext userContext);
+  Task ApplyUserContextAsync(IAuthenticatedContext userContext);
   Task<bool> IsSystemSuperuserAsync();
   Task<bool> IsGroupSuperUserAsync(uint groupId);
   Task<bool> HasAccessToAppAsync(Users userPhys, string appName);

@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OLab.Access.Interfaces;
 using OLab.Api.Common;
 using OLab.Api.Data.Exceptions;
-using OLab.Api.Data.Interface;
 using OLab.Api.Dto;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -37,7 +37,7 @@ public class OLabAuthorization : IOLabAuthorization
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
 
   public Users OLabUser { get; set; }
-  public IUserContext UserContext { get; set; }
+  public IAuthenticatedContext UserContext { get; set; }
   public string Issuer { get; set; }
   public const string WildCardObjectType = "*";
   public const uint WildCardObjectId = 0;
@@ -82,19 +82,19 @@ public class OLabAuthorization : IOLabAuthorization
     //var obj = MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult();
     //var obj = RoleReaderWriter.Instance( _logger, _dbContext ).GetPagedAsync(null, null).GetAwaiter().GetResult();
     //var obj = _dbContext.SystemApplications.ToList();
-    //var obj = UserReaderWriter.Instance( _logger, _dbContext ).GetSingleAsync("guest").GetAwaiter().GetResult();
-    //var json = JsonConvert.SerializeObject( obj, new JsonSerializerSettings()
-    //{
-    //  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-    //  MaxDepth = 3
-    //} );
+    var obj = UserReaderWriter.Instance( _logger, _dbContext ).GetSingleAsync("guest").GetAwaiter().GetResult();
+    var json = JsonConvert.SerializeObject( obj, new JsonSerializerSettings()
+    {
+      ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+      MaxDepth = 3
+    } );
   }
 
   /// <summary>
   /// Add user context to Authorization and load group/role acls
   /// </summary>
   /// <param name="userContext">User context</param>
-  public async Task ApplyUserContextAsync(IUserContext userContext)
+  public async Task ApplyUserContextAsync(IAuthenticatedContext userContext)
   {
     Guard.Argument( userContext ).NotNull( nameof( userContext ) );
 

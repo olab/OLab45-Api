@@ -6,8 +6,9 @@ using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 
-namespace OLab.Azure.Utils;
+namespace OLab.Azure.Services;
 
 /// <summary>
 /// Helper class to manage and extract information
@@ -16,7 +17,6 @@ namespace OLab.Azure.Utils;
 public class BootstrapMiddlewareContext
 {
   public string FunctionName { get; private set; }
-  //public IReadOnlyDictionary<string, string> Headers { get; private set; }
   public IReadOnlyDictionary<string, object> BindingData { get; private set; }
   public IReadOnlyDictionary<string, BindingMetadata> InputBindings { get; private set; }
   public HttpRequest Request { get; private set; }
@@ -25,6 +25,14 @@ public class BootstrapMiddlewareContext
   public IDictionary<string, string> Headers { get; private set; }
 
   private readonly IOLabLogger _logger;
+  private IOLabLogger GetLogger() { return _logger; }
+
+  public static BootstrapMiddlewareContext CreateInjectInstance(FunctionContext executionContext, IOLabLogger logger)
+  {
+    var context = new BootstrapMiddlewareContext( executionContext, logger );
+    executionContext.Items.Add( context.GetType().Name, context );
+    return context;
+  }
 
   public BootstrapMiddlewareContext(FunctionContext executionContext, IOLabLogger logger)
   {
@@ -33,12 +41,12 @@ public class BootstrapMiddlewareContext
 
     try
     {
-      _logger.LogInformation( $"BootstrapMiddlewareContext ctor" );
+      GetLogger().LogInformation( $"BootstrapMiddlewareContext ctor" );
 
       FunctionName = executionContext.FunctionDefinition.Name.ToLower();
       Guard.Argument( FunctionName ).NotEmpty( nameof( FunctionName ) );
 
-      _logger.LogInformation( $"  function name: {FunctionName}" );
+      GetLogger().LogInformation( $"  function name: {FunctionName}" );
 
       var httpRequestData = executionContext.GetHttpRequestDataAsync().GetAwaiter().GetResult();
 
@@ -52,12 +60,12 @@ public class BootstrapMiddlewareContext
       Request = context.Request;
 
       Url = $"{(Request.IsHttps ? "https" : "http")}://{Request.Host}/{Request.Path}";
-      _logger.LogInformation( $"  url: {Url}" );
+      GetLogger().LogInformation( $"  url: {Url}" );
 
     }
     catch ( Exception ex )
     {
-      _logger.LogError( ex, "BootstrapMiddlewareContext exception" );
+      GetLogger().LogError( ex, "BootstrapMiddlewareContext exception" );
       throw;
     }
 
@@ -74,9 +82,9 @@ public class BootstrapMiddlewareContext
     foreach ( var header in httpRequestData.Headers )
       flatHeaderDict.Add( header.Key.ToLower(), header.Value.First() );
 
-    _logger.LogInformation( $"found {Headers.Count} headers" );
+    GetLogger().LogInformation( $"found {flatHeaderDict.Count} headers" );
     foreach ( var header in flatHeaderDict )
-      _logger.LogInformation( $"  header: {header.Key} = {header.Value}" );
+      GetLogger().LogInformation( $"  header: {header.Key} = {header.Value}" );
 
     return flatHeaderDict;
   }

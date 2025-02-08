@@ -48,5 +48,6 @@ namespace OLab.Test
       // Assert
       Assert.Equal( _mockConfiguration.Object, result );
     }
+
   }
 }

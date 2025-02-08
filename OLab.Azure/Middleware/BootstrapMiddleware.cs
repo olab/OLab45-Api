@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
 using OLab.Api.Utils;
-using OLab.Azure.Utils;
+using OLab.Azure.Services;
 using OLab.Common.Interfaces;
 using System.Threading.Tasks;
 
@@ -29,9 +29,7 @@ public class BootstrapMiddleware : IFunctionsWorkerMiddleware
 
   public async Task Invoke(FunctionContext executionContext, FunctionExecutionDelegate next)
   {
-    var contextInfo = new BootstrapMiddlewareContext( executionContext, _logger );
-    executionContext.Items.Add( nameof( BootstrapMiddlewareContext ), contextInfo );
-
+    BootstrapMiddlewareContext.CreateInjectInstance( executionContext, _logger );
     await next( executionContext );
   }
 }

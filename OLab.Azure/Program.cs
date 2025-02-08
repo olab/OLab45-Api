@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Api.WikiTag;
@@ -56,8 +55,9 @@ builder.Services
   .AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>()
   .AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>()
   .AddTransient<IOLabAuthentication, OLabAuthentication>()
-  .AddTransient<IUserContext, OLabAuthMiddlewareContext>()
+  .AddTransient<IAuthenticatedContext, AuthenticatedMiddlewareContext>()
   .AddTransient<IUserService, UserService>();
+
 builder.UseMiddleware<BootstrapMiddleware>();
 builder.UseWhen<OLabAuthMiddleware>( OLabAuthMiddleware.CanInvoke );
 

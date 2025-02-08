@@ -4,35 +4,7 @@
     "Description": null,
     "Name": "author",
     "IsSystem": 1,
-    "GrouproleAcls": [
-      {
-        "Id": 201,
-        "ImageableId": null,
-        "ImageableType": "Maps",
-        "GroupId": 1,
-        "RoleId": 3,
-        "Acl2": 7,
-        "Group": null
-      },
-      {
-        "Id": 194,
-        "ImageableId": 3,
-        "ImageableType": "Apps",
-        "GroupId": null,
-        "RoleId": 3,
-        "Acl2": 1,
-        "Group": null
-      },
-      {
-        "Id": 203,
-        "ImageableId": 5,
-        "ImageableType": "Apps",
-        "GroupId": null,
-        "RoleId": 3,
-        "Acl2": 7,
-        "Group": null
-      }
-    ],
+    "GrouproleAcls": [],
     "MapGrouproles": [],
     "MapNodeGrouproles": [],
     "UserGrouproles": []
@@ -72,26 +44,7 @@
     "Description": null,
     "Name": "superuser",
     "IsSystem": 1,
-    "GrouproleAcls": [
-      {
-        "Id": 187,
-        "ImageableId": null,
-        "ImageableType": "Apps",
-        "GroupId": 1,
-        "RoleId": 10,
-        "Acl2": 1,
-        "Group": null
-      },
-      {
-        "Id": 192,
-        "ImageableId": 1,
-        "ImageableType": "Apps",
-        "GroupId": 1,
-        "RoleId": 10,
-        "Acl2": 1,
-        "Group": null
-      }
-    ],
+    "GrouproleAcls": [],
     "MapGrouproles": [],
     "MapNodeGrouproles": [],
     "UserGrouproles": []

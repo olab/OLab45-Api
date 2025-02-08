@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Azure.Extensions;

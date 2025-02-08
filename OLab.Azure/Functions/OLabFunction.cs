@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Access;
-using OLab.Api.Data.Interface;
+using OLab.Access.Interfaces;
 using OLab.Api.Model;
 using OLab.Azure.Services;
 using OLab.Common.Interfaces;
@@ -26,7 +26,7 @@ public class OLabFunction
 
   protected string Token;
   //protected readonly IUserService userService;
-  protected IUserContext userContext;
+  protected IAuthenticatedContext userContext;
   protected readonly IOLabConfiguration _configuration;
   //protected readonly TTalkDBContext TtalkDbContext;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
@@ -72,7 +72,7 @@ public class OLabFunction
     GetLogger().LogInformation( $"GetAuthorization executionContext items {string.Join( ", ", items )}" );
 
     // Get the user context set by the middleware
-    if ( executionContext.Items.TryGetValue( nameof( OLabAuthMiddlewareContext ), out var value ) && (value is IUserContext userContext) )
+    if ( executionContext.Items.TryGetValue( nameof( AuthenticatedMiddlewareContext ), out var value ) && (value is IAuthenticatedContext userContext) )
     {
       GetLogger().LogInformation( $"User context: {userContext}" );
 

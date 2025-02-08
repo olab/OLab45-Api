@@ -175,6 +175,33 @@
     }
   },
   {
+    "Id": 198,
+    "ImageableId": 2,
+    "ImageableType": "Apps",
+    "GroupId": 25,
+    "RoleId": 6,
+    "Acl2": 1,
+    "Group": {
+      "Id": 25,
+      "Name": "usherbrooke",
+      "IsSystem": 1,
+      "GrouproleAcls": [],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": []
+    },
+    "Role": {
+      "Id": 6,
+      "Description": null,
+      "Name": "learner",
+      "IsSystem": 1,
+      "GrouproleAcls": [],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": []
+    }
+  },
+  {
     "Id": 201,
     "ImageableId": null,
     "ImageableType": "Maps",
@@ -219,15 +246,5 @@
       "MapNodeGrouproles": [],
       "UserGrouproles": []
     }
-  },
-  {
-    "Id": 204,
-    "ImageableId": 4,
-    "ImageableType": "Apps",
-    "GroupId": null,
-    "RoleId": null,
-    "Acl2": 7,
-    "Group": null,
-    "Role": null
   }
 ]
