@@ -66,7 +66,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_GuestUser_OneGroupRole_HasNoAccessToDesignerAsync()
+  public async Task App_GuestUser_OneGroupRole_HasNoAccessToDesignerAsync()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabGuest1GroupRole.json" ).First();
 
@@ -78,7 +78,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_GuestUser_OneGroupRole_HasNoAccessToSmtAsync()
+  public async Task App_GuestUser_OneGroupRole_HasNoAccessToSmtAsync()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabGuest1GroupRole.json" ).First();
 
@@ -90,7 +90,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_GuestUser_OneGroupRole_HasAccessToPlayerAsync()
+  public async Task App_GuestUser_OneGroupRole_HasAccessToPlayerAsync()
   {
     var testUser = TestUtilities.LoadObjectFromJson<Users>( "json\\UserOLabGuest1GroupRole.json" ).First();
 
@@ -102,12 +102,44 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_NoMapsGroupUser_HasEmptyMapList()
+  public async Task Access_NoMapsGroupUser_ReadEmptyMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserTestGroup.json" ).First();
     var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserTestGroupContext.json" ).First();
 
-    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\MapsMultipleGroups.json" );
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    var result1 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      1 );
+
+    var result2 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      2 );
+
+    var result3 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      3 );
+
+    // Assert
+    Assert.False( result1 );
+    Assert.False( result2 );
+    Assert.False( result3 );
+  }
+
+  [Fact]
+  public async Task Access_NoMapsGroupUser_TwoGroupMaps_ReadEmptyMapList()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserTestGroup.json" ).First();
+    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserTestGroupContext.json" ).First();
+
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
 
     // Act
     await _authorization.ApplyUserContextAsync( authenticatedContext );
@@ -139,7 +171,7 @@ public class OLabAuthorizationTests
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabSuperuser.json" ).First();
     var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
 
-    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\MapsMultipleGroups.json" );
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
     // Act
     await _authorization.ApplyUserContextAsync( authenticatedContext );
@@ -167,12 +199,45 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_ExternalUser_OneGroupRole_HasFilteredMapList()
+  public async Task Access_OLabSuperuserUser_TwoGroupMaps_HasCompleteMapList()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabSuperuser.json" ).First();
+    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
+
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    // Act
+    var result1 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      1 );
+
+    var result2 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      2 );
+
+    var result3 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      3 );
+
+    // Assert
+    Assert.True( result1 );
+    Assert.True( result2 );
+    Assert.True( result3 );
+  }
+
+  [Fact]
+  public async Task Access_ExternalUser_OneGroupRole_ReadFilteredMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal1GroupRole.json" ).First();
     var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal1GroupRoleContext.json" ).First();
 
-    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\MapsMultipleGroups.json" );
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
     // Act
     await _authorization.ApplyUserContextAsync( authenticatedContext );
@@ -200,7 +265,106 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_LearnerUser_OneGroupRole_HasAccessToPlayerAsync()
+  public async Task Access_ExternalUser_OneGroupRole_TwoGroupMaps_ReadilteredMapList()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal1GroupRole.json" ).First();
+    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal1GroupRoleContext.json" ).First();
+
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    // Act
+    var result1 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      1 );
+
+    var result2 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      2 );
+
+    var result3 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      3 );
+
+    // Assert
+    Assert.False( result1 );
+    Assert.True( result2 );
+    Assert.False( result3 );
+  }
+
+  [Fact]
+  public async Task Access_ExternalUser_TwoGroupRole_ReadFilteredMapList()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal2GroupRole.json" ).First();
+    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal2GroupRoleContext.json" ).First();
+
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    // Act
+    var result1 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      1 );
+
+    var result2 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      2 );
+
+    var result3 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      3 );
+
+    // Assert
+    Assert.False( result1 );
+    Assert.True( result2 );
+    Assert.True( result3 );
+  }
+
+  [Fact]
+  public async Task Access_ExternalUser_TwoGroupRole_TwoGroupMaps_ReadFilteredMapList()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal2GroupRole.json" ).First();
+    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal2GroupRoleContext.json" ).First();
+
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    // Act
+    var result1 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      1 );
+
+    var result2 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      2 );
+
+    var result3 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskRead,
+      Constants.ScopeLevelMap,
+      3 );
+
+    // Assert
+    Assert.False( result1 );
+    Assert.True( result2 );
+    Assert.True( result3 );
+  }
+
+  [Fact]
+  public async Task App_LearnerUser_OneGroupRole_HasAccessToPlayerAsync()
   {
     var testUser = TestUtilities.LoadObjectFromJson<Users>( "json\\UserOLabGuest1GroupRole.json" ).First();
     var mapList = TestUtilities.LoadObjectFromJson<Maps>( "json\\Map5.json" );
@@ -213,7 +377,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_LearnerUser_OneGroupRole_HasNoAccessToSmtAsync()
+  public async Task App_LearnerUser_OneGroupRole_HasNoAccessToSmtAsync()
   {
     var testUser = TestUtilities.LoadObjectFromJson<Users>( "json\\UserOLabGuest1GroupRole.json" ).First();
     var mapList = TestUtilities.LoadObjectFromJson<Maps>( "json\\Map5.json" );
@@ -226,7 +390,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_LearnerUser_OneGroupRole_HasNoAccessToDesignerAsync()
+  public async Task App_LearnerUser_OneGroupRole_HasNoAccessToDesignerAsync()
   {
     var testUser = TestUtilities.LoadObjectFromJson<Users>( "json\\UserOLabGuest1GroupRole.json" ).First();
     var mapList = TestUtilities.LoadObjectFromJson<Maps>( "json\\Map5.json" );
@@ -239,7 +403,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabSuperuserUser_HasAccessToSmtAsync()
+  public async Task App_OLabSuperuserUser_HasAccessToSmtAsync()
   {
     var testUser = TestUtilities.LoadObjectFromJson<Users>( "json\\UserOLabSuperuser.json" ).First();
     var mapList = TestUtilities.LoadObjectFromJson<Maps>( "json\\Map5.json" );
@@ -252,7 +416,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabSuperuserUser_HasAccessToDesignerAsync()
+  public async Task App_OLabSuperuserUser_HasAccessToDesignerAsync()
   {
     var testUser = TestUtilities.LoadObjectFromJson<Users>( "json\\UserOLabSuperuser.json" ).First();
 
@@ -264,7 +428,7 @@ public class OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabSuperuserUser_HasAccessToPlayerAsync()
+  public async Task App_OLabSuperuserUser_HasAccessToPlayerAsync()
   {
     var testUser = TestUtilities.LoadObjectFromJson<Users>( "json\\UserOLabSuperuser.json" ).First();
     var mapList = TestUtilities.LoadObjectFromJson<Maps>( "json\\Map5.json" );

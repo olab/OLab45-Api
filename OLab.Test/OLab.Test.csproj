@@ -52,7 +52,10 @@
     <None Update="json\Map5.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="json\MapsMultipleGroups.json">
+    <None Update="json\Maps2Group.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="json\Maps1Group.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="json\Roles.json">
@@ -60,6 +63,12 @@
     </None>
     <None Update="json\SystemApplications.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="json\UserExternal2GroupRoleContext.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="json\UserExternal2GroupRole.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="json\UserExternal1GroupRole.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

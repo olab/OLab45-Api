@@ -49,6 +49,32 @@
           "MapNodeGrouproles": [],
           "UserGrouproles": []
         }
+      },
+      {
+        "Id": 6229,
+        "Iss": "testgroup2",
+        "UserId": 1,
+        "RoleId": 6,
+        "GroupId": 25,
+        "Group": {
+          "Id": 25,
+          "Name": "testgroup2",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        },
+        "Role": {
+          "Id": 6,
+          "Description": null,
+          "Name": "learner",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        }
       }
     ],
     "UserNotes": [],

@@ -114,5 +114,59 @@
       "MapNodeGrouproles": [],
       "UserGrouproles": [ {} ]
     }
+  },
+  {
+    "Id": 219,
+    "ImageableId": null,
+    "ImageableType": "Maps",
+    "GroupId": 25,
+    "RoleId": 6,
+    "Acl2": 4,
+    "Group": {
+      "Id": 25,
+      "Name": "testgroup2",
+      "IsSystem": 1,
+      "GrouproleAcls": [],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": []
+    },
+    "Role": {
+      "Id": 6,
+      "Description": null,
+      "Name": "learner",
+      "IsSystem": 1,
+      "GrouproleAcls": [ {} ],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": [ {} ]
+    }
+  },
+  {
+    "Id": 220,
+    "ImageableId": null,
+    "ImageableType": "Maps",
+    "GroupId": 2,
+    "RoleId": 6,
+    "Acl2": 4,
+    "Group": {
+      "Id": 2,
+      "Name": "anonymous",
+      "IsSystem": 1,
+      "GrouproleAcls": [],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": []
+    },
+    "Role": {
+      "Id": 6,
+      "Description": null,
+      "Name": "learner",
+      "IsSystem": 1,
+      "GrouproleAcls": [ {} ],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": [ {} ]
+    }
   }
 ]
