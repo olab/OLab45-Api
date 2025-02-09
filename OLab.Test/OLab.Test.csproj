@@ -73,6 +73,18 @@
     <None Update="json\UserExternal1GroupRole.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="json\UserOLabAuthor.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="json\UserOLabLearner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="json\UserOLabAuthorContext.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="json\UserOLabLearnerContext.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="json\UserTestGroupContext.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

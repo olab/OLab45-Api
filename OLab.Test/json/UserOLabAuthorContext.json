@@ -1,0 +1,56 @@
+[
+  {
+    "OLabUser": null,
+    "CourseName": "",
+    "Claims": {
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": "olablearner",
+      "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "olab:learner",
+      "name": "Corey Wirun",
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": "olablearner",
+      "id": "1",
+      "http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata": "",
+      "app": "",
+      "nbf": "1739070652",
+      "exp": "1739675452",
+      "iat": "1739070652",
+      "iss": "olab",
+      "aud": "https://www.olab.ca"
+    },
+    "SessionId": null,
+    "ReferringCourse": "",
+    "GroupRoles": [
+      {
+        "Id": 0,
+        "Iss": null,
+        "UserId": 0,
+        "RoleId": 3,
+        "GroupId": 1,
+        "Group": {
+          "Id": 1,
+          "Name": "olab",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        },
+        "Role": {
+          "Id": 3,
+          "Description": null,
+          "Name": "author",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        },
+        "User": null
+      }
+    ],
+    "UserId": 1,
+    "AppName": "",
+    "UserName": "olablearner",
+    "IPAddress": "\u003Cunknown\u003E",
+    "Issuer": "olab"
+  }
+]

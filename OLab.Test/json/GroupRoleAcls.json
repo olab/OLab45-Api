@@ -168,5 +168,35 @@
       "MapNodeGrouproles": [],
       "UserGrouproles": [ {} ]
     }
+  },
+  {
+    "Id": 221,
+    "ImageableId": null,
+    "ImageableType": "Maps",
+    "GroupId": 1,
+    "RoleId": 3,
+    "Acl2": 7,
+    "Group": {
+      "Id": 1,
+      "Name": "olab",
+      "IsSystem": 1,
+      "GrouproleAcls": [ {} ],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": [
+        {},
+        {}
+      ]
+    },
+    "Role": {
+      "Id": 3,
+      "Description": null,
+      "Name": "author",
+      "IsSystem": 1,
+      "GrouproleAcls": [ {} ],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": [ {} ]
+    }
   }
 ]

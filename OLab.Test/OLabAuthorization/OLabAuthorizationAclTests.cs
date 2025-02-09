@@ -84,7 +84,7 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabSuperuserUser_HasCompleteMapList()
+  public async Task Access_OLabSuperuserUser_EditMap()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabSuperuser.json" ).First();
     var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
@@ -96,24 +96,54 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
 
     // Act
     var result1 = await _authorization.HasAccessAsync(
-      IOLabAuthorization.AclBitMaskRead,
+      IOLabAuthorization.AclBitMaskFull,
       Constants.ScopeLevelMap,
       1 );
 
-    var result2 = await _authorization.HasAccessAsync(
-      IOLabAuthorization.AclBitMaskRead,
-      Constants.ScopeLevelMap,
-      2 );
+    // Assert
+    Assert.True( result1 );
+  }
 
-    var result3 = await _authorization.HasAccessAsync(
-      IOLabAuthorization.AclBitMaskRead,
+  [Fact]
+  public async Task Access_OLabAuthorUser_EditMap()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabAuthor.json" ).First();
+    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabAuthorContext.json" ).First();
+
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    // Act
+    var result1 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskFull,
       Constants.ScopeLevelMap,
-      3 );
+      1 );
 
     // Assert
     Assert.True( result1 );
-    Assert.True( result2 );
-    Assert.True( result3 );
+  }
+
+  [Fact]
+  public async Task Access_OLabLearnerUser_NoEditMap()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabLearner.json" ).First();
+    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabLearnerContext.json" ).First();
+
+    var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    // Act
+    var result1 = await _authorization.HasAccessAsync(
+      IOLabAuthorization.AclBitMaskFull,
+      Constants.ScopeLevelMap,
+      1 );
+
+    // Assert
+    Assert.False( result1 );
   }
 
   [Fact]
