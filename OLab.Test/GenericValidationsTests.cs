@@ -13,7 +13,7 @@ public class GenericValidationsTests
   [InlineData( "", false )]
   [InlineData( " ", false )]
   [InlineData( null, false )]
-  public void IsValidUsername_ReturnsExpectedResult(string username, bool expected)
+  public void IsValidUsername_ReturnsExpectedResult(string? username, bool expected)
   {
     var result = GenericValidations.IsValidUsername( username );
     Assert.Equal( expected, result );
@@ -32,7 +32,7 @@ public class GenericValidationsTests
   [InlineData( "", false )]
   [InlineData( " ", false )]
   [InlineData( null, false )]
-  public void IsValidEmail_ReturnsExpectedResult(string email, bool expected)
+  public void IsValidEmail_ReturnsExpectedResult(string? email, bool expected)
   {
     var result = GenericValidations.IsValidEmail( email );
     Assert.Equal( expected, result );

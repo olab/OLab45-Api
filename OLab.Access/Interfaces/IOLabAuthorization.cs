@@ -17,7 +17,7 @@ public interface IOLabAuthorization
   Task<bool> HasAccessAsync(ulong acl, string objectType, uint? objectId);
 
   Users OLabUser { get; set; }
-  IAuthenticatedContext UserContext { get; set; }
+  IAuthenticatedContext AuthenticatedContext { get; set; }
 
   string Issuer { get; set; }
   Task ApplyUserContextAsync(IAuthenticatedContext userContext);
@@ -25,7 +25,4 @@ public interface IOLabAuthorization
   Task<bool> IsGroupSuperUserAsync(uint groupId);
   Task<bool> HasAccessToAppAsync(Users userPhys, string appName);
   Task<MapGrouproles> GetMapCreationGroupRoleAsync(Maps map);
-  string ExtractApplication(string refererValue);
-
-
 }

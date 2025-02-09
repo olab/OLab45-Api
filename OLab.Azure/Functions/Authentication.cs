@@ -66,8 +66,7 @@ public class AuthenticationFunction : OLabFunction
       if ( request.Headers.TryGetValues( "Referer", out refererValues ) )
       {
         GetLogger().LogInformation( $"referer urls provided: {string.Join( ",", refererValues )}" );
-        referrer = _authorization.ExtractApplication( refererValues.First() );
-        if ( !await _authorization.HasAccessToAppAsync( user, referrer ) )
+        if ( !await _authorization.HasAccessToAppAsync( user, refererValues.First() ) )
           return OLabUnauthorizedResult.Result();
       }
       else

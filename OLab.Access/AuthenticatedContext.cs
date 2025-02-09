@@ -1,7 +1,9 @@
 using Dawn;
+using Newtonsoft.Json;
 using OLab.Access.Interfaces;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -216,6 +218,15 @@ public abstract class AuthenticatedContext : IAuthenticatedContext
       groupRoleString = GetClaim( "role" );
 
     GroupRoles = UserGrouproles.StringToObjectList( GetDbContext(), groupRoleString );
+  }
+
+  public static string TruncateToJsonObject(IAuthenticatedContext phys, int maxDepth)
+  {
+    var json = JsonConvert.SerializeObject(
+      new List<IAuthenticatedContext> { phys },
+      new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore } );
+
+    return SerializerUtilities.TruncateJsonToDepth( json, maxDepth + 1 );
   }
 
   /// <summary>

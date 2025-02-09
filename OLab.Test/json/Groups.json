@@ -28,7 +28,7 @@
   },
   {
     "Id": 24,
-    "Name": "mru",
+    "Name": "testgroup",
     "IsSystem": 0,
     "GrouproleAcls": [],
     "MapGrouproles": [],
@@ -37,7 +37,7 @@
   },
   {
     "Id": 25,
-    "Name": "usherbrooke",
+    "Name": "testgroup2",
     "IsSystem": 0,
     "GrouproleAcls": [],
     "MapGrouproles": [],

@@ -72,7 +72,7 @@ public class OLabAuthenticationTests
   }
 
   [Fact]
-  public async void Authenticate_ShouldReturnUser_WhenCredentialsAreValid()
+  public async Task Authenticate_ShouldReturnUser_WhenCredentialsAreValid()
   {
     var loginRequest = new LoginRequest
     {
@@ -105,7 +105,7 @@ public class OLabAuthenticationTests
   }
 
   [Fact]
-  public async void Authenticate_ShouldReturnNull_WhenCredentialsAreInvalid()
+  public async Task Authenticate_ShouldReturnNull_WhenCredentialsAreInvalid()
   {
     var loginRequest = new LoginRequest
     {

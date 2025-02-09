@@ -72,12 +72,12 @@ public class OLabFunction
     GetLogger().LogInformation( $"GetAuthorization executionContext items {string.Join( ", ", items )}" );
 
     // Get the user context set by the middleware
-    if ( executionContext.Items.TryGetValue( nameof( AuthenticatedMiddlewareContext ), out var value ) && (value is IAuthenticatedContext userContext) )
+    if ( executionContext.Items.TryGetValue( nameof( AuthenticatedMiddlewareContext ), out var value ) && (value is IAuthenticatedContext authenticatedContext) )
     {
-      GetLogger().LogInformation( $"User context: {userContext}" );
+      GetLogger().LogInformation( $"User context: {authenticatedContext}" );
 
       var auth = new OLabAuthorization( Logger, DbContext, _configuration );
-      auth.ApplyUserContextAsync( userContext ).GetAwaiter().GetResult();
+      auth.ApplyUserContextAsync( authenticatedContext ).GetAwaiter().GetResult();
 
       return auth;
     }

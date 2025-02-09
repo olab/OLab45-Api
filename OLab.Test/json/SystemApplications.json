@@ -1,30 +1,54 @@
 [
-	{
-		"Id": 5,
-		"Name": "designer"
-	},
-	{
-		"Id": 3,
-		"Name": "designerdebug"
-	},
-	{
-		"Id": 7,
-		"Name": "localhost"
-	},
-	{
-		"Id": 4,
-		"Name": "player"
-	},
-	{
-		"Id": 2,
-		"Name": "playerdebug"
-	},
-	{
-		"Id": 6,
-		"Name": "smt"
-	},
-	{
-		"Id": 1,
-		"Name": "smtdebug"
-	}
+  {
+    "id": 5,
+    "name": "designer"
+  },
+  {
+    "id": 9,
+    "name": "designer.olab4.net"
+  },
+  {
+    "id": 3,
+    "name": "designerdebug"
+  },
+  {
+    "id": 7,
+    "name": "localhost"
+  },
+  {
+    "id": 12,
+    "name": "logan.cardinalcreek.ca/designerdebug"
+  },
+  {
+    "id": 11,
+    "name": "logan.cardinalcreek.net/playerdebug"
+  },
+  {
+    "id": 13,
+    "name": "logan.cardinalcreek.net/smtdebug"
+  },
+  {
+    "id": 4,
+    "name": "player"
+  },
+  {
+    "id": 8,
+    "name": "player.olab4.net"
+  },
+  {
+    "id": 2,
+    "name": "playerdebug"
+  },
+  {
+    "id": 6,
+    "name": "smt"
+  },
+  {
+    "id": 10,
+    "name": "smt.olab4.net"
+  },
+  {
+    "id": 1,
+    "name": "smtdebug"
+  }
 ]

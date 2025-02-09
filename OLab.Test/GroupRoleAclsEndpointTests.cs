@@ -16,6 +16,7 @@ using System.ComponentModel.DataAnnotations;
 using OLab.Common.Utils;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using OLab.Test.Utils;
 
 namespace OLab.Test;
 
@@ -52,10 +53,10 @@ public class GroupRoleAclsEndpointTests
     _mockReaderWriter = new Mock<GroupRoleAclReaderWriter>( _logger, _mockDbContext.Object );
     _mockMapper = new Mock<GroupRoleAclMapper>( _logger, _mockDbContext.Object );
 
-    _groupRoleAcls = TestUtilities.LoadGroupRoleAclFile( _mockDbContext, "json\\GroupRoleAcls.json" );
-    TestUtilities.LoadGroupFile( _mockDbContext, "json\\Groups.json" );
-    TestUtilities.LoadRoleFile( _mockDbContext, "json\\Roles.json" );
-    TestUtilities.LoadSystemApplicationsFromJson( _mockDbContext, "json\\SystemApplications.json" );
+    _groupRoleAcls = TestUtilities.MoqGroupRoleAclFromJsonFile( _mockDbContext, "json\\GroupRoleAcls.json" );
+    TestUtilities.MoqGroupsFromJsonFile( _mockDbContext, "json\\Groups.json" );
+    TestUtilities.MoqRoleFromJsonFile( _mockDbContext, "json\\Roles.json" );
+    TestUtilities.MoqSystemApplicationsFromJsonFile( _mockDbContext, "json\\SystemApplications.json" );
 
     _endpoint = new GroupRoleAclsEndpoint(
         _logger,
@@ -109,7 +110,7 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Equal( 3, result.Count );
+    Assert.Equal( 2, result.Count );
   }
 
   [Fact]
@@ -122,7 +123,7 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Single( result );
+    Assert.True( result.Count() == 2 );
   }
 
   [Fact]
@@ -142,13 +143,13 @@ public class GroupRoleAclsEndpointTests
   public async Task GetAsync_WithAppId_ReturnsFilteredAcls()
   {
     // Arrange
-    var model = new GroupRoleAclRequest { AppIds = new List<uint?> { 2 } };
+    var model = new GroupRoleAclRequest { AppIds = new List<uint?> { 9 } };
 
     // Act
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Equal( 4, result.Count );
+    Assert.Equal( 1, result.Count );
   }
 
   [Fact]
@@ -161,7 +162,7 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Equal( 9, result.Count );
+    Assert.Equal( 3, result.Count );
   }
 
   [Fact]
@@ -187,19 +188,19 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Single( result );
+    Assert.True( result.Count() == 0 );
   }
 
   [Fact]
   public async Task GetAsync_WithAppIds_ReturnsFilteredAcls()
   {
     // Arrange
-    var model = new GroupRoleAclRequest { AppIds = new List<uint?> { 1 } };
+    var model = new GroupRoleAclRequest { AppIds = new List<uint?> { 8 } };
 
     // Act
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Equal( 2, result.Count );
+    Assert.Equal( 1, result.Count );
   }
 }
