@@ -29,8 +29,8 @@ public class OLabAuthorization : IOLabAuthorization
   private readonly RoleReaderWriter _roleReaderWriter;
   private readonly UserReaderWriter _userReaderWriter;
   private readonly GroupRoleAclReaderWriter _groupRoleAclWriter;
-  public IList<GrouproleAcls> GroupRoleAcls = new List<GrouproleAcls>();
-  public IList<UserGrouproles> UsersGroupRoles = new List<UserGrouproles>();
+  public IList<GrouproleAcls> GroupRoleAcls { get; set; } = new List<GrouproleAcls>();
+  public IList<UserGrouproles> UsersGroupRoles { get; set; } = new List<UserGrouproles>();
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
 
   public Users OLabUser { get; set; }

@@ -110,7 +110,7 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Equal( 2, result.Count );
+    Assert.Equal( 4, result.Count );
   }
 
   [Fact]
@@ -123,7 +123,7 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.True( result.Count() == 2 );
+    Assert.Equal( 4, result.Count() );
   }
 
   [Fact]
@@ -149,7 +149,7 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Equal( 1, result.Count );
+    Assert.Single( result );
   }
 
   [Fact]
@@ -201,6 +201,6 @@ public class GroupRoleAclsEndpointTests
     var result = await _endpoint.GetAsync( null, model );
 
     // Assert
-    Assert.Equal( 1, result.Count );
+    Assert.Single( result );
   }
 }

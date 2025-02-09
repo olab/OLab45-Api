@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Dto;
 using OLab.Api.Model;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace OLab.Access.Interfaces;
@@ -15,6 +16,8 @@ public interface IOLabAuthorization
 
   Task<IActionResult> HasAccessAsync(ulong acl, ScopedObjectDto dto);
   Task<bool> HasAccessAsync(ulong acl, string objectType, uint? objectId);
+  IList<UserGrouproles> UsersGroupRoles { get; }
+  IList<GrouproleAcls> GroupRoleAcls { get; }
 
   Users OLabUser { get; set; }
   IAuthenticatedContext AuthenticatedContext { get; set; }
@@ -25,4 +28,7 @@ public interface IOLabAuthorization
   Task<bool> IsGroupSuperUserAsync(uint groupId);
   Task<bool> HasAccessToAppAsync(Users userPhys, string appName);
   Task<MapGrouproles> GetMapCreationGroupRoleAsync(Maps map);
+
+  string ExtractApplicationFromUri(string requestUri);
+
 }
