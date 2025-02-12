@@ -27,13 +27,13 @@ namespace OLab.Azure.Functions.Management;
 
 public partial class UserManagement : OLabFunction
 {
-  protected readonly IUserService _userService;
+  //protected readonly IUserService _userService;
+  private Api.Endpoints.UserEndpoint _userEndpoint;
 
   public UserManagement(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
-    IUserService userService,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
       configuration,
@@ -45,7 +45,12 @@ public partial class UserManagement : OLabFunction
 
     Logger = OLabLogger.CreateNew<UserManagement>( loggerFactory );
 
-    _userService = userService;
+    _userEndpoint = new Api.Endpoints.UserEndpoint(
+      Logger,
+      configuration,
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider );
   }
 
   /// <summary>
@@ -71,7 +76,7 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to get user list" ) );
 
-      var dto = await _userService.GetUsersAsync( name );
+      var dto = await _userEndpoint.GetUsersAsync( name );
       return request
         .CreateResponse( OLabObjectListResult<UsersDto>.Result( dto ) );
     }
@@ -132,7 +137,7 @@ public partial class UserManagement : OLabFunction
 
         memoryStream.Position = 0;
 
-        var dto = await _userService.ImportUsersAsync( memoryStream );
+        var dto = await _userEndpoint.ImportUsersAsync( memoryStream );
         return request.CreateResponse( OLabObjectListResult<UsersImportDto>.Result( dto ) );
       }
 
@@ -174,7 +179,7 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to add user" ) );
 
-      var dto = await _userService.AddUserAsync( item );
+      var dto = await _userEndpoint.AddUserAsync( item );
       return request
         .CreateResponse( OLabObjectResult<UsersDto>.Result( dto ) );
     }
@@ -206,7 +211,7 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to add user" ) );
 
-      var responses = await _userService.DeleteUsersAsync( items );
+      var responses = await _userEndpoint.DeleteUsersAsync( items );
       return request
         .CreateResponse( OLabObjectListResult<AddUserResponse>.Result( responses ) );
     }
@@ -259,7 +264,7 @@ public partial class UserManagement : OLabFunction
             items.Add( userRequest );
           }
 
-          var dto = await _userService.AddUsersAsync( items );
+          var dto = await _userEndpoint.AddUsersAsync( items );
           return request
             .CreateResponse( OLabObjectListResult<UsersDto>.Result( dto ) );
 
@@ -298,7 +303,7 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to edit users" ) );
 
-      var dto = await _userService.EditUserAsync( body );
+      var dto = await _userEndpoint.EditUserAsync( body );
       return request
         .CreateResponse( OLabObjectResult<UsersDto>.Result( dto ) );
 

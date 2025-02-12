@@ -52,7 +52,7 @@ public class OLabAuthorizationTests
   public async Task ApplyUserContext_WithValidUser_SetsProperties()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabSuperuser.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
 
     // Act
     await _authorization.ApplyUserContextAsync( authenticatedContext );

@@ -20,10 +20,10 @@ namespace OLab.Test.OLabAuthorizationTests;
 public class OLabAuthorizationAclTests : OLabAuthorizationTests
 {
   [Fact]
-  public async Task Access_NoMapsGroupUser_ReadEmptyMapList()
+  public async Task NoMapsGroupUser_ReadEmptyMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserTestGroup.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserTestGroupContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserTestGroupContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
@@ -52,10 +52,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_NoMapsGroupUser_TwoGroupMaps_ReadEmptyMapList()
+  public async Task NoMapsGroupUser_TwoGroupMaps_ReadEmptyMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserTestGroup.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserTestGroupContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserTestGroupContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
 
@@ -84,10 +84,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabSuperuserUser_EditMap()
+  public async Task OLabSuperuserUser_EditMap()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabSuperuser.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
@@ -105,10 +105,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabAuthorUser_EditMap()
+  public async Task OLabAuthorUser_EditMap()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabAuthor.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabAuthorContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabAuthorContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
@@ -126,10 +126,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabLearnerUser_NoEditMap()
+  public async Task OLabLearnerUser_NoEditMap()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabLearner.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabLearnerContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabLearnerContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
@@ -147,10 +147,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_OLabSuperuserUser_TwoGroupMaps_HasCompleteMapList()
+  public async Task OLabSuperuserUser_TwoGroupMaps_HasCompleteMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserOLabSuperuser.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
 
@@ -180,10 +180,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_ExternalUser_OneGroupRole_ReadFilteredMapList()
+  public async Task ExternalUser_OneGroupRole_ReadFilteredMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal1GroupRole.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal1GroupRoleContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserExternal1GroupRoleContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
@@ -213,10 +213,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_ExternalUser_OneGroupRole_TwoGroupMaps_ReadilteredMapList()
+  public async Task ExternalUser_OneGroupRole_TwoGroupMaps_ReadilteredMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal1GroupRole.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal1GroupRoleContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserExternal1GroupRoleContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
 
@@ -246,10 +246,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_ExternalUser_TwoGroupRole_ReadFilteredMapList()
+  public async Task ExternalUser_TwoGroupRole_ReadFilteredMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal2GroupRole.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal2GroupRoleContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserExternal2GroupRoleContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps1Group.json" );
 
@@ -279,10 +279,10 @@ public class OLabAuthorizationAclTests : OLabAuthorizationTests
   }
 
   [Fact]
-  public async Task Access_ExternalUser_TwoGroupRole_TwoGroupMaps_ReadFilteredMapList()
+  public async Task ExternalUser_TwoGroupRole_TwoGroupMaps_ReadFilteredMapList()
   {
     var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UserExternal2GroupRole.json" ).First();
-    var authenticatedContext = TestUtilities.LoadObjectFromJson<MoqAuthenticatedContext>( "json\\UserExternal2GroupRoleContext.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserExternal2GroupRoleContext.json" ).First();
 
     var mapList = TestUtilities.MoqMapFromJsonFile( _mockDbContext, "json\\Maps2Group.json" );
 

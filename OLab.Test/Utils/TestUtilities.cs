@@ -6,7 +6,13 @@ using OLab.Api.Model;
 namespace OLab.Test.Utils;
 internal static class TestUtilities
 {
-  public static IQueryable<T> LoadObjectFromJson<T>(string filePath)
+
+  public static IQueryable<T> BuildQueryableListFromList<T>(IList<T> data)
+  {
+    return data?.AsQueryable() ?? Enumerable.Empty<T>().AsQueryable();
+  }
+
+  public static IQueryable<T> BuildQueryableListFromJson<T>(string filePath)
   {
     if ( !File.Exists( filePath ) )
       throw new FileNotFoundException( $"File not found: {filePath}" );
@@ -18,42 +24,42 @@ internal static class TestUtilities
 
   public static IList<GrouproleAcls> MoqGroupRoleAclFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
-    var list = LoadObjectFromJson<GrouproleAcls>( v );
+    var list = BuildQueryableListFromJson<GrouproleAcls>( v );
     mockDbContext.Setup( x => x.GrouproleAcls ).ReturnsDbSet( list );
     return list.ToList();
   }
 
   internal static IList<Maps> MoqMapFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
-    var list = LoadObjectFromJson<Maps>( v );
+    var list = BuildQueryableListFromJson<Maps>( v );
     mockDbContext.Setup( x => x.Maps ).ReturnsDbSet( list );
     return list.ToList();
   }
 
   internal static IList<Groups> MoqGroupsFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
-    var list = LoadObjectFromJson<Groups>( v );
+    var list = BuildQueryableListFromJson<Groups>( v );
     mockDbContext.Setup( x => x.Groups ).ReturnsDbSet( list );
     return list.ToList();
   }
 
   internal static IList<Roles> MoqRoleFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
-    var list = LoadObjectFromJson<Roles>( v );
+    var list = BuildQueryableListFromJson<Roles>( v );
     mockDbContext.Setup( x => x.Roles ).ReturnsDbSet( list );
     return list.ToList();
   }
 
   internal static IList<SystemApplications> MoqSystemApplicationsFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
-    var list = LoadObjectFromJson<SystemApplications>( v );
+    var list = BuildQueryableListFromJson<SystemApplications>( v );
     mockDbContext.Setup( x => x.SystemApplications ).ReturnsDbSet( list );
     return list.ToList();
   }
 
   internal static IList<Users> MoqUsersFromJson(Mock<OLabDBContext> mockDbContext, string v)
   {
-    var list = LoadObjectFromJson<Users>( v );
+    var list = BuildQueryableListFromJson<Users>( v );
     mockDbContext.Setup( x => x.Users ).ReturnsDbSet( list );
     return list.ToList();
   }

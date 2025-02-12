@@ -49,8 +49,7 @@ builder.Services
   .AddSingleton<IOLabModuleProvider<IFileStorageModule>, FileStorageProvider>()
   .AddSingleton<IOLabModuleProvider<IWikiTagModule>, WikiTagModuleProvider>()
   .AddTransient<IOLabAuthentication, OLabAuthentication>()
-  .AddTransient<IAuthenticatedContext, AuthenticatedMiddlewareContext>()
-  .AddTransient<IUserService, UserService>();
+  .AddTransient<IAuthenticatedContext, AuthenticatedMiddlewareContext>();
 
 builder.UseMiddleware<BootstrapMiddleware>();
 builder.UseWhen<OLabAuthMiddleware>( OLabAuthMiddleware.CanInvoke );
