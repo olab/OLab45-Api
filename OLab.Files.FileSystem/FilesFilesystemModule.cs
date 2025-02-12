@@ -131,8 +131,8 @@ public class FilesFilesystemModule : OLabFileStorageModule
   /// <summary>
   /// Gets the public URL for the file.
   /// </summary>
-  /// <param name="path">The path of the file</param>
-  /// <param name="fileName">The name of the file</param>
+  /// <param name="path">The scoped object path of the file</param>
+  /// <param name="source">Files object</param>
   /// <returns>The public URL for the file</returns>
   public override SystemFiles UpdateUrlPath(
     string path,
@@ -143,6 +143,28 @@ public class FilesFilesystemModule : OLabFileStorageModule
         FilesRoot,
         path,
         source.Path );
+
+    source.OriginUrl = physicalPath.Replace( "\\", "/" );
+
+    return source;
+  }
+
+  /// <summary>
+  /// Gets the public URL for the file.
+  /// </summary>
+  /// <param name="path">The scoped object path of the file</param>
+  /// <param name="source">Script object</param>
+  /// <returns>The public URL for the file</returns>
+  public override SystemScripts UpdateUrlPath(
+    string path,
+    SystemScripts source)
+  {
+    var physicalPath
+      = BuildPath(
+          cfg.GetAppSettings().FileStorageUrl,
+          FilesRoot,
+          path,
+          source.Source);
 
     source.OriginUrl = physicalPath.Replace( "\\", "/" );
 

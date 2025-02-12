@@ -7,6 +7,7 @@ using OLab.Azure.Services;
 using OLab.Common.Interfaces;
 using System.Threading.Tasks;
 
+
 namespace OLab.Azure.Middleware;
 
 /// <summary>

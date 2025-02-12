@@ -1,9 +1,12 @@
 using Dawn;
+using DocumentFormat.OpenXml.Drawing;
 using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -14,6 +17,8 @@ using OLab.Data.Interface;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,9 +105,33 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to import users" ) );
 
+      // Get the Content-Type header
+      if ( !request.Headers.TryGetValues( "Content-Type", out var contentTypeValues ) )
+        throw new Exception( "Bad Request");
+
+      var contentType = contentTypeValues.First();
+
+      // Parse the form data
+      var boundary = GetBoundary( contentType );
+      var reader = new MultipartReader( boundary, request.Body );
+      MultipartSection section;
+
       using ( var memoryStream = new MemoryStream() )
       {
-        await request.Body.CopyToAsync( memoryStream );
+        while ( (section = await reader.ReadNextSectionAsync()) != null )
+        {
+          if ( ContentDispositionHeaderValue.TryParse( section.ContentDisposition, out var contentDisposition ) )
+          {
+            if ( contentDisposition.DispositionType.Equals( "form-data" ) &&
+                contentDisposition.Name == "File" )
+            {
+              await section.Body.CopyToAsync( memoryStream );
+            }
+          }
+        }
+
+        memoryStream.Position = 0;
+
         var dto = await _userService.ImportUsersAsync( memoryStream );
         return request.CreateResponse( OLabObjectListResult<UsersImportDto>.Result( dto ) );
       }
@@ -113,6 +142,17 @@ public partial class UserManagement : OLabFunction
       Logger.LogError( ex, "ImportUsersPost" );
       return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
     }
+  }
+
+  private string GetBoundary(string contentType)
+  {
+    var elements = contentType.Split( ' ' );
+    var boundaryElement = elements.FirstOrDefault( entry => entry.StartsWith( "boundary=" ) );
+    if ( boundaryElement != null )
+    {
+      return boundaryElement.Substring( "boundary=".Length );
+    }
+    throw new InvalidDataException( "Missing content-type boundary" );
   }
 
   /// <summary>

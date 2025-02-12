@@ -20,7 +20,7 @@ namespace OLab.Files.AzureBlobStorage;
 public class AzureBlobFileSystemModule : OLabFileStorageModule
 {
   private readonly BlobServiceClient _blobServiceClient;
-  private readonly string _hostname;
+  private readonly string StorageHostname;
   private readonly string _containerName;
 
   private readonly Dictionary<string, IList<BlobItem>>
@@ -47,7 +47,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
     _blobServiceClient = new BlobServiceClient( connectionString );
 
-    _hostname = GetBlobStorageHostName( connectionString );
+    StorageHostname = GetBlobStorageHostName( connectionString );
 
     _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty );
     if ( string.IsNullOrEmpty( _containerName ) )
@@ -509,7 +509,28 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       source.Path );
 
     source.OriginUrl = physicalPath;
-    source.HostName = _hostname;
+    source.HostName = StorageHostname;
+
+    return source;
+  }
+
+  /// <summary>
+  /// Gets the public URL for the file.
+  /// </summary>
+  /// <param name="path">The path.</param>
+  /// <param name="fileName">The file name.</param>
+  /// <returns>The public URL for the file.</returns>
+  public override SystemScripts UpdateUrlPath(
+    string path,
+    SystemScripts source)
+  {
+    var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageUrl,
+      path,
+      source.Source );
+
+    source.OriginUrl = physicalPath;
+    source.HostName = StorageHostname;
 
     return source;
   }

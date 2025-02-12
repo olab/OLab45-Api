@@ -218,9 +218,10 @@ public class UserService : IUserService
   /// <param name="fileStream">The stream of the Excel file containing user data.</param>
   /// <returns>A task that represents the asynchronous operation. The task result contains a list of user import DTOs representing the imported users.</returns>
   /// <exception cref="Exception">Thrown when an error occurs while importing users.</exception>
-  public async Task<List<UsersImportDto>> ImportUsersAsync(Stream fileStream)
+  public async Task<List<UsersImportDto>> ImportUsersAsync(MemoryStream fileStream)
   {
     var responses = new List<UsersImportDto>();
+    fileStream.Position = 0;
 
     using ( var spreadsheetDocument = SpreadsheetDocument.Open( fileStream, false ) )
     {

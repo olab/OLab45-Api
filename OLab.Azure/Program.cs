@@ -41,12 +41,6 @@ builder.Services
                 //.EnableDetailedErrors()
                 ServiceLifetime.Transient );
 
-builder.Services.AddOptions<AppSettings>()
-  .Configure<IConfiguration>( (options, c) =>
-  {
-    c.GetSection( "AppSettings" ).Bind( options );
-  } );
-
 builder.Services
   .AddAzureAppConfiguration()
   .AddSingleton( typeof( IOLabModuleProvider<> ), typeof( OLabModuleProvider<> ) )
