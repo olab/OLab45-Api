@@ -22,14 +22,12 @@ namespace OLab.Azure.Functions;
 
 public class AuthenticationFunction : OLabFunction
 {
-  protected readonly IUserService _userService;
   private readonly IOLabAuthentication _authentication;
   private readonly IOLabAuthorization _authorization;
 
   public AuthenticationFunction(
       ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
       IOLabAuthentication authentication,
       OLabDBContext dbContext) : base( configuration, dbContext )
   {
@@ -37,8 +35,6 @@ public class AuthenticationFunction : OLabFunction
 
     Logger = OLabLogger.CreateNew<AuthenticationFunction>( loggerFactory );
     _authentication = authentication;
-    _userService = userService;
-
     _authorization = new OLabAuthorization( Logger, DbContext, configuration );
   }
 

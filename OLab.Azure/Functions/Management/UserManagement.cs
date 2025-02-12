@@ -7,6 +7,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using OLab.Access.Interfaces;
 using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -33,6 +34,7 @@ public partial class UserManagement : OLabFunction
   public UserManagement(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
+    IOLabAuthorization auth,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
@@ -48,6 +50,7 @@ public partial class UserManagement : OLabFunction
     _userEndpoint = new Api.Endpoints.UserEndpoint(
       Logger,
       configuration,
+      auth,
       dbContext,
       wikiTagProvider,
       fileStorageProvider );
