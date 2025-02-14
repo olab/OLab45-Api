@@ -62,30 +62,20 @@ public class TemplateFunction : OLabFunction
 
     try
     {
-      Guard.Argument( request ).NotNull( nameof( request ) );
-
       Logger.LogInformation( $"TemplateDesignerGet" );
 
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
+      var pageSpecs = ExtractPageParameters( request );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var result = await _endpoint.GetAsync( take, skip );
-      Logger.LogInformation( string.Format( "Found {0} files", result.Data.Count ) );
+      var result = await _endpoint.GetAsync( pageSpecs.take, pageSpecs.skip );
 
       return request
         .CreateResponse( OLabObjectPagedListResult<MapsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "TemplateDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( TemplateDesignerGetAsync ) );
     }
   }
 
@@ -114,10 +104,7 @@ public class TemplateFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "TemplateLinksDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( TemplateLinksDesignerGetAsync ) );
     }
   }
 
@@ -146,10 +133,7 @@ public class TemplateFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "TemplateMapNodeDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( TemplateMapNodeDesignerGetAsync ) );
     }
 
   }

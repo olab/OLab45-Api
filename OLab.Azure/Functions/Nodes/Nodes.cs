@@ -67,10 +67,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeGetAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeGetAsync ) );
     }
   }
 
@@ -100,10 +97,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodePutAsync ) );
     }
   }
 
@@ -136,10 +130,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeLinksPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeLinksPostAsync ) );
     }
 
   }
@@ -172,10 +163,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodePostAsync ) );
     }
   }
 

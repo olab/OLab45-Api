@@ -4,7 +4,8 @@
     "LogLevel": {
       "Default": "Information",
       "Microsoft": "Warning",
-      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+      "Microsoft.EntityFrameworkCore.Database.Command": "Warning",
+      "Function": "Information"
     },
     "applicationInsights": {
       "samplingSettings": {

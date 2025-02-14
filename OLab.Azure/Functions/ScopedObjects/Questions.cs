@@ -1,6 +1,7 @@
 using Dawn;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -55,36 +56,29 @@ public class QuestionsFunction : OLabFunction
   /// Retrieves a list of questions with pagination.
   /// </summary>
   /// <param name="request">The HTTP request data.</param>
-  /// <param name="hostContext">The function execution context.</param>
+  /// <param name="executionContext">The function execution context.</param>
   /// <returns>An IActionResult containing the list of questions or an error response.</returns>
   [Function( "QuestionsGet" )]
   public async Task<IActionResult> QuestionsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "questions" )] HttpRequestData request,
-    FunctionContext hostContext)
+    FunctionContext executionContext)
   {
     try
     {
-      Guard.Argument( request ).NotNull( nameof( request ) );
+      Logger.LogInformation( $"FilesGet" );
 
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
+      var pageSpecs = ExtractPageParameters( request );
 
-      Logger.LogInformation( $"QuestionsGet" );
-
-      var result = await _endpoint.GetAsync( take, skip );
-      Logger.LogInformation( string.Format( "Found {0} questions", result.Data.Count ) );
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+      var result = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
       return request
         .CreateResponse( OLabObjectPagedListResult<QuestionsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionsGetAsync ) );
     }
   }
 
@@ -119,10 +113,7 @@ public class QuestionsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( GetAsync ) );
     }
   }
 
@@ -157,10 +148,7 @@ public class QuestionsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionPutAsync ) );
     }
   }
 
@@ -190,10 +178,7 @@ public class QuestionsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionPostAsync ) );
     }
   }
 
@@ -222,10 +207,7 @@ public class QuestionsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionDeleteAsync ) );
     }
   }
 }

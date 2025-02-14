@@ -39,10 +39,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsRawGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsRawGetAsync ) );
     }
 
   }
@@ -70,10 +67,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsGetAsync ) );
     }
   }
 
@@ -103,10 +97,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsRawDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsRawDesignerGetAsync ) );
     }
   }
 
@@ -136,10 +127,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsDesignerGetAsync ) );
     }
 
   }

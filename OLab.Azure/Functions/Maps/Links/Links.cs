@@ -81,10 +81,7 @@ public partial class LinksFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkPutAsync ) );
     }
 
   }
@@ -119,10 +116,7 @@ public partial class LinksFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkDesignerPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkPostDesignerAsync ) );
     }
 
   }
@@ -153,10 +147,7 @@ public partial class LinksFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkDesignerDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkDesignerDeleteAsync ) );
     }
   }
 
@@ -187,10 +178,7 @@ public partial class LinksFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkDesignerGetAsync ) );
     }
   }
 }

@@ -75,10 +75,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      GetLogger().LogError( ex, "Login" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( LoginAsync ) );
     }
 
   }
@@ -107,10 +104,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      GetLogger().LogError( ex, "LoginAnonymous" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( LoginAnonymousAsync ) );
     }
 
   }
@@ -139,10 +133,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      GetLogger().LogError( ex, "LoginExternalAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( LoginExternalAsync ) );
     }
   }
 

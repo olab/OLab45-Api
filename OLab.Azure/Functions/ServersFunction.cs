@@ -17,11 +17,11 @@ using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions;
 
-public partial class Servers : OLabFunction
+public partial class ServersFunction : OLabFunction
 {
   private readonly ServerEndpoint _endpoint;
 
-  public Servers(
+  public ServersFunction(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
     OLabDBContext dbContext,
@@ -36,7 +36,7 @@ public partial class Servers : OLabFunction
     Guard.Argument( wikiTagProvider ).NotNull( nameof( wikiTagProvider ) );
     Guard.Argument( fileStorageProvider ).NotNull( nameof( fileStorageProvider ) );
 
-    Logger = OLabLogger.CreateNew<Servers>( loggerFactory );
+    Logger = OLabLogger.CreateNew<ServersFunction>( loggerFactory );
 
     _endpoint = new ServerEndpoint(
       Logger,
@@ -47,37 +47,33 @@ public partial class Servers : OLabFunction
   }
 
   /// <summary>
-  /// ReadAsync a list of servers
+  /// Read a list of object
   /// </summary>
   /// <param name="take">Max number of records to return</param>
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
   [Function( "ServersGet" )]
-  public async Task<IActionResult> ServersGetAsync(
+  public async Task<IActionResult> GetServersAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "servers" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
   {
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
+      Logger.LogInformation( $"ServersGet" );
+
+      var pageSpecs = ExtractPageParameters( request );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
+      var result = await _endpoint.GetPhysAsync<Servers>( auth, pageSpecs.take, pageSpecs.skip );
 
-      var pagedResponse = await _endpoint.GetAsync( take, skip );
       return request
-        .CreateResponse( OLabObjectListResult<Api.Model.Servers>.Result( pagedResponse.Data ) );
+        .CreateResponse( OLabObjectPagedListResult<Servers>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ServersGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( GetServersAsync ) );
     }
 
   }
@@ -105,10 +101,7 @@ public partial class Servers : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ServerScopedObjectRawGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ServerScopedObjectRawGetAsync ) );
     }
   }
 
@@ -135,10 +128,7 @@ public partial class Servers : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ServerScopedObjectGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ServerScopedObjectGetAsync ) );
     }
   }
 }

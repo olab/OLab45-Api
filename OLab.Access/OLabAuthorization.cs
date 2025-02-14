@@ -125,12 +125,12 @@ public class OLabAuthorization : IOLabAuthorization
     foreach ( var userGroups in UsersGroupRoles.Select( x => x.Group ).Distinct() )
     {
       var groupsPhys
-        = await _groupRoleAclWriter.GetAsync( userGroups.Id );
+        = await _groupRoleAclWriter.GetListAsync( userGroups.Id );
       aclsList.AddRange( groupsPhys );
 
       // add default no-group acls
       groupsPhys
-        = await _groupRoleAclWriter.GetAsync();
+        = ( await _groupRoleAclWriter.GetAsync<GrouproleAcls>( null, null ) ).items;
       aclsList.AddRange( groupsPhys );
     }
 

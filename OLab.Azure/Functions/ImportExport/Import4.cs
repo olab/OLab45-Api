@@ -16,6 +16,7 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using System;
+using System.Composition;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -105,10 +106,7 @@ public class Import4Function : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetShortStatusAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ImportAsync ) );
     }
   }
 
@@ -135,10 +133,7 @@ public class Import4Function : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetShortStatusAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ExportAsJsonAsync ) );
     }
 
   }
@@ -152,7 +147,7 @@ public class Import4Function : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"Export" );
+      Logger.LogInformation( $"Export4" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -186,10 +181,7 @@ public class Import4Function : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "Export4" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ExportAsync ) );
     }
 
   }

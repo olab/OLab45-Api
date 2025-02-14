@@ -6,6 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Common;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Model;
 using OLab.Azure.Services;
 using OLab.Common.Interfaces;
@@ -13,6 +16,8 @@ using OLab.Data.Interface;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using OLab.Azure.Extensions;
+using FluentValidation;
 
 namespace OLab.Azure.Functions;
 
@@ -60,6 +65,19 @@ public class OLabFunction
 
   }
 
+  protected IActionResult ProcessException(HttpRequestData request, Exception ex, string caller)
+  {
+    Logger.LogError( $"{caller} exception: {ex.Message}" );
+
+    if ( ex is OLabObjectNotFoundException )
+      return new NotFoundResult();
+
+    if ( ex is OLabUnauthorizedException )
+      return new UnauthorizedResult();
+
+    return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
+  }
+
   /// <summary>
   /// Builds the authentication context from the host context
   /// </summary>
@@ -98,6 +116,19 @@ public class OLabFunction
         .Include( x => x.SystemQuestionResponses )
         .FirstOrDefaultAsync( x => x.Id == id );
     return item;
+  }
+
+  protected static (int? take, int? skip) ExtractPageParameters(HttpRequestData request)
+  {
+    int? take;
+    int? skip;
+
+    var queryTake = Convert.ToInt32( request.Query[ "take" ] );
+    var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
+    take = queryTake > 0 ? queryTake : null;
+    skip = querySkip > 0 ? querySkip : null;
+
+    return (take, skip);
   }
 
 }

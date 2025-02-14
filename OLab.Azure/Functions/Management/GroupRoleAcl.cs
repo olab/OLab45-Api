@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
@@ -37,7 +40,7 @@ public partial class GroupRoleAcls : OLabFunction
     Guard.Argument( wikiTagProvider ).NotNull( nameof( wikiTagProvider ) );
     Guard.Argument( fileStorageProvider ).NotNull( nameof( fileStorageProvider ) );
 
-    Logger = OLabLogger.CreateNew<Servers>( loggerFactory );
+    Logger = OLabLogger.CreateNew<ServersFunction>( loggerFactory );
 
     _endpoint = new GroupRoleAclsEndpoint(
       Logger,
@@ -52,24 +55,19 @@ public partial class GroupRoleAcls : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function( "GroupRolesAclPost" )]
-  public async Task<IActionResult> GroupRolesAclPostAsync(
+  [Function( "GroupRolesAclQueryPost" )]
+  public async Task<IActionResult> GroupRolesAclQueryPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acls" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
   {
     try
     {
-      Logger.LogInformation( $"GroupRolesAclPost" );
+      Logger.LogInformation( $"GroupRolesAclQueryPost" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-      var body = await request.ParseBodyFromRequestAsync<GroupRoleAclRequest>();
-
-      // test if user has access to add users.
-      if ( !await auth.IsSystemSuperuserAsync() )
-        return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to post acls" ) );
-
+      var body = await request.ParseBodyFromRequestAsync<GroupRoleAclReadRequest>();
 
       var dto = await _endpoint.GetAsync( auth, body );
       return request
@@ -77,12 +75,133 @@ public partial class GroupRoleAcls : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "GroupRolesAclPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( GroupRolesAclQueryPostAsync ) );
     }
 
   }
+
+  /// <summary>
+  /// Get single object
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [Function( "GroupRolesAclEditPut" )]
+  public async Task<IActionResult> GroupRolesAclEditPutAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "acl" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken)
+  {
+    try
+    {
+      Logger.LogInformation( $"GroupRolesAclEditPut" );
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
+      var dto = await _endpoint.EditAsync( auth, model );
+
+      return request
+        .CreateResponse( OLabObjectResult<GroupRoleAclDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( GroupRolesAclEditPutAsync ) );
+    }
+
+  }
+
+  /// <summary>
+  /// Get single object
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [Function( "GroupRolesAclDelete" )]
+  public async Task<IActionResult> GroupRolesAclDeleteAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "acl" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken)
+  {
+    try
+    {
+      Logger.LogInformation( $"GroupRolesAclDelete" );
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
+      await _endpoint.DeleteAsync( auth, model.Id.Value );
+
+      return new NoContentResult();
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( GroupRolesAclDeleteAsync ) );
+    }
+
+  }
+
+  /// <summary>
+  /// Create single object
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [Function( "GroupRolesAclCreatePost" )]
+  public async Task<IActionResult> GroupRolesAclCreatePostAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acl" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken)
+  {
+    try
+    {
+      Logger.LogInformation( $"GroupRolesAclCreatePost" );
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
+      var dto = await _endpoint.CreateAsync( auth, model );
+
+      return request
+        .CreateResponse( OLabObjectResult<GroupRoleAclDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( GroupRolesAclCreatePostAsync ) );
+    }
+
+  }
+
+  /*
+
+  /// <summary>
+  /// Get single object
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
+  [Function( "GroupRolesAclDelete" )]
+  public async Task<IActionResult> GroupRolesAclDeleteAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acl" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken)
+  {
+    try
+    {
+      Logger.LogInformation( $"GroupRolesAclDelete" );
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
+
+      Logger.LogInformation( JsonConvert.SerializeObject( model ) );
+
+      await _endpoint.DeleteAsync( auth, model.Id );
+      return new NoContentResult();
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( GroupRolesAclDeleteAsync ) );
+    }
+
+  }
+
+  */
 
 }

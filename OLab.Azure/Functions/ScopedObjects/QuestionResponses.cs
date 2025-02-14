@@ -74,10 +74,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponsePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponsePostAsync ) );
     }
   }
 
@@ -111,10 +108,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponseDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponseDeleteAsync ) );
     }
   }
 
@@ -147,10 +141,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponsePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponsePutAsync ) );
     }
   }
 

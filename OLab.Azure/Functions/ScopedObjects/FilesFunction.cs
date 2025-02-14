@@ -122,41 +122,31 @@ public class FilesFunction : OLabFunction
   /// Gets all files.
   /// </summary>
   /// <param name="request">The HTTP request data.</param>
-  /// <param name="hostContext">The function context.</param>
+  /// <param name="executionContext">The function context.</param>
   /// <param name="cancellationToken">The cancellation token.</param>
   /// <returns>The action result.</returns>
   [Function( "FilesGet" )]
   public async Task<IActionResult> FilesGetAsync(
       [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "files" )] HttpRequestData request,
-      FunctionContext hostContext,
+      FunctionContext executionContext,
       CancellationToken cancellationToken)
   {
-    Guard.Argument( request ).NotNull( nameof( request ) );
-
     try
     {
       Logger.LogInformation( $"FilesGet" );
 
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
+      var pageSpecs = ExtractPageParameters( request );
 
       // validate token/setup up common properties
-      var auth = GetAuthorization( hostContext );
-
-      var result = await _endpoint.GetAsync( take, skip );
-      Logger.LogInformation( string.Format( "Found {0} files", result.Data.Count ) );
+      var auth = GetAuthorization( executionContext );
+      var result = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
       return request
         .CreateResponse( OLabObjectPagedListResult<FilesDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "FilesGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( FilesGetAsync ) );
     }
 
   }
@@ -193,10 +183,7 @@ public class FilesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "FileGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( FileGetAsync ) );
     }
   }
 
@@ -286,10 +273,7 @@ public class FilesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "FileDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( DeleteAsync ) );
     }
 
   }
@@ -320,10 +304,7 @@ public class FilesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "FilePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( FilePutAsync ) );
     }
 
   }

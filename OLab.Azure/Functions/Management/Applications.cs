@@ -36,7 +36,7 @@ public partial class ApplicationsFunction : OLabFunction
     Guard.Argument( wikiTagProvider ).NotNull( nameof( wikiTagProvider ) );
     Guard.Argument( fileStorageProvider ).NotNull( nameof( fileStorageProvider ) );
 
-    Logger = OLabLogger.CreateNew<Servers>( loggerFactory );
+    Logger = OLabLogger.CreateNew<ServersFunction>( loggerFactory );
 
     _endpoint = new ApplicationsEndpoint(
       Logger,
@@ -58,26 +58,20 @@ public partial class ApplicationsFunction : OLabFunction
   {
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
-
       Logger.LogInformation( $"ApplicationsGet" );
+
+      var pageSpecs = ExtractPageParameters( request );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
+      var result = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
-      var pagedResponse = await _endpoint.GetAsync( auth, take, skip );
       return request
-        .CreateResponse( OLabObjectPagedListResult<ApplicationsDto>.Result( pagedResponse.Data, pagedResponse.Remaining ) );
+        .CreateResponse( OLabObjectPagedListResult<ApplicationsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ApplicationsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ApplicationsGetAsync ) );
     }
 
   }

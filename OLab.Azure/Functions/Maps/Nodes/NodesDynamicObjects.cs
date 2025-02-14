@@ -53,10 +53,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeDynamicObjectsRawGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeDynamicObjectsRawGetAsync ) );
     }
 
   }
@@ -98,10 +95,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeDynamicObjectsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeDynamicObjectsGetAsync ) );
     }
   }
 

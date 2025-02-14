@@ -74,7 +74,6 @@ public partial class UserManagement : OLabFunction
 
       var auth = GetAuthorization( hostContext );
 
-
       // test if user has access to add users.
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to get user list" ) );
@@ -85,10 +84,7 @@ public partial class UserManagement : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UsersGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UsersGetAsync ) );
     }
   }
 
@@ -147,8 +143,7 @@ public partial class UserManagement : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ImportUsersPost" );
-      return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ImportUsersPostAsync ) );
     }
   }
 
@@ -170,7 +165,8 @@ public partial class UserManagement : OLabFunction
   [Function( "UserPost" )]
   public async Task<IActionResult> UserPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/adduser" )] HttpRequestData request,
-    FunctionContext hostContext, CancellationToken cancellationToken)
+    FunctionContext hostContext, 
+    CancellationToken cancellationToken)
   {
     try
     {
@@ -188,10 +184,7 @@ public partial class UserManagement : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UserPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UserPostAsync ) );
     }
   }
 
@@ -220,10 +213,7 @@ public partial class UserManagement : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UserDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UserDeleteAsync ) );
     }
 
   }
@@ -277,10 +267,7 @@ public partial class UserManagement : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UsersPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UsersPostAsync ) );
     }
 
   }
@@ -313,10 +300,7 @@ public partial class UserManagement : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UsersPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UsersPutAsync ) );
     }
 
   }
