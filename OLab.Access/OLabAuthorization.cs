@@ -130,7 +130,7 @@ public class OLabAuthorization : IOLabAuthorization
 
       // add default no-group acls
       groupsPhys
-        = ( await _groupRoleAclWriter.GetAsync<GrouproleAcls>( null, null ) ).items;
+        = ( await _groupRoleAclWriter.GetRawAsync<GrouproleAcls>( null, null ) ).items.ToList();
       aclsList.AddRange( groupsPhys );
     }
 
