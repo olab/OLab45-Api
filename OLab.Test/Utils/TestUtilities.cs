@@ -25,7 +25,11 @@ internal static class TestUtilities
   public static IList<GrouproleAcls> MoqGroupRoleAclFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
     var list = BuildQueryableListFromJson<GrouproleAcls>( v );
-    mockDbContext.Setup( x => x.GrouproleAcls ).ReturnsDbSet( list );
+    var mockSet = MockDbSetHelper.CreateMockDbSet( list );
+
+    mockDbContext.Setup( x => x.GrouproleAcls ).ReturnsDbSet( mockSet.Object );
+    mockDbContext.Setup( x => x.Set<GrouproleAcls>()).ReturnsDbSet( mockSet.Object );
+
     return list.ToList();
   }
 
