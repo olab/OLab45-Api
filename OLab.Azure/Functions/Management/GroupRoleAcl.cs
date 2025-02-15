@@ -55,8 +55,8 @@ public partial class GroupRoleAcls : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function( "GroupRolesAclQueryPost" )]
-  public async Task<IActionResult> GroupRolesAclQueryPostAsync(
+  [Function( "GroupRolesAclQuery" )]
+  public async Task<IActionResult> GroupRolesAclQueryAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acls" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -75,7 +75,7 @@ public partial class GroupRoleAcls : OLabFunction
     }
     catch ( Exception ex )
     {
-      return ProcessException( request, ex, nameof( GroupRolesAclQueryPostAsync ) );
+      return ProcessException( request, ex, nameof( GroupRolesAclQueryAsync ) );
     }
 
   }
@@ -85,8 +85,8 @@ public partial class GroupRoleAcls : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function( "GroupRolesAclEditPut" )]
-  public async Task<IActionResult> GroupRolesAclEditPutAsync(
+  [Function( "GroupRolesAclEdit" )]
+  public async Task<IActionResult> GroupRolesAclEditAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "acl" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -105,7 +105,7 @@ public partial class GroupRoleAcls : OLabFunction
     }
     catch ( Exception ex )
     {
-      return ProcessException( request, ex, nameof( GroupRolesAclEditPutAsync ) );
+      return ProcessException( request, ex, nameof( GroupRolesAclEditAsync ) );
     }
 
   }
@@ -144,8 +144,8 @@ public partial class GroupRoleAcls : OLabFunction
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [Function( "GroupRolesAclCreatePost" )]
-  public async Task<IActionResult> GroupRolesAclCreatePostAsync(
+  [Function( "GroupRolesAclCreate" )]
+  public async Task<IActionResult> GroupRolesAclCreateAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acl" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -164,44 +164,9 @@ public partial class GroupRoleAcls : OLabFunction
     }
     catch ( Exception ex )
     {
-      return ProcessException( request, ex, nameof( GroupRolesAclCreatePostAsync ) );
+      return ProcessException( request, ex, nameof( GroupRolesAclCreateAsync ) );
     }
 
   }
-
-  /*
-
-  /// <summary>
-  /// Get single object
-  /// </summary>
-  /// <param name="id"></param>
-  /// <returns></returns>
-  [Function( "GroupRolesAclDelete" )]
-  public async Task<IActionResult> GroupRolesAclDeleteAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acl" )] HttpRequestData request,
-    FunctionContext executionContext,
-    CancellationToken cancellationToken)
-  {
-    try
-    {
-      Logger.LogInformation( $"GroupRolesAclDelete" );
-
-      // validate token/setup up common properties
-      var auth = GetAuthorization( executionContext );
-      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
-
-      Logger.LogInformation( JsonConvert.SerializeObject( model ) );
-
-      await _endpoint.DeleteAsync( auth, model.Id );
-      return new NoContentResult();
-    }
-    catch ( Exception ex )
-    {
-      return ProcessException( request, ex, nameof( GroupRolesAclDeleteAsync ) );
-    }
-
-  }
-
-  */
 
 }
