@@ -1,19 +1,6 @@
-using Meziantou.Extensions.Logging.Xunit;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Newtonsoft.Json;
-using NuGet.Packaging;
-using OLab.Access;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
-using OLab.Api.Dto;
-using OLab.Api.Model;
 using OLab.Api.Utils;
-using OLab.Common.Interfaces;
-using OLab.Data.ReaderWriters;
 using OLab.Test.Utils;
-using Xunit.Abstractions;
 
 namespace OLab.Test.OLabAuthorizationTests;
 
