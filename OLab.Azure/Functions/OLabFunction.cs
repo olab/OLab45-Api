@@ -65,19 +65,6 @@ public class OLabFunction
 
   }
 
-  protected IActionResult ProcessException(HttpRequestData request, Exception ex, string caller)
-  {
-    Logger.LogError( $"{caller} exception: {ex.Message}" );
-
-    if ( ex is OLabObjectNotFoundException )
-      return new NotFoundResult();
-
-    if ( ex is OLabUnauthorizedException )
-      return new UnauthorizedResult();
-
-    return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
-  }
-
   /// <summary>
   /// Builds the authentication context from the host context
   /// </summary>
@@ -129,6 +116,19 @@ public class OLabFunction
     skip = querySkip > 0 ? querySkip : null;
 
     return (take, skip);
+  }
+
+  protected IActionResult ProcessException(HttpRequestData request, Exception ex, string caller)
+  {
+    Logger.LogError( $"{caller} exception: {ex.Message}" );
+
+    if ( ex is OLabObjectNotFoundException )
+      return new NotFoundResult();
+
+    if ( ex is OLabUnauthorizedException )
+      return new UnauthorizedResult();
+
+    return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
   }
 
 }
