@@ -2,7 +2,8 @@
   "profiles": {
     "Debug": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234"
+      "commandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234",
+      "XcommandLineArgs": "--port 7071"
     }
   }
 }

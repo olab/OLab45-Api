@@ -117,9 +117,10 @@ public partial class GroupRoleAcls : OLabFunction
   /// <returns></returns>
   [Function( "GroupRolesAclDelete" )]
   public async Task<IActionResult> GroupRolesAclDeleteAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "acl" )] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "acl/{id}" )] HttpRequestData request,
     FunctionContext executionContext,
-    CancellationToken cancellationToken)
+    CancellationToken cancellationToken,
+    uint id)
   {
     try
     {
@@ -127,8 +128,7 @@ public partial class GroupRoleAcls : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
-      await _endpoint.DeleteAsync( auth, model.Id.Value );
+      await _endpoint.DeleteAsync( auth, id );
 
       return new NoContentResult();
     }
