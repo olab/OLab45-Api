@@ -66,7 +66,7 @@ public class AuthenticationFunction : OLabFunction
           return OLabUnauthorizedResult.Result();
       }
       else
-        GetLogger().LogInformation( $"no referer url provided" );
+        GetLogger().LogWarning( $"no referer url provided" );
 
       var authResponse = _authentication.GenerateJwtToken( user, referrer );
 

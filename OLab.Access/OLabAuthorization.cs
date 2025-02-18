@@ -347,15 +347,16 @@ public class OLabAuthorization : IOLabAuthorization
   {
     // load the acls based on physical user's group/roles
     ApplyUserContext( userPhys );
-    GetLogger().LogInformation( $"Testing referrer: '{referrerUri}'" );
 
     var applicationName = ExtractApplicationFromUri( referrerUri );
     var appPhys = await GetDbContext().SystemApplications.FirstOrDefaultAsync( x => x.Name == applicationName );
     if ( appPhys == null )
     {
-      GetLogger().LogError( $"Could not find application '{referrerUri}' in database" );
+      GetLogger().LogError( $"Could not find application '{applicationName}' in database" );
       return false;
     }
+    else
+      GetLogger().LogError( $"Found application '{applicationName}'" );
 
     foreach ( var physUserGroupRole in UsersGroupRoles )
     {
@@ -366,16 +367,18 @@ public class OLabAuthorization : IOLabAuthorization
         GrouproleAcls.ExecuteMask );
 
       if ( accessResult.HasValue && accessResult.Value == true )
+      {
+        GetLogger().LogError( $"User '{userPhys.Username}' has application access under group role '{physUserGroupRole}'" );      
         return true;
-
+      }
     }
 
-    GetLogger().LogError( $"user '{userPhys.Username}' does not have access to application '{appPhys.Name}'" );
+    GetLogger().LogError( $"user '{userPhys.Username}' does not have access to application '{applicationName}'" );
     return false;
 
   }
 
-  private async Task<bool?> HasRequestedAccessAsync(
+  private async Task<bool?> HasRequestedAccessAsync( 
     UserGrouproles userGroupRole,
     string objectType,
     uint? objectId,
