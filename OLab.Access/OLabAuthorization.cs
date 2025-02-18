@@ -1,4 +1,5 @@
 using Dawn;
+using DocumentFormat.OpenXml.Drawing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OLab.Access.Interfaces;
@@ -99,8 +100,6 @@ public class OLabAuthorization : IOLabAuthorization
   {
     Guard.Argument( authenticatedContext ).NotNull( nameof( authenticatedContext ) );
 
-    //var json = Access.AuthenticatedContext.TruncateToJsonObject( authenticatedContext, 4 );
-
     AuthenticatedContext = authenticatedContext;
     OLabUser = await _userReaderWriter.GetSingleAsync( AuthenticatedContext.UserId );
 
@@ -112,9 +111,6 @@ public class OLabAuthorization : IOLabAuthorization
 
     UsersGroupRoles = AuthenticatedContext.GroupRoles.ToList();
     GroupRoleAcls = await GetGroupRoleAclsAsync();
-
-    //var obj = GroupRoleAclReaderWriter.Instance( _logger, _dbContext ).GetAsync().GetAwaiter().GetResult();
-    //var json = StringUtils.TruncateToJsonObject( obj, 2 );
   }
 
   private async Task<IList<GrouproleAcls>> GetGroupRoleAclsAsync()
@@ -130,7 +126,7 @@ public class OLabAuthorization : IOLabAuthorization
 
       // add default no-group acls
       groupsPhys
-        = ( await _groupRoleAclWriter.GetRawAsync<GrouproleAcls>() ).items.ToList();
+        = (await _groupRoleAclWriter.GetRawAsync<GrouproleAcls>()).items.ToList();
       aclsList.AddRange( groupsPhys );
     }
 
@@ -195,7 +191,7 @@ public class OLabAuthorization : IOLabAuthorization
     {
       var result = await HasRequestedAccessToMapAsync( requestedAcl, dto.ImageableId );
 
-      if ( !result.accessGranted )
+      if ( !result.accessGranted.HasValue || !result.accessGranted.Value )
         return OLabUnauthorizedResult.Result();
     }
 
@@ -234,7 +230,7 @@ public class OLabAuthorization : IOLabAuthorization
     if ( objectType == Constants.ScopeLevelMap )
     {
       var mapResult = await HasRequestedAccessToMapAsync( requestedAcl, objectId.Value );
-      result = mapResult.accessGranted;
+      result = ( mapResult.accessGranted.HasValue && mapResult.accessGranted.Value );
     }
 
     // test if user has access to specified map.
@@ -253,10 +249,11 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="requestedAcl"></param>
   /// <param name="mapId">Object id to search for</param>
   /// <returns>true/false</returns>
-  private async Task<(bool accessGranted, Maps physMap)> HasRequestedAccessToMapAsync(ulong requestedAcl, uint mapId)
+  private async Task<(bool? accessGranted, Maps physMap)> HasRequestedAccessToMapAsync(ulong requestedAcl, uint mapId)
   {
     Maps phys = await MapsReaderWriter.Instance( _logger, GetDbContext() )
         .GetSingleWithGroupRolesAsync( mapId );
+
     if ( phys == null )
       throw new OLabObjectNotFoundException( Constants.ScopeLevelMap, mapId );
 
@@ -275,57 +272,68 @@ public class OLabAuthorization : IOLabAuthorization
           mapId,
           requestedAcl );
 
-        if ( accessResult.HasValue && accessResult.Value == true )
-          return (true, phys);
+        return (accessResult, phys);
       }
 
     }
 
-    return (false, phys);
+    return (null, phys);
   }
 
   /// <summary>
   /// Test if user has requested access to object
   /// </summary>
   /// <param name="requestedAcl"></param>
-  /// <param name="mapId">Object id to search for</param>
+  /// <param name="nodeId">Object id to search for</param>
   /// <returns>true/false</returns>
-  private async Task<bool> HasRequestedAccessToNodeAsync(ulong requestedAcl, uint mapNodeId)
+  private async Task<bool> HasRequestedAccessToNodeAsync(ulong requestedAcl, uint nodeId)
   {
-    MapNodes phys = await MapNodesReaderWriter.Instance( _logger, GetDbContext(), null )
-      .GetNodeAsync( mapNodeId );
-    if ( phys == null )
-      throw new OLabObjectNotFoundException( Constants.ScopeLevelNode, mapNodeId );
+    bool hasAccess = true;
 
-    var result = await HasRequestedAccessToMapAsync( GrouproleAcls.ExecuteMask, phys.MapId );
-    if ( !result.accessGranted )
+    MapNodes physNode = await MapNodesReaderWriter.Instance( _logger, GetDbContext(), null )
+      .GetNodeAsync( nodeId );
+    if ( physNode == null )
+      throw new OLabObjectNotFoundException( Constants.ScopeLevelNode, nodeId );
+
+    var physMap = await MapsReaderWriter.Instance( GetLogger(), GetDbContext() ).GetSingleAsync( physNode.MapId );
+    if ( physMap == null )
+      throw new OLabObjectNotFoundException( Constants.ScopeLevelMap, physNode.MapId );
+
+    var mapResult = await HasRequestedAccessToMapAsync( GrouproleAcls.ExecuteMask, physNode.MapId );
+    if ( mapResult.accessGranted.HasValue && !mapResult.accessGranted.Value )
     {
-      GetLogger().LogInformation( $"user has no access to mapId {phys.MapId} belonging to node {mapNodeId}" );
-      return false;
+      GetLogger().LogInformation( $"user has no access to mapId {physNode.MapId} belonging to node {nodeId}" );
+      hasAccess = false;
     }
 
-    foreach ( var userGroupRole in UsersGroupRoles )
+    // if have access to map, then test node
+    if ( hasAccess )
     {
-      // test if map belongs to one of the users groups
-      if ( result.physMap.MapGrouproles.Select( x => x.GroupId ).Contains( userGroupRole.GroupId ) )
+      hasAccess = false;
+
+      foreach ( var userGroupRole in UsersGroupRoles )
       {
-        // test if user is superuser to a group map belongs to
-        if ( await IsGroupSuperUserAsync( userGroupRole.GroupId ) )
-          return true;
+        // test if map belongs to one of the users groups
+        if ( physMap.MapGrouproles.Select( x => x.GroupId ).Contains( userGroupRole.GroupId ) )
+        {
+          // test if user is superuser to a group map belongs to
+          if ( await IsGroupSuperUserAsync( userGroupRole.GroupId ) )
+            break;
 
-        var accessResult = await HasRequestedAccessAsync(
-          userGroupRole,
-          Constants.ScopeLevelNode,
-          mapNodeId,
-          requestedAcl );
+          var nodeAccess = await HasRequestedAccessAsync(
+            userGroupRole,
+            Constants.ScopeLevelNode,
+            nodeId,
+            requestedAcl );
 
-        if ( accessResult.HasValue && accessResult.Value == true )
-          return true;
+          if ( nodeAccess.HasValue && nodeAccess.Value )
+            break;
+        }
+
       }
-
     }
 
-    return false;
+    return hasAccess;
   }
 
 
@@ -605,6 +613,6 @@ public class OLabAuthorization : IOLabAuthorization
     if ( url.Segments.Count() > 1 )
       path = $"/{url.Segments[ 1 ].Trim( '/' )}";
 
-    return $"{url.Host}{path}";
+    return $"{url.Authority}{path}";
   }
 }

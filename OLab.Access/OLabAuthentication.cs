@@ -465,7 +465,9 @@ public class OLabAuthentication : IOLabAuthentication
 
       if ( !validPassword )
       {
-        physUser.Salt = StringUtils.GenerateRandomString( SaltLength );
+        if ( string.IsNullOrEmpty( physUser.Salt ) )
+          physUser.Salt = StringUtils.GenerateRandomString( SaltLength );
+
         var clearText = newPassword + physUser.Salt;
 
         using ( var hash = SHA1.Create() )

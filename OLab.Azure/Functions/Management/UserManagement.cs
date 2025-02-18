@@ -34,7 +34,8 @@ public partial class UserManagement : OLabFunction
   public UserManagement(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
-    IOLabAuthorization auth,
+    IOLabAuthorization author,
+    IOLabAuthentication authent,
     OLabDBContext dbContext,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
@@ -50,7 +51,8 @@ public partial class UserManagement : OLabFunction
     _userEndpoint = new Api.Endpoints.UserEndpoint(
       Logger,
       configuration,
-      auth,
+      author,
+      authent,
       dbContext,
       wikiTagProvider,
       fileStorageProvider );
