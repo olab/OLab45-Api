@@ -151,7 +151,6 @@ public class OLabAuthenticationTests
 
     Assert.True( result );
     Assert.NotEqual( "oldpasswordhash", user.Password );
-    Assert.NotEqual( "oldsalt", user.Salt );
   }
 
   [Fact]

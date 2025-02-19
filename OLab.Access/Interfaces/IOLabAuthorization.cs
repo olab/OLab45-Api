@@ -15,7 +15,7 @@ public interface IOLabAuthorization
   public const ulong AclBitMaskNoAccess = 0;
 
   Task<IActionResult> HasAccessAsync(ulong acl, ScopedObjectDto dto);
-  Task<bool> HasAccessAsync(ulong acl, string objectType, uint? objectId);
+
   IList<UserGrouproles> UsersGroupRoles { get; }
   IList<GrouproleAcls> GroupRoleAcls { get; }
 
@@ -31,4 +31,16 @@ public interface IOLabAuthorization
 
   string ExtractApplicationFromUri(string requestUri);
 
+  Task<bool> HasRequestedAccessToMapAsync(
+    ulong requestedAcl,
+    Maps phys);
+
+  Task<bool> HasRequestedAccessToNodeAsync(
+    ulong requestedAcl,
+    MapNodes phys);
+
+  Task<bool> HasAccessAsync(
+    ulong aclBitMaskRead, 
+    string scopeLevelMap, 
+    uint id);
 }
