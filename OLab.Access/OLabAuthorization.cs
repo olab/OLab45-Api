@@ -1,5 +1,6 @@
 using Dawn;
 using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging.Signing;
@@ -179,37 +180,6 @@ public class OLabAuthorization : IOLabAuthorization
     return UsersGroupRoles.Any( x => (x.GroupId == groupId) && (x.RoleId == superUserRolePhys.Id) );
   }
 
-  /// <summary>
-  /// Test if have access to scoped object
-  /// </summary>
-  /// <param name="acl"></param>
-  /// <param name="dto"></param>
-  /// <returns>true/false</returns>
-  public async Task<IActionResult> HasAccessAsync(
-    ulong requestedAcl,
-    ScopedObjectDto dto)
-  {
-    // test if user has access to parent map.
-    if ( dto.ImageableType == Constants.ScopeLevelMap )
-    {
-      var result = await HasRequestedAccessToMapAsync( requestedAcl, dto.ImageableId );
-
-      if ( !result )
-        return OLabUnauthorizedResult.Result();
-    }
-
-    // test if user has access to parent node.
-    if ( dto.ImageableType == Constants.ScopeLevelNode )
-    {
-      var result = await HasRequestedAccessToNodeAsync( requestedAcl, dto.ImageableId );
-
-      if ( !result )
-        return OLabUnauthorizedResult.Result();
-    }
-
-    return new NoContentResult();
-  }
-
   private async Task<bool> HasRequestedAccessToMapAsync(
     ulong requestedAcl,
     uint mapId)
@@ -219,7 +189,7 @@ public class OLabAuthorization : IOLabAuthorization
     return await HasRequestedAccessToMapAsync( requestedAcl, phys );
   }
 
-  public async Task<bool> HasRequestedAccessToMapAsync(
+  private async Task<bool> HasRequestedAccessToMapAsync(
     ulong requestedAcl,
     Maps phys)
   {
@@ -248,7 +218,8 @@ public class OLabAuthorization : IOLabAuthorization
     ulong requestedAcl,
     uint nodeId)
   {
-    MapNodes phys = await MapNodesReaderWriter.Instance( _logger, GetDbContext(), null ).GetNodeAsync( nodeId );
+    MapNodes phys 
+      = await MapNodesReaderWriter.Instance( _logger, GetDbContext(), null ).GetNodeAsync( nodeId );
     return await HasRequestedAccessToNodeAsync( requestedAcl, phys );
   }
 
@@ -258,7 +229,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="requestedAcl"></param>
   /// <param name="nodeId">Object id to search for</param>
   /// <returns>true/false</returns>
-  public async Task<bool> HasRequestedAccessToNodeAsync(
+  private async Task<bool> HasRequestedAccessToNodeAsync(
     ulong requestedAcl,
     MapNodes phys)
   {
@@ -285,10 +256,6 @@ public class OLabAuthorization : IOLabAuthorization
         // test if map belongs to one of the users groups
         if ( physMap.MapGrouproles.Select( x => x.GroupId ).Contains( userGroupRole.GroupId ) )
         {
-          // test if user is superuser to a group map belongs to
-          if ( await IsGroupSuperUserAsync( userGroupRole.GroupId ) )
-            break;
-
           hasAccess = await EvaluateAclHierarchy(
             userGroupRole.GroupId,
             userGroupRole.RoleId,
@@ -328,7 +295,7 @@ public class OLabAuthorization : IOLabAuthorization
       return false;
     }
     else
-      GetLogger().LogError( $"Found application '{applicationName}'" );
+      GetLogger().LogInformation( $"Found application '{applicationName}'" );
 
     foreach ( var physUserGroupRole in UsersGroupRoles )
     {
@@ -341,7 +308,7 @@ public class OLabAuthorization : IOLabAuthorization
 
       if ( accessResult )
       {
-        GetLogger().LogError( $"User '{userPhys.Username}' has application access under group role '{physUserGroupRole}'" );
+        GetLogger().LogInformation( $"User '{userPhys.Username}' has application access under group role '{physUserGroupRole}'" );
         return true;
       }
     }
@@ -349,20 +316,6 @@ public class OLabAuthorization : IOLabAuthorization
     GetLogger().LogError( $"user '{userPhys.Username}' does not have access to application '{applicationName}'" );
     return false;
 
-  }
-
-  private async Task<bool?> HasRequestedAccessAsync(
-    UserGrouproles userGroupRole,
-    string objectType,
-    uint? objectId,
-    ulong requestedAcl)
-  {
-    return await EvaluateAclHierarchy(
-      userGroupRole.GroupId,
-      userGroupRole.RoleId,
-      objectType,
-      objectId,
-      requestedAcl );
   }
 
   /// <summary>
@@ -381,11 +334,6 @@ public class OLabAuthorization : IOLabAuthorization
     uint? objectId,
     ulong requestedAcl)
   {
-    // group = olab
-    // role = superuser
-    if ( await IsSystemSuperuserAsync() )
-      return true;
-
     // group = any
     // role = superuser
     if ( groupId.HasValue && await IsGroupSuperUserAsync( groupId.Value ) )
@@ -644,18 +592,90 @@ public class OLabAuthorization : IOLabAuthorization
   /// <summary>
   /// Test if user has requested access to object
   /// </summary>
-  /// <param name="aclBitMaskRead"></param>
+  /// <param name="acl"></param>
   /// <param name="scopeLevelMap"></param>
   /// <param name="id"></param>
   /// <returns></returns>
-  public async Task<bool> HasAccessAsync(ulong aclBitMaskRead, string scopeLevelMap, uint id)
+  public async Task<bool> HasAccessAsync(
+    ulong acl,
+    string scopeLevelMap,
+    uint id)
   {
+    if ( await IsSystemSuperuserAsync() )
+      return true;
+
     if ( scopeLevelMap == Constants.ScopeLevelMap )
-      return await HasRequestedAccessToMapAsync( aclBitMaskRead, id );
+      return await HasRequestedAccessToMapAsync( acl, id );
     if ( scopeLevelMap == Constants.ScopeLevelNode )
-      return await HasRequestedAccessToNodeAsync( aclBitMaskRead, id );
+      return await HasRequestedAccessToNodeAsync( acl, id );
 
     return false;
 
+  }
+
+  /// <summary>
+  /// When have object, test for user access
+  /// </summary>
+  /// <param name="acl">Requested acl</param>
+  /// <param name="phys">Object to test</param>
+  /// <returns>true/false</returns>
+  public async Task<bool> HasAccessAsync(
+    ulong acl,
+    Maps phys)
+  {
+    if ( await IsSystemSuperuserAsync() )
+      return true;
+
+    return await HasRequestedAccessToMapAsync( acl, phys );
+  }
+
+  /// <summary>
+  /// When have object, test for user access
+  /// </summary>
+  /// <param name="acl">Requested acl</param>
+  /// <param name="phys">Object to test</param>
+  /// <returns>true/false</returns>
+  public async Task<bool> HasAccessAsync(
+    ulong acl,
+    MapNodes phys)
+  {
+    if ( await IsSystemSuperuserAsync() )
+      return true;
+
+    return await HasRequestedAccessToNodeAsync( acl, phys );
+  }
+
+  /// <summary>
+  /// Test if have access to scoped object
+  /// </summary>
+  /// <param name="acl"></param>
+  /// <param name="dto"></param>
+  /// <returns>true/false</returns>
+  public async Task<bool> HasAccessAsync(
+    ulong acl,
+    ScopedObjectDto dto)
+  {
+    if ( await IsSystemSuperuserAsync() )
+      return true;
+
+    // test if user has access to parent map.
+    if ( dto.ImageableType == Constants.ScopeLevelMap )
+    {
+      var result = await HasRequestedAccessToMapAsync( acl, dto.ImageableId );
+
+      if ( !result )
+        return false;
+    }
+
+    // test if user has access to parent node.
+    if ( dto.ImageableType == Constants.ScopeLevelNode )
+    {
+      var result = await HasRequestedAccessToNodeAsync( acl, dto.ImageableId );
+
+      if ( !result )
+        return false;
+    }
+
+    return true;
   }
 }
