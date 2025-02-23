@@ -6,7 +6,7 @@
     },
     "HTTP Debug": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7071"
+      "commandLineArgs": "--port 7071 --cores *"
     }
   }
 }
