@@ -1,21 +1,10 @@
-using Meziantou.Extensions.Logging.Xunit;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using Newtonsoft.Json;
-using NuGet.Packaging;
-using OLab.Access;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
-using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Common.Interfaces;
-using OLab.Data.ReaderWriters;
 using OLab.Test.Utils;
-using Xunit.Abstractions;
 
-namespace OLab.Test.OLabAuthorizationTests;
+namespace OLab.Test.OLabAuthorization;
 
 public class OLabAuthorizationTests
 {
@@ -24,7 +13,6 @@ public class OLabAuthorizationTests
   public readonly Mock<IOLabConfiguration> _mockConfiguration;
   public readonly IOLabAuthorization _authorization;
   public readonly IAuthenticatedContext _authenticatedContext;
-
 
   public OLabAuthorizationTests()
   {
@@ -38,7 +26,7 @@ public class OLabAuthorizationTests
     TestUtilities.MoqRoleFromJsonFile( _mockDbContext, "json\\Roles.json" );
     TestUtilities.MoqSystemApplicationsFromJsonFile( _mockDbContext, "json\\SystemApplications.json" );
 
-    _authorization = new OLabAuthorization(
+    _authorization = new Access.OLabAuthorization(
         _logger,
         _mockDbContext.Object,
         _mockConfiguration.Object

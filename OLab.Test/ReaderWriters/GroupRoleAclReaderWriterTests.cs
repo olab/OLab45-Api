@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace OLab.Test;
+namespace OLab.Test.ReaderWriters;
 
 public class GroupRoleAclReaderWriterTests
 {
@@ -29,7 +29,7 @@ public class GroupRoleAclReaderWriterTests
     _mockDbContext = new Mock<OLabDBContext>();
     _mockConfiguration = new Mock<IOLabConfiguration>();
 
-    TestUtilities.MoqGroupRoleAclFromJsonFile( _mockDbContext, "json\\GroupRoleAcls.json" );
+    TestUtilities.MoqGroupRoleAclFromJsonFile( _mockDbContext, "json\\GroupRoleAclsSuite.json" );
 
     _mockRoleReaderWriter = new Mock<RoleReaderWriter>( _logger, _mockDbContext.Object );
     _groupRoleAclReaderWriter = new GroupRoleAclReaderWriter( _logger, _mockDbContext.Object );
@@ -48,30 +48,38 @@ public class GroupRoleAclReaderWriterTests
   }
 
   [Fact]
-  public async Task GetByUserGroupRoles_ReturnsAcls()
+  public async Task GetAsync_ReturnsAcls()
   {
     var result = await _groupRoleAclReaderWriter.GetAsync();
-    Assert.Equal( 8, result.Count() );
+    Assert.Equal( 54, result.Count() );
   }
 
   [Fact]
-  public async Task GetListAsync_ReturnsAcls()
+  public async Task GetListAsyncCase_NNNN_ReturnsAcls()
   {
     var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, null, null );
-    Assert.Equal( 8, result.Count() );
+    Assert.Equal( 54, result.Count() );
   }
 
   [Fact]
-  public async Task GetListAsyncAllNodes_ReturnsNone()
-  {
-    var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, Constants.ScopeLevelNode, null );
-    Assert.Empty( result );
-  }
-
-  [Fact]
-  public async Task GetListAsyncAllMaps_ReturnsAcls()
+  public async Task GetListAsyncCase_NNMN_ReturnsAcls()
   {
     var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, Constants.ScopeLevelMap, null );
-    Assert.Equal( 5, result.Count() );
+    Assert.Equal( 27, result.Count() );
   }
+
+  [Fact]
+  public async Task GetListAsyncCaseNNM0_ReturnsAcls()
+  {
+    var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, Constants.ScopeLevelMap, new List<uint?> { 0 } );
+    Assert.Equal( 9, result.Count() );
+  }
+
+  [Fact]
+  public async Task GetListAsyncCaseNNM1_ReturnsAcls()
+  {
+    var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, Constants.ScopeLevelMap, new List<uint?> { 1 } );
+    Assert.Equal( 27, result.Count() );
+  }
+
 }

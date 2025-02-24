@@ -46,6 +46,9 @@
     <None Update="json\GroupRoleAcls.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="json\GroupRoleAclsSuite.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="json\Groups.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

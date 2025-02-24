@@ -1,7 +1,7 @@
 using OLab.Api.Model;
 using OLab.Test.Utils;
 
-namespace OLab.Test.OLabAuthorizationTests;
+namespace OLab.Test.OLabAuthorization;
 
 public class OLabAuthorizationAppTests : OLabAuthorizationTests
 {

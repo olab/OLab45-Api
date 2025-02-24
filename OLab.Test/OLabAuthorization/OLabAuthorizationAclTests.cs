@@ -2,7 +2,7 @@ using OLab.Access.Interfaces;
 using OLab.Api.Utils;
 using OLab.Test.Utils;
 
-namespace OLab.Test.OLabAuthorizationTests;
+namespace OLab.Test.OLabAuthorization;
 
 public class OLabAuthorizationAclTests : OLabAuthorizationTests
 {
