@@ -239,7 +239,7 @@ public class OLabAuthorization : IOLabAuthorization
     if ( physMap == null )
       throw new OLabObjectNotFoundException( Constants.ScopeLevelMap, phys.MapId );
 
-    var mapResult = await HasRequestedAccessToMapAsync( GrouproleAcls.ExecuteMask, phys.MapId );
+    var mapResult = await HasRequestedAccessToMapAsync( GrouproleAcls.ReadMask, phys.MapId );
     if ( !mapResult )
     {
       GetLogger().LogInformation( $"user has no access to mapId {phys.MapId} belonging to node {phys.Id}" );

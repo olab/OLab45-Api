@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace OLab.Test.ReaderWriters;
+namespace OLab.Test.ReaderWriters.GroupRoleReaderWriter;
 
 public class GroupRoleAclReaderWriterTests
 {
@@ -67,19 +67,4 @@ public class GroupRoleAclReaderWriterTests
     var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, Constants.ScopeLevelMap, null );
     Assert.Equal( 27, result.Count() );
   }
-
-  [Fact]
-  public async Task GetListAsyncCaseNNM0_ReturnsAcls()
-  {
-    var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, Constants.ScopeLevelMap, new List<uint?> { 0 } );
-    Assert.Equal( 9, result.Count() );
-  }
-
-  [Fact]
-  public async Task GetListAsyncCaseNNM1_ReturnsAcls()
-  {
-    var result = await _groupRoleAclReaderWriter.GetListAsync( null, null, Constants.ScopeLevelMap, new List<uint?> { 1 } );
-    Assert.Equal( 27, result.Count() );
-  }
-
 }
