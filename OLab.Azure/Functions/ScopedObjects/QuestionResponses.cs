@@ -56,7 +56,7 @@ public class QuestionResponsesFunction : OLabFunction
   /// <returns>The action result.</returns>
   [Function( "QuestionResponsePost" )]
   public async Task<IActionResult> QuestionResponsePostAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "questionresponses" )] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "response" )] HttpRequestData request,
     FunctionContext hostContext)
   {
     try
@@ -88,7 +88,7 @@ public class QuestionResponsesFunction : OLabFunction
   /// <returns>The action result.</returns>
   [Function( "QuestionResponseDelete" )]
   public async Task<IActionResult> QuestionResponseDeleteAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "questionresponses/{id}" )] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "response/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id
   )
@@ -122,7 +122,7 @@ public class QuestionResponsesFunction : OLabFunction
   /// <returns>An IActionResult indicating the result of the operation.</returns>
   [Function( "QuestionResponsePut" )]
   public async Task<IActionResult> QuestionResponsePutAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "questionresponses/{id}" )] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "response/{id}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
     uint id)
