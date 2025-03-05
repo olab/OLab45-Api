@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OLab.Access;
 
@@ -199,7 +200,7 @@ public class OLabAuthorization : IOLabAuthorization
       if ( !Maps.IsAccessible( phys, userGroupRole.GroupId, userGroupRole.RoleId ) )
         continue;
 
-      var accessResult = await EvaluateAclHierarchy(
+      var accessResult = await EvaluateAclHierarchyAsync(
         userGroupRole.GroupId,
         userGroupRole.RoleId,
         Constants.ScopeLevelMap,
@@ -218,7 +219,7 @@ public class OLabAuthorization : IOLabAuthorization
     ulong requestedAcl,
     uint nodeId)
   {
-    MapNodes phys 
+    MapNodes phys
       = await MapNodesReaderWriter.Instance( _logger, GetDbContext(), null ).GetNodeAsync( nodeId );
     return await HasRequestedAccessToNodeAsync( requestedAcl, phys );
   }
@@ -256,7 +257,7 @@ public class OLabAuthorization : IOLabAuthorization
         // test if map belongs to one of the users groups
         if ( physMap.MapGrouproles.Select( x => x.GroupId ).Contains( userGroupRole.GroupId ) )
         {
-          hasAccess = await EvaluateAclHierarchy(
+          hasAccess = await EvaluateAclHierarchyAsync(
             userGroupRole.GroupId,
             userGroupRole.RoleId,
             Constants.ScopeLevelNode,
@@ -299,7 +300,7 @@ public class OLabAuthorization : IOLabAuthorization
 
     foreach ( var physUserGroupRole in UsersGroupRoles )
     {
-      var accessResult = await EvaluateAclHierarchy(
+      var accessResult = await EvaluateAclHierarchyAsync(
         physUserGroupRole.GroupId,
         physUserGroupRole.RoleId,
         Constants.ScopeLevelApp,
@@ -319,6 +320,164 @@ public class OLabAuthorization : IOLabAuthorization
   }
 
   /// <summary>
+  /// Get applicablel ACL for group/role/object
+  /// </summary>
+  /// <param name="groupId"></param>
+  /// <param name="roleId"></param>
+  /// <param name="objectType"></param>
+  /// <param name="objectId"></param>
+  /// <returns>Applicable GroupRoleAcl record</returns>
+  private GrouproleAcls GetAcl(
+    uint? groupId,
+    uint? roleId,
+    string objectType,
+    uint? objectId)
+  {
+    // groupId, roleId, objectType, objectId
+    // #        #       #           #
+    var acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == groupId &&
+      x.RoleId == roleId &&
+      x.ImageableType == objectType &&
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: {objectId} = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // #        #       #           -
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == groupId &&
+      x.RoleId == roleId &&
+      x.ImageableType == objectType &&
+      x.ImageableId == null );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: null = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // #        #       -           -
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == groupId &&
+      x.RoleId == roleId &&
+      x.ImageableType == null &&
+      x.ImageableId == null );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: {roleId} typ: null id: null = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // #        -       #           #
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+    x.GroupId == groupId &&
+      x.RoleId == null &&
+      x.ImageableType == objectType &&
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: null typ: {objectType} id: {objectId} = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // -        #       #           -
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == null &&
+      x.RoleId == roleId &&
+      x.ImageableType == objectType &&
+      x.ImageableId == null );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: null rol: {roleId} typ: {objectType} id: null = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // -        #       #           #
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == null &&
+      x.RoleId == roleId &&
+      x.ImageableType == objectType &&
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: null rol: {roleId} typ: {objectType} id: {objectId} = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // #        -       #           -
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == groupId &&
+      x.RoleId == null &&
+      x.ImageableType == objectType &&
+      x.ImageableId == null );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: {groupId} rol: null typ: {objectType} id: null = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // -        -       #           #
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == null &&
+      x.RoleId == null &&
+      x.ImageableType == objectType &&
+      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: null rol: null typ: {objectType} id: {objectId} = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // -        -       #           -
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == null &&
+      x.RoleId == null &&
+      x.ImageableType == objectType &&
+      x.ImageableId == null );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: null rol: null typ: {objectType} id: null = {acl.Acl2}" );
+      return acl;
+    }
+
+    // groupId, roleId, objectType, objectId
+    // -        -       -           -
+    acl = GroupRoleAcls.FirstOrDefault( x =>
+      x.GroupId == null &&
+      x.RoleId == null &&
+      x.ImageableType == null &&
+      x.ImageableId == null );
+
+    if ( acl != null )
+    {
+      GetLogger().LogInformation( $"    ACL: grp: null rol: null typ: null id: null = {acl.Acl2}" );
+      return acl;
+    }
+
+    return null;
+  }
+
+
+  /// <summary>
   /// Test if group/role has requested access to object
   /// </summary>
   /// <param name="groupId">Group id to search for (null = all)</param>
@@ -327,7 +486,7 @@ public class OLabAuthorization : IOLabAuthorization
   /// <param name="objectId">Object id to search for (null = all)</param>
   /// <param name="requestedAcl">ACL to compare against</param>
   /// <returns>true/false, no acl</returns>
-  private async Task<bool> EvaluateAclHierarchy(
+  private async Task<bool> EvaluateAclHierarchyAsync(
     uint? groupId,
     uint? roleId,
     string objectType,
@@ -342,156 +501,18 @@ public class OLabAuthorization : IOLabAuthorization
     if ( objectId == 0 )
       objectId = null;
 
-    //GetLogger().LogInformation( $"Testing: g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {requestedAcl}" );
-
-    // groupId, roleId, objectType, objectId
-    // #        #       #           #
-    var acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == groupId &&
-      x.RoleId == roleId &&
-      x.ImageableType == objectType &&
-      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
-
+    var acl = GetAcl( groupId, roleId, objectType, objectId );
     if ( acl != null )
     {
       var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
       if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: {objectId} = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // #        #       #           -
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == groupId &&
-      x.RoleId == roleId &&
-      x.ImageableType == objectType &&
-      x.ImageableId == null );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: {groupId} rol: {roleId} typ: {objectType} id: null = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // #        #       -           -
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == groupId &&
-      x.RoleId == roleId &&
-      x.ImageableType == null &&
-      x.ImageableId == null );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: {groupId} rol: {roleId} typ: null id: null = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // #        -       #           #
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-    x.GroupId == groupId &&
-      x.RoleId == null &&
-      x.ImageableType == objectType &&
-      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: {groupId} rol: null typ: {objectType} id: {objectId} = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // -        #       #           #
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == null &&
-      x.RoleId == roleId &&
-      x.ImageableType == objectType &&
-      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: null rol: {roleId} typ: {objectType} id: {objectId} = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // #        -       #           -
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == groupId &&
-      x.RoleId == null &&
-      x.ImageableType == objectType &&
-      x.ImageableId == null );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: {groupId} rol: null typ: {objectType} id: null = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // -        -       #           #
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == null &&
-      x.RoleId == null &&
-      x.ImageableType == objectType &&
-      (x.ImageableId.HasValue && x.ImageableId.Value == objectId) );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: null rol: null typ: {objectType} id: {objectId} = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // -        -       #           -
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == null &&
-      x.RoleId == null &&
-      x.ImageableType == objectType &&
-      x.ImageableId == null );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: null rol: null typ: {objectType} id: null = {rc}" );
-      return rc;
-    }
-
-    // groupId, roleId, objectType, objectId
-    // -        -       -           -
-    acl = GroupRoleAcls.FirstOrDefault( x =>
-      x.GroupId == null &&
-      x.RoleId == null &&
-      x.ImageableType == null &&
-      x.ImageableId == null );
-
-    if ( acl != null )
-    {
-      var rc = (acl.Acl2 & requestedAcl) == requestedAcl;
-      if ( !rc )
-        GetLogger().LogError( $"    ACL: grp: null rol: null typ: null id: null = {rc}" );
+        GetLogger().LogError( $"no access" );
       return rc;
     }
 
     GetLogger().LogError( $"g: {groupId} r: {roleId} t: {objectType} i: {objectId} = {requestedAcl} no ACL applies" );
 
     return false;
-
   }
 
   /// <summary>
@@ -677,5 +698,36 @@ public class OLabAuthorization : IOLabAuthorization
     }
 
     return true;
+  }
+
+  /// <summary>
+  /// Get lsit of groups user is allowed to manage users for
+  /// </summary>
+  /// <returns>Group list</returns>
+  public async Task<IList<Groups>> GetAuthorizedUserGroupsAsync()
+  {
+    var groups = ( await _groupReaderWriter.GetRawAsync<Groups>() ).items;
+
+    // group = any
+    // role = superuser
+    if ( await IsSystemSuperuserAsync() )
+      return groups.ToList();
+
+    var allowedGroups = new List<Groups>(); 
+
+    foreach ( var usersGroupRole in UsersGroupRoles )
+    {
+      var acl = GetAcl( usersGroupRole.GroupId, usersGroupRole.RoleId, "UserGroup", null );
+      if ( acl != null )
+      {
+        var userHasUserGroupsAccess = ((acl.Acl2 & GrouproleAcls.ReadMask) == GrouproleAcls.ReadMask);
+        if ( userHasUserGroupsAccess )
+          allowedGroups.Add( groups.First( x => x.Id == usersGroupRole.GroupId ) );
+      }
+    }
+
+    GetLogger().LogInformation( $"user can manage users for groups {string.Join(',', allowedGroups.Select( x => x.Name ))}" );
+
+    return allowedGroups;
   }
 }

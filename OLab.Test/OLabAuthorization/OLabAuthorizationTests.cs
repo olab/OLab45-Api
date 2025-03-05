@@ -52,4 +52,56 @@ public class OLabAuthorizationTests
     Assert.Equal( testUser.UserGrouproles.Count, _authorization.UsersGroupRoles.Count );
     Assert.True( _authorization.GroupRoleAcls.Count > 0 );
   }
+
+  [Fact]
+  public async Task OLabSuperuserUser_AccessToAllGroup()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UsersMultipleGroups.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
+
+    // Act
+    var physGroup = _mockDbContext.Object.Groups.First( x => x.Name == "olab" );
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    var result = await _authorization.GetAuthorizedUserGroupsAsync();
+
+    // Assert
+    Assert.Equal( _mockDbContext.Object.Groups.Count(), result.Count() );
+  }
+
+  [Fact]
+  public async Task OLabSuperuserUser_AccessToAllUsers()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UsersMultipleGroups.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabSuperuserContext.json" ).First();
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    var users = _mockDbContext.Object.Users.ToList();
+    var groups = await _authorization.GetAuthorizedUserGroupsAsync();
+
+    var filteredUsers = users.Where( x => x.UserGrouproles.Any( y => groups.Any( z => z.Id == y.GroupId ) ) ).ToList();
+
+    // Assert
+    Assert.Equal( users.Count(), filteredUsers.Count() );
+  }
+
+  [Fact]
+  public async Task OLabGroupSuperuser_AccessToOnlyGroupUsers()
+  {
+    var testUser = TestUtilities.MoqUsersFromJson( _mockDbContext, "json\\UsersMultipleGroups.json" ).First();
+    var authenticatedContext = TestUtilities.BuildQueryableListFromJson<MoqAuthenticatedContext>( "json\\UserOLabTestGroupSuperuserContext.json" ).First();
+
+    // Act
+    await _authorization.ApplyUserContextAsync( authenticatedContext );
+
+    var users = _mockDbContext.Object.Users.ToList();
+    var groups = await _authorization.GetAuthorizedUserGroupsAsync();
+
+    var filteredUsers = users.Where( x => x.UserGrouproles.Any( y => groups.Any( z => z.Id == y.GroupId ) ) ).ToList();
+
+    // Assert
+    Assert.Single( filteredUsers );
+  }
 }

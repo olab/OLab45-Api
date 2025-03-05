@@ -74,13 +74,9 @@ public partial class UserManagement : OLabFunction
     {
       Logger.LogInformation( $"UsersGet" );
 
-      var auth = GetAuthorization( hostContext );
+      var author = GetAuthorization( hostContext );
 
-      // test if user has access to add users.
-      if ( !await auth.IsSystemSuperuserAsync() )
-        return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to get user list" ) );
-
-      var dto = await _userEndpoint.GetUsersAsync( name );
+      var dto = await _userEndpoint.GetUsersAsync( author, name );
       return request
         .CreateResponse( OLabObjectListResult<UsersDto>.Result( dto ) );
     }

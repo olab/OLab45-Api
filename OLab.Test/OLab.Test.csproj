@@ -91,6 +91,12 @@
     <None Update="json\UserOLabLearnerContext.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="json\UserOLabTestGroupSuperuserContext.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="json\UsersMultipleGroups.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="json\UserTestGroupContext.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -43,14 +43,22 @@ internal static class TestUtilities
   internal static IList<Groups> MoqGroupsFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
     var list = BuildQueryableListFromJson<Groups>( v );
+    var mockSet = MockDbSetHelper.CreateMockDbSet( list );
+
     mockDbContext.Setup( x => x.Groups ).ReturnsDbSet( list );
+    mockDbContext.Setup( x => x.Set<Groups>() ).ReturnsDbSet( mockSet.Object );
+
     return list.ToList();
   }
 
   internal static IList<Roles> MoqRoleFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
   {
     var list = BuildQueryableListFromJson<Roles>( v );
+    var mockSet = MockDbSetHelper.CreateMockDbSet( list );
+
     mockDbContext.Setup( x => x.Roles ).ReturnsDbSet( list );
+    mockDbContext.Setup( x => x.Set<Roles>() ).ReturnsDbSet( mockSet.Object );
+
     return list.ToList();
   }
 
