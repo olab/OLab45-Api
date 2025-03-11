@@ -69,6 +69,14 @@ internal static class TestUtilities
     return list.ToList();
   }
 
+  internal static IList<SystemQuestions> MoqSystemQuestionsFromJsonFile(Mock<OLabDBContext> mockDbContext, string v)
+  {
+    var list = BuildQueryableListFromJson<SystemQuestions>( v );
+    mockDbContext.Setup( x => x.SystemQuestions ).ReturnsDbSet( list );
+    return list.ToList();
+  }
+
+
   internal static IList<Users> MoqUsersFromJson(Mock<OLabDBContext> mockDbContext, string v)
   {
     var list = BuildQueryableListFromJson<Users>( v );

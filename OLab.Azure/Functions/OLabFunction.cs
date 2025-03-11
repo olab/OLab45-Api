@@ -30,10 +30,8 @@ public class OLabFunction
   protected IOLabLogger Logger = null;
 
   protected string Token;
-  //protected readonly IUserService userService;
   protected IAuthenticatedContext userContext;
   protected readonly IOLabConfiguration _configuration;
-  //protected readonly TTalkDBContext TtalkDbContext;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 

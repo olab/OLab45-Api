@@ -64,6 +64,12 @@
     <None Update="json\Maps1Group.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="json\QuestionsEachType.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="json\SystemQuestions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="json\Roles.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

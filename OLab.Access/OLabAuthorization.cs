@@ -82,7 +82,7 @@ public class OLabAuthorization : IOLabAuthorization
 
     // JSON extraction scratch pad
 
-    //var obj = MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult();
+    // var obj = MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult();
     //var obj = RoleReaderWriter.Instance( _logger, _dbContext ).GetPagedAsync(null, null).GetAwaiter().GetResult();
     //var obj = _dbContext.SystemApplications.ToList();
     //var obj = UserReaderWriter.Instance( _logger, _dbContext ).GetSingleAsync( "wirunc" ).GetAwaiter().GetResult();
@@ -92,6 +92,9 @@ public class OLabAuthorization : IOLabAuthorization
     //  MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 5 ).GetAwaiter().GetResult(),
     //  MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 45 ).GetAwaiter().GetResult()
     //};
+
+    var obj = QuestionReaderWriter.Instance( _logger, _dbContext, null ).Get();
+    var json = StringUtils.TruncateToJsonObject( obj, 1 );
 
     //var obj = GroupRoleAclReaderWriter.Instance( _logger, _dbContext ).GetAsync().GetAwaiter().GetResult();
     //var json = StringUtils.TruncateToJsonObject( obj, 2 );
