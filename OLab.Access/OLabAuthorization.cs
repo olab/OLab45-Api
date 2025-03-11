@@ -93,8 +93,8 @@ public class OLabAuthorization : IOLabAuthorization
     //  MapsReaderWriter.Instance( _logger, _dbContext ).GetSingleWithGroupRolesAsync( 45 ).GetAwaiter().GetResult()
     //};
 
-    var obj = QuestionReaderWriter.Instance( _logger, _dbContext, null ).Get();
-    var json = StringUtils.TruncateToJsonObject( obj, 1 );
+    //var obj = QuestionReaderWriter.Instance( _logger, _dbContext, null ).Get();
+    //var json = StringUtils.TruncateToJsonObject( obj, 1 );
 
     //var obj = GroupRoleAclReaderWriter.Instance( _logger, _dbContext ).GetAsync().GetAwaiter().GetResult();
     //var json = StringUtils.TruncateToJsonObject( obj, 2 );
