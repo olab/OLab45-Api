@@ -263,7 +263,7 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument( user, nameof( user ) ).NotNull();
 
-    GetLogger().LogDebug( $"generating token" );
+    GetLogger().LogInformation( $"Generating token" );
 
     var secretBytes = Encoding.Default.GetBytes( _config.GetAppSettings().Secret[ ..40 ] );
 

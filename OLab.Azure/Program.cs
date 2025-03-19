@@ -23,14 +23,20 @@ var builder = FunctionsApplication.CreateBuilder( args );
 builder.ConfigureFunctionsWebApplication();
 
 builder.Configuration
-  .AddEnvironmentVariables()
   .AddJsonFile( "host.json", optional: true )
   .AddJsonFile( "local.settings.json", optional: true );
 
 var connectionString = builder.Configuration.GetConnectionString( "DefaultDatabase" );
 var serverVersion = ServerVersion.AutoDetect( connectionString );
 
-builder.Services.AddApplicationInsightsTelemetryWorkerService();
+// Get the log level from an environment variable (default to 'Information' if not set)
+var logLevelEnv = Environment.GetEnvironmentVariable( "LogLevel" ) ?? "Error";
+if ( !Enum.TryParse<LogLevel>( logLevelEnv, true, out var logLevel ) )
+  logLevel = LogLevel.Error; // Fallback to Information if parsing fails
+
+// Configure logging
+builder.Logging.SetMinimumLevel( logLevel ); // Set the minimum log level to Debug
+builder.Logging.AddConsole(); // Add console logging for output
 
 builder.Services
   .ConfigureFunctionsApplicationInsights()
