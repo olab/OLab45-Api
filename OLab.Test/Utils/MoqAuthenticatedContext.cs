@@ -7,7 +7,7 @@ internal class MoqAuthenticatedContext : AuthenticatedContext
 {
   public MoqAuthenticatedContext()
   {
-    
+
   }
   public MoqAuthenticatedContext(IOLabLogger logger, OLabDBContext dbContext) : base( logger, dbContext )
   {

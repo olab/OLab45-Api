@@ -1,11 +1,6 @@
 using Dawn;
-using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Packaging.Signing;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
 using OLab.Api.Data.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Model;
@@ -16,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OLab.Access;
 
@@ -188,7 +182,7 @@ public class OLabAuthorization : IOLabAuthorization
     ulong requestedAcl,
     uint mapId)
   {
-    Maps phys = await MapsReaderWriter.Instance( _logger, GetDbContext() )
+    var phys = await MapsReaderWriter.Instance( _logger, GetDbContext() )
         .GetSingleWithGroupRolesAsync( mapId );
     return await HasRequestedAccessToMapAsync( requestedAcl, phys );
   }
@@ -222,7 +216,7 @@ public class OLabAuthorization : IOLabAuthorization
     ulong requestedAcl,
     uint nodeId)
   {
-    MapNodes phys
+    var phys
       = await MapNodesReaderWriter.Instance( _logger, GetDbContext(), null ).GetNodeAsync( nodeId );
     return await HasRequestedAccessToNodeAsync( requestedAcl, phys );
   }
@@ -237,7 +231,7 @@ public class OLabAuthorization : IOLabAuthorization
     ulong requestedAcl,
     MapNodes phys)
   {
-    bool hasAccess = true;
+    var hasAccess = true;
 
     var physMap = await MapsReaderWriter.Instance( GetLogger(), GetDbContext() ).GetSingleAsync( phys.MapId );
     if ( physMap == null )
@@ -576,7 +570,7 @@ public class OLabAuthorization : IOLabAuthorization
   {
     var url = new Uri( requestUri );
 
-    string path = string.Empty;
+    var path = string.Empty;
     if ( url.Segments.Count() > 1 )
       path = $"/{url.Segments[ 1 ].Trim( '/' )}";
 
@@ -709,14 +703,14 @@ public class OLabAuthorization : IOLabAuthorization
   /// <returns>Group list</returns>
   public async Task<IList<Groups>> GetAuthorizedUserGroupsAsync()
   {
-    var groups = ( await _groupReaderWriter.GetRawAsync<Groups>() ).items;
+    var groups = (await _groupReaderWriter.GetRawAsync<Groups>()).items;
 
     // group = any
     // role = superuser
     if ( await IsSystemSuperuserAsync() )
       return groups.ToList();
 
-    var allowedGroups = new List<Groups>(); 
+    var allowedGroups = new List<Groups>();
 
     foreach ( var usersGroupRole in UsersGroupRoles )
     {
@@ -729,7 +723,7 @@ public class OLabAuthorization : IOLabAuthorization
       }
     }
 
-    GetLogger().LogInformation( $"user can manage users for groups {string.Join(',', allowedGroups.Select( x => x.Name ))}" );
+    GetLogger().LogInformation( $"user can manage users for groups {string.Join( ',', allowedGroups.Select( x => x.Name ) )}" );
 
     return allowedGroups;
   }

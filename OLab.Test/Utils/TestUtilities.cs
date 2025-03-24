@@ -28,7 +28,7 @@ internal static class TestUtilities
     var mockSet = MockDbSetHelper.CreateMockDbSet( list );
 
     mockDbContext.Setup( x => x.GrouproleAcls ).ReturnsDbSet( mockSet.Object );
-    mockDbContext.Setup( x => x.Set<GrouproleAcls>()).ReturnsDbSet( mockSet.Object );
+    mockDbContext.Setup( x => x.Set<GrouproleAcls>() ).ReturnsDbSet( mockSet.Object );
 
     return list.ToList();
   }

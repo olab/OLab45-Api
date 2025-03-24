@@ -1,9 +1,7 @@
 using Moq;
 using OLab.Access;
-using OLab.Api.Data;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
-using System.Security.Claims;
 
 namespace OLab.Test;
 

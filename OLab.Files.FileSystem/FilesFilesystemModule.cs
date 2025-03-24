@@ -164,7 +164,7 @@ public class FilesFilesystemModule : OLabFileStorageModule
           cfg.GetAppSettings().FileStorageUrl,
           FilesRoot,
           path,
-          source.Source);
+          source.Source );
 
     source.OriginUrl = physicalPath.Replace( "\\", "/" );
 

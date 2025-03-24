@@ -16,7 +16,6 @@ using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using System;
-using System.Composition;
 using System.IO;
 using System.Linq;
 using System.Net;

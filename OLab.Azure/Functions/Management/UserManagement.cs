@@ -1,5 +1,4 @@
 using Dawn;
-using DocumentFormat.OpenXml.Drawing;
 using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -19,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +27,7 @@ namespace OLab.Azure.Functions.Management;
 public partial class UserManagement : OLabFunction
 {
   //protected readonly IUserService _userService;
-  private Api.Endpoints.UserEndpoint _userEndpoint;
+  private readonly Api.Endpoints.UserEndpoint _userEndpoint;
 
   public UserManagement(
     ILoggerFactory loggerFactory,
@@ -109,7 +107,7 @@ public partial class UserManagement : OLabFunction
 
       // Get the Content-Type header
       if ( !request.Headers.TryGetValues( "Content-Type", out var contentTypeValues ) )
-        throw new Exception( "Bad Request");
+        throw new Exception( "Bad Request" );
 
       var contentType = contentTypeValues.First();
 
@@ -163,7 +161,7 @@ public partial class UserManagement : OLabFunction
   [Function( "UserPost" )]
   public async Task<IActionResult> UserPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/adduser" )] HttpRequestData request,
-    FunctionContext hostContext, 
+    FunctionContext hostContext,
     CancellationToken cancellationToken)
   {
     try

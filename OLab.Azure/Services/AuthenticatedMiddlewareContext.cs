@@ -2,14 +2,12 @@ using Dawn;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Access;
-using OLab.Api.Data;
 using OLab.Api.Model;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 #nullable disable
 

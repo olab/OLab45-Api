@@ -1,10 +1,10 @@
 using Moq;
+using Moq.EntityFrameworkCore;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
 using OLab.Data.ReaderWriters;
 using OLab.Test.Utils;
 using Users = OLab.Api.Model.Users;
-using Moq.EntityFrameworkCore;
 
 namespace OLab.Test.ReaderWriters;
 

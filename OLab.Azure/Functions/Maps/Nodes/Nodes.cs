@@ -1,8 +1,5 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -67,7 +64,7 @@ public partial class MapNodesFunction : OLabFunction
   public async Task<IActionResult> MapNodesGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
-    uint mapId )
+    uint mapId)
   {
     try
     {

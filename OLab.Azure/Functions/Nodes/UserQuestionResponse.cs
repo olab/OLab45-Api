@@ -1,8 +1,4 @@
-using Azure.Core;
 using Dawn;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -38,16 +34,16 @@ public partial class UserQuestionResponse : OLabFunction
     configuration,
     dbContext,
     wikiTagProvider,
-    fileStorageProvider)
+    fileStorageProvider )
   {
-    Guard.Argument(loggerFactory).NotNull(nameof(loggerFactory));
+    Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 
-    Logger = OLabLogger.CreateNew<UserQuestionResponse>(loggerFactory);
+    Logger = OLabLogger.CreateNew<UserQuestionResponse>( loggerFactory );
 
     _endpoint = new ResponseEndpoint(
       Logger,
       configuration,
-      DbContext);
+      DbContext );
   }
 
   /// <summary>
@@ -76,18 +72,18 @@ public partial class UserQuestionResponse : OLabFunction
         DbContext,
         auth.AuthenticatedContext );
 
-      session.SetMapId(body.MapId);
+      session.SetMapId( body.MapId );
 
-      var questionPhys = await GetQuestionAsync(body.QuestionId);
-      if (questionPhys == null)
-        throw new Exception($"Question {body.QuestionId} not found");
+      var questionPhys = await GetQuestionAsync( body.QuestionId );
+      if ( questionPhys == null )
+        throw new Exception( $"Question {body.QuestionId} not found" );
 
       var result =
-        await _endpoint.PostQuestionResponseAsync(questionPhys, body);
+        await _endpoint.PostQuestionResponseAsync( questionPhys, body );
 
       session.OnQuestionResponse(
         body,
-        questionPhys);
+        questionPhys );
 
       return request
         .CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result( body.DynamicObjects ) );

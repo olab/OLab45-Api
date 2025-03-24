@@ -29,14 +29,7 @@ builder.Configuration
 var connectionString = builder.Configuration.GetConnectionString( "DefaultDatabase" );
 var serverVersion = ServerVersion.AutoDetect( connectionString );
 
-// Get the log level from an environment variable (default to 'Information' if not set)
-var logLevelEnv = Environment.GetEnvironmentVariable( "LogLevel" ) ?? "Error";
-if ( !Enum.TryParse<LogLevel>( logLevelEnv, true, out var logLevel ) )
-  logLevel = LogLevel.Error; // Fallback to Information if parsing fails
-
-// Configure logging
-builder.Logging.SetMinimumLevel( logLevel ); // Set the minimum log level to Debug
-builder.Logging.AddConsole(); // Add console logging for output
+builder.Services.AddApplicationInsightsTelemetryWorkerService();
 
 builder.Services
   .ConfigureFunctionsApplicationInsights()
