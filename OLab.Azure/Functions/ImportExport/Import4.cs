@@ -1,4 +1,6 @@
 using Dawn;
+using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using FluentValidation;
 using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +19,7 @@ using OLab.Data.Interface;
 using OLab.Endpoints;
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -154,29 +157,22 @@ public class Import4Function : OLabFunction
       if ( !await auth.HasAccessAsync( IOLabAuthorization.AclBitMaskExecute, "Export", 0 ) )
         throw new OLabUnauthorizedException();
 
-      using ( var memoryStream = new MemoryStream() )
+      var now = DateTime.UtcNow;
+      var fileDownloadName = $"OLab4Export.map{id}.{now.ToString( "yyyyMMddHHmm" )}.zip";
+
+      using ( var zipFileStream = new MemoryStream() )
       {
-        await _endpoint.ExportAsync( memoryStream, id, token );
+        await _endpoint.ExportAsync( zipFileStream, id, token );
 
-        memoryStream.Position = 0;
-        var now = DateTime.UtcNow;
+        zipFileStream.Position = 0; // Reset the position of the existing stream
 
-        var fileDownloadName = $"OLab4Export.map{id}.{now.ToString( "yyyyMMddHHmm" )}.zip";
-
-        var result = new ObjectResult( memoryStream.ToArray().ToString() )
+        // Return the ZIP file as an IActionResult
+        return new FileContentResult( zipFileStream.ToArray(), "application/zip" )
         {
-          StatusCode = (int)HttpStatusCode.OK,
-          ContentTypes = new Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection()
-          {
-            "application/zip"
-          }
+          FileDownloadName = fileDownloadName
         };
-
-        response.Headers.Add( "Content-Length", $"{memoryStream.Length}" );
-        response.Headers.Add( "Content-Disposition", $"attachment; filename={fileDownloadName}; filename*=UTF-8'{fileDownloadName}" );
-
-        return result;
       }
+
     }
     catch ( Exception ex )
     {

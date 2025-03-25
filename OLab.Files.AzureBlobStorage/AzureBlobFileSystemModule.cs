@@ -363,12 +363,12 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      var physicalFolder = GetPhysicalPath( folderName );
-      logger.LogInformation( $"reading '{physicalFolder}' for files to add to stream" );
-
       blobs = _blobServiceClient
         .GetBlobContainerClient( _containerName )
-        .GetBlobs( prefix: physicalFolder ).ToList();
+        .GetBlobs( prefix: folderName ).ToList();
+
+      if ( blobs.Count > 0 )
+        logger.LogInformation( $"read {blobs.Count} files in folder '{folderName}' to add to stream" );
 
       foreach ( var blob in blobs )
       {
@@ -381,7 +381,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
         blobStream.Position = 0;
 
-        var entryPath = BuildPath( zipEntryFolderName, Path.GetFileName( blob.Name ) );
+        var entryPath = BuildPath( folderName, Path.GetFileName( blob.Name ) );
         logger.LogInformation( $"  adding '{blob.Name}' to archive '{entryPath}'. size = {blobStream.Length}" );
 
         var entry = archive.CreateEntry( entryPath );
@@ -397,7 +397,6 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       logger.LogError( ex, "CopyFolderToArchiveAsync error" );
       throw;
     }
-
 
     return result;
   }
