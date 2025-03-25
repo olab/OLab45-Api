@@ -125,6 +125,7 @@
 
   <ItemGroup>
     <Folder Include="Endpoints\" />
+    <Folder Include="Mappers\" />
   </ItemGroup>
 
 </Project>
