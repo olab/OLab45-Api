@@ -1,0 +1,47 @@
+[
+  {
+    "Id": 1,
+    "Name": "olab",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 2,
+    "Name": "anonymous",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 3,
+    "Name": "external",
+    "IsSystem": 1,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 24,
+    "Name": "testgroup",
+    "IsSystem": 0,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  },
+  {
+    "Id": 25,
+    "Name": "testgroup2",
+    "IsSystem": 0,
+    "GrouproleAcls": [],
+    "MapGrouproles": [],
+    "MapNodeGrouproles": [],
+    "UserGrouproles": []
+  }
+]

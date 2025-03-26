@@ -9,14 +9,11 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Azure.Services;
-using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 using System;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace OLab.Azure.Middleware;
 
@@ -59,8 +56,8 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
     {
       _logger.LogInformation( "OLabAuthMiddleware invoke" );
 
-      var executionContextHelper = executionContext.Items[ nameof( ExecutionContextHelper ) ] as ExecutionContextHelper;
-      Guard.Argument( executionContextHelper ).NotNull( nameof( executionContextHelper ) );
+      var bootstrapContext = executionContext.Items[ nameof( BootstrapMiddlewareContext ) ] as BootstrapMiddlewareContext;
+      Guard.Argument( bootstrapContext ).NotNull( nameof( bootstrapContext ) );
 
       try
       {
@@ -68,16 +65,15 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         var dbContext = executionContext.InstanceServices.GetRequiredService<OLabDBContext>();
 
         var authentication = new OLabAuthentication( _logger, _config, dbContext );
-        var token 
-          = OLabAuthentication.ExtractAccessToken( executionContextHelper.Request, false );
+        var token
+          = OLabAuthentication.ExtractAccessToken( bootstrapContext.Request, false );
         authentication.ValidateToken( token );
 
         // these must be set before building UserContextService 
         executionContext.Items.Add( "claims", authentication.Claims );
 
         // This is added pre-function execution, function will have access to this information
-        var userContext = new FunctionAppUserContext( _logger, executionContext, dbContext );
-        executionContext.Items.Add( nameof( FunctionAppUserContext ), userContext );
+        AuthenticatedMiddlewareContext.CreateInjectInstance( executionContext, _logger, dbContext );
 
         // This happens after function execution. We can inspect the context after the function
         // was invoked
@@ -85,7 +81,7 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         //  _logger.LogInformation($"From function: {message}");
 
         var items = executionContext.Items.Select( x => x.Key );
-        _logger.LogInformation( $"OLabAuthMiddleware executionContext items: {string.Join( ", ", items )}" );
+        _logger.LogInformation( $"ExecutionContext items: {string.Join( ", ", items )}" );
 
       }
       catch ( Exception ex )

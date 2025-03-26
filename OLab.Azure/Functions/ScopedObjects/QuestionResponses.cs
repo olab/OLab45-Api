@@ -12,11 +12,6 @@ using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -79,10 +74,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponsePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponsePostAsync ) );
     }
   }
 
@@ -116,10 +108,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponseDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponseDeleteAsync ) );
     }
   }
 
@@ -152,10 +141,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponsePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponsePutAsync ) );
     }
   }
 

@@ -7,12 +7,10 @@ using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
-using OLab.Api.Data.Interface;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
-using OLab.Data.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,14 +21,12 @@ namespace OLab.Azure.Functions;
 
 public class AuthenticationFunction : OLabFunction
 {
-  protected readonly IUserService _userService;
   private readonly IOLabAuthentication _authentication;
   private readonly IOLabAuthorization _authorization;
 
   public AuthenticationFunction(
-      Microsoft.Extensions.Logging.ILoggerFactory loggerFactory,
+      ILoggerFactory loggerFactory,
       IOLabConfiguration configuration,
-      IUserService userService,
       IOLabAuthentication authentication,
       OLabDBContext dbContext) : base( configuration, dbContext )
   {
@@ -38,8 +34,6 @@ public class AuthenticationFunction : OLabFunction
 
     Logger = OLabLogger.CreateNew<AuthenticationFunction>( loggerFactory );
     _authentication = authentication;
-    _userService = userService;
-
     _authorization = new OLabAuthorization( Logger, DbContext, configuration );
   }
 
@@ -56,7 +50,7 @@ public class AuthenticationFunction : OLabFunction
 
       GetLogger().LogInformation( $"Login(user = '{model.Username}' ip: ???)" );
 
-      var user = _authentication.Authenticate( model );
+      var user = await _authentication.AuthenticateAsync( model );
       if ( user == null )
         return OLabUnauthorizedResult.Result();
 
@@ -67,12 +61,11 @@ public class AuthenticationFunction : OLabFunction
       if ( request.Headers.TryGetValues( "Referer", out refererValues ) )
       {
         GetLogger().LogInformation( $"referer urls provided: {string.Join( ",", refererValues )}" );
-        referrer = _authorization.ExtractApplication( refererValues.First() );
-        if ( !await _authorization.HasAccessToAppAsync( user, referrer ) )
+        if ( !await _authorization.HasAccessToAppAsync( user, refererValues.First() ) )
           return OLabUnauthorizedResult.Result();
       }
       else
-        GetLogger().LogInformation( $"no referer url provided" );
+        GetLogger().LogWarning( $"no referer url provided" );
 
       var authResponse = _authentication.GenerateJwtToken( user, referrer );
 
@@ -81,10 +74,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      GetLogger().LogError( ex, "Login" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( LoginAsync ) );
     }
 
   }
@@ -95,7 +85,7 @@ public class AuthenticationFunction : OLabFunction
   /// <param name="mapId">map id to run</param>
   /// <returns>AuthenticateResponse</returns>
   [Function( "LoginAnonymous" )]
-  public IActionResult LoginAnonymous(
+  public async Task<IActionResult> LoginAnonymousAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "auth/loginanonymous/{mapId}" )] HttpRequestData request,
     uint mapId,
     CancellationToken cancellationToken)
@@ -104,7 +94,7 @@ public class AuthenticationFunction : OLabFunction
 
     try
     {
-      var response = _authentication.GenerateAnonymousJwtToken( mapId );
+      var response = await _authentication.GenerateAnonymousJwtTokenAsync( mapId );
       if ( response == null )
         return OLabUnauthorizedResult.Result();
 
@@ -113,10 +103,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      GetLogger().LogError( ex, "LoginAnonymous" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( LoginAnonymousAsync ) );
     }
 
   }
@@ -145,10 +132,7 @@ public class AuthenticationFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      GetLogger().LogError( ex, "LoginExternalAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( LoginExternalAsync ) );
     }
   }
 

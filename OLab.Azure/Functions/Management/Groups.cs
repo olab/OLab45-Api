@@ -36,7 +36,7 @@ public partial class GroupsFunction : OLabFunction
     Guard.Argument( wikiTagProvider ).NotNull( nameof( wikiTagProvider ) );
     Guard.Argument( fileStorageProvider ).NotNull( nameof( fileStorageProvider ) );
 
-    Logger = OLabLogger.CreateNew<Servers>( loggerFactory );
+    Logger = OLabLogger.CreateNew<ServersFunction>( loggerFactory );
 
     _endpoint = new GroupsEndpoint(
       Logger,
@@ -71,10 +71,7 @@ public partial class GroupsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "GroupGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( GroupGetAsync ) );
     }
 
   }
@@ -93,24 +90,20 @@ public partial class GroupsFunction : OLabFunction
   {
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
+      Logger.LogInformation( $"GroupsGet" );
+
+      var pageSpecs = ExtractPageParameters( request );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
+      var result = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
-      var pagedResponse = await _endpoint.GetAsync( auth, take, skip );
       return request
-        .CreateResponse( OLabObjectPagedListResult<GroupsDto>.Result( pagedResponse.Data, pagedResponse.Remaining ) );
+        .CreateResponse( OLabObjectPagedListResult<GroupsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "GroupsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( GroupsGetAsync ) );
     }
 
   }
@@ -121,7 +114,7 @@ public partial class GroupsFunction : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "GroupPost" )]
-  public async Task<IActionResult> ConstantPostAsync(
+  public async Task<IActionResult> GroupPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "groups/{name}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancel,
@@ -143,10 +136,7 @@ public partial class GroupsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "GroupPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( GroupPostAsync ) );
     }
   }
 
@@ -175,10 +165,7 @@ public partial class GroupsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "GroupDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( GroupDeleteAsync ) );
     }
 
   }

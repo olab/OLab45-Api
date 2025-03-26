@@ -11,11 +11,6 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -71,26 +66,20 @@ public partial class MapsFunction : OLabFunction
   {
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
+      Logger.LogInformation( $"MapsGet" );
+
+      var pageSpecs = ExtractPageParameters( request );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-
-      var result = await _playerEndpoint.GetAsync( auth, take, skip );
-      Logger.LogInformation( string.Format( "Found {0} maps", result.Data.Count ) );
+      var result = await _playerEndpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
       return request
         .CreateResponse( OLabObjectPagedListResult<MapsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapsGetAsync ) );
     }
 
   }
@@ -120,10 +109,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetShortStatusAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapGetShortStatusAsync ) );
     }
 
   }
@@ -152,10 +138,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapStatusGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapStatusGetAsync ) );
     }
   }
 
@@ -183,43 +166,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapFullGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
-    }
-  }
-
-  /// <summary>
-  /// Append template to an existing map
-  /// </summary>
-  /// <param name="mapId">Map to add template to</param>
-  /// <param name="CreateMapRequest.templateId">Template to add to map</param>
-  /// <returns>IActionResult</returns>
-  [Function( "MapCreateFromTemplate" )]
-  public async Task<IActionResult> MapCreateFromTemplateAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}" )] HttpRequestData request,
-    FunctionContext executionContext, CancellationToken cancellationToken,
-    uint mapId
-  )
-  {
-    try
-    {
-      // validate token/setup up common properties
-      var auth = GetAuthorization( executionContext );
-
-      var body = await request.ParseBodyFromRequestAsync<ExtendMapRequest>();
-
-      var dto = await _playerEndpoint.PostExtendMapAsync( auth, mapId, body );
-      return request
-        .CreateResponse( OLabObjectResult<ExtendMapResponse>.Result( dto ) );
-    }
-    catch ( Exception ex )
-    {
-      Logger.LogError( ex, "MapCreateFromTemplateAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapFullGetAsync ) );
     }
   }
 
@@ -251,10 +198,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapFullPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapFullPutAsync ) );
     }
   }
 
@@ -282,10 +226,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapFullRelationsPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapFullRelationsPostAsync ) );
     }
   }
 
@@ -314,10 +255,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapLinksGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapLinksGetAsync ) );
     }
   }
 
@@ -344,10 +282,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapDeleteAsync ) );
     }
   }
 

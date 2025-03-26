@@ -12,11 +12,6 @@ using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,27 +50,21 @@ public class Counters : OLabFunction
 
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
-
       Logger.LogInformation( $"CountersGet" );
 
+      var pageSpecs = ExtractPageParameters( request );
+
+      // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var result = await _endpoint.GetAsync( auth, take, skip );
-      Logger.LogInformation( string.Format( "Found {0} counters", result.Data.Count ) );
+      var result = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
       return request
         .CreateResponse( OLabObjectPagedListResult<CountersDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CountersGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CountersGetAsync ) );
     }
   }
 
@@ -107,10 +96,7 @@ public class Counters : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CounterGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CounterGetAsync ) );
     }
   }
 
@@ -142,10 +128,7 @@ public class Counters : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CounterPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CounterPutAsync ) );
     }
 
   }
@@ -173,10 +156,7 @@ public class Counters : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CounterPostAsync ) );
     }
   }
 
@@ -203,10 +183,7 @@ public class Counters : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CounterDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CounterDeleteAsync ) );
     }
 
   }

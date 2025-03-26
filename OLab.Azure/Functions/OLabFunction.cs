@@ -1,22 +1,21 @@
 using Dawn;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using OLab.Access;
-using OLab.Api.Data.Interface;
+using OLab.Access.Interfaces;
+using OLab.Api.Common;
+using OLab.Api.Common.Exceptions;
+using OLab.Api.Data.Exceptions;
 using OLab.Api.Model;
+using OLab.Azure.Extensions;
 using OLab.Azure.Services;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions;
@@ -30,14 +29,12 @@ public class OLabFunction
   protected IOLabLogger Logger = null;
 
   protected string Token;
-  //protected readonly IUserService userService;
-  protected IUserContext userContext;
+  protected IAuthenticatedContext userContext;
   protected readonly IOLabConfiguration _configuration;
-  //protected readonly TTalkDBContext TtalkDbContext;
   protected readonly IOLabModuleProvider<IWikiTagModule> _wikiTagProvider;
   protected readonly IOLabModuleProvider<IFileStorageModule> _fileStorageProvider;
 
-  protected ILogger GetLogger() { return (ILogger)Logger.GetLogger(); }
+  protected IOLabLogger GetLogger() { return Logger; }
 
   public OLabFunction(
     IOLabConfiguration configuration,
@@ -77,12 +74,12 @@ public class OLabFunction
     GetLogger().LogInformation( $"GetAuthorization executionContext items {string.Join( ", ", items )}" );
 
     // Get the user context set by the middleware
-    if ( executionContext.Items.TryGetValue( nameof( FunctionAppUserContext ), out var value ) && ( value is IUserContext userContext ) )
+    if ( executionContext.Items.TryGetValue( nameof( AuthenticatedMiddlewareContext ), out var value ) && (value is IAuthenticatedContext authenticatedContext) )
     {
-      GetLogger().LogInformation( $"User context: {userContext}" );
+      GetLogger().LogInformation( $"User context: {authenticatedContext}" );
 
       var auth = new OLabAuthorization( Logger, DbContext, _configuration );
-      auth.ApplyUserContext( userContext );
+      auth.ApplyUserContextAsync( authenticatedContext ).GetAwaiter().GetResult();
 
       return auth;
     }
@@ -103,6 +100,32 @@ public class OLabFunction
         .Include( x => x.SystemQuestionResponses )
         .FirstOrDefaultAsync( x => x.Id == id );
     return item;
+  }
+
+  protected static (int? take, int? skip) ExtractPageParameters(HttpRequestData request)
+  {
+    int? take;
+    int? skip;
+
+    var queryTake = Convert.ToInt32( request.Query[ "take" ] );
+    var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
+    take = queryTake > 0 ? queryTake : null;
+    skip = querySkip > 0 ? querySkip : null;
+
+    return (take, skip);
+  }
+
+  protected IActionResult ProcessException(HttpRequestData request, Exception ex, string caller)
+  {
+    Logger.LogError( $"{caller} exception: {ex.Message}" );
+
+    if ( ex is OLabObjectNotFoundException )
+      return new NotFoundResult();
+
+    if ( ex is OLabUnauthorizedException )
+      return new UnauthorizedResult();
+
+    return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
   }
 
 }

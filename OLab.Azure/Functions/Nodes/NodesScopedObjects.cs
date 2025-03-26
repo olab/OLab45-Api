@@ -7,11 +7,6 @@ using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,10 +40,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeScopedObjectsRawGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeScopedObjectsRawGetAsync ) );
     }
 
   }
@@ -79,10 +71,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeScopedObjectsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeScopedObjectsGetAsync ) );
     }
 
   }

@@ -7,11 +7,6 @@ using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,10 +39,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsRawGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsRawGetAsync ) );
     }
 
   }
@@ -75,10 +67,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsGetAsync ) );
     }
   }
 
@@ -108,10 +97,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsRawDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsRawDesignerGetAsync ) );
     }
   }
 
@@ -141,10 +127,7 @@ public partial class MapsFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapScopedObjectsDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapScopedObjectsDesignerGetAsync ) );
     }
 
   }

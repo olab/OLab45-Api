@@ -2,7 +2,6 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
@@ -21,7 +20,7 @@ namespace OLab.Files.AzureBlobStorage;
 public class AzureBlobFileSystemModule : OLabFileStorageModule
 {
   private readonly BlobServiceClient _blobServiceClient;
-  private readonly string _hostname;
+  private readonly string StorageHostname;
   private readonly string _containerName;
 
   private readonly Dictionary<string, IList<BlobItem>>
@@ -48,7 +47,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
     _blobServiceClient = new BlobServiceClient( connectionString );
 
-    _hostname = GetBlobStorageHostName( connectionString );
+    StorageHostname = GetBlobStorageHostName( connectionString );
 
     _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty );
     if ( string.IsNullOrEmpty( _containerName ) )
@@ -99,7 +98,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      (string container, string folder) = SeparateFilePath( filePath );
+      (var container, var folder) = SeparateFilePath( filePath );
 
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
@@ -191,7 +190,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       logger.LogInformation( $"WriteFileAsync: {_containerName} {filePath}" );
 
-      (string container, string folder) = SeparateFilePath( filePath );
+      (var container, var folder) = SeparateFilePath( filePath );
       if ( container != _containerName )
         throw new UnauthorizedAccessException( "Invalid container" );
 
@@ -227,7 +226,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      (string container, string folder) = SeparateFilePath( filePath );
+      (var container, var folder) = SeparateFilePath( filePath );
       if ( container != _containerName )
         throw new UnauthorizedAccessException( "Invalid container" );
 
@@ -364,12 +363,12 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      var physicalFolder = GetPhysicalPath( folderName );
-      logger.LogInformation( $"reading '{physicalFolder}' for files to add to stream" );
-
       blobs = _blobServiceClient
         .GetBlobContainerClient( _containerName )
-        .GetBlobs( prefix: physicalFolder ).ToList();
+        .GetBlobs( prefix: folderName ).ToList();
+
+      if ( blobs.Count > 0 )
+        logger.LogInformation( $"read {blobs.Count} files in folder '{folderName}' to add to stream" );
 
       foreach ( var blob in blobs )
       {
@@ -382,7 +381,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
         blobStream.Position = 0;
 
-        var entryPath = BuildPath( zipEntryFolderName, Path.GetFileName( blob.Name ) );
+        var entryPath = BuildPath( folderName, Path.GetFileName( blob.Name ) );
         logger.LogInformation( $"  adding '{blob.Name}' to archive '{entryPath}'. size = {blobStream.Length}" );
 
         var entry = archive.CreateEntry( entryPath );
@@ -398,7 +397,6 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       logger.LogError( ex, "CopyFolderToArchiveAsync error" );
       throw;
     }
-
 
     return result;
   }
@@ -501,7 +499,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="fileName">The file name.</param>
   /// <returns>The public URL for the file.</returns>
   public override SystemFiles UpdateUrlPath(
-    string path, 
+    string path,
     SystemFiles source)
   {
     var physicalPath = BuildPath(
@@ -510,7 +508,28 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       source.Path );
 
     source.OriginUrl = physicalPath;
-    source.HostName = _hostname;
+    source.HostName = StorageHostname;
+
+    return source;
+  }
+
+  /// <summary>
+  /// Gets the public URL for the file.
+  /// </summary>
+  /// <param name="path">The path.</param>
+  /// <param name="fileName">The file name.</param>
+  /// <returns>The public URL for the file.</returns>
+  public override SystemScripts UpdateUrlPath(
+    string path,
+    SystemScripts source)
+  {
+    var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageUrl,
+      path,
+      source.Source );
+
+    source.OriginUrl = physicalPath;
+    source.HostName = StorageHostname;
 
     return source;
   }

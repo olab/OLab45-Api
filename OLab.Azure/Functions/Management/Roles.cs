@@ -36,7 +36,7 @@ public partial class RolesFunction : OLabFunction
     Guard.Argument( wikiTagProvider ).NotNull( nameof( wikiTagProvider ) );
     Guard.Argument( fileStorageProvider ).NotNull( nameof( fileStorageProvider ) );
 
-    Logger = OLabLogger.CreateNew<Servers>( loggerFactory );
+    Logger = OLabLogger.CreateNew<ServersFunction>( loggerFactory );
 
     _endpoint = new RolesEndpoint(
       Logger,
@@ -52,7 +52,7 @@ public partial class RolesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "RoleGet" )]
-  public async Task<IActionResult> GroupGetAsync(
+  public async Task<IActionResult> RoleGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "roles/{source}" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -71,10 +71,7 @@ public partial class RolesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "RoleGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( RoleGetAsync ) );
     }
 
   }
@@ -93,26 +90,20 @@ public partial class RolesFunction : OLabFunction
   {
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
-
       Logger.LogInformation( $"RolesGet" );
+
+      var pageSpecs = ExtractPageParameters( request );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
+      var pagedResponse = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
-      var pagedResponse = await _endpoint.GetAsync( auth, take, skip );
       return request
         .CreateResponse( OLabObjectPagedListResult<RolesDto>.Result( pagedResponse.Data, pagedResponse.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "RolesGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( RolesGetAsync ) );
     }
 
   }
@@ -123,7 +114,7 @@ public partial class RolesFunction : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "RolePost" )]
-  public async Task<IActionResult> ConstantPostAsync(
+  public async Task<IActionResult> RolePostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "roles/{name}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancel,
@@ -145,10 +136,7 @@ public partial class RolesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "RolePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( RolePostAsync ) );
     }
   }
 
@@ -158,7 +146,7 @@ public partial class RolesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "RoleDelete" )]
-  public async Task<IActionResult> GroupDeleteAsync(
+  public async Task<IActionResult> RoleDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "roles/{source}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     string source)
@@ -177,10 +165,7 @@ public partial class RolesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "RoleDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( RoleDeleteAsync ) );
     }
 
   }

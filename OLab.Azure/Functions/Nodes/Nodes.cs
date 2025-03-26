@@ -12,11 +12,6 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,10 +67,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeGetAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeGetAsync ) );
     }
   }
 
@@ -105,10 +97,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodePutAsync ) );
     }
   }
 
@@ -141,10 +130,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeLinksPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeLinksPostAsync ) );
     }
 
   }
@@ -177,10 +163,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodePostAsync ) );
     }
   }
 
