@@ -188,15 +188,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      logger.LogInformation( $"WriteFileAsync: {_containerName} {filePath}" );
-
-      (var container, var folder) = SeparateFilePath( filePath );
-      if ( container != _containerName )
-        throw new UnauthorizedAccessException( "Invalid container" );
+      logger.LogInformation( $"WriteFileAsync: {filePath}" );
 
       await _blobServiceClient
             .GetBlobContainerClient( _containerName )
-            .GetBlobClient( folder )
+            .GetBlobClient( filePath )
             .UploadAsync( stream, overwrite: true, token );
 
       return filePath;
@@ -226,16 +222,12 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      (var container, var folder) = SeparateFilePath( filePath );
-      if ( container != _containerName )
-        throw new UnauthorizedAccessException( "Invalid container" );
+      logger.LogInformation( $"ReadFileAsync: {filePath}. File size: {stream.Length}" );
 
       await _blobServiceClient
            .GetBlobContainerClient( _containerName )
-           .GetBlobClient( folder )
+           .GetBlobClient( filePath )
            .DownloadToAsync( stream );
-
-      logger.LogInformation( $"ReadFileAsync: {_containerName} {filePath}. File size: {stream.Length}" );
 
       stream.Position = 0;
       return true;
@@ -260,12 +252,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      var physicalFileName = filePath;
-      logger.LogInformation( $"DeleteFileAsync '{physicalFileName}'" );
+      logger.LogInformation( $"DeleteFileAsync '{filePath}'" );
 
       await _blobServiceClient
         .GetBlobContainerClient( _containerName )
-        .DeleteBlobAsync( physicalFileName );
+        .DeleteBlobAsync( filePath );
 
       return true;
     }
@@ -286,9 +277,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   {
     Guard.Argument( folderName ).NotEmpty( nameof( folderName ) );
 
+    logger.LogInformation( $"DeleteFolderAsync '{folderName}'" );
+
     await DeleteImportFilesAsync(
       _blobServiceClient.GetBlobContainerClient( _containerName ),
-      GetPhysicalPath( folderName ),
+      folderName,
       null );
   }
 
