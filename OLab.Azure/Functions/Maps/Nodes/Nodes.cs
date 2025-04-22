@@ -68,7 +68,7 @@ public partial class MapNodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"FilesGet" );
+      Logger.LogInformation( $"MapNodesGet" );
 
       var pageSpecs = ExtractPageParameters( request );
 
