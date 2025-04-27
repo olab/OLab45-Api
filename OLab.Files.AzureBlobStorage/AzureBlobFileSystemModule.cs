@@ -374,7 +374,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
         blobStream.Position = 0;
 
-        var entryPath = BuildPath( folderName, Path.GetFileName( blob.Name ) );
+        var entryPath = BuildPath( zipEntryFolderName, Path.GetFileName( blob.Name ) );
         logger.LogInformation( $"  adding '{blob.Name}' to archive '{entryPath}'. size = {blobStream.Length}" );
 
         var entry = archive.CreateEntry( entryPath );
