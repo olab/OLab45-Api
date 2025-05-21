@@ -40,6 +40,7 @@ public class AuthenticationFunction : OLabFunction
   [Function( "Login" )]
   public async Task<IActionResult> LoginAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/login" )] HttpRequestData request,
+    FunctionContext hostContext,
     CancellationToken cancellationToken)
   {
     try
@@ -50,7 +51,21 @@ public class AuthenticationFunction : OLabFunction
 
       GetLogger().LogInformation( $"Login(user = '{model.Username}' ip: ???)" );
 
-      var user = await _authentication.AuthenticateAsync( model );
+      request.Headers.TryGetValues( "Authorization", out var accessToken );
+      var impersonate = accessToken?.Count() > 0;
+
+      if ( impersonate )
+      {
+        // validate token/setup up common properties
+        var auth = GetAuthorization( hostContext );
+        if ( !await auth.IsSystemSuperuserAsync() )
+        {
+          GetLogger().LogWarning( $"User '{auth.OLabUser.Username}' cannot imporsonate" );
+          return OLabUnauthorizedResult.Result();
+        }
+      }
+
+      var user = await _authentication.AuthenticateAsync( model, impersonate );
       if ( user == null )
         return OLabUnauthorizedResult.Result();
 
