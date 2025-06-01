@@ -11,6 +11,7 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
+using OLab.Data.Contracts;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -153,6 +154,34 @@ public class Counters : OLabFunction
       var dto = await _endpoint.PostAsync( auth, body );
       return request
         .CreateResponse( OLabObjectResult<CountersFullDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( CounterPostAsync ) );
+    }
+  }
+
+  /// <summary>
+  /// Updates a counter value
+  /// </summary>
+  /// <param name="dto">object data</param>
+  /// <returns>IActionResult</returns>
+  [Function( "CounterPropertyPut" )]
+  public async Task<IActionResult> CounterValuePut(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "counters/update/{counterId}" )] HttpRequestData request,
+    FunctionContext hostContext, CancellationToken cancellationToken,
+    uint counterId)
+  {
+    try
+    {
+      Logger.LogInformation( $"CounterPropertyPut" );
+
+      var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<PutCounterValueRequest>();
+
+      var dto = await _endpoint.PutUpdateAsync( auth, counterId, body );
+      return request
+        .CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {

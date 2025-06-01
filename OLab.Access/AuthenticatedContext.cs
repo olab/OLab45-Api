@@ -174,9 +174,9 @@ public abstract class AuthenticatedContext : IAuthenticatedContext
     foreach ( var claim in claims )
       _claims.Add( claim.Key.ToLower(), claim.Value );
 
-    GetLogger().LogInformation( $"found {_claims.Count} claims" );
-    foreach ( var claim in _claims )
-      _logger.LogInformation( $"  header: {claim.Key} = {claim.Value}" );
+    //GetLogger().LogInformation( $"found {_claims.Count} claims" );
+    //foreach ( var claim in _claims )
+    //  _logger.LogInformation( $"  header: {claim.Key} = {claim.Value}" );
   }
 
   /// <summary>

@@ -81,9 +81,9 @@ public class BootstrapMiddlewareContext
     foreach ( var header in httpRequestData.Headers )
       flatHeaderDict.Add( header.Key.ToLower(), header.Value.First() );
 
-    GetLogger().LogInformation( $"found {flatHeaderDict.Count} headers" );
-    foreach ( var header in flatHeaderDict )
-      GetLogger().LogInformation( $"  header: {header.Key} = {header.Value}" );
+    //GetLogger().LogInformation( $"found {flatHeaderDict.Count} headers" );
+    //foreach ( var header in flatHeaderDict )
+    //  GetLogger().LogInformation( $"  header: {header.Key} = {header.Value}" );
 
     return flatHeaderDict;
   }

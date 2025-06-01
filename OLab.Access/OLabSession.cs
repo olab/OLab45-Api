@@ -154,7 +154,7 @@ public class OLabSession : IOLabSession
 
     var countersDto = new List<CounterValueDto>();
 
-    foreach ( var counterDto in dto.DynamicObjects.Counters.Counters )
+    foreach ( var counterDto in dto.DynamicObjects.Counters )
       countersDto.Add( new CounterValueDto( counterDto ) );
 
     var counterJson = JsonSerializer.Serialize( countersDto );
