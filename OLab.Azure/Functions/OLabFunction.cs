@@ -118,6 +118,7 @@ public class OLabFunction
   protected IActionResult ProcessException(HttpRequestData request, Exception ex, string caller)
   {
     Logger.LogError( $"{caller} exception: {ex.Message}" );
+    Logger.LogError( $"{caller} {ex.StackTrace}" );
 
     if ( ex is OLabObjectNotFoundException )
       return new NotFoundResult();

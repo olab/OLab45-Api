@@ -131,4 +131,31 @@ public partial class ServersFunction : OLabFunction
       return ProcessException( request, ex, nameof( ServerScopedObjectGetAsync ) );
     }
   }
+
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="serverId"></param>
+  /// <returns></returns>
+  [Function( "ServerDynamicObjectGet" )]
+  public async Task<IActionResult> ServerDynamicObjectGetAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "servers/{id}/dynamicobjects" )] HttpRequestData request,
+    FunctionContext executionContext,
+    CancellationToken cancellationToken,
+    uint id)
+  {
+    try
+    {
+      // validate token/setup up common properties
+      var auth = GetAuthorization( executionContext );
+
+      var dto = await _endpoint.GetDynamicObjectsTranslatedAsync( id );
+      return request
+        .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( ServerDynamicObjectGetAsync ) );
+    }
+  }
 }
