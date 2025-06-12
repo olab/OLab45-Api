@@ -36,30 +36,39 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     IOLabLogger logger,
     IOLabConfiguration configuration) : base( logger, configuration )
   {
-    // if not set to use this module, then don't proceed further
-    if ( GetModuleName().ToLower() != cfg.GetAppSettings().FileStorageType.ToLower() )
-      return;
+    try
+    {
+      // if not set to use this module, then don't proceed further
+      if ( GetModuleName().ToLower() != cfg.GetAppSettings().FileStorageType.ToLower() )
+        return;
 
-    logger.LogInformation( $"Initializing AzureBlobFileSystemModule" );
+      logger.LogInformation( $"Initializing AzureBlobFileSystemModule" );
 
-    var connectionString = cfg.GetAppSettings().FileStorageConnectionString;
-    if ( string.IsNullOrEmpty( connectionString ) )
-      throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
-    _blobServiceClient = new BlobServiceClient( connectionString );
+      var connectionString = cfg.GetAppSettings().FileStorageConnectionString;
+      if ( string.IsNullOrEmpty( connectionString ) )
+        throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
+      _blobServiceClient = new BlobServiceClient( connectionString );
 
-    StorageHostname = GetBlobStorageHostName( connectionString );
+      StorageHostname = GetBlobStorageHostName( connectionString );
 
-    _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty );
-    if ( string.IsNullOrEmpty( _containerName ) )
-      throw new ConfigurationErrorsException( "missing FileStorageRoot parameter" );
+      _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty );
+      if ( string.IsNullOrEmpty( _containerName ) )
+        throw new ConfigurationErrorsException( "missing FileStorageRoot parameter" );
 
-    logger.LogInformation( $"Container: {_containerName}" );
+      logger.LogInformation( $"Container: {_containerName}" );
 
-    // need to prevent container name from being part of the file root
-    cfg.GetAppSettings().FileStorageRoot = Path.GetFileName( cfg.GetAppSettings().FileStorageRoot );
+      // need to prevent container name from being part of the file root
+      cfg.GetAppSettings().FileStorageRoot = Path.GetFileName( cfg.GetAppSettings().FileStorageRoot );
 
-    // ensure storage url only has leading '/'
-    cfg.GetAppSettings().FileStorageUrl = $"/{cfg.GetAppSettings().FileStorageRoot.Trim( '/' )}";
+      // ensure storage url only has leading '/'
+      cfg.GetAppSettings().FileStorageUrl = $"/{cfg.GetAppSettings().FileStorageRoot.Trim( '/' )}";
+
+    }
+    catch ( Exception ex )
+    {
+      logger.LogError( $"error: {ex.Message} {ex.StackTrace}" );
+      throw;
+    }
   }
 
   /// <summary>
