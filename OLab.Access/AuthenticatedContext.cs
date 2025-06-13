@@ -162,7 +162,7 @@ public abstract class AuthenticatedContext : IAuthenticatedContext
     _logger = logger;
     _dbContext = dbContext;
 
-    GetLogger().LogInformation( $"UserContext ctor" );
+    GetLogger().LogDebug( $"UserContext ctor" );
   }
 
   /// <summary>

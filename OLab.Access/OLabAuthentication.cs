@@ -66,7 +66,7 @@ public class OLabAuthentication : IOLabAuthentication
     Guard.Argument( logger ).NotNull( nameof( logger ) );
 
     _logger = logger;
-    GetLogger().LogInformation( $"OLabAuthentication ctor" );
+    GetLogger().LogDebug( $"OLabAuthentication ctor" );
   }
 
   private OLabAuthentication(
