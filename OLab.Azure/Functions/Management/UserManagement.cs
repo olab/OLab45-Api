@@ -1,11 +1,10 @@
 using Dawn;
+using DocumentFormat.OpenXml.Drawing;
 using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using OLab.Access.Interfaces;
 using OLab.Api.Common;
 using OLab.Api.Model;
@@ -23,6 +22,19 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions.Management;
+
+public static class MultipartRequestHelper
+{
+  public static string GetBoundary(string contentType)
+  {
+    var elements = contentType.Split( ';' );
+    var boundaryElement = elements.FirstOrDefault( e => e.Trim().StartsWith( "boundary=" ) );
+    if ( boundaryElement == null )
+      throw new InvalidOperationException( "Missing boundary in Content-Type" );
+
+    return boundaryElement.Substring( "boundary=".Length ).Trim( '"' );
+  }
+}
 
 public partial class UserManagement : OLabFunction
 {
@@ -105,36 +117,22 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to import users" ) );
 
-      // Get the Content-Type header
-      if ( !request.Headers.TryGetValues( "Content-Type", out var contentTypeValues ) )
-        throw new Exception( "Bad Request" );
+      // Parse multipart/form-data using HttpMultipartParser
+      var parsedFormBody = await MultipartFormDataParser.ParseAsync( request.Body );
 
-      var contentType = contentTypeValues.First();
+      foreach ( var filePart in parsedFormBody.Files )
+        Logger.LogInformation( $"file posted: '{filePart.Name}' '{filePart.ContentType}'" );
 
-      // Parse the form data
-      var boundary = GetBoundary( contentType );
-      var reader = new MultipartReader( boundary, request.Body );
-      MultipartSection section;
+      var file = parsedFormBody.Files.FirstOrDefault( f => f.Name == "file" );
+      if ( file == null )
+        throw new Exception( "No multipart file named 'file' was provided" );
 
-      using ( var memoryStream = new MemoryStream() )
-      {
-        while ( (section = await reader.ReadNextSectionAsync()) != null )
-        {
-          if ( ContentDispositionHeaderValue.TryParse( section.ContentDisposition, out var contentDisposition ) )
-          {
-            if ( contentDisposition.DispositionType.Equals( "form-data" ) &&
-                contentDisposition.Name == "File" )
-            {
-              await section.Body.CopyToAsync( memoryStream );
-            }
-          }
-        }
+      MemoryStream memoryStream = new MemoryStream();
+      await file.Data.CopyToAsync( memoryStream );
+      memoryStream.Position = 0;
 
-        memoryStream.Position = 0;
-
-        var dto = await _userEndpoint.ImportUsersAsync( memoryStream );
-        return request.CreateResponse( OLabObjectListResult<UsersImportDto>.Result( dto ) );
-      }
+      var dto = await _userEndpoint.ImportUsersAsync( memoryStream );
+      return request.CreateResponse( OLabObjectListResult<UsersImportDto>.Result( dto ) );
 
     }
     catch ( Exception ex )
@@ -143,15 +141,10 @@ public partial class UserManagement : OLabFunction
     }
   }
 
-  private string GetBoundary(string contentType)
+  private string GetBoundary(HttpRequestData request)
   {
-    var elements = contentType.Split( ' ' );
-    var boundaryElement = elements.FirstOrDefault( entry => entry.StartsWith( "boundary=" ) );
-    if ( boundaryElement != null )
-    {
-      return boundaryElement.Substring( "boundary=".Length );
-    }
-    throw new InvalidDataException( "Missing content-type boundary" );
+    var boundary = MultipartRequestHelper.GetBoundary( request.Headers.GetValues( "Content-Type" ).First() );
+    return boundary;
   }
 
   /// <summary>
