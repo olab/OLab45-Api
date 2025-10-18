@@ -72,9 +72,11 @@ public partial class LinksFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodeLinkPutAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>( GetLogger() );
 
       await _playerEndpoint.PutMapNodeLinksAsync( auth, mapId, nodeId, linkId, body );
       return new NoContentResult();
@@ -106,12 +108,10 @@ public partial class LinksFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
 
       Logger.LogInformation( $"MapNodeLinkPostDesignerAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<PostNewLinkRequest>();
+      var body = await request.ParseBodyFromRequestAsync<PostNewLinkRequest>( GetLogger() );
 
       var dto = await _designerEndpoint.PostMapNodeLinkAsync( auth, mapId, nodeId, body );
       return request

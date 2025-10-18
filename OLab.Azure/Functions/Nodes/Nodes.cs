@@ -85,11 +85,11 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"NodePut" );
+      Logger.LogInformation( $"NodePutAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>( GetLogger() );
 
       await _endpoint.PutNodeAsync( auth, id, body );
       response = request.CreateNoContentResponse();
@@ -118,12 +118,10 @@ public partial class NodesFunction : OLabFunction
     try
     {
       Logger.LogInformation( $"NodeLinksPostAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksPostDataDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksPostDataDto>( GetLogger() );
 
       var dto = await _endpoint.PostLinkAsync( auth, nodeId, body );
       return request
@@ -152,12 +150,10 @@ public partial class NodesFunction : OLabFunction
     try
     {
       Logger.LogInformation( $"NodePostAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<MapNodesPostDataDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodesPostDataDto>( GetLogger() );
 
       var dto = await _endpoint.PostNodeAsync( auth, mapId, body );
       return request

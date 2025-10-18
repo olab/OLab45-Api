@@ -205,7 +205,6 @@ public class FilesFunction : OLabFunction
     try
     {
       Logger.LogInformation( $"FilePostAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -296,9 +295,10 @@ public class FilesFunction : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      var auth = GetAuthorization( hostContext );
+      Logger.LogInformation( $"FilePutAsync" );
 
-      var body = await request.ParseBodyFromRequestAsync<FilesFullDto>();
+      var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<FilesFullDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();

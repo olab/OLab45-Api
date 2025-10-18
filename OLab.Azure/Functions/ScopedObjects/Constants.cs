@@ -112,10 +112,10 @@ public class Constants : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      Logger.LogInformation( $"ConstantPut" );
+      Logger.LogInformation( $"ConstantPutAsync" );
 
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
+      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>( GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();
@@ -143,10 +143,9 @@ public class Constants : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
       Logger.LogInformation( $"ConstantPostAsync" );
-      await request.LogPostContents( GetLogger() );
 
-      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>( GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request

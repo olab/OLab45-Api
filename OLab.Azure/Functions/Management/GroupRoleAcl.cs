@@ -61,11 +61,10 @@ public partial class GroupRoleAcls : OLabFunction
     try
     {
       Logger.LogInformation( $"GroupRolesAclQueryAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-      var body = await request.ParseBodyFromRequestAsync<GroupRoleAclReadRequest>();
+      var body = await request.ParseBodyFromRequestAsync<GroupRoleAclReadRequest>( GetLogger() );
 
       var dto = await _endpoint.GetAsync( auth, body );
       return request
@@ -95,7 +94,8 @@ public partial class GroupRoleAcls : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
+      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>( GetLogger() );
+
       var dto = await _endpoint.EditAsync( auth, model );
 
       return request
@@ -151,11 +151,11 @@ public partial class GroupRoleAcls : OLabFunction
     try
     {
       Logger.LogInformation( $"GroupRolesAclCreateAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>();
+      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>(GetLogger() );
+
       var dto = await _endpoint.CreateAsync( auth, model );
 
       return request

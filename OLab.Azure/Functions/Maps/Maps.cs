@@ -186,10 +186,11 @@ public partial class MapsFunction : OLabFunction
   {
     try
     {
+      Logger.LogInformation( $"MapFullPutAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-
-      var body = await request.ParseBodyFromRequestAsync<MapsFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapsFullDto>( GetLogger() );
 
       await _playerEndpoint.PutAsync( auth, mapId, body );
       return request
@@ -216,12 +217,10 @@ public partial class MapsFunction : OLabFunction
     try
     {
       Logger.LogInformation( $"MapFullRelationsPostAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-
-      var body = await request.ParseBodyFromRequestAsync<CreateMapRequest>();
+      var body = await request.ParseBodyFromRequestAsync<CreateMapRequest>( GetLogger() );
 
       var dto = await _playerEndpoint.CreateMapAsync( auth, body );
       return request

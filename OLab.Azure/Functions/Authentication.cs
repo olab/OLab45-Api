@@ -46,9 +46,9 @@ public class AuthenticationFunction : OLabFunction
     try
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
-      await request.LogPostContents(GetLogger());
 
-      var model = await request.ParseBodyFromRequestAsync<LoginRequest>();
+      Logger.LogInformation( $"LoginAsync" );
+      var model = await request.ParseBodyFromRequestAsync<LoginRequest>( GetLogger() );
 
       request.Headers.TryGetValues( "Authorization", out var accessToken );
       var impersonate = accessToken?.Count() > 0;
@@ -134,9 +134,8 @@ public class AuthenticationFunction : OLabFunction
   {
     try
     {
-      await request.LogPostContents( GetLogger() );
-
-      var model = await request.ParseBodyFromRequestAsync<ExternalLoginRequest>();
+      Logger.LogInformation( $"LoginExternalAsync" );
+      var model = await request.ParseBodyFromRequestAsync<ExternalLoginRequest>( GetLogger() );
 
       var response = _authentication.GenerateExternalJwtToken( model );
       if ( response == null )

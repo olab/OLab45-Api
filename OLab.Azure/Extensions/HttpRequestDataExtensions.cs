@@ -101,24 +101,22 @@ public static class HttpRequestDataExtensions
     return content;
   }
 
-  public static async Task LogPostContents(this HttpRequestData request, IOLabLogger logger)
-  {
-    if ( request.Body == null )
-      return;
-
-    string jsonString = await new StreamReader( request.Body ).ReadToEndAsync();
-    logger.LogInformation( $"Request Body: {jsonString}" );
-  }
-
   public static async Task<T> ParseBodyFromRequestAsync<T>(
-    [NotNull] this HttpRequestData request)
+    [NotNull] this HttpRequestData request, IOLabLogger logger)
       where T : class
   {
-    var (isSuccess, body, exception) = await request.TryReadBodyAsAsync<T>();
-    if ( !isSuccess )
-      throw new OLabInvalidRequestException( exception );
+    try
+    {
+      string jsonString = await new StreamReader( request.Body ).ReadToEndAsync();
+      logger.LogInformation( $"Request Body: {jsonString}" );
 
-    return body;
+      var body = JsonConvert.DeserializeObject<T>( jsonString );
+      return body;
+    }
+    catch ( Exception ex )
+    {
+      throw new OLabInvalidRequestException( ex );
+    }
   }
 
   public static async Task<(

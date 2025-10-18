@@ -64,12 +64,10 @@ public class QuestionResponsesFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
 
       Logger.LogInformation( $"QuestionResponsePostAsync" );
-      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>(GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request
@@ -135,9 +133,11 @@ public class QuestionResponsesFunction : OLabFunction
       Guard.Argument( id, nameof( id ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"QuestionResponsePutAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();

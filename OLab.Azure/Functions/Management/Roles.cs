@@ -126,10 +126,9 @@ public partial class RolesFunction : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
       Logger.LogInformation( $"RolePostAsync" );
-      await request.LogPostContents( GetLogger() );
 
-      var body = await request.ParseBodyFromRequestAsync<RolesDto>();
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<RolesDto>(GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, name, cancel );
       return request
