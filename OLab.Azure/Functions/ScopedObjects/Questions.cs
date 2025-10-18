@@ -140,7 +140,7 @@ public class QuestionsFunction : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();
@@ -164,12 +164,11 @@ public class QuestionsFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"QuestionPost" );
+      Logger.LogInformation( $"QuestionPostAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>(GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request

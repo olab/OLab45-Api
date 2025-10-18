@@ -109,7 +109,7 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"ImportUsersPost" );
+      Logger.LogInformation( $"ImportUsersPostAsync" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -159,10 +159,10 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UserPost" );
+      Logger.LogInformation( $"UserPostAsync" );
 
-      var item = await request.ParseBodyFromRequestAsync<AddUserRequest>();
       var auth = GetAuthorization( hostContext );
+      var item = await request.ParseBodyFromRequestAsync<AddUserRequest>( GetLogger() );
 
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to add user" ) );
@@ -188,10 +188,10 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UserDelete" );
+      Logger.LogInformation( $"UserDeleteAsync" );
 
-      var items = await request.ParseBodyFromRequestAsync<List<DeleteUsersRequest>>();
       var auth = GetAuthorization( hostContext );
+      var items = await request.ParseBodyFromRequestAsync<List<DeleteUsersRequest>>( GetLogger() );
 
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to add user" ) );
@@ -218,7 +218,7 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UsersPost" );
+      Logger.LogInformation( $"UsersPostAsync" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -275,8 +275,8 @@ public partial class UserManagement : OLabFunction
     {
       Logger.LogInformation( $"UsersPut" );
 
-      var body = await request.ParseBodyFromRequestAsync<AddUserRequest>();
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<AddUserRequest>( GetLogger() );
 
       // test if user has access to add users.
       if ( !await auth.IsSystemSuperuserAsync() )

@@ -105,10 +105,11 @@ public partial class MapNodesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodePostAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<DynamicScopedObjectsDto>();
+      var body = await request.ParseBodyFromRequestAsync<DynamicScopedObjectsDto>( GetLogger() );
 
       var dto = await _playerEndpoint.PlayMapNodeAsync( auth, mapId, nodeId, body );
       return request
@@ -173,10 +174,11 @@ public partial class MapNodesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodePutAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>( GetLogger() );
 
       var dto = await _playerEndpoint.PutNodeAsync( auth, mapId, nodeId, body );
       return request
@@ -274,12 +276,11 @@ public partial class MapNodesFunction : OLabFunction
       Guard.Argument( mapId, nameof( mapId ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogInformation( $"MapNodeDesignerPost" );
+      Logger.LogInformation( $"MapNodePostDesignerAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>();
+      var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>(GetLogger() );
 
       var dto = await _designerEndpoint.PostMapNodesAsync( auth, mapId, body );
       return request

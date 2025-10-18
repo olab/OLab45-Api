@@ -63,6 +63,8 @@ public class Import : OLabFunction
   {
     try
     {
+      Logger.LogInformation( $"ImportAsync" );
+
       Api.Model.Maps mapPhys = null;
 
       Logger.LogInformation( $"ImportAsync" );

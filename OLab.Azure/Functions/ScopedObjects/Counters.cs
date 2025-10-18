@@ -121,8 +121,7 @@ public class Counters : OLabFunction
       Logger.LogInformation( $"CounterPut" );
 
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();
@@ -146,10 +145,10 @@ public class Counters : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"CounterPost" );
+      Logger.LogInformation( $"CounterPostAsync" );
 
-      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>(GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request
@@ -177,7 +176,7 @@ public class Counters : OLabFunction
       Logger.LogInformation( $"CounterPropertyPut" );
 
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<PutCounterValueRequest>();
+      var body = await request.ParseBodyFromRequestAsync<PutCounterValueRequest>(GetLogger() );
 
       var dto = await _endpoint.PutUpdateAsync( auth, counterId, body );
       return request
