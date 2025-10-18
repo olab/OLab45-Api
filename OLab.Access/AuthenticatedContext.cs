@@ -13,7 +13,7 @@ namespace OLab.Access;
 /// <summary>
 /// Represents the user context within the OLab application.
 /// </summary>
-public abstract class AuthenticatedContext : IAuthenticatedContext
+public class AuthenticatedContext : IAuthenticatedContext
 {
   public const string HEADER_SESSIONID = "olabsessionid";
   public const string WildCardObjectType = "*";
