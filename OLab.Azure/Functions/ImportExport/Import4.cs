@@ -68,6 +68,7 @@ public class Import4Function : OLabFunction
     try
     {
       Logger.LogInformation( $"ImportAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

@@ -117,7 +117,8 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"NodeLinksPost" );
+      Logger.LogInformation( $"NodeLinksPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -150,7 +151,8 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"NodePost" );
+      Logger.LogInformation( $"NodePostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

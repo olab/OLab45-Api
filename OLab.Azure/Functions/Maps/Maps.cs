@@ -215,6 +215,9 @@ public partial class MapsFunction : OLabFunction
   {
     try
     {
+      Logger.LogInformation( $"MapFullRelationsPostAsync" );
+      await request.LogPostContents( GetLogger() );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
 

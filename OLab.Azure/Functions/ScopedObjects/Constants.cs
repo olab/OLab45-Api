@@ -142,7 +142,8 @@ public class Constants : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogInformation( $"ConstantPost" );
+      Logger.LogInformation( $"ConstantPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
       var auth = GetAuthorization( hostContext );

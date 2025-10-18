@@ -164,7 +164,8 @@ public class QuestionsFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"QuestionPost" );
+      Logger.LogInformation( $"QuestionPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

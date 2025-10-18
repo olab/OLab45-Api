@@ -62,6 +62,9 @@ public partial class UserQuestionResponse : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"PostQuestionResponseAsync" );
+      await request.LogPostContents( GetLogger() );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 

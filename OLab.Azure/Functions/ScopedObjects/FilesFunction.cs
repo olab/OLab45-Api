@@ -204,7 +204,8 @@ public class FilesFunction : OLabFunction
 
     try
     {
-      Logger.LogInformation( $"FilePost" );
+      Logger.LogInformation( $"FilePostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

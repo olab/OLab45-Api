@@ -109,7 +109,8 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"ImportUsersPost" );
+      Logger.LogInformation( $"ImportUsersPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       var auth = GetAuthorization( hostContext );
 
@@ -159,7 +160,8 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UserPost" );
+      Logger.LogInformation( $"UserPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       var item = await request.ParseBodyFromRequestAsync<AddUserRequest>();
       var auth = GetAuthorization( hostContext );
@@ -188,7 +190,8 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UserDelete" );
+      Logger.LogInformation( $"UserDeleteAsync" );
+      await request.LogPostContents( GetLogger() );
 
       var items = await request.ParseBodyFromRequestAsync<List<DeleteUsersRequest>>();
       var auth = GetAuthorization( hostContext );
@@ -218,7 +221,8 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UsersPost" );
+      Logger.LogInformation( $"UsersPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       var auth = GetAuthorization( hostContext );
 

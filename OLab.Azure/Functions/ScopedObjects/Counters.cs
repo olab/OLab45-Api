@@ -146,7 +146,8 @@ public class Counters : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"CounterPost" );
+      Logger.LogInformation( $"CounterPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
       var auth = GetAuthorization( hostContext );

@@ -105,6 +105,9 @@ public partial class MapNodesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodePostAsync" );
+      await request.LogPostContents( GetLogger() );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
@@ -274,7 +277,8 @@ public partial class MapNodesFunction : OLabFunction
       Guard.Argument( mapId, nameof( mapId ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogInformation( $"MapNodeDesignerPost" );
+      Logger.LogInformation( $"MapNodePostDesignerAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );

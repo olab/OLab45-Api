@@ -63,6 +63,9 @@ public class QuestionResponsesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"QuestionResponsePostAsync" );
+      await request.LogPostContents( GetLogger() );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 

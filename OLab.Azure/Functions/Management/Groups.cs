@@ -125,7 +125,8 @@ public partial class GroupsFunction : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogInformation( $"GroupPost" );
+      Logger.LogInformation( $"GroupPostAsync" );
+      await request.LogPostContents( GetLogger() );
 
       var body = await request.ParseBodyFromRequestAsync<GroupsDto>();
       var auth = GetAuthorization( hostContext );

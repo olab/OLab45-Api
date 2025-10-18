@@ -105,6 +105,9 @@ public partial class LinksFunction : OLabFunction
       Guard.Argument( nodeId, nameof( nodeId ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodeLinkPostDesignerAsync" );
+      await request.LogPostContents( GetLogger() );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 

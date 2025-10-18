@@ -60,7 +60,8 @@ public partial class GroupRoleAcls : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"GroupRolesAclQueryPost" );
+      Logger.LogInformation( $"GroupRolesAclQueryAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
@@ -149,7 +150,8 @@ public partial class GroupRoleAcls : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"GroupRolesAclCreatePost" );
+      Logger.LogInformation( $"GroupRolesAclCreateAsync" );
+      await request.LogPostContents( GetLogger() );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );

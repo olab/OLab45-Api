@@ -1,3 +1,5 @@
+using Azure;
+using DocumentFormat.OpenXml.Drawing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -8,6 +10,7 @@ using NuGet.Protocol;
 using OLab.Api.Common;
 using OLab.Api.Common.Exceptions;
 using OLab.Azure.Extensions;
+using OLab.Common.Interfaces;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -96,6 +99,15 @@ public static class HttpRequestDataExtensions
     };
 
     return content;
+  }
+
+  public static async Task LogPostContents(this HttpRequestData request, IOLabLogger logger)
+  {
+    if ( request.Body == null )
+      return;
+
+    string jsonString = await new StreamReader( request.Body ).ReadToEndAsync();
+    logger.LogInformation( $"Request Body: {jsonString}" );
   }
 
   public static async Task<T> ParseBodyFromRequestAsync<T>(
