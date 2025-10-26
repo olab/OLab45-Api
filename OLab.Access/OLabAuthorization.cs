@@ -32,7 +32,7 @@ public class OLabAuthorization : IOLabAuthorization
   protected IList<UserAcls> _userAcls = new List<UserAcls>();
 
   public Users OLabUser { get; set; }
-  public IAuthenticatedContext AuthenticatedContext { get; set; }
+  public IAuthenticatedContext AuthenticatedContext { get; set; } = new AuthenticatedContext();
   public string Issuer { get; set; }
   public const string WildCardObjectType = "*";
   public const uint WildCardObjectId = 0;

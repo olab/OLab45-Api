@@ -169,10 +169,10 @@ public class AuthenticatedContext : IAuthenticatedContext
   /// Sets the claims.
   /// </summary>
   /// <param name="claims">The claims to set.</param>
-  protected void SetClaims(IDictionary<string, string> claims)
+  protected void SetClaims(IList<Claim> claims)
   {
     foreach ( var claim in claims )
-      _claims.Add( claim.Key.ToLower(), claim.Value );
+      _claims.Add( claim.Type.ToLower(), claim.Value );
 
     //GetLogger().LogInformation( $"found {_claims.Count} claims" );
     //foreach ( var claim in _claims )

@@ -224,22 +224,25 @@ public class OLabSession : IOLabSession
     _dbContext.UserResponses.Add( userResponse );
     _dbContext.SaveChanges();
 
-    var counterUpdate = new UserCounterUpdate
+    if ( body.DynamicObjects != null )
     {
-      CounterState = body.DynamicObjects.ToJson(),
-    };
+      var counterUpdate = new UserCounterUpdate
+      {
+        CounterState = body.DynamicObjects.ToJson(),
+      };
 
-    _dbContext.UserCounterUpdate.Add( counterUpdate );
-    _dbContext.SaveChanges();
+      _dbContext.UserCounterUpdate.Add( counterUpdate );
+      _dbContext.SaveChanges();
 
-    var userResponseCounterUpdate = new UserresponseCounterupdate
-    {
-      CounterupdateId = counterUpdate.Id,
-      UserresponseId = userResponse.Id
-    };
+      var userResponseCounterUpdate = new UserresponseCounterupdate
+      {
+        CounterupdateId = counterUpdate.Id,
+        UserresponseId = userResponse.Id
+      };
 
-    _dbContext.UserresponseCounterupdate.Add( userResponseCounterUpdate );
-    _dbContext.SaveChanges();
+      _dbContext.UserresponseCounterupdate.Add( userResponseCounterUpdate );
+      _dbContext.SaveChanges();
+    }
 
     _logger.LogInformation( $"OnQuestionResponse: saved user response to session" );
   }
