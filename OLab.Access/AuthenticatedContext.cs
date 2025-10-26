@@ -169,14 +169,20 @@ public class AuthenticatedContext : IAuthenticatedContext
   /// Sets the claims.
   /// </summary>
   /// <param name="claims">The claims to set.</param>
+  protected void SetClaims(IDictionary<string, string> claims)
+  {
+    foreach ( var claim in claims )
+      _claims.Add( claim.Key.ToLower(), claim.Value );
+  }
+
+  /// <summary>
+  /// Sets the claims.
+  /// </summary>
+  /// <param name="claims">The claims to set.</param>
   protected void SetClaims(IList<Claim> claims)
   {
     foreach ( var claim in claims )
       _claims.Add( claim.Type.ToLower(), claim.Value );
-
-    //GetLogger().LogInformation( $"found {_claims.Count} claims" );
-    //foreach ( var claim in _claims )
-    //  _logger.LogInformation( $"  header: {claim.Key} = {claim.Value}" );
   }
 
   /// <summary>
