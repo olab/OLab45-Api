@@ -10,17 +10,17 @@ using Xunit;
 
 namespace OLab.Api.Tests;
 
-public class GroupDBTests
+public class RoleDBTests
 {
   [Fact]
   public void GetAll_ReturnsAllRecords_WithSbytePropertiesSetProperly()
   {
-    var expecteds = OlabDbContextTest.CreateMany<Groups>( 2 );
+    var expecteds = OlabDbContextTest.CreateMany<Roles>( 2 );
     expecteds[ 0 ].System = 0;
     expecteds[ 1 ].System = 1;
 
     var mockContext = OlabDbContextTest.CreateMockDbContextWithDbSet( expecteds );
-    var actuals = mockContext.Object.Groups.ToList();
+    var actuals = mockContext.Object.Roles.ToList();
 
     foreach ( var record in expecteds )
     {

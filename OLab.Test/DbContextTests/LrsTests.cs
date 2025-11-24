@@ -12,7 +12,7 @@ namespace OLab.Test.DbContextTests;
 public class LrsDBTests
 {
   [Fact]
-  public void GetAll_ReturnsAllRecords_WithVisibilitySetProperly()
+  public void GetAll_ReturnsAllRecords_WithSbytePropertiesSetProperly()
   {
     var expecteds = OlabDbContextTest.CreateMany<Lrs>( 2 );
     expecteds[0].Enabled = 0;
@@ -29,6 +29,12 @@ public class LrsDBTests
       else
         Assert.False( actual.IsEnabled );
     }
+
+    actuals[ 0 ].IsEnabled = true;
+    Assert.True( actuals[ 0 ].Enabled == 1 );
+
+    actuals[ 0 ].IsEnabled = false;
+    Assert.True( actuals[ 0 ].Enabled == 0 );
 
   }
 

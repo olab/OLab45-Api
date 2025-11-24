@@ -12,7 +12,7 @@ namespace OLab.Test.DbContextTests;
 public class MapCounterCommonRulesDBTests
 {
   [Fact]
-  public void GetAll_ReturnsAllRecords_WithVisibilitySetProperly()
+  public void GetAll_ReturnsAllRecords_WithSbytePropertiesSetProperly()
   {
     var expecteds = OlabDbContextTest.CreateMany<MapCounterCommonRules>( 2 );
     expecteds[0].Correct = 0;
