@@ -29,7 +29,7 @@ public class UserSessionsDBTests
       if ( actual.NotCumulative == 1 )
         Assert.True( actual.IsNotCumulative );
       else
-        Assert.True( actual.IsNotCumulative );
+        Assert.False( actual.IsNotCumulative );
     }
 
     actuals[ 0 ].IsNotCumulative = true;

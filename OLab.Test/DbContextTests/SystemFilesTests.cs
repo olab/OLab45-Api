@@ -41,8 +41,8 @@ public class SystemFilesDBTests
     Assert.True( actuals[ 0 ].Private == 1 );
 
     actuals[ 0 ].IsShared = false;
-    Assert.True( actuals[ 0 ].Private == 0 );
-    Assert.True( actuals[ 0 ].Private == 0 );
+    Assert.True( actuals[ 0 ].Shared == 0 );
+    Assert.True( actuals[ 0 ].Shared == 0 );
 
     actuals[ 0 ].IsPrivate = false;
     Assert.True( actuals[ 0 ].Private == 0 );

@@ -29,7 +29,7 @@ public class RoleDBTests
       if ( actual.System == 1 )
         Assert.True( actual.IsSystem );
       else
-        Assert.True( actual.IsSystem );
+        Assert.False( actual.IsSystem );
     }
 
     actuals[ 0 ].IsSystem = true;

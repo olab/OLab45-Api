@@ -29,7 +29,7 @@ public class UserSessionTraceDBTests
       if ( actual.Redirected == 1 )
         Assert.True( actual.IsRedirected );
       else
-        Assert.True( actual.IsRedirected );
+        Assert.False( actual.IsRedirected );
     }
 
     actuals[ 0 ].IsRedirected = true;
