@@ -574,7 +574,7 @@ public class OLabAuthorization : IOLabAuthorization
     if ( url.Segments.Count() > 1 )
       path = $"/{url.Segments[ 1 ].Trim( '/' )}";
 
-    return $"{url.Authority}{path}";
+    return $"{url.Authority}";
   }
 
 
