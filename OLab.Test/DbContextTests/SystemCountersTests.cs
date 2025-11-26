@@ -25,15 +25,15 @@ public class SystemCountersDBTests
     {
       var actual = actuals.FirstOrDefault( r => r.Id == expected.Id ) ?? throw new Exception( "Record not found" );
       if ( expected.Visible == 1 )
-        Assert.True( actual.Visible == 1);
+        Assert.True( actual.IsVisible );
       else
-        Assert.True( actual.Visible == 0 );
+        Assert.False( actual.IsVisible );
     }
 
-    actuals[ 0 ].Visible = 1;
+    actuals[ 0 ].IsVisible = true;
     Assert.True( actuals[ 0 ].Visible == 1 );
 
-    actuals[ 0 ].Visible = 0;
+    actuals[ 0 ].IsVisible = false;
     Assert.True( actuals[ 0 ].Visible == 0 );
   }
 
