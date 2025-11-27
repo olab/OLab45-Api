@@ -1,0 +1,83 @@
+[
+  {
+    "Id": 1,
+    "Username": "external",
+    "Password": "7d7173fac102fcc5123f20a5a330477809504f48",
+    "Salt": "1baf4tk6q8w95zoa5v26xs7g0dli3fha5lddutayjshu89qaoctwfnbltleubz23",
+    "Email": "reg@pathrider.ca",
+    "Nickname": "External User",
+    "LanguageId": 0,
+    "TypeId": 0,
+    "ResetHashKey": null,
+    "ResetHashKeyTime": null,
+    "ResetAttempt": null,
+    "ResetTimestamp": null,
+    "VisualEditorAutosaveTime": 50000,
+    "OauthProviderId": null,
+    "OauthId": null,
+    "History": null,
+    "HistoryReadonly": null,
+    "HistoryTimestamp": null,
+    "ModeUi": "easy",
+    "IsLti": false,
+    "Settings": null,
+    "MapUsers": [],
+    "UserBookmarks": [],
+    "UserGrouproles": [
+      {
+        "Id": 6229,
+        "Iss": "olab",
+        "UserId": 1,
+        "RoleId": 6,
+        "GroupId": 3,
+        "Group": {
+          "Id": 3,
+          "Name": "external",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        },
+        "Role": {
+          "Id": 6,
+          "Description": null,
+          "Name": "learner",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        }
+      },
+      {
+        "Id": 6229,
+        "Iss": "testgroup2",
+        "UserId": 1,
+        "RoleId": 6,
+        "GroupId": 25,
+        "Group": {
+          "Id": 25,
+          "Name": "testgroup2",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        },
+        "Role": {
+          "Id": 6,
+          "Description": null,
+          "Name": "learner",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        }
+      }
+    ],
+    "UserNotes": [],
+    "WebinarUsers": []
+  }
+]

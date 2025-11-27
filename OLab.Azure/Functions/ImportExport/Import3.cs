@@ -96,10 +96,7 @@ public class Import3Function : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapGetShortStatusAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ImportAsync ) );
     }
 
   }

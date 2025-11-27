@@ -11,12 +11,8 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
+using OLab.Data.Contracts;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,27 +51,21 @@ public class Counters : OLabFunction
 
     try
     {
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
-
       Logger.LogInformation( $"CountersGet" );
 
+      var pageSpecs = ExtractPageParameters( request );
+
+      // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var result = await _endpoint.GetAsync( auth, take, skip );
-      Logger.LogInformation( string.Format( "Found {0} counters", result.Data.Count ) );
+      var result = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
       return request
         .CreateResponse( OLabObjectPagedListResult<CountersDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CountersGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CountersGetAsync ) );
     }
   }
 
@@ -107,10 +97,7 @@ public class Counters : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CounterGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CounterGetAsync ) );
     }
   }
 
@@ -134,18 +121,14 @@ public class Counters : OLabFunction
       Logger.LogInformation( $"CounterPut" );
 
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CounterPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CounterPutAsync ) );
     }
 
   }
@@ -162,10 +145,10 @@ public class Counters : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"CounterPost" );
+      Logger.LogInformation( $"CounterPostAsync" );
 
-      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>();
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<CountersFullDto>(GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request
@@ -173,10 +156,35 @@ public class Counters : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapsGet" );
+      return ProcessException( request, ex, nameof( CounterPostAsync ) );
+    }
+  }
 
+  /// <summary>
+  /// Updates a counter value
+  /// </summary>
+  /// <param name="dto">object data</param>
+  /// <returns>IActionResult</returns>
+  [Function( "CounterPropertyPut" )]
+  public async Task<IActionResult> CounterValuePut(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "counters/update/{counterId}" )] HttpRequestData request,
+    FunctionContext hostContext, CancellationToken cancellationToken,
+    uint counterId)
+  {
+    try
+    {
+      Logger.LogInformation( $"CounterPropertyPut" );
+
+      var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<PutCounterValueRequest>(GetLogger() );
+
+      var dto = await _endpoint.PutUpdateAsync( auth, counterId, body );
       return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+        .CreateResponse( OLabObjectResult<DynamicScopedObjectsDto>.Result( dto ) );
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( CounterPostAsync ) );
     }
   }
 
@@ -203,10 +211,7 @@ public class Counters : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "CounterDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( CounterDeleteAsync ) );
     }
 
   }

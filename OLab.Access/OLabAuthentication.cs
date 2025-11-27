@@ -1,12 +1,13 @@
 using Dawn;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
 using OLab.Access.Interfaces;
 using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
+using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Data.ReaderWriters;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,6 +15,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OLab.Access;
 
@@ -30,6 +32,8 @@ public class OLabAuthentication : IOLabAuthentication
   private readonly OLabDBContext _dbContext;
   private readonly IOLabLogger _logger;
   private readonly TokenValidationParameters _tokenParameters;
+
+  public const int SaltLength = 64;
 
   /// <summary>
   /// Gets the database context.
@@ -62,7 +66,7 @@ public class OLabAuthentication : IOLabAuthentication
     Guard.Argument( logger ).NotNull( nameof( logger ) );
 
     _logger = logger;
-    GetLogger().LogInformation( $"OLabAuthentication ctor" );
+    GetLogger().LogDebug( $"OLabAuthentication ctor" );
   }
 
   private OLabAuthentication(
@@ -188,7 +192,7 @@ public class OLabAuthentication : IOLabAuthentication
     }
 
     // handle Authorization header token
-    else if ( headers.TryGetValue( "Authorization", out var authHeader ) )
+    else if ( headers.TryGetValue( "authorization", out var authHeader ) )
     {
       token = authHeader.Replace( "Bearer ", "" );
       GetLogger().LogInformation( "Authorization header bearer token provided" );
@@ -259,7 +263,7 @@ public class OLabAuthentication : IOLabAuthentication
   {
     Guard.Argument( user, nameof( user ) ).NotNull();
 
-    GetLogger().LogDebug( $"generating token" );
+    GetLogger().LogInformation( $"Generating token" );
 
     var secretBytes = Encoding.Default.GetBytes( _config.GetAppSettings().Secret[ ..40 ] );
 
@@ -306,15 +310,13 @@ public class OLabAuthentication : IOLabAuthentication
   /// <param name="mapId">The map ID to query.</param>
   /// <returns>The AuthenticateResponse instance containing the generated token.</returns>
   /// <exception cref="Exception">Thrown when no user is defined for anonymous map play or the map is not defined.</exception>
-  public AuthenticateResponse GenerateAnonymousJwtToken(uint mapId)
+  public async Task<AuthenticateResponse> GenerateAnonymousJwtTokenAsync(uint mapId)
   {
-    // get user flagged for anonymous use
-    var serverUser = GetDbContext().Users
-      .Include( "UserGrouproles" )
-      .Include( "UserGrouproles.Group" )
-      .Include( "UserGrouproles.Role" )
-      .FirstOrDefault( x => x.Username == Users.AnonymousUserName );
-    if ( serverUser == null )
+    var physUser = await UserReaderWriter
+      .Instance( GetLogger(), GetDbContext() )
+      .GetSingleAsync( Users.AnonymousUserName );
+
+    if ( physUser == null )
       throw new Exception( $"No user is defined for anonymous map play" );
 
     var map = GetDbContext().Maps
@@ -328,7 +330,7 @@ public class OLabAuthentication : IOLabAuthentication
 
     var issuedBy = "olab";
 
-    var authenticateResponse = GenerateJwtToken( serverUser, issuedBy );
+    var authenticateResponse = GenerateJwtToken( physUser, issuedBy );
 
     return authenticateResponse;
   }
@@ -380,7 +382,7 @@ public class OLabAuthentication : IOLabAuthentication
   /// <param name="model">The login model.</param>
   /// <param name="impersonateMode">Flag indicating if the user is a superuser impersonating another user.</param>
   /// <returns>The authenticated user, or null if authentication fails.</returns>
-  public Users Authenticate(LoginRequest model, bool impersonateMode = false)
+  public async Task<Users> AuthenticateAsync(LoginRequest model, bool impersonateMode = false)
   {
     Guard.Argument( model, nameof( model ) ).NotNull();
 
@@ -392,10 +394,9 @@ public class OLabAuthentication : IOLabAuthentication
         GetLogger().LogInformation( $"Authenticating {model.Username}, ***" );
     }
 
-    var user = GetDbContext().Users
-      .Include( x => x.UserGrouproles ).ThenInclude( y => y.Group )
-      .Include( x => x.UserGrouproles ).ThenInclude( y => y.Role )
-      .FirstOrDefault( x => x.Username.ToLower() == model.Username.ToLower() );
+    var user = await UserReaderWriter
+      .Instance( GetLogger(), GetDbContext() )
+      .GetSingleAsync( model.Username );
 
     if ( user != null )
     {
@@ -419,27 +420,72 @@ public class OLabAuthentication : IOLabAuthentication
   /// Validates a user's password.
   /// </summary>
   /// <param name="clearText">The clear text password.</param>
-  /// <param name="user">The corresponding user record.</param>
+  /// <param name="physUser">The corresponding user record.</param>
   /// <returns>True if the password is valid; otherwise, false.</returns>
-  public bool ValidatePassword(string clearText, Users user)
+  public bool ValidatePassword(string clearText, Users physUser)
   {
-    Guard.Argument( user, nameof( user ) ).NotNull();
+    Guard.Argument( physUser, nameof( physUser ) ).NotNull();
     Guard.Argument( clearText, nameof( clearText ) ).NotEmpty();
 
     var result = false;
 
-    if ( !string.IsNullOrEmpty( user.Salt ) )
+    if ( !string.IsNullOrEmpty( physUser.Salt ) )
     {
-      clearText += user.Salt;
+      clearText += physUser.Salt;
       var hash = SHA1.Create();
       var plainTextBytes = Encoding.ASCII.GetBytes( clearText );
       var hashBytes = hash.ComputeHash( plainTextBytes );
       var localChecksum = BitConverter.ToString( hashBytes ).Replace( "-", "" ).ToLowerInvariant();
 
-      result = localChecksum == user.Password;
+      result = localChecksum == physUser.Password;
     }
 
     GetLogger().LogInformation( $"Password validated = {result}" );
+    return result;
+  }
+
+  /// <summary>
+  /// Updates a user's password.
+  /// </summary>
+  /// <param name="newPassword">new cleartext passwd</param>
+  /// <param name="physUser">Users record</param>
+  /// <returns>true, if changed</returns>
+  public bool UpdatePassword(string newPassword, Users physUser)
+  {
+    var result = false;
+    Guard.Argument( physUser, nameof( physUser ) ).NotNull();
+
+    if ( string.IsNullOrEmpty( newPassword ) )
+      result = false;
+
+    else
+    {
+      // test if new password same as old one
+      var validPassword = ValidatePassword( newPassword, physUser );
+
+      if ( !validPassword )
+      {
+        if ( string.IsNullOrEmpty( physUser.Salt ) )
+          physUser.Salt = StringUtils.GenerateRandomString( SaltLength );
+
+        var clearText = newPassword + physUser.Salt;
+
+        using ( var hash = SHA1.Create() )
+        {
+          var plainTextBytes = Encoding.ASCII.GetBytes( clearText );
+          var hashBytes = hash.ComputeHash( plainTextBytes );
+          var encryptedPassword
+            = BitConverter.ToString( hashBytes ).Replace( "-", "" ).ToLowerInvariant();
+
+          physUser.Password = encryptedPassword;
+          result = true;
+        }
+      }
+
+    }
+
+    GetLogger().LogInformation( $"Password changed for '{physUser.Username}'? {result}" );
+
     return result;
   }
 

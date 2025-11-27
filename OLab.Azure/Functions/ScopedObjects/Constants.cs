@@ -12,11 +12,6 @@ using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,30 +48,19 @@ public class Constants : OLabFunction
 
     try
     {
-      Guard.Argument( request ).NotNull( nameof( request ) );
-      Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
-
       Logger.LogInformation( $"ConstantsGet" );
 
-      var queryTake = Convert.ToInt32( request.Query[ "take" ] );
-      var querySkip = Convert.ToInt32( request.Query[ "skip" ] );
-      int? take = queryTake > 0 ? queryTake : null;
-      int? skip = querySkip > 0 ? querySkip : null;
+      var pageSpecs = ExtractPageParameters( request );
 
       var auth = GetAuthorization( hostContext );
-
-      var result = await _endpoint.GetAsync( auth, take, skip );
-      Logger.LogInformation( string.Format( "Found {0} constants", result.Data.Count ) );
+      var result = await _endpoint.GetAsync( auth, pageSpecs.take, pageSpecs.skip );
 
       return request
         .CreateResponse( OLabObjectPagedListResult<ConstantsDto>.Result( result.Data, result.Remaining ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ConstantsGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ConstantsGetAsync ) );
     }
   }
 
@@ -107,10 +91,7 @@ public class Constants : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ConstantGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ConstantGetAsync ) );
     }
   }
 
@@ -131,20 +112,17 @@ public class Constants : OLabFunction
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
       Guard.Argument( id, nameof( id ) ).NotZero();
 
-      Logger.LogInformation( $"ConstantPut" );
+      Logger.LogInformation( $"ConstantPutAsync" );
 
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
+      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>( GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ConstantPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ConstantPutAsync ) );
     }
 
   }
@@ -164,10 +142,10 @@ public class Constants : OLabFunction
       Guard.Argument( request ).NotNull( nameof( request ) );
       Guard.Argument( hostContext ).NotNull( nameof( hostContext ) );
 
-      Logger.LogInformation( $"ConstantPost" );
+      Logger.LogInformation( $"ConstantPostAsync" );
 
-      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>();
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<ConstantsDto>( GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request
@@ -175,10 +153,7 @@ public class Constants : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ConstantPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ConstantPostAsync ) );
     }
   }
 
@@ -206,10 +181,7 @@ public class Constants : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ConstantDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ConstantDeleteAsync ) );
     }
 
   }

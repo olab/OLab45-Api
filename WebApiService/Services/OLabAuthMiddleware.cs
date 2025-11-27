@@ -56,6 +56,7 @@ public class OLabAuthMiddleware
     OLabDBContext dbContext)
   {
     var logger = new OLabLogger(NullLoggerFactory.Instance);
+
     // since IOLabconfiguration and OLabAuthentication can't be
     // injected into this method, we need to spin up temporary ones
     // so we can extract the centralized TokenValidationParameters

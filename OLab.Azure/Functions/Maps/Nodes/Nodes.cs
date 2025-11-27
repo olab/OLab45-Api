@@ -12,11 +12,6 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,6 +54,40 @@ public partial class MapNodesFunction : OLabFunction
   }
 
   /// <summary>
+  /// ReadAsync a list of nodes for a map
+  /// </summary>
+  /// <param name="mapId">Map id to retrieve nodes for/param>
+  /// <param name="take">Max number of records to return</param>
+  /// <param name="skip">SKip over a number of records</param>
+  /// <returns>IActionResult</returns>
+  [Function( "MapNodesGet" )]
+  public async Task<IActionResult> MapNodesGetAsync(
+    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes" )] HttpRequestData request,
+    FunctionContext hostContext, CancellationToken cancellationToken,
+    uint mapId)
+  {
+    try
+    {
+      Logger.LogInformation( $"MapNodesGet" );
+
+      var pageSpecs = ExtractPageParameters( request );
+
+      // validate token/setup up common properties
+      var auth = GetAuthorization( hostContext );
+      var result = await _playerEndpoint.GetNodesAsync( auth, mapId, pageSpecs.take, pageSpecs.skip );
+
+      return request
+        .CreateResponse( OLabObjectPagedListResult<MapNodesMapReferenceDto>.Result( result.Data, result.Remaining ) );
+
+    }
+    catch ( Exception ex )
+    {
+      return ProcessException( request, ex, nameof( MapNodesGetAsync ) );
+    }
+
+  }
+
+  /// <summary>
   /// Plays specific map node
   /// </summary>
   /// <param name="mapId">map id</param>
@@ -76,10 +105,11 @@ public partial class MapNodesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodePostAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<DynamicScopedObjectsDto>();
+      var body = await request.ParseBodyFromRequestAsync<DynamicScopedObjectsDto>( GetLogger() );
 
       var dto = await _playerEndpoint.PlayMapNodeAsync( auth, mapId, nodeId, body );
       return request
@@ -87,10 +117,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodePostAsync ) );
     }
 
   }
@@ -123,10 +150,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeDeleteAsync ) );
     }
 
   }
@@ -150,10 +174,11 @@ public partial class MapNodesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodePutAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>( GetLogger() );
 
       var dto = await _playerEndpoint.PutNodeAsync( auth, mapId, nodeId, body );
       return request
@@ -162,10 +187,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodePutAsync ) );
     }
   }
 
@@ -198,10 +220,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapDesignerNodesGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapDesignerNodesGetAsync ) );
     }
   }
 
@@ -236,10 +255,7 @@ public partial class MapNodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapDesignerNodeGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapDesignerNodeGetAsync ) );
     }
   }
 
@@ -260,22 +276,20 @@ public partial class MapNodesFunction : OLabFunction
       Guard.Argument( mapId, nameof( mapId ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodePostDesignerAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>(GetLogger() );
 
-      var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>();
-
-      var dto = await _designerEndpoint.PostMapNodesAsync( auth, body );
+      var dto = await _designerEndpoint.PostMapNodesAsync( auth, mapId, body );
       return request
         .CreateResponse( OLabObjectResult<PostNewNodeResponse>.Result( dto ) );
 
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapDesignerNodeGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodePostDesignerAsync ) );
     }
 
   }

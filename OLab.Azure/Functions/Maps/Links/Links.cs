@@ -12,11 +12,6 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -77,19 +72,18 @@ public partial class LinksFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodeLinkPutAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>( GetLogger() );
 
       await _playerEndpoint.PutMapNodeLinksAsync( auth, mapId, nodeId, linkId, body );
       return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkPutAsync ) );
     }
 
   }
@@ -113,10 +107,11 @@ public partial class LinksFunction : OLabFunction
       Guard.Argument( nodeId, nameof( nodeId ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"MapNodeLinkPostDesignerAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<PostNewLinkRequest>();
+      var body = await request.ParseBodyFromRequestAsync<PostNewLinkRequest>( GetLogger() );
 
       var dto = await _designerEndpoint.PostMapNodeLinkAsync( auth, mapId, nodeId, body );
       return request
@@ -124,10 +119,7 @@ public partial class LinksFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkDesignerPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkPostDesignerAsync ) );
     }
 
   }
@@ -158,10 +150,7 @@ public partial class LinksFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkDesignerDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkDesignerDeleteAsync ) );
     }
   }
 
@@ -192,10 +181,7 @@ public partial class LinksFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "MapNodeLinkDesignerGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( MapNodeLinkDesignerGetAsync ) );
     }
   }
 }

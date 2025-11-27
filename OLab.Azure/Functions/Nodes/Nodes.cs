@@ -12,11 +12,6 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,10 +67,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeGetAsync" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeGetAsync ) );
     }
   }
 
@@ -93,11 +85,11 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"NodePut" );
+      Logger.LogInformation( $"NodePutAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodesFullDto>( GetLogger() );
 
       await _endpoint.PutNodeAsync( auth, id, body );
       response = request.CreateNoContentResponse();
@@ -105,10 +97,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodePutAsync ) );
     }
   }
 
@@ -128,12 +117,11 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"NodeLinksPost" );
+      Logger.LogInformation( $"NodeLinksPostAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksPostDataDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodeLinksPostDataDto>( GetLogger() );
 
       var dto = await _endpoint.PostLinkAsync( auth, nodeId, body );
       return request
@@ -141,10 +129,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodeLinksPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodeLinksPostAsync ) );
     }
 
   }
@@ -164,12 +149,11 @@ public partial class NodesFunction : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"NodePost" );
+      Logger.LogInformation( $"NodePostAsync" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<MapNodesPostDataDto>();
+      var body = await request.ParseBodyFromRequestAsync<MapNodesPostDataDto>( GetLogger() );
 
       var dto = await _endpoint.PostNodeAsync( auth, mapId, body );
       return request
@@ -177,10 +161,7 @@ public partial class NodesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "NodePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( NodePostAsync ) );
     }
   }
 

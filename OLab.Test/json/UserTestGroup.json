@@ -1,0 +1,57 @@
+[
+  {
+    "Id": 121,
+    "Username": "testgroup",
+    "Password": "449bbe214b92ca91ff4519f737f83d4d05e40290",
+    "Salt": "g6ukj9tpedo72iw3k2gdoqqwdp9q41ckro24u3yfwbtq9emx6yvr4khkuv59aj3o",
+    "Email": "test@agt.net",
+    "Nickname": "Guest user",
+    "LanguageId": 0,
+    "TypeId": 0,
+    "ResetHashKey": null,
+    "ResetHashKeyTime": null,
+    "ResetAttempt": null,
+    "ResetTimestamp": null,
+    "VisualEditorAutosaveTime": 50000,
+    "OauthProviderId": null,
+    "OauthId": null,
+    "History": null,
+    "HistoryReadonly": null,
+    "HistoryTimestamp": null,
+    "ModeUi": "easy",
+    "IsLti": false,
+    "Settings": null,
+    "MapUsers": [],
+    "UserBookmarks": [],
+    "UserGrouproles": [
+      {
+        "Id": 60,
+        "Iss": "olab",
+        "UserId": 121,
+        "RoleId": 6,
+        "GroupId": 24,
+        "Group": {
+          "Id": 24,
+          "Name": "testgroup",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        },
+        "Role": {
+          "Id": 6,
+          "Description": null,
+          "Name": "learner",
+          "IsSystem": 1,
+          "GrouproleAcls": [],
+          "MapGrouproles": [],
+          "MapNodeGrouproles": [],
+          "UserGrouproles": []
+        }
+      }
+    ],
+    "UserNotes": [],
+    "WebinarUsers": []
+  }
+]

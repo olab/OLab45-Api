@@ -1,0 +1,123 @@
+﻿[
+  {
+    "Id": 1,
+    "Acl2": 3,
+    "GroupId": null,
+    "ImageableId": null,
+    "ImageableType": "Apps",
+    "RoleId": null
+  },
+  {
+    "Id": 2,
+    "Acl2": 5,
+    "GroupId": null,
+    "ImageableId": null,
+    "ImageableType": "Apps",
+    "RoleId": 1
+  },
+  {
+    "Id": 3,
+    "Acl2": 7,
+    "GroupId": null,
+    "ImageableId": 1,
+    "ImageableType": "Apps",
+    "RoleId": null
+  },
+  {
+    "Id": 4,
+    "Acl2": 1,
+    "GroupId": null,
+    "ImageableId": 1,
+    "ImageableType": "Apps",
+    "RoleId": 1
+  },
+  {
+    "Id": 5,
+    "Acl2": 4,
+    "GroupId": 1,
+    "ImageableId": null,
+    "ImageableType": "Apps",
+    "RoleId": null
+  },
+  {
+    "Id": 6,
+    "Acl2": 2,
+    "GroupId": 1,
+    "ImageableId": null,
+    "ImageableType": "Apps",
+    "RoleId": 1
+  },
+  {
+    "Id": 7,
+    "Acl2": 6,
+    "GroupId": 1,
+    "ImageableId": 1,
+    "ImageableType": "Apps",
+    "RoleId": null
+  },
+  {
+    "Id": 8,
+    "Acl2": 0,
+    "GroupId": 1,
+    "ImageableId": 1,
+    "ImageableType": "Apps",
+    "RoleId": 1
+  },
+  {
+    "Id": 217,
+    "ImageableId": null,
+    "ImageableType": "Maps",
+    "GroupId": 1,
+    "RoleId": 6,
+    "Acl2": 4,
+    "Group": {
+      "Id": 1,
+      "Name": "olab",
+      "IsSystem": 1,
+      "GrouproleAcls": [ {} ],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": [
+        {},
+        {}
+      ]
+    },
+    "Role": {
+      "Id": 6,
+      "Description": null,
+      "Name": "learner",
+      "IsSystem": 1,
+      "GrouproleAcls": [ {} ],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": [ {} ]
+    }
+  },
+  {
+    "Id": 218,
+    "ImageableId": null,
+    "ImageableType": "Maps",
+    "GroupId": 3,
+    "RoleId": 6,
+    "Acl2": 4,
+    "Group": {
+      "Id": 3,
+      "Name": "external",
+      "IsSystem": 1,
+      "GrouproleAcls": [],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": []
+    },
+    "Role": {
+      "Id": 6,
+      "Description": null,
+      "Name": "learner",
+      "IsSystem": 1,
+      "GrouproleAcls": [ {} ],
+      "MapGrouproles": [],
+      "MapNodeGrouproles": [],
+      "UserGrouproles": [ {} ]
+    }
+  }
+]

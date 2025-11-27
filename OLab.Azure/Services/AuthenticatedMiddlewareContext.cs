@@ -1,11 +1,9 @@
 using Dawn;
-using Humanizer;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using OLab.Api.Data;
+using OLab.Access;
 using OLab.Api.Model;
 using OLab.Azure.Extensions;
-using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -15,17 +13,18 @@ using System.Linq;
 
 namespace OLab.Azure.Services;
 
-public class FunctionAppUserContext : UserContext
+public class AuthenticatedMiddlewareContext : AuthenticatedContext
 {
-  // default ctor, needed for services Dependancy Injection
-  public FunctionAppUserContext()
+  public static AuthenticatedMiddlewareContext CreateInjectInstance(FunctionContext executionContext, IOLabLogger logger, OLabDBContext dbContext)
   {
-
+    var context = new AuthenticatedMiddlewareContext( executionContext, logger, dbContext );
+    executionContext.Items.Add( context.GetType().Name, context );
+    return context;
   }
 
-  public FunctionAppUserContext(
-    IOLabLogger logger,
+  public AuthenticatedMiddlewareContext(
     FunctionContext executionContext,
+    IOLabLogger logger,
     OLabDBContext dbContext) : base( logger, dbContext )
   {
     Guard.Argument( logger ).NotNull( nameof( logger ) );
@@ -33,10 +32,10 @@ public class FunctionAppUserContext : UserContext
 
     GetLogger().LogInformation( $"FunctionUserContext ctor" );
 
-    var executionContextHelper = 
-      executionContext.Items[ nameof( ExecutionContextHelper ) ] as ExecutionContextHelper;
+    var bootstrapContext =
+      executionContext.Items[ nameof( BootstrapMiddlewareContext ) ] as BootstrapMiddlewareContext;
 
-    LoadHostContext( executionContextHelper );
+    LoadHostContext( bootstrapContext );
   }
 
   private string GetRequestIpAddress(HttpRequestData req)
@@ -65,18 +64,29 @@ public class FunctionAppUserContext : UserContext
     return "<unknown>";
   }
 
-  protected void LoadHostContext(ExecutionContextHelper executionContextHelper)
+  protected void LoadHostContext(BootstrapMiddlewareContext bootstrapContext)
   {
-    var req = executionContextHelper.ExecutionContext.GetHttpRequestData();
+    var req = bootstrapContext.ExecutionContext.GetHttpRequestData();
     IPAddress = GetRequestIpAddress( req );
 
-    if ( !executionContextHelper.ExecutionContext.Items.TryGetValue( "claims", out var claimsObject ) )
+    if ( !bootstrapContext.ExecutionContext.Items.TryGetValue( "claims", out var claimsObject ) )
       throw new Exception( "unable to retrieve claims from host context" );
 
     var claims = claimsObject as IDictionary<string, string>;
     SetClaims( claims );
 
-    SetHeaders( executionContextHelper.Headers );
+    var sessionId = bootstrapContext.GetHeader( HEADER_SESSIONID, false );
+    if ( sessionId != string.Empty )
+    {
+      if ( !string.IsNullOrEmpty( sessionId ) && sessionId != "null" )
+      {
+        SessionId = sessionId;
+        if ( !string.IsNullOrWhiteSpace( SessionId ) )
+          GetLogger().LogInformation( $"Found {HEADER_SESSIONID} '{SessionId}'." );
+      }
+    }
+    else
+      GetLogger().LogWarning( $"no {HEADER_SESSIONID} provided" );
 
     LoadUserContext();
 

@@ -1,9 +1,11 @@
 using Dawn;
+using DocumentFormat.OpenXml.Drawing;
 using HttpMultipartParser;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using OLab.Access.Interfaces;
 using OLab.Api.Common;
 using OLab.Api.Model;
 using OLab.Api.Utils;
@@ -11,24 +13,40 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Dtos;
 using OLab.Data.Interface;
-using System.IO;
-using System.Text;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions.Management;
 
+public static class MultipartRequestHelper
+{
+  public static string GetBoundary(string contentType)
+  {
+    var elements = contentType.Split( ';' );
+    var boundaryElement = elements.FirstOrDefault( e => e.Trim().StartsWith( "boundary=" ) );
+    if ( boundaryElement == null )
+      throw new InvalidOperationException( "Missing boundary in Content-Type" );
+
+    return boundaryElement.Substring( "boundary=".Length ).Trim( '"' );
+  }
+}
+
 public partial class UserManagement : OLabFunction
 {
-  protected readonly IUserService _userService;
+  //protected readonly IUserService _userService;
+  private readonly Api.Endpoints.UserEndpoint _userEndpoint;
 
   public UserManagement(
     ILoggerFactory loggerFactory,
     IOLabConfiguration configuration,
+    IOLabAuthorization author,
+    IOLabAuthentication authent,
     OLabDBContext dbContext,
-    IUserService userService,
     IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
     IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
       configuration,
@@ -40,7 +58,14 @@ public partial class UserManagement : OLabFunction
 
     Logger = OLabLogger.CreateNew<UserManagement>( loggerFactory );
 
-    _userService = userService;
+    _userEndpoint = new Api.Endpoints.UserEndpoint(
+      Logger,
+      configuration,
+      author,
+      authent,
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider );
   }
 
   /// <summary>
@@ -51,7 +76,7 @@ public partial class UserManagement : OLabFunction
   [Function( "UsersGet" )]
   public async Task<IActionResult> UsersGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "auth/getusers/{name?}" )] HttpRequestData request,
-    FunctionContext hostContext, 
+    FunctionContext hostContext,
     CancellationToken cancellationToken,
     string name)
   {
@@ -59,23 +84,15 @@ public partial class UserManagement : OLabFunction
     {
       Logger.LogInformation( $"UsersGet" );
 
-      var auth = GetAuthorization( hostContext );
+      var author = GetAuthorization( hostContext );
 
-
-      // test if user has access to add users.
-      if ( !await auth.IsSystemSuperuserAsync() )
-        return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to get user list" ) );
-
-      var dto = _userService.GetUsers( name );
+      var dto = await _userEndpoint.GetUsersAsync( author, name );
       return request
         .CreateResponse( OLabObjectListResult<UsersDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UsersGet" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UsersGetAsync ) );
     }
   }
 
@@ -92,7 +109,7 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"ImportUsersPost" );
+      Logger.LogInformation( $"ImportUsersPostAsync" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -100,19 +117,34 @@ public partial class UserManagement : OLabFunction
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to import users" ) );
 
-      using ( var memoryStream = new MemoryStream() )
-      {
-        await request.Body.CopyToAsync( memoryStream );
-        var dto = await _userService.ImportUsersAsync( memoryStream );
-        return request.CreateResponse( OLabObjectListResult<UsersImportDto>.Result( dto ) );
-      }
+      // Parse multipart/form-data using HttpMultipartParser
+      var parsedFormBody = await MultipartFormDataParser.ParseAsync( request.Body );
+
+      foreach ( var filePart in parsedFormBody.Files )
+        Logger.LogInformation( $"file posted: '{filePart.Name}' '{filePart.ContentType}'" );
+
+      var file = parsedFormBody.Files.FirstOrDefault( f => f.Name == "file" );
+      if ( file == null )
+        throw new Exception( "No multipart file named 'file' was provided" );
+
+      MemoryStream memoryStream = new MemoryStream();
+      await file.Data.CopyToAsync( memoryStream );
+      memoryStream.Position = 0;
+
+      var dto = await _userEndpoint.ImportUsersAsync( memoryStream );
+      return request.CreateResponse( OLabObjectListResult<UsersImportDto>.Result( dto ) );
 
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "ImportUsersPost" );
-      return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( ImportUsersPostAsync ) );
     }
+  }
+
+  private string GetBoundary(HttpRequestData request)
+  {
+    var boundary = MultipartRequestHelper.GetBoundary( request.Headers.GetValues( "Content-Type" ).First() );
+    return boundary;
   }
 
   /// <summary>
@@ -122,28 +154,26 @@ public partial class UserManagement : OLabFunction
   [Function( "UserPost" )]
   public async Task<IActionResult> UserPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/adduser" )] HttpRequestData request,
-    FunctionContext hostContext, CancellationToken cancellationToken)
+    FunctionContext hostContext,
+    CancellationToken cancellationToken)
   {
     try
     {
-      Logger.LogInformation( $"UserPost" );
+      Logger.LogInformation( $"UserPostAsync" );
 
-      var item = await request.ParseBodyFromRequestAsync<AddUserRequest>();
       var auth = GetAuthorization( hostContext );
+      var item = await request.ParseBodyFromRequestAsync<AddUserRequest>( GetLogger() );
 
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to add user" ) );
 
-      var dto = await _userService.AddUserAsync( item );
+      var dto = await _userEndpoint.AddUserAsync( item );
       return request
         .CreateResponse( OLabObjectResult<UsersDto>.Result( dto ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UserPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UserPostAsync ) );
     }
   }
 
@@ -158,24 +188,21 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UserDelete" );
+      Logger.LogInformation( $"UserDeleteAsync" );
 
-      var items = await request.ParseBodyFromRequestAsync<List<DeleteUsersRequest>>();
       var auth = GetAuthorization( hostContext );
+      var items = await request.ParseBodyFromRequestAsync<List<DeleteUsersRequest>>( GetLogger() );
 
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to add user" ) );
 
-      var responses = await _userService.DeleteUsersAsync( items );
+      var responses = await _userEndpoint.DeleteUsersAsync( items );
       return request
         .CreateResponse( OLabObjectListResult<AddUserResponse>.Result( responses ) );
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UserDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UserDeleteAsync ) );
     }
 
   }
@@ -191,7 +218,7 @@ public partial class UserManagement : OLabFunction
   {
     try
     {
-      Logger.LogInformation( $"UsersPost" );
+      Logger.LogInformation( $"UsersPostAsync" );
 
       var auth = GetAuthorization( hostContext );
 
@@ -219,7 +246,7 @@ public partial class UserManagement : OLabFunction
             items.Add( userRequest );
           }
 
-          var dto = await _userService.AddUsersAsync( items );
+          var dto = await _userEndpoint.AddUsersAsync( items );
           return request
             .CreateResponse( OLabObjectListResult<UsersDto>.Result( dto ) );
 
@@ -229,10 +256,7 @@ public partial class UserManagement : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UsersPost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UsersPostAsync ) );
     }
 
   }
@@ -251,24 +275,21 @@ public partial class UserManagement : OLabFunction
     {
       Logger.LogInformation( $"UsersPut" );
 
-      var body = await request.ParseBodyFromRequestAsync<AddUserRequest>();
       var auth = GetAuthorization( hostContext );
+      var body = await request.ParseBodyFromRequestAsync<AddUserRequest>( GetLogger() );
 
       // test if user has access to add users.
       if ( !await auth.IsSystemSuperuserAsync() )
         return request.CreateResponse( OLabUnauthorizedObjectResult.Result( "Not authorized to edit users" ) );
 
-      var dto = await _userService.EditUserAsync( body );
+      var dto = await _userEndpoint.EditUserAsync( body );
       return request
         .CreateResponse( OLabObjectResult<UsersDto>.Result( dto ) );
 
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "UsersPut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( UsersPutAsync ) );
     }
 
   }

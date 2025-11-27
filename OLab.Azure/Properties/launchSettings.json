@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "Debug": {
+    "HTTPS Debug": {
       "commandName": "Project",
       "commandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234"
+    },
+    "HTTP Debug": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7071 --cores *"
     }
   }
 }

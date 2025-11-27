@@ -2,7 +2,6 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Dawn;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using OLab.Api.Model;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
@@ -21,7 +20,7 @@ namespace OLab.Files.AzureBlobStorage;
 public class AzureBlobFileSystemModule : OLabFileStorageModule
 {
   private readonly BlobServiceClient _blobServiceClient;
-  private readonly string _hostname;
+  private readonly string StorageHostname;
   private readonly string _containerName;
 
   private readonly Dictionary<string, IList<BlobItem>>
@@ -37,30 +36,39 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     IOLabLogger logger,
     IOLabConfiguration configuration) : base( logger, configuration )
   {
-    // if not set to use this module, then don't proceed further
-    if ( GetModuleName().ToLower() != cfg.GetAppSettings().FileStorageType.ToLower() )
-      return;
+    try
+    {
+      // if not set to use this module, then don't proceed further
+      if ( GetModuleName().ToLower() != cfg.GetAppSettings().FileStorageType.ToLower() )
+        return;
 
-    logger.LogInformation( $"Initializing AzureBlobFileSystemModule" );
+      logger.LogInformation( $"Initializing AzureBlobFileSystemModule" );
 
-    var connectionString = cfg.GetAppSettings().FileStorageConnectionString;
-    if ( string.IsNullOrEmpty( connectionString ) )
-      throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
-    _blobServiceClient = new BlobServiceClient( connectionString );
+      var connectionString = cfg.GetAppSettings().FileStorageConnectionString;
+      if ( string.IsNullOrEmpty( connectionString ) )
+        throw new ConfigurationErrorsException( "missing FileStorageConnectionString parameter" );
+      _blobServiceClient = new BlobServiceClient( connectionString );
 
-    _hostname = GetBlobStorageHostName( connectionString );
+      StorageHostname = GetBlobStorageHostName( connectionString );
 
-    _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty );
-    if ( string.IsNullOrEmpty( _containerName ) )
-      throw new ConfigurationErrorsException( "missing FileStorageRoot parameter" );
+      _containerName = cfg.GetAppSettings().FileStorageRoot.Replace( GetFolderSeparator().ToString(), string.Empty );
+      if ( string.IsNullOrEmpty( _containerName ) )
+        throw new ConfigurationErrorsException( "missing FileStorageRoot parameter" );
 
-    logger.LogInformation( $"Container: {_containerName}" );
+      logger.LogInformation( $"Container: {_containerName}" );
 
-    // need to prevent container name from being part of the file root
-    cfg.GetAppSettings().FileStorageRoot = Path.GetFileName( cfg.GetAppSettings().FileStorageRoot );
+      // need to prevent container name from being part of the file root
+      cfg.GetAppSettings().FileStorageRoot = Path.GetFileName( cfg.GetAppSettings().FileStorageRoot );
 
-    // ensure storage url only has leading '/'
-    cfg.GetAppSettings().FileStorageUrl = $"/{cfg.GetAppSettings().FileStorageRoot.Trim( '/' )}";
+      // ensure storage url only has leading '/'
+      cfg.GetAppSettings().FileStorageUrl = $"/{cfg.GetAppSettings().FileStorageRoot.Trim( '/' )}";
+
+    }
+    catch ( Exception ex )
+    {
+      logger.LogError( $"error: {ex.Message} {ex.StackTrace}" );
+      throw;
+    }
   }
 
   /// <summary>
@@ -99,7 +107,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      (string container, string folder) = SeparateFilePath( filePath );
+      (var container, var folder) = SeparateFilePath( filePath );
 
       // if we do not have this sourceFolderName already in cache
       // then hit the blob storage and cache the results
@@ -189,15 +197,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      logger.LogInformation( $"WriteFileAsync: {_containerName} {filePath}" );
-
-      (string container, string folder) = SeparateFilePath( filePath );
-      if ( container != _containerName )
-        throw new UnauthorizedAccessException( "Invalid container" );
+      logger.LogInformation( $"WriteFileAsync: {filePath}" );
 
       await _blobServiceClient
             .GetBlobContainerClient( _containerName )
-            .GetBlobClient( folder )
+            .GetBlobClient( filePath )
             .UploadAsync( stream, overwrite: true, token );
 
       return filePath;
@@ -227,16 +231,12 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      (string container, string folder) = SeparateFilePath( filePath );
-      if ( container != _containerName )
-        throw new UnauthorizedAccessException( "Invalid container" );
+      logger.LogInformation( $"ReadFileAsync: {filePath}. File size: {stream.Length}" );
 
       await _blobServiceClient
            .GetBlobContainerClient( _containerName )
-           .GetBlobClient( folder )
+           .GetBlobClient( filePath )
            .DownloadToAsync( stream );
-
-      logger.LogInformation( $"ReadFileAsync: {_containerName} {filePath}. File size: {stream.Length}" );
 
       stream.Position = 0;
       return true;
@@ -261,12 +261,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
 
     try
     {
-      var physicalFileName = filePath;
-      logger.LogInformation( $"DeleteFileAsync '{physicalFileName}'" );
+      logger.LogInformation( $"DeleteFileAsync '{filePath}'" );
 
       await _blobServiceClient
         .GetBlobContainerClient( _containerName )
-        .DeleteBlobAsync( physicalFileName );
+        .DeleteBlobAsync( filePath );
 
       return true;
     }
@@ -287,9 +286,11 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   {
     Guard.Argument( folderName ).NotEmpty( nameof( folderName ) );
 
+    logger.LogInformation( $"DeleteFolderAsync '{folderName}'" );
+
     await DeleteImportFilesAsync(
       _blobServiceClient.GetBlobContainerClient( _containerName ),
-      GetPhysicalPath( folderName ),
+      folderName,
       null );
   }
 
@@ -364,12 +365,12 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
     {
       IList<BlobItem> blobs;
 
-      var physicalFolder = GetPhysicalPath( folderName );
-      logger.LogInformation( $"reading '{physicalFolder}' for files to add to stream" );
-
       blobs = _blobServiceClient
         .GetBlobContainerClient( _containerName )
-        .GetBlobs( prefix: physicalFolder ).ToList();
+        .GetBlobs( prefix: folderName ).ToList();
+
+      if ( blobs.Count > 0 )
+        logger.LogInformation( $"read {blobs.Count} files in folder '{folderName}' to add to stream" );
 
       foreach ( var blob in blobs )
       {
@@ -398,7 +399,6 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       logger.LogError( ex, "CopyFolderToArchiveAsync error" );
       throw;
     }
-
 
     return result;
   }
@@ -501,7 +501,7 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
   /// <param name="fileName">The file name.</param>
   /// <returns>The public URL for the file.</returns>
   public override SystemFiles UpdateUrlPath(
-    string path, 
+    string path,
     SystemFiles source)
   {
     var physicalPath = BuildPath(
@@ -510,7 +510,28 @@ public class AzureBlobFileSystemModule : OLabFileStorageModule
       source.Path );
 
     source.OriginUrl = physicalPath;
-    source.HostName = _hostname;
+    source.HostName = StorageHostname;
+
+    return source;
+  }
+
+  /// <summary>
+  /// Gets the public URL for the file.
+  /// </summary>
+  /// <param name="path">The path.</param>
+  /// <param name="fileName">The file name.</param>
+  /// <returns>The public URL for the file.</returns>
+  public override SystemScripts UpdateUrlPath(
+    string path,
+    SystemScripts source)
+  {
+    var physicalPath = BuildPath(
+      cfg.GetAppSettings().FileStorageUrl,
+      path,
+      source.Source );
+
+    source.OriginUrl = physicalPath;
+    source.HostName = StorageHostname;
 
     return source;
   }

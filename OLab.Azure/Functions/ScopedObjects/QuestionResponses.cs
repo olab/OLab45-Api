@@ -12,11 +12,6 @@ using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,10 +63,11 @@ public class QuestionResponsesFunction : OLabFunction
     {
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"QuestionResponsePostAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-
-      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>(GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request
@@ -79,10 +75,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponsePost" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponsePostAsync ) );
     }
   }
 
@@ -116,10 +109,7 @@ public class QuestionResponsesFunction : OLabFunction
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponseDelete" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponseDeleteAsync ) );
     }
   }
 
@@ -143,19 +133,18 @@ public class QuestionResponsesFunction : OLabFunction
       Guard.Argument( id, nameof( id ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
+      Logger.LogInformation( $"QuestionResponsePutAsync" );
+
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>();
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return new NoContentResult();
     }
     catch ( Exception ex )
     {
-      Logger.LogError( ex, "QuestionResponsePut" );
-
-      return request
-        .CreateResponse( OLabServerErrorResult.Result( ex ) );
+      return ProcessException( request, ex, nameof( QuestionResponsePutAsync ) );
     }
   }
 
