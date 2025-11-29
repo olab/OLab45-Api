@@ -12,6 +12,7 @@ using OLab.Azure.Extensions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -122,7 +123,10 @@ public partial class ServersFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
 
-      var dto = await _endpoint.GetScopedObjectsTranslatedAsync( id );
+      var dto = await _endpoint.GetScopedObjectsTranslatedAsync(
+        id,
+        auth,
+        request.Headers.ToDictionary( h => h.Key, h => h.Value ) );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
     }

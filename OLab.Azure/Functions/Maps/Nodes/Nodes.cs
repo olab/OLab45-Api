@@ -93,7 +93,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="mapId">map id</param>
   /// <param name="nodeId">node id</param>
   /// <returns>IActionResult</returns>
-  [Function( "MapNodePost" )]
+  [Function( "MapNodePlay" )]
   public async Task<IActionResult> MapNodePostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}/node/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,

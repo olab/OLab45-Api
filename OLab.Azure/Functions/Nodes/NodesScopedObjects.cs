@@ -7,6 +7,7 @@ using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,7 +35,12 @@ public partial class NodesFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetScopedObjectsAsync( nodeId, false );
+      var dto = await _endpoint.GetScopedObjectsAsync( 
+        nodeId, 
+        auth,
+        request.Headers.ToDictionary( h => h.Key, h => h.Value ),
+        false );
+
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
     }
@@ -65,7 +71,12 @@ public partial class NodesFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetScopedObjectsAsync( nodeId, true );
+      var dto = await _endpoint.GetScopedObjectsAsync( 
+        nodeId, 
+        auth,
+        request.Headers.ToDictionary( h => h.Key, h => h.Value ),
+        true );
+
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
     }
