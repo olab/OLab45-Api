@@ -27,14 +27,14 @@ public class Import : OLabFunction
   private readonly Import3Endpoint _endpoint3;
 
   public Import(ILoggerFactory loggerFactory,
-  IOLabConfiguration configuration,
-  OLabDBContext dbContext,
-  IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
-  IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
-    configuration,
-    dbContext,
-    wikiTagProvider,
-    fileStorageProvider )
+    IOLabConfiguration configuration,
+    OLabDBContext dbContext,
+    IOLabModuleProvider<IWikiTagModule> wikiTagProvider,
+    IOLabModuleProvider<IFileStorageModule> fileStorageProvider) : base(
+      configuration,
+      dbContext,
+      wikiTagProvider,
+      fileStorageProvider )
   {
     Guard.Argument( loggerFactory ).NotNull( nameof( loggerFactory ) );
 

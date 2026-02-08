@@ -3,7 +3,7 @@ set -x
 service olab46api.$1 stop
 
 pushd ..
-find . -type d -name bin -ls -exec rm -Rf {} \; > /dev/null
+# find . -type d -name bin -ls -exec rm -Rf {} \; > /dev/null
 find . -type d -name obj -ls -exec rm -Rf {} \; > /dev/null
 
 dirprefix=`date '+%Y%m%d-%H%M%S'`
