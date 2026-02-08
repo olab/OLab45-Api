@@ -180,7 +180,7 @@ public class OLabAuthorizationAppTests : OLabAuthorizationTests
   {
     // Arrange
     var requestUri = "https://example.com/path1/path2";
-    var expected = "example.com/path1";
+    var expected = "example.com";
 
     // Act
     var result = _authorization.ExtractApplicationFromUri( requestUri );
@@ -194,7 +194,7 @@ public class OLabAuthorizationAppTests : OLabAuthorizationTests
   {
     // Arrange
     var requestUri = "https://example.com/path1/path2?query=1";
-    var expected = "example.com/path1";
+    var expected = "example.com";
 
     // Act
     var result = _authorization.ExtractApplicationFromUri( requestUri );

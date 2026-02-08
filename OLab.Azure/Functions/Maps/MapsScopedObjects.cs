@@ -7,6 +7,7 @@ using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -60,7 +61,9 @@ public partial class MapsFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _playerEndpoint.GetScopedObjectsAsync( auth, id );
+      var dto = await _playerEndpoint.GetScopedObjectsAsync( id,
+        auth,
+        request.Headers.ToDictionary( h => h.Key, h => h.Value ) );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
 
