@@ -156,13 +156,13 @@ public class AuthenticatedContext : IAuthenticatedContext
     IOLabLogger logger,
     OLabDBContext dbContext)
   {
-    Guard.Argument( logger ).NotNull( nameof( logger ) );
-    Guard.Argument( dbContext ).NotNull( nameof( dbContext ) );
+    Guard.Argument(logger).NotNull(nameof(logger));
+    Guard.Argument(dbContext).NotNull(nameof(dbContext));
 
     _logger = logger;
     _dbContext = dbContext;
 
-    GetLogger().LogDebug( $"UserContext ctor" );
+    GetLogger().LogDebug($"UserContext ctor");
   }
 
   /// <summary>
@@ -171,8 +171,8 @@ public class AuthenticatedContext : IAuthenticatedContext
   /// <param name="claims">The claims to set.</param>
   protected void SetClaims(IDictionary<string, string> claims)
   {
-    foreach ( var claim in claims )
-      _claims.Add( claim.Key.ToLower(), claim.Value );
+    foreach (var claim in claims)
+      _claims.Add(claim.Key.ToLower(), claim.Value);
   }
 
   /// <summary>
@@ -181,8 +181,8 @@ public class AuthenticatedContext : IAuthenticatedContext
   /// <param name="claims">The claims to set.</param>
   protected void SetClaims(IList<Claim> claims)
   {
-    foreach ( var claim in claims )
-      _claims.Add( claim.Type.ToLower(), claim.Value );
+    foreach (var claim in claims)
+      _claims.Add(claim.Type.ToLower(), claim.Value);
   }
 
   /// <summary>
@@ -194,11 +194,11 @@ public class AuthenticatedContext : IAuthenticatedContext
   /// <exception cref="Exception">Thrown if the claim is required and not found.</exception>
   protected string GetClaim(string key, bool isRequired = true)
   {
-    if ( _claims.TryGetValue( key.ToLower(), out var value ) )
+    if (_claims.TryGetValue(key.ToLower(), out var value))
       return value;
 
-    if ( isRequired )
-      throw new Exception( $"claim value '{key}' does not exist" );
+    if (isRequired)
+      throw new Exception($"claim value '{key}' does not exist");
 
     return string.Empty;
   }
@@ -209,30 +209,30 @@ public class AuthenticatedContext : IAuthenticatedContext
   /// <exception cref="Exception">Thrown if no headers are found.</exception>
   protected void LoadUserContext()
   {
-    UserName = GetClaim( ClaimTypes.Name, false );
-    if ( string.IsNullOrEmpty( UserName ) )
-      UserName = GetClaim( "name" );
+    UserName = GetClaim(ClaimTypes.Name, false);
+    if (string.IsNullOrEmpty(UserName))
+      UserName = GetClaim("name");
 
     ReferringCourse = "olabinternal";
-    ReferringCourse = GetClaim( ClaimTypes.UserData, false );
-    Issuer = GetClaim( "iss" );
-    UserId = (uint)Convert.ToInt32( GetClaim( "id" ) );
-    AppName = GetClaim( "app" );
+    ReferringCourse = GetClaim(ClaimTypes.UserData, false);
+    Issuer = GetClaim("iss");
+    UserId = (uint)Convert.ToInt32(GetClaim("id"));
+    AppName = GetClaim("app");
 
-    var groupRoleString = GetClaim( ClaimTypes.Role, false );
-    if ( string.IsNullOrEmpty( groupRoleString ) )
-      groupRoleString = GetClaim( "role" );
+    var groupRoleString = GetClaim(ClaimTypes.Role, false);
+    if (string.IsNullOrEmpty(groupRoleString))
+      groupRoleString = GetClaim("role");
 
-    GroupRoles = UserGrouproles.StringToObjectList( GetDbContext(), groupRoleString );
+    GroupRoles = UserGrouproles.StringToObjectList(GetDbContext(), groupRoleString);
   }
 
   public static string TruncateToJsonObject(IAuthenticatedContext phys, int maxDepth)
   {
     var json = JsonConvert.SerializeObject(
       new List<IAuthenticatedContext> { phys },
-      new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore } );
+      new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
 
-    return SerializerUtilities.TruncateJsonToDepth( json, maxDepth + 1 );
+    return SerializerUtilities.TruncateJsonToDepth(json, maxDepth + 1);
   }
 
   /// <summary>
@@ -241,6 +241,6 @@ public class AuthenticatedContext : IAuthenticatedContext
   /// <returns>A string that represents the current object.</returns>
   public override string ToString()
   {
-    return $"{UserId} {Issuer} {UserName} {UserGrouproles.ListToString( GroupRoles )} {IPAddress} {ReferringCourse}";
+    return $"{UserId} {Issuer} {UserName} {UserGrouproles.ListToString(GroupRoles)} {IPAddress} {ReferringCourse}";
   }
 }

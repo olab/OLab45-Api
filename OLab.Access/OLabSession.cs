@@ -35,7 +35,7 @@ public class OLabSession : IOLabSession
     OLabDBContext context,
     IAuthenticatedContext userContext)
   {
-    return new OLabSession( logger, context, userContext );
+    return new OLabSession(logger, context, userContext);
   }
 
   /// <summary>
@@ -49,16 +49,16 @@ public class OLabSession : IOLabSession
     OLabDBContext context,
     IAuthenticatedContext userContext)
   {
-    Guard.Argument( logger, nameof( logger ) ).NotNull();
-    Guard.Argument( context, nameof( context ) ).NotNull();
-    Guard.Argument( userContext, nameof( userContext ) ).NotNull();
+    Guard.Argument(logger, nameof(logger)).NotNull();
+    Guard.Argument(context, nameof(context)).NotNull();
+    Guard.Argument(userContext, nameof(userContext)).NotNull();
 
     _dbContext = context;
     _userContext = userContext;
     _logger = logger;
 
-    if ( !string.IsNullOrEmpty( _userContext.SessionId ) )
-      SetSessionId( _userContext.SessionId );
+    if (!string.IsNullOrEmpty(_userContext.SessionId))
+      SetSessionId(_userContext.SessionId);
   }
 
   /// <summary>
@@ -67,7 +67,7 @@ public class OLabSession : IOLabSession
   /// <param name="mapId">The map ID.</param>
   public void SetMapId(uint mapId)
   {
-    Guard.Argument( mapId, nameof( mapId ) ).Positive();
+    Guard.Argument(mapId, nameof(mapId)).Positive();
     _mapId = mapId;
   }
 
@@ -77,7 +77,7 @@ public class OLabSession : IOLabSession
   /// <param name="sessionId">The session ID.</param>
   public void SetSessionId(string sessionId)
   {
-    Guard.Argument( sessionId, nameof( sessionId ) ).NotNull();
+    Guard.Argument(sessionId, nameof(sessionId)).NotNull();
     _sessionId = sessionId;
   }
 
@@ -95,10 +95,10 @@ public class OLabSession : IOLabSession
   /// </summary>
   public void OnStartSession()
   {
-    Guard.Argument( _mapId, nameof( _mapId ) ).Positive();
+    Guard.Argument(_mapId, nameof(_mapId)).Positive();
 
-    SetSessionId( IOLabSession.GenerateSessionId() );
-    _logger.LogInformation( $"generated a new session Id: {GetSessionId()}" );
+    SetSessionId(IOLabSession.GenerateSessionId());
+    _logger.LogInformation($"generated a new session Id: {GetSessionId()}");
 
     var session = new UserSessions
     {
@@ -111,10 +111,10 @@ public class OLabSession : IOLabSession
       CourseName = _userContext.ReferringCourse
     };
 
-    _dbContext.UserSessions.Add( session );
+    _dbContext.UserSessions.Add(session);
     _dbContext.SaveChanges();
 
-    _logger.LogInformation( $"OnStartSession: session {GetSessionId()} ({_userContext.UserName}) MapId: {_mapId}. Session PK: {session.Id}" );
+    _logger.LogInformation($"OnStartSession: session {GetSessionId()} ({_userContext.UserName}) MapId: {_mapId}. Session PK: {session.Id}");
   }
 
   /// <summary>
@@ -123,17 +123,17 @@ public class OLabSession : IOLabSession
   /// <param name="nodeId">The node ID.</param>
   public void OnExtendSessionEnd(uint nodeId)
   {
-    Guard.Argument( _mapId, nameof( _mapId ) ).Positive();
+    Guard.Argument(_mapId, nameof(_mapId)).Positive();
 
-    _logger.LogInformation( $"OnExtendSession: session {GetSessionId()} Map: {_mapId} Node: {nodeId}" );
+    _logger.LogInformation($"OnExtendSession: session {GetSessionId()} Map: {_mapId} Node: {nodeId}");
 
-    var session = GetSessionFromDatabase( GetSessionId() );
-    if ( session == null )
+    var session = GetSessionFromDatabase(GetSessionId());
+    if (session == null)
       return;
 
     session.EndTime = Conversions.GetCurrentUnixTime();
 
-    _dbContext.UserSessions.Update( session );
+    _dbContext.UserSessions.Update(session);
     _dbContext.SaveChanges();
   }
 
@@ -143,21 +143,21 @@ public class OLabSession : IOLabSession
   /// <param name="dto">The data transfer object containing node information.</param>
   public void OnPlayNode(MapsNodesFullRelationsDto dto)
   {
-    Guard.Argument( _mapId, nameof( _mapId ) ).Positive();
+    Guard.Argument(_mapId, nameof(_mapId)).Positive();
 
     var nodeId = dto.Id.Value;
-    _logger.LogInformation( $"OnPlayNode: session {GetSessionId()} Map: {_mapId} Node: {nodeId}" );
+    _logger.LogInformation($"OnPlayNode: session {GetSessionId()} Map: {_mapId} Node: {nodeId}");
 
-    var session = GetSessionFromDatabase( GetSessionId() );
-    if ( session == null )
+    var session = GetSessionFromDatabase(GetSessionId());
+    if (session == null)
       return;
 
     var countersDto = new List<CounterValueDto>();
 
-    foreach ( var counterDto in dto.DynamicObjects.Counters )
-      countersDto.Add( new CounterValueDto( counterDto ) );
+    foreach (var counterDto in dto.DynamicObjects.Counters)
+      countersDto.Add(new CounterValueDto(counterDto));
 
-    var counterJson = JsonSerializer.Serialize( countersDto );
+    var counterJson = JsonSerializer.Serialize(countersDto);
 
     var sessionTrace = new UserSessiontraces
     {
@@ -169,7 +169,7 @@ public class OLabSession : IOLabSession
       Counters = counterJson
     };
 
-    _dbContext.UserSessiontraces.Add( sessionTrace );
+    _dbContext.UserSessiontraces.Add(sessionTrace);
     _dbContext.SaveChanges();
 
     var counterUpdate = new UserCounterUpdate
@@ -177,7 +177,7 @@ public class OLabSession : IOLabSession
       CounterState = dto.DynamicObjects.ToJson(),
     };
 
-    _dbContext.UserCounterUpdate.Add( counterUpdate );
+    _dbContext.UserCounterUpdate.Add(counterUpdate);
     _dbContext.SaveChanges();
 
     var userSessionTraceCounterUpdate = new UsersessiontraceCounterupdate
@@ -186,7 +186,7 @@ public class OLabSession : IOLabSession
       SessiontraceId = sessionTrace.Id
     };
 
-    _dbContext.UsersessiontraceCounterupdate.Add( userSessionTraceCounterUpdate );
+    _dbContext.UsersessiontraceCounterupdate.Add(userSessionTraceCounterUpdate);
     _dbContext.SaveChanges();
   }
 
@@ -199,18 +199,18 @@ public class OLabSession : IOLabSession
     QuestionResponsePostDataDto body,
     SystemQuestions questionPhys)
   {
-    Guard.Argument( _mapId, nameof( _mapId ) ).Positive();
-    Guard.Argument( body, nameof( body ) ).NotNull();
-    Guard.Argument( questionPhys, nameof( questionPhys ) ).NotNull();
+    Guard.Argument(_mapId, nameof(_mapId)).Positive();
+    Guard.Argument(body, nameof(body)).NotNull();
+    Guard.Argument(questionPhys, nameof(questionPhys)).NotNull();
 
-    var sessionPhys = GetSessionFromDatabase( GetSessionId() );
-    if ( sessionPhys == null )
+    var sessionPhys = GetSessionFromDatabase(GetSessionId());
+    if (sessionPhys == null)
       return;
 
-    _logger.LogInformation( $"OnQuestionResponse: session {GetSessionId()} Map: {_mapId} Node: {body.NodeId} Question: {questionPhys.Id} = {body.Value} " );
+    _logger.LogInformation($"OnQuestionResponse: session {GetSessionId()} Map: {_mapId} Node: {body.NodeId} Question: {questionPhys.Id} = {body.Value} ");
 
-    if ( string.IsNullOrEmpty( body.Value ) && body.Value.Length > 1000 )
-      body.Value = body.Value[ 997.. ] + "...";
+    if (string.IsNullOrEmpty(body.Value) && body.Value.Length > 1000)
+      body.Value = body.Value[997..] + "...";
 
     var userResponse = new UserResponses
     {
@@ -221,17 +221,17 @@ public class OLabSession : IOLabSession
       CreatedAt = Conversions.GetCurrentUnixTime()
     };
 
-    _dbContext.UserResponses.Add( userResponse );
+    _dbContext.UserResponses.Add(userResponse);
     _dbContext.SaveChanges();
 
-    if ( body.DynamicObjects != null )
+    if (body.DynamicObjects != null)
     {
       var counterUpdate = new UserCounterUpdate
       {
         CounterState = body.DynamicObjects.ToJson(),
       };
 
-      _dbContext.UserCounterUpdate.Add( counterUpdate );
+      _dbContext.UserCounterUpdate.Add(counterUpdate);
       _dbContext.SaveChanges();
 
       var userResponseCounterUpdate = new UserresponseCounterupdate
@@ -240,11 +240,11 @@ public class OLabSession : IOLabSession
         UserresponseId = userResponse.Id
       };
 
-      _dbContext.UserresponseCounterupdate.Add( userResponseCounterUpdate );
+      _dbContext.UserresponseCounterupdate.Add(userResponseCounterUpdate);
       _dbContext.SaveChanges();
     }
 
-    _logger.LogInformation( $"OnQuestionResponse: saved user response to session" );
+    _logger.LogInformation($"OnQuestionResponse: saved user response to session");
   }
 
   /// <summary>
@@ -254,17 +254,17 @@ public class OLabSession : IOLabSession
   /// <param name="dynamicObjects">The dynamic objects data transfer object.</param>
   public void SaveSessionState(uint nodeId, DynamicScopedObjectsDto dynamicObjects)
   {
-    Guard.Argument( _mapId, nameof( _mapId ) ).Positive();
+    Guard.Argument(_mapId, nameof(_mapId)).Positive();
 
     var userState = new UserState
     {
       MapId = _mapId,
       MapNodeId = nodeId,
       UserId = _userContext.UserId,
-      StateData = Encoding.ASCII.GetBytes( JsonSerializer.Serialize( dynamicObjects ) )
+      StateData = Encoding.ASCII.GetBytes(JsonSerializer.Serialize(dynamicObjects))
     };
 
-    _dbContext.UserState.Add( userState );
+    _dbContext.UserState.Add(userState);
     _dbContext.SaveChanges();
   }
 
@@ -275,12 +275,12 @@ public class OLabSession : IOLabSession
   /// <returns>The session database record.</returns>
   private UserSessions GetSessionFromDatabase(string sessionId)
   {
-    Guard.Argument( sessionId ).NotNull( nameof( sessionId ) );
+    Guard.Argument(sessionId).NotNull(nameof(sessionId));
 
-    var physSession = _dbContext.UserSessions.FirstOrDefault( x => x.Uuid == sessionId );
-    if ( physSession == null )
+    var physSession = _dbContext.UserSessions.FirstOrDefault(x => x.Uuid == sessionId);
+    if (physSession == null)
     {
-      _logger.LogError( $"Unable to get session, sessionId '{sessionId}' not found" );
+      _logger.LogError($"Unable to get session, sessionId '{sessionId}' not found");
       return null;
     }
 
