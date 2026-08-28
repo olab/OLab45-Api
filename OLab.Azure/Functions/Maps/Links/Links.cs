@@ -134,7 +134,6 @@ public partial class LinksFunction : OLabFunction
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "designer/maps/{mapId}/links/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
-    uint nodeId,
     uint id)
   {
     try
