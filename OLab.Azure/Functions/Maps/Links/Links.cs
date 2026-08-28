@@ -131,7 +131,7 @@ public partial class LinksFunction : OLabFunction
   /// <returns></returns>
   [Function( "MapNodeLinkDesignerDelete" )]
   public async Task<IActionResult> MapNodeLinkDesignerDeleteAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "designer/maps/{mapId}/nodes/{nodeId}/links/{id}" )] HttpRequestData request,
+    [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "designer/maps/{mapId}/links/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
     uint nodeId,
