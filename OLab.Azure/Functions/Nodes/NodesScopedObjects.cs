@@ -35,11 +35,7 @@ public partial class NodesFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetScopedObjectsAsync( 
-        nodeId, 
-        auth,
-        request.Headers.ToDictionary( h => h.Key, h => h.Value ),
-        false );
+      var dto = await _endpoint.GetScopedObjectsAsync( nodeId );
 
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
@@ -71,11 +67,7 @@ public partial class NodesFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _endpoint.GetScopedObjectsAsync( 
-        nodeId, 
-        auth,
-        request.Headers.ToDictionary( h => h.Key, h => h.Value ),
-        true );
+      var dto = await _endpoint.GetScopedObjectsAsync( nodeId );
 
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );

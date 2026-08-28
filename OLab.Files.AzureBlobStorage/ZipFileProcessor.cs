@@ -23,17 +23,39 @@ public class ZipFileProcessor : FileProcessorBase
   {
     if ( ZipArchive.IsZipFile( stream ) )
     {
-      var zipReaderOptions = new ReaderOptions()
+      var zipReaderOptions = new ReaderOptions
       {
-        ArchiveEncoding = new ArchiveEncoding( Encoding.UTF8, Encoding.UTF8 ),
+        ArchiveEncoding = new ArchiveEncoding
+        {
+          Default = Encoding.UTF8,
+          Forced = Encoding.UTF8
+        },
         LookForHeader = true
       };
 
       Logger.LogInformation( "Blob is a zip file; beginning extraction...." );
       stream.Position = 0;
 
-      using var reader = ZipArchive.Open( stream, zipReaderOptions );
-      await ExtractArchiveFiles( extractDirectory, reader.Entries, token );
+      using var reader = ReaderFactory.OpenReader( stream, zipReaderOptions );
+
+      var extractionOptions = new ExtractionOptions
+      {
+        ExtractFullPath = true,
+        Overwrite = true
+      };
+
+      while ( reader.MoveToNextEntry() )
+      {
+        if ( token.IsCancellationRequested )
+          break;
+
+        if ( !reader.Entry.IsDirectory )
+        {
+          reader.WriteEntryToDirectory( extractDirectory, extractionOptions );
+        }
+      }
     }
+
+    await Task.CompletedTask;
   }
 }

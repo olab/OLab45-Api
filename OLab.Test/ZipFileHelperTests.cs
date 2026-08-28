@@ -3,6 +3,7 @@ using OLab.Import;
 using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Writers;
+using SharpCompress.Writers.Zip;
 using System.IO;
 using System.Text;
 using Xunit;
@@ -78,15 +79,28 @@ public class ZipFileHelperTests
   private Stream CreateTestZipStream(Dictionary<string, string> files)
   {
     var memoryStream = new MemoryStream();
-    using ( var archive = ZipArchive.Create() )
+
+    var writerOptions = new ZipWriterOptions( CompressionType.Deflate )
+    {
+      // No DeflateCompressionLevel property in 0.48.0
+      // Everything else stays default
+    };
+
+    using ( var writer = WriterFactory.OpenWriter( memoryStream, ArchiveType.Zip, writerOptions ) )
     {
       foreach ( var file in files )
       {
-        var entry = archive.AddEntry( file.Key, new MemoryStream( Encoding.UTF8.GetBytes( file.Value ) ) );
+        var data = Encoding.UTF8.GetBytes( file.Value );
+        using var fileStream = new MemoryStream( data );
+
+        writer.Write( file.Key, fileStream );
       }
-      archive.SaveTo( memoryStream, new WriterOptions( CompressionType.Deflate ) );
     }
+
     memoryStream.Position = 0;
     return memoryStream;
   }
+
+
+
 }

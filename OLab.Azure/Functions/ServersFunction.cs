@@ -123,10 +123,7 @@ public partial class ServersFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
 
-      var dto = await _endpoint.GetScopedObjectsTranslatedAsync(
-        id,
-        auth,
-        request.Headers.ToDictionary( h => h.Key, h => h.Value ) );
+      var dto = await _endpoint.GetScopedObjectsTranslatedAsync( id );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
     }

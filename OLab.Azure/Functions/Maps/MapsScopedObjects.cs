@@ -61,9 +61,7 @@ public partial class MapsFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var dto = await _playerEndpoint.GetScopedObjectsAsync( id,
-        auth,
-        request.Headers.ToDictionary( h => h.Key, h => h.Value ) );
+      var dto = await _playerEndpoint.GetScopedObjectsAsync( auth, id );
       return request
         .CreateResponse( OLabObjectResult<ScopedObjectsDto>.Result( dto ) );
 
