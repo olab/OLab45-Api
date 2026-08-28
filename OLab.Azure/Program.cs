@@ -7,12 +7,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
+
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Api.WikiTag;
 using OLab.Azure.Middleware;
 using OLab.Azure.Services;
+using OLab.Common;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data;
@@ -20,7 +20,7 @@ using OLab.Data.Interface;
 using System;
 
 var builder = FunctionsApplication.CreateBuilder( args );
-builder.ConfigureFunctionsWebApplication();
+//builder.ConfigureFunctionsWebApplication();
 
 builder.Configuration
   .AddJsonFile( "host.json", optional: true )

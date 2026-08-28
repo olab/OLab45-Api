@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using OLab.Api.Utils;
+using OLab.Common.Utils;
 
 namespace OLab.Test
 {

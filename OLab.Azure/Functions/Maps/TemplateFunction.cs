@@ -4,14 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Dto.Designer;
 using OLab.Api.Endpoints.Designer;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
@@ -54,7 +54,7 @@ public class TemplateFunction : OLabFunction
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   [Function( "TemplateDesignerGet" )]
-  public async Task<IActionResult> TemplateDesignerGetAsync(
+  public async Task<HttpResponseData> TemplateDesignerGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "templates" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken)
@@ -85,7 +85,7 @@ public class TemplateFunction : OLabFunction
   /// <param name="id">Constant id</param>
   /// <returns></returns>
   [Function( "TemplateLinksDesignerGet" )]
-  public IActionResult TemplateLinksDesignerGetAsync(
+  public HttpResponseData TemplateLinksDesignerGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "templates/links" )] HttpRequestData request,
     FunctionContext hostContext)
   {
@@ -114,7 +114,7 @@ public class TemplateFunction : OLabFunction
   /// <param name="id">Constant id</param>
   /// <returns></returns>
   [Function( "TemplateMapNodeDesignerGet" )]
-  public IActionResult TemplateMapNodeDesignerGetAsync(
+  public HttpResponseData TemplateMapNodeDesignerGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "templates/nodes" )] HttpRequestData request,
     FunctionContext hostContext)
   {

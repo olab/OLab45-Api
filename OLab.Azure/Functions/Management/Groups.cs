@@ -3,19 +3,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLab.Azure.Functions;
+namespace OLab.Azure.Functions.Management;
 
 public partial class GroupsFunction : OLabFunction
 {
@@ -52,7 +53,7 @@ public partial class GroupsFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "GroupGet" )]
-  public async Task<IActionResult> GroupGetAsync(
+  public async Task<HttpResponseData> GroupGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "groups/{source}" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -83,7 +84,7 @@ public partial class GroupsFunction : OLabFunction
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
   [Function( "GroupsGet" )]
-  public async Task<IActionResult> GroupsGetAsync(
+  public async Task<HttpResponseData> GroupsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "groups" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -114,7 +115,7 @@ public partial class GroupsFunction : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "GroupPost" )]
-  public async Task<IActionResult> GroupPostAsync(
+  public async Task<HttpResponseData> GroupPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "groups/{name}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancel,
@@ -146,7 +147,7 @@ public partial class GroupsFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "GroupDelete" )]
-  public async Task<IActionResult> GroupDeleteAsync(
+  public async Task<HttpResponseData> GroupDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "groups/{source}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     string source)
@@ -161,7 +162,8 @@ public partial class GroupsFunction : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       await _endpoint.DeleteAsync( auth, source );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
+
     }
     catch ( Exception ex )
     {

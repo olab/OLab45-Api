@@ -7,9 +7,10 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NuGet.Protocol;
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
+
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
+using OLab.Common.Exceptions;
 using OLab.Common.Interfaces;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -66,7 +67,30 @@ public static class HttpRequestDataExtensions
     return response;
   }
 
-  public static ContentResult CreateResponse<T>(
+  //public static ContentResult CreateResponse<T>(
+  //  this HttpRequestData request,
+  //  OLabApiResult<T> apiResponse)
+  //{
+  //  var contractResolver = new DefaultContractResolver
+  //  {
+  //    NamingStrategy = new CamelCaseNamingStrategy()
+  //  };
+
+  //  var content = new ContentResult
+  //  {
+  //    StatusCode = (int)apiResponse.ErrorCode,
+  //    ContentType = "application/json",
+  //    Content = JsonConvert.SerializeObject( apiResponse, new JsonSerializerSettings
+  //    {
+  //      ContractResolver = contractResolver
+  //    } )
+  //  };
+
+  //  return content;
+
+  //}
+
+  public static HttpResponseData CreateResponse<T>(
     this HttpRequestData request,
     OLabApiResult<T> apiResponse)
   {
@@ -75,18 +99,18 @@ public static class HttpRequestDataExtensions
       NamingStrategy = new CamelCaseNamingStrategy()
     };
 
-    var content = new ContentResult
+    // Serialize your API response exactly as before
+    var json = JsonConvert.SerializeObject( apiResponse, new JsonSerializerSettings
     {
-      StatusCode = (int)apiResponse.ErrorCode,
-      ContentType = "application/json",
-      Content = JsonConvert.SerializeObject( apiResponse, new JsonSerializerSettings
-      {
-        ContractResolver = contractResolver
-      } )
-    };
+      ContractResolver = contractResolver
+    } );
 
-    return content;
+    // Build proper HttpResponseData (isolated worker compatible)
+    var response = request.CreateResponse( (HttpStatusCode)apiResponse.ErrorCode );
+    response.Headers.Add( "Content-Type", "application/json" );
+    response.WriteString( json );
 
+    return response;
   }
 
   public static ContentResult CreateNoContentResponse(

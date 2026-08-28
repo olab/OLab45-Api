@@ -6,10 +6,10 @@ using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Azure.Services;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using System;
 using System.Linq;
 using System.Net;
@@ -61,12 +61,18 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
 
       try
       {
-
         var dbContext = executionContext.InstanceServices.GetRequiredService<OLabDBContext>();
 
         var authentication = new OLabAuthentication( _logger, _config, dbContext );
-        var token
-          = OLabAuthentication.ExtractAccessToken( bootstrapContext.Request, false );
+
+        // Extract token directly from headers in isolated worker
+        var authHeader = bootstrapContext.GetHeader( "authorization" );
+        if ( string.IsNullOrWhiteSpace( authHeader ) ||
+            !authHeader.StartsWith( "Bearer ", StringComparison.OrdinalIgnoreCase ) )
+          throw new Exception( "authorization header missing or invalid" );
+
+        var token = authHeader.Substring( "Bearer ".Length ).Trim();
+
         authentication.ValidateToken( token );
 
         // these must be set before building UserContextService 
@@ -75,30 +81,25 @@ public class OLabAuthMiddleware : IFunctionsWorkerMiddleware
         // This is added pre-function execution, function will have access to this information
         AuthenticatedMiddlewareContext.CreateInjectInstance( executionContext, _logger, dbContext );
 
-        // This happens after function execution. We can inspect the context after the function
-        // was invoked
-        //if (executionContext.Items.TryGetValue("functionitem", out var value) && value is string message)
-        //  _logger.LogInformation($"From function: {message}");
-
         var items = executionContext.Items.Select( x => x.Key );
         _logger.LogInformation( $"ExecutionContext items: {string.Join( ", ", items )}" );
-
       }
       catch ( Exception ex )
       {
         _logger.LogError( $"function error: {ex.Message} {ex.StackTrace}" );
-        await executionContext.CreateJsonResponse( HttpStatusCode.Unauthorized, new { Message = "could not process token." } );
+        await executionContext.CreateJsonResponse(
+          HttpStatusCode.Unauthorized,
+          new { Message = "could not process token." } );
       }
 
       await next( executionContext );
-
     }
     catch ( Exception ex )
     {
       _logger.LogError( $"OLabAuthMiddleware error: {ex.Message} {ex.StackTrace}" );
-      await executionContext.CreateJsonResponse( HttpStatusCode.InternalServerError, ex.Message );
+      await executionContext.CreateJsonResponse(
+        HttpStatusCode.InternalServerError,
+        ex.Message );
     }
-
   }
-
 }

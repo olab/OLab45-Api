@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Contracts;
 using System;
 using System.Threading;
@@ -41,7 +42,7 @@ public class Counters : OLabFunction
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   [Function( "CountersGet" )]
-  public async Task<IActionResult> CountersGetAsync(
+  public async Task<HttpResponseData> CountersGetAsync(
       [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "counters" )] HttpRequestData request,
       FunctionContext hostContext,
       CancellationToken cancellationToken)
@@ -75,7 +76,7 @@ public class Counters : OLabFunction
   /// <param name="id">Counter id</param>
   /// <returns></returns>
   [Function( "CounterGet" )]
-  public async Task<IActionResult> CounterGetAsync(
+  public async Task<HttpResponseData> CounterGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "counters/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id
@@ -107,7 +108,7 @@ public class Counters : OLabFunction
   /// <param name="id">question id</param>
   /// <returns>IActionResult</returns>
   [Function( "CounterPut" )]
-  public async Task<IActionResult> CounterPutAsync(
+  public async Task<HttpResponseData> CounterPutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "counters/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -124,7 +125,7 @@ public class Counters : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<CountersFullDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -139,7 +140,7 @@ public class Counters : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "CounterPost" )]
-  public async Task<IActionResult> CounterPostAsync(
+  public async Task<HttpResponseData> CounterPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "counters" )] HttpRequestData request,
     FunctionContext hostContext)
   {
@@ -166,7 +167,7 @@ public class Counters : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "CounterPropertyPut" )]
-  public async Task<IActionResult> CounterValuePut(
+  public async Task<HttpResponseData> CounterValuePut(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "counters/update/{counterId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint counterId)
@@ -194,7 +195,7 @@ public class Counters : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "CounterDelete" )]
-  public async Task<IActionResult> CounterDeleteAsync(
+  public async Task<HttpResponseData> CounterDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "counters/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -207,7 +208,7 @@ public class Counters : OLabFunction
       await _endpoint.DeleteAsync( auth, id );
 
       response = request.CreateNoContentResponse();
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {

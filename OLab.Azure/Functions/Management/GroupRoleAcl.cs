@@ -3,20 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Contracts;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLab.Azure.Functions;
+namespace OLab.Azure.Functions.Management;
 
 public partial class GroupRoleAcls : OLabFunction
 {
@@ -53,7 +54,7 @@ public partial class GroupRoleAcls : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "GroupRolesAclQuery" )]
-  public async Task<IActionResult> GroupRolesAclQueryAsync(
+  public async Task<HttpResponseData> GroupRolesAclQueryAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acls" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -83,7 +84,7 @@ public partial class GroupRoleAcls : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "GroupRolesAclEdit" )]
-  public async Task<IActionResult> GroupRolesAclEditAsync(
+  public async Task<HttpResponseData> GroupRolesAclEditAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "acl" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -114,7 +115,7 @@ public partial class GroupRoleAcls : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "GroupRolesAclDelete" )]
-  public async Task<IActionResult> GroupRolesAclDeleteAsync(
+  public async Task<HttpResponseData> GroupRolesAclDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "acl/{id}" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -128,7 +129,7 @@ public partial class GroupRoleAcls : OLabFunction
       var auth = GetAuthorization( executionContext );
       await _endpoint.DeleteAsync( auth, id );
 
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -143,7 +144,7 @@ public partial class GroupRoleAcls : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "GroupRolesAclCreate" )]
-  public async Task<IActionResult> GroupRolesAclCreateAsync(
+  public async Task<HttpResponseData> GroupRolesAclCreateAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "acl" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)

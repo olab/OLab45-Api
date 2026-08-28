@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
@@ -51,7 +52,7 @@ public partial class ReportFunction : OLabFunction
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
   [Function( "GetReport" )]
-  public async Task<IActionResult> GetReportAsync(
+  public async Task<HttpResponseData> GetReportAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "reports/{sessionId}" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,

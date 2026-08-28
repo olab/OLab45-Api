@@ -6,11 +6,12 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OLab.Api.Common;
+
 using OLab.Api.Model;
-using OLab.Api.Utils;
+using OLab.Azure.Utils;
 using OLab.Common.Contracts;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Contracts;
 using System;
 using System.Collections.Generic;

@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ public class QuestionResponsesFunction : OLabFunction
   /// <param name="hostContext">The function context.</param>
   /// <returns>The action result.</returns>
   [Function( "QuestionResponsePost" )]
-  public async Task<IActionResult> QuestionResponsePostAsync(
+  public async Task<HttpResponseData> QuestionResponsePostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "questionresponses" )] HttpRequestData request,
     FunctionContext hostContext)
   {
@@ -88,7 +89,7 @@ public class QuestionResponsesFunction : OLabFunction
   /// <param name="id">The ID of the question response to delete.</param>
   /// <returns>The action result.</returns>
   [Function( "QuestionResponseDelete" )]
-  public async Task<IActionResult> QuestionResponseDeleteAsync(
+  public async Task<HttpResponseData> QuestionResponseDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "questionresponses/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id
@@ -105,7 +106,7 @@ public class QuestionResponsesFunction : OLabFunction
       var data = await _endpoint.DeleteAsync( auth, id );
 
       response = request.CreateResponse();
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -122,7 +123,7 @@ public class QuestionResponsesFunction : OLabFunction
   /// <param name="id">The ID of the question to update.</param>
   /// <returns>An IActionResult indicating the result of the operation.</returns>
   [Function( "QuestionResponsePut" )]
-  public async Task<IActionResult> QuestionResponsePutAsync(
+  public async Task<HttpResponseData> QuestionResponsePutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "questionresponses/{id}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
@@ -140,7 +141,7 @@ public class QuestionResponsesFunction : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {

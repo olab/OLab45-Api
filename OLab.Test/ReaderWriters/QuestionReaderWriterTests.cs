@@ -1,6 +1,7 @@
 using Moq;
 using OLab.Api.Model;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.ReaderWriters;
 using OLab.Test.Utils;
 
@@ -123,7 +124,7 @@ public class QuestionReaderWriterTests
   [Fact]
   public async Task GetAsync_WithValidScopeLevelAndId_ReturnsSystemQuestions()
   {
-    var result = await _questionReaderWriter.GetAsync( OLab.Api.Utils.Constants.ScopeLevelServer, 1 );
+    var result = await _questionReaderWriter.GetAsync( Constants.ScopeLevelServer, 1 );
     Assert.Equal( 15, result.Count() );
   }
 }

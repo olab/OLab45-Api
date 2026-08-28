@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ public class Constants : OLabFunction
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   [Function( "ConstantsGet" )]
-  public async Task<IActionResult> ConstantsGetAsync(
+  public async Task<HttpResponseData> ConstantsGetAsync(
       [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "constants" )] HttpRequestData request,
       FunctionContext hostContext,
       CancellationToken cancellationToken)
@@ -70,7 +71,7 @@ public class Constants : OLabFunction
   /// <param name="id">Constant id</param>
   /// <returns></returns>
   [Function( "ConstantGet" )]
-  public async Task<IActionResult> ConstantGetAsync(
+  public async Task<HttpResponseData> ConstantGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "constants/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -101,7 +102,7 @@ public class Constants : OLabFunction
   /// <param name="id">question id</param>
   /// <returns>IActionResult</returns>
   [Function( "ConstantPut" )]
-  public async Task<IActionResult> ConstantPutAsync(
+  public async Task<HttpResponseData> ConstantPutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "constants/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -118,7 +119,7 @@ public class Constants : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<ConstantsDto>( GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -133,7 +134,7 @@ public class Constants : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "ConstantPost" )]
-  public async Task<IActionResult> ConstantPostAsync(
+  public async Task<HttpResponseData> ConstantPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "constants" )] HttpRequestData request,
     FunctionContext hostContext)
   {
@@ -163,7 +164,7 @@ public class Constants : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "ConstantDelete" )]
-  public async Task<IActionResult> ConstantDeleteAsync(
+  public async Task<HttpResponseData> ConstantDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "constants/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -177,7 +178,7 @@ public class Constants : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       await _endpoint.DeleteAsync( auth, id );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {

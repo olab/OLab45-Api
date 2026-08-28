@@ -6,11 +6,12 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
+
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Dtos;
 using OLab.Data.Interface;
 using System;
@@ -74,7 +75,7 @@ public partial class UserManagement : OLabFunction
   /// <param name="request">GetUsersRequest user query</param>
   /// <returns>List of users</returns>
   [Function( "UsersGet" )]
-  public async Task<IActionResult> UsersGetAsync(
+  public async Task<HttpResponseData> UsersGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "auth/getusers/{name?}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
@@ -102,7 +103,7 @@ public partial class UserManagement : OLabFunction
   /// <param name="file">User records</param>
   /// <returns>Array of AddUserResponse records</returns>
   [Function( "ImportUsersPost" )]
-  public async Task<IActionResult> ImportUsersPostAsync(
+  public async Task<HttpResponseData> ImportUsersPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/importusers" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken)
@@ -152,7 +153,7 @@ public partial class UserManagement : OLabFunction
   /// </summary>
   /// <returns>AddUserResponse</returns>
   [Function( "UserPost" )]
-  public async Task<IActionResult> UserPostAsync(
+  public async Task<HttpResponseData> UserPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/adduser" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken)
@@ -182,7 +183,7 @@ public partial class UserManagement : OLabFunction
   /// </summary>
   /// <returns>List of AddUserResponse</returns>
   [Function( "UserDelete" )]
-  public async Task<IActionResult> UserDeleteAsync(
+  public async Task<HttpResponseData> UserDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/deleteuser" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken)
   {
@@ -212,7 +213,7 @@ public partial class UserManagement : OLabFunction
   /// </summary>
   /// <returns>AddUserResponse</returns>
   [Function( "UsersPost" )]
-  public async Task<IActionResult> UsersPostAsync(
+  public async Task<HttpResponseData> UsersPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/addusers" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken)
   {
@@ -267,7 +268,7 @@ public partial class UserManagement : OLabFunction
   /// <param name="jsonStringData">User records</param>
   /// <returns>Array of AddUserResponse records</returns>
   [Function( "UsersPut" )]
-  public async Task<IActionResult> UsersPutAsync(
+  public async Task<HttpResponseData> UsersPutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "auth/edituser" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken)
   {

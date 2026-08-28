@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
@@ -60,7 +61,7 @@ public partial class LinksFunction : OLabFunction
   /// <param name="linkId">link id</param>
   /// <returns>IActionResult</returns>
   [Function( "MapNodeLinkPut" )]
-  public async Task<IActionResult> MapNodeLinkPutAsync(
+  public async Task<HttpResponseData> MapNodeLinkPutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}/links/{linkId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
@@ -79,7 +80,7 @@ public partial class LinksFunction : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<MapNodeLinksFullDto>( GetLogger() );
 
       await _playerEndpoint.PutMapNodeLinksAsync( auth, mapId, nodeId, linkId, body );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -94,7 +95,7 @@ public partial class LinksFunction : OLabFunction
   /// <param name="id">question id</param>
   /// <returns>IActionResult</returns>
   [Function( "MapNodeLinkDesignerPost" )]
-  public async Task<IActionResult> MapNodeLinkPostDesignerAsync(
+  public async Task<HttpResponseData> MapNodeLinkPostDesignerAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes/{nodeId}/links" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
@@ -130,7 +131,7 @@ public partial class LinksFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapNodeLinkDesignerDelete" )]
-  public async Task<IActionResult> MapNodeLinkDesignerDeleteAsync(
+  public async Task<HttpResponseData> MapNodeLinkDesignerDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "designer/maps/{mapId}/links/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
@@ -145,7 +146,7 @@ public partial class LinksFunction : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       await _designerEndpoint.DeleteMapNodeLinkAsync( auth, mapId, id );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -159,7 +160,7 @@ public partial class LinksFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapNodeLinkDesignerGet" )]
-  public async Task<IActionResult> MapNodeLinkDesignerGetAsync(
+  public async Task<HttpResponseData> MapNodeLinkDesignerGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/nodes/{nodeId}/links/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,

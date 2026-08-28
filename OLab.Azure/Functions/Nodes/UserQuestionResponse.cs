@@ -4,19 +4,20 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Access;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
 using OLab.Azure.Functions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi.Player;
+namespace OLab.Azure.Functions.Nodes;
 
 /// <summary>
 /// Azure Function for handling question responses from users.
@@ -52,7 +53,7 @@ public partial class UserQuestionResponse : OLabFunction
   /// <param name="body"></param>
   /// <returns></returns>
   [Function( "UserQuestionResponse" )]
-  public async Task<IActionResult> PostQuestionResponseAsync(
+  public async Task<HttpResponseData> PostQuestionResponseAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "response/{id}" )] HttpRequestData request,
     FunctionContext hostContext,
     uint id)

@@ -3,19 +3,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLab.Azure.Functions;
+namespace OLab.Azure.Functions.Management;
 
 public partial class RolesFunction : OLabFunction
 {
@@ -52,7 +53,7 @@ public partial class RolesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "RoleGet" )]
-  public async Task<IActionResult> RoleGetAsync(
+  public async Task<HttpResponseData> RoleGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "roles/{source}" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -83,7 +84,7 @@ public partial class RolesFunction : OLabFunction
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
   [Function( "RolesGet" )]
-  public async Task<IActionResult> RolesGetAsync(
+  public async Task<HttpResponseData> RolesGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "roles" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -114,7 +115,7 @@ public partial class RolesFunction : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "RolePost" )]
-  public async Task<IActionResult> RolePostAsync(
+  public async Task<HttpResponseData> RolePostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "roles/{name}" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancel,
@@ -146,7 +147,7 @@ public partial class RolesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "RoleDelete" )]
-  public async Task<IActionResult> RoleDeleteAsync(
+  public async Task<HttpResponseData> RoleDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "roles/{source}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     string source)
@@ -161,7 +162,7 @@ public partial class RolesFunction : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       await _endpoint.DeleteAsync( auth, source );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {

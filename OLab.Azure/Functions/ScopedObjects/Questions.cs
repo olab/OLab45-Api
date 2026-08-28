@@ -4,15 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,7 +60,7 @@ public class QuestionsFunction : OLabFunction
   /// <param name="executionContext">The function execution context.</param>
   /// <returns>An IActionResult containing the list of questions or an error response.</returns>
   [Function( "QuestionsGet" )]
-  public async Task<IActionResult> QuestionsGetAsync(
+  public async Task<HttpResponseData> QuestionsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "questions" )] HttpRequestData request,
     FunctionContext executionContext)
   {
@@ -91,7 +93,7 @@ public class QuestionsFunction : OLabFunction
   /// <returns>An IActionResult containing the question data or an error response.</returns>
   [Function( "QuestionGet" )]
   [HttpGet( "{id}" )]
-  public async Task<IActionResult> GetAsync(
+  public async Task<HttpResponseData> GetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "questions/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -125,31 +127,33 @@ public class QuestionsFunction : OLabFunction
   /// <param name="id">The ID of the question to update.</param>
   /// <returns>An IActionResult indicating the result of the operation.</returns>
   [Function( "QuestionPut" )]
-  public async Task<IActionResult> QuestionPutAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "questions/{id}" )] HttpRequestData request,
-    FunctionContext hostContext,
-    CancellationToken cancellationToken,
-    uint id)
+  public async Task<HttpResponseData> QuestionPutAsync(
+      [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "questions/{id}" )] HttpRequestData request,
+      FunctionContext hostContext,
+      CancellationToken cancellationToken,
+      uint id)
   {
     try
     {
       Guard.Argument( id, nameof( id ) ).NotZero();
       Guard.Argument( request ).NotNull( nameof( request ) );
 
-      Logger.LogInformation( $"QuestionPut" );
+      Logger.LogInformation( "QuestionPut" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>( GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
-      return new NoContentResult();
+
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
       return ProcessException( request, ex, nameof( QuestionPutAsync ) );
     }
   }
+
 
   /// <summary>
   /// Creates a new question.
@@ -158,7 +162,7 @@ public class QuestionsFunction : OLabFunction
   /// <param name="hostContext">The function execution context.</param>
   /// <returns>An IActionResult containing the created question data or an error response.</returns>
   [Function( "QuestionPost" )]
-  public async Task<IActionResult> QuestionPostAsync(
+  public async Task<HttpResponseData> QuestionPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "questions" )] HttpRequestData request,
     FunctionContext hostContext)
   {
@@ -188,7 +192,7 @@ public class QuestionsFunction : OLabFunction
   /// <param name="id">The ID of the question to delete.</param>
   /// <returns>An IActionResult indicating the result of the operation.</returns>
   [Function( "QuestionDelete" )]
-  public async Task<IActionResult> QuestionDeleteAsync(
+  public async Task<HttpResponseData> QuestionDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "questions/{id}" )] HttpRequestData request,
     FunctionContext hostContext,
     uint id)
@@ -201,7 +205,7 @@ public class QuestionsFunction : OLabFunction
       var auth = GetAuthorization( hostContext );
 
       await _endpoint.DeleteAsync( auth, id );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {

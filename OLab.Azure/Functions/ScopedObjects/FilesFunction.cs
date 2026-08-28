@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data.Interface;
@@ -126,7 +126,7 @@ public class FilesFunction : OLabFunction
   /// <param name="cancellationToken">The cancellation token.</param>
   /// <returns>The action result.</returns>
   [Function( "FilesGet" )]
-  public async Task<IActionResult> FilesGetAsync(
+  public async Task<HttpResponseData> FilesGetAsync(
       [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "files" )] HttpRequestData request,
       FunctionContext executionContext,
       CancellationToken cancellationToken)
@@ -160,7 +160,7 @@ public class FilesFunction : OLabFunction
   /// <param name="id">The file ID.</param>
   /// <returns>The action result.</returns>
   [Function( "FileGet" )]
-  public async Task<IActionResult> FileGetAsync(
+  public async Task<HttpResponseData> FileGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "files/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id
@@ -195,7 +195,7 @@ public class FilesFunction : OLabFunction
   /// <param name="token">The cancellation token.</param>
   /// <returns>The action result.</returns>
   [Function( "FilePost" )]
-  public async Task<IActionResult> FilePostAsync(
+  public async Task<HttpResponseData> FilePostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "files" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken token)
@@ -256,7 +256,7 @@ public class FilesFunction : OLabFunction
   /// <param name="id">The file ID.</param>
   /// <returns>The action result.</returns>
   [Function( "FileDelete" )]
-  public async Task<IActionResult> DeleteAsync(
+  public async Task<HttpResponseData> DeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "files/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -269,7 +269,7 @@ public class FilesFunction : OLabFunction
       var auth = GetAuthorization( hostContext );
       await _endpoint.DeleteAsync( auth, id );
 
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -284,7 +284,7 @@ public class FilesFunction : OLabFunction
   /// <param name="id">question id</param>
   /// <returns>IActionResult</returns>
   [Function( "FilePut" )]
-  public async Task<IActionResult> FilePutAsync(
+  public async Task<HttpResponseData> FilePutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "fi/les{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -301,7 +301,7 @@ public class FilesFunction : OLabFunction
       var body = await request.ParseBodyFromRequestAsync<FilesFullDto>(GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {

@@ -6,11 +6,11 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Access;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +38,7 @@ public class AuthenticationFunction : OLabFunction
   }
 
   [Function( "Login" )]
-  public async Task<IActionResult> LoginAsync(
+  public async Task<HttpResponseData> LoginAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/login" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken)
@@ -60,13 +60,13 @@ public class AuthenticationFunction : OLabFunction
         if ( !await auth.IsSystemSuperuserAsync() )
         {
           GetLogger().LogWarning( $"User '{auth.OLabUser.Username}' cannot imporsonate" );
-          return OLabUnauthorizedResult.Result();
+          return OLabFunctionResponses.OLabUnauthorizedResponse( request );
         }
       }
 
       var user = await _authentication.AuthenticateAsync( model, impersonate );
       if ( user == null )
-        return OLabUnauthorizedResult.Result();
+        return OLabFunctionResponses.OLabUnauthorizedResponse( request );
 
       // test if user has access to application based on referrer URL
       IEnumerable<string> refererValues;
@@ -76,7 +76,7 @@ public class AuthenticationFunction : OLabFunction
       {
         GetLogger().LogInformation( $"referer urls provided: {string.Join( ",", refererValues )}" );
         if ( !await _authorization.HasAccessToAppAsync( user, refererValues.First() ) )
-          return OLabUnauthorizedResult.Result();
+          return OLabFunctionResponses.OLabUnauthorizedResponse( request );
       }
       else
         GetLogger().LogWarning( $"no referer url provided" );
@@ -99,7 +99,7 @@ public class AuthenticationFunction : OLabFunction
   /// <param name="mapId">map id to run</param>
   /// <returns>AuthenticateResponse</returns>
   [Function( "LoginAnonymous" )]
-  public async Task<IActionResult> LoginAnonymousAsync(
+  public async Task<HttpResponseData> LoginAnonymousAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "auth/loginanonymous/{mapId}" )] HttpRequestData request,
     uint mapId,
     CancellationToken cancellationToken)
@@ -110,7 +110,7 @@ public class AuthenticationFunction : OLabFunction
     {
       var response = await _authentication.GenerateAnonymousJwtTokenAsync( mapId );
       if ( response == null )
-        return OLabUnauthorizedResult.Result();
+        return OLabFunctionResponses.OLabUnauthorizedResponse( request );
 
       return request
         .CreateResponse( OLabObjectResult<AuthenticateResponse>.Result( response ) );
@@ -128,7 +128,7 @@ public class AuthenticationFunction : OLabFunction
   /// <param name="mapId">map id to run</param>
   /// <returns>AuthenticateResponse</returns>
   [Function( "LoginExternal" )]
-  public async Task<IActionResult> LoginExternalAsync(
+  public async Task<HttpResponseData> LoginExternalAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "auth/loginexternal" )] HttpRequestData request,
     CancellationToken cancellationToken)
   {
@@ -139,7 +139,7 @@ public class AuthenticationFunction : OLabFunction
 
       var response = _authentication.GenerateExternalJwtToken( model );
       if ( response == null )
-        return OLabUnauthorizedResult.Result();
+        return OLabFunctionResponses.OLabUnauthorizedResponse( request );
 
       return request
         .CreateResponse( OLabObjectResult<AuthenticateResponse>.Result( response ) );

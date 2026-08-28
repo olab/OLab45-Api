@@ -5,12 +5,12 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
+using OLab.Common.Exceptions;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using OLab.Import;
@@ -56,7 +56,7 @@ public class Import : OLabFunction
   }
 
   [Function( "Import" )]
-  public async Task<IActionResult> ImportAsync(
+  public async Task<HttpResponseData> ImportAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "import" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancel)

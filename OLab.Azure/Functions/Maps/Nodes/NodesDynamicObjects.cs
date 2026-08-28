@@ -3,9 +3,10 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="sinceTime"></param>
   /// <returns></returns>
   [Function( "NodeDynamicObjectsRawGet" )]
-  public async Task<IActionResult> NodeDynamicObjectsRawGetAsync(
+  public async Task<HttpResponseData> NodeDynamicObjectsRawGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
@@ -66,7 +67,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="sinceTime"></param>
   /// <returns></returns>
   [Function( "NodeDynamicObjectsGet" )]
-  public async Task<IActionResult> NodeDynamicObjectsGetAsync(
+  public async Task<HttpResponseData> NodeDynamicObjectsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes/{nodeId}/dynamicobjects" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,

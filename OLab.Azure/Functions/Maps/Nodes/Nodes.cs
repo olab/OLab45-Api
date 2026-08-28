@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
@@ -61,7 +62,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
   [Function( "MapNodesGet" )]
-  public async Task<IActionResult> MapNodesGetAsync(
+  public async Task<HttpResponseData> MapNodesGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{mapId}/nodes" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId)
@@ -94,7 +95,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="nodeId">node id</param>
   /// <returns>IActionResult</returns>
   [Function( "MapNodePlay" )]
-  public async Task<IActionResult> MapNodePostAsync(
+  public async Task<HttpResponseData> MapNodePostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "maps/{mapId}/node/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
@@ -129,7 +130,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="nodeId">node id</param>
   /// <returns>IActionResult</returns>
   [Function( "MapNodeDelete" )]
-  public async Task<IActionResult> MapNodeDeleteAsync(
+  public async Task<HttpResponseData> MapNodeDeleteAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "delete", Route = "maps/{mapId}/nodes/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
@@ -163,7 +164,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="dto">node data</param>
   /// <returns>IActionResult</returns>
   [Function( "MapNodePut" )]
-  public async Task<IActionResult> MapNodePutAsync(
+  public async Task<HttpResponseData> MapNodePutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "maps/{mapId}/nodes/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
@@ -197,7 +198,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="id">Constant id</param>
   /// <returns></returns>
   [Function( "MapDesignerNodesGet" )]
-  public async Task<IActionResult> MapDesignerNodesGetAsync(
+  public async Task<HttpResponseData> MapDesignerNodesGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/nodes" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId
@@ -232,7 +233,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   [Function( "MapDesignerNodeGet" )]
-  public async Task<IActionResult> MapDesignerNodeGetAsync(
+  public async Task<HttpResponseData> MapDesignerNodeGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/node/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId,
@@ -265,7 +266,7 @@ public partial class MapNodesFunction : OLabFunction
   /// <param name="dto">object data</param>
   /// <returns>IActionResult</returns>
   [Function( "MapNodeDesignerPost" )]
-  public async Task<IActionResult> MapNodePostDesignerAsync(
+  public async Task<HttpResponseData> MapNodePostDesignerAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "designer/maps/{mapId}/nodes" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId

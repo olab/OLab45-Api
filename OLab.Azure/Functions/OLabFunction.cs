@@ -4,18 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using OLab.Access;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Data.Exceptions;
 using OLab.Api.Model;
 using OLab.Azure.Extensions;
 using OLab.Azure.Services;
+using OLab.Azure.Utils;
+using OLab.Common.Exceptions;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace OLab.Azure.Functions;
@@ -115,18 +117,27 @@ public class OLabFunction
     return (take, skip);
   }
 
-  protected IActionResult ProcessException(HttpRequestData request, Exception ex, string caller)
+  protected HttpResponseData ProcessException(HttpRequestData request, Exception ex, string caller)
   {
     Logger.LogError( $"{caller} exception: {ex.Message}" );
     Logger.LogError( $"{caller} {ex.StackTrace}" );
 
+    // 404 Not Found
     if ( ex is OLabObjectNotFoundException )
-      return new NotFoundResult();
+      return OLabFunctionResponses.OLabNotFoundResponse( request );
 
+    // 401 Unauthorized
     if ( ex is OLabUnauthorizedException )
-      return new UnauthorizedResult();
+      return OLabFunctionResponses.OLabUnauthorizedResponse( request );
 
-    return request.CreateResponse( OLabServerErrorResult.Result( ex ) );
+    // 500 Internal Server Error (your existing error wrapper)
+    var serverError = OLabServerErrorResult.Result( ex );
+
+    var errorResponse = request.CreateResponse( HttpStatusCode.InternalServerError );
+    errorResponse.Headers.Add( "Content-Type", "application/json" );
+    errorResponse.WriteString( JsonConvert.SerializeObject( serverError ) );
+
+    return errorResponse;
   }
 
 }

@@ -1,5 +1,5 @@
 using OLab.Access.Interfaces;
-using OLab.Api.Utils;
+using OLab.Common.Utils;
 using OLab.Test.Utils;
 
 namespace OLab.Test.OLabAuthorization;

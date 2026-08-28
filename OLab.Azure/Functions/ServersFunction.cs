@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Linq;
@@ -54,7 +55,7 @@ public partial class ServersFunction : OLabFunction
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
   [Function( "ServersGet" )]
-  public async Task<IActionResult> GetServersAsync(
+  public async Task<HttpResponseData> GetServersAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "servers" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)
@@ -85,7 +86,7 @@ public partial class ServersFunction : OLabFunction
   /// <param name="serverId"></param>
   /// <returns></returns>
   [Function( "ServerScopedObjectRawGet" )]
-  public async Task<IActionResult> ServerScopedObjectRawGetAsync(
+  public async Task<HttpResponseData> ServerScopedObjectRawGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "servers/{id}/scopedobjects/raw" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -112,7 +113,7 @@ public partial class ServersFunction : OLabFunction
   /// <param name="serverId"></param>
   /// <returns></returns>
   [Function( "ServerScopedObjectGet" )]
-  public async Task<IActionResult> ServerScopedObjectGetAsync(
+  public async Task<HttpResponseData> ServerScopedObjectGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "servers/{id}/scopedobjects" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,
@@ -142,7 +143,7 @@ public partial class ServersFunction : OLabFunction
   /// <param name="serverId"></param>
   /// <returns></returns>
   [Function( "ServerDynamicObjectGet" )]
-  public async Task<IActionResult> ServerDynamicObjectGetAsync(
+  public async Task<HttpResponseData> ServerDynamicObjectGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "servers/{id}/dynamicobjects" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken,

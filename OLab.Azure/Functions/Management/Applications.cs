@@ -3,19 +3,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Api.Endpoints;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLab.Azure.Functions;
+namespace OLab.Azure.Functions.Management;
 
 public partial class ApplicationsFunction : OLabFunction
 {
@@ -51,7 +52,7 @@ public partial class ApplicationsFunction : OLabFunction
   /// <param name="skip">SKip over a number of records</param>
   /// <returns>IActionResult</returns>
   [Function( "ApplicationsGet" )]
-  public async Task<IActionResult> ApplicationsGetAsync(
+  public async Task<HttpResponseData> ApplicationsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "applications" )] HttpRequestData request,
     FunctionContext executionContext,
     CancellationToken cancellationToken)

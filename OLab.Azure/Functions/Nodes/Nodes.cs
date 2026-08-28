@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
 using System.Threading;
@@ -49,7 +49,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="nodeId">Node id (0, if root node)</param>
   /// <returns>MapsNodesFullRelationsDto response</returns>
   [Function( "NodeGet" )]
-  public async Task<IActionResult> NodeGetAsync(
+  public async Task<HttpResponseData> NodeGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId)
@@ -78,7 +78,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="dto"></param>
   /// <returns></returns>
   [Function( "NodePut" )]
-  public async Task<IActionResult> NodePutAsync(
+  public async Task<HttpResponseData> NodePutAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "put", Route = "nodes/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint id)
@@ -93,7 +93,7 @@ public partial class NodesFunction : OLabFunction
 
       await _endpoint.PutNodeAsync( auth, id, body );
       response = request.CreateNoContentResponse();
-      return new NoContentResult();
+      return OLabFunctionResponses.OLabNoContentResponse( request );
     }
     catch ( Exception ex )
     {
@@ -109,7 +109,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="data"></param>
   /// <returns></returns>
   [Function( "NodeLinksPost" )]
-  public async Task<IActionResult> NodeLinksPostAsync(
+  public async Task<HttpResponseData> NodeLinksPostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "nodes/{nodeId}/links" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId
@@ -141,7 +141,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="data"></param>
   /// <returns></returns>
   [Function( "NodePost" )]
-  public async Task<IActionResult> NodePostAsync(
+  public async Task<HttpResponseData> NodePostAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "nodes/{mapId}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId

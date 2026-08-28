@@ -8,13 +8,13 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OLab.Access.Interfaces;
-using OLab.Api.Common;
-using OLab.Api.Common.Exceptions;
 using OLab.Api.Dto;
 using OLab.Api.Model;
-using OLab.Api.Utils;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
+using OLab.Common.Exceptions;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLab.Endpoints;
 using System;
@@ -60,7 +60,7 @@ public class Import4Function : OLabFunction
   /// <param name="request">ImportRequest</param>
   /// <returns>IActionResult</returns>
   [Function( "Import4" )]
-  public async Task<IActionResult> ImportAsync(
+  public async Task<HttpResponseData> ImportAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "post", Route = "import4" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancel)
@@ -113,7 +113,7 @@ public class Import4Function : OLabFunction
   }
 
   [Function( "Export4AsJson" )]
-  public async Task<IActionResult> ExportAsJsonAsync(
+  public async Task<HttpResponseData> ExportAsJsonAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}/json" )] HttpRequestData request,
     FunctionContext hostContext,
     uint id,
@@ -141,15 +141,15 @@ public class Import4Function : OLabFunction
   }
 
   [Function( "Export4" )]
-  public async Task<IActionResult> ExportAsync(
-    [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}" )] HttpRequestData request,
-    FunctionContext hostContext,
-    uint id,
-    CancellationToken token)
+  public async Task<HttpResponseData> ExportAsync(
+      [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "import4/export/{id}" )] HttpRequestData request,
+      FunctionContext hostContext,
+      uint id,
+      CancellationToken token)
   {
     try
     {
-      Logger.LogInformation( $"Export4" );
+      Logger.LogInformation( "Export4" );
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
@@ -158,27 +158,26 @@ public class Import4Function : OLabFunction
         throw new OLabUnauthorizedException();
 
       var now = DateTime.UtcNow;
-      var fileDownloadName = $"OLab4Export.map{id}.{now.ToString( "yyyyMMddHHmm" )}.zip";
+      var fileDownloadName = $"OLab4Export.map{id}.{now:yyyyMMddHHmm}.zip";
 
       using ( var zipFileStream = new MemoryStream() )
       {
         await _endpoint.ExportAsync( zipFileStream, id, token );
 
-        zipFileStream.Position = 0; // Reset the position of the existing stream
+        zipFileStream.Position = 0;
 
-        // Return the ZIP file as an IActionResult
-        return new FileContentResult( zipFileStream.ToArray(), "application/zip" )
-        {
-          FileDownloadName = fileDownloadName
-        };
+        var response = OLabFunctionResponses.OLabFileContentResponse( request, fileDownloadName );
+
+        // Write ZIP bytes to response body
+        await response.Body.WriteAsync( zipFileStream.ToArray() );
+
+        return response;
       }
-
     }
     catch ( Exception ex )
     {
       return ProcessException( request, ex, nameof( ExportAsync ) );
     }
-
   }
 }
 

@@ -3,9 +3,10 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using System;
 using System.Linq;
 using System.Threading;
@@ -21,7 +22,7 @@ public partial class MapsFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapScopedObjectsRawGet" )]
-  public async Task<IActionResult> MapScopedObjectsRawGetAsync(
+  public async Task<HttpResponseData> MapScopedObjectsRawGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext,
     CancellationToken cancellationToken,
@@ -51,7 +52,7 @@ public partial class MapsFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapScopedObjectsGet" )]
-  public async Task<IActionResult> MapScopedObjectsGetAsync(
+  public async Task<HttpResponseData> MapScopedObjectsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "maps/{id}/scopedobjects" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
   uint id)
@@ -81,7 +82,7 @@ public partial class MapsFunction : OLabFunction
   /// <param name="mapId">Map Id</param>
   /// <returns></returns>
   [Function( "MapScopedObjectsRawDesignerGet" )]
-  public async Task<IActionResult> MapScopedObjectsRawDesignerGetAsync(
+  public async Task<HttpResponseData> MapScopedObjectsRawDesignerGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId
@@ -111,7 +112,7 @@ public partial class MapsFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapScopedObjectsDesignerGet" )]
-  public async Task<IActionResult> MapScopedObjectsDesignerGetAsync(
+  public async Task<HttpResponseData> MapScopedObjectsDesignerGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "designer/maps/{mapId}/scopedobjects" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint mapId

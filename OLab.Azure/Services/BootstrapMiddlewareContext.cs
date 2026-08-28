@@ -1,5 +1,4 @@
 using Dawn;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using OLab.Common.Interfaces;
@@ -18,7 +17,7 @@ public class BootstrapMiddlewareContext
   public string FunctionName { get; private set; }
   public IReadOnlyDictionary<string, object> BindingData { get; private set; }
   public IReadOnlyDictionary<string, BindingMetadata> InputBindings { get; private set; }
-  public HttpRequest Request { get; private set; }
+  public HttpRequestData Request { get; private set; }
   public string Url { get; private set; }
   public FunctionContext ExecutionContext { get; }
   public IDictionary<string, string> Headers { get; private set; }
@@ -40,7 +39,7 @@ public class BootstrapMiddlewareContext
 
     try
     {
-      GetLogger().LogInformation( $"BootstrapMiddlewareContext ctor" );
+      GetLogger().LogInformation( "BootstrapMiddlewareContext ctor" );
 
       FunctionName = executionContext.FunctionDefinition.Name.ToLower();
       Guard.Argument( FunctionName ).NotEmpty( nameof( FunctionName ) );
@@ -48,42 +47,36 @@ public class BootstrapMiddlewareContext
       GetLogger().LogInformation( $"  function name: {FunctionName}" );
 
       var httpRequestData = executionContext.GetHttpRequestDataAsync().GetAwaiter().GetResult();
+      Guard.Argument( httpRequestData ).NotNull( nameof( httpRequestData ) );
+
+      Request = httpRequestData;
 
       InputBindings = executionContext.FunctionDefinition.InputBindings;
+
       Headers = ExtractHeaders( httpRequestData );
 
       BindingData = executionContext.BindingContext.BindingData;
       Guard.Argument( BindingData ).NotNull( nameof( BindingData ) );
 
-      var context = executionContext.Items[ "HttpRequestContext" ] as DefaultHttpContext;
-      Request = context.Request;
-
-      Url = $"{(Request.IsHttps ? "https" : "http")}://{Request.Host}/{Request.Path}";
+      Url = httpRequestData.Url.ToString();
       GetLogger().LogInformation( $"  url: {Url}" );
-
     }
     catch ( Exception ex )
     {
       GetLogger().LogError( ex, "BootstrapMiddlewareContext exception" );
       throw;
     }
-
   }
 
   /// <summary>
   /// Extracts headers from the given HttpRequestData and returns them as a dictionary.
   /// </summary>
-  /// <param name="httpRequestData">The HttpRequestData containing the headers to extract.</param>
-  /// <returns>A dictionary containing the headers as key-value pairs.</returns>
   private IDictionary<string, string> ExtractHeaders(HttpRequestData httpRequestData)
   {
     var flatHeaderDict = new Dictionary<string, string>();
+
     foreach ( var header in httpRequestData.Headers )
       flatHeaderDict.Add( header.Key.ToLower(), header.Value.First() );
-
-    //GetLogger().LogInformation( $"found {flatHeaderDict.Count} headers" );
-    //foreach ( var header in flatHeaderDict )
-    //  GetLogger().LogInformation( $"  header: {header.Key} = {header.Value}" );
 
     return flatHeaderDict;
   }
@@ -91,10 +84,6 @@ public class BootstrapMiddlewareContext
   /// <summary>
   /// Retrieves the value of a specified header from the request headers.
   /// </summary>
-  /// <param name="key">The key of the header to retrieve.</param>
-  /// <param name="isRequired">Indicates whether the header is required. If true, an exception is thrown if the header is not found.</param>
-  /// <returns>The value of the specified header if found; otherwise, an empty string if the header is not required and not found.</returns>
-  /// <exception cref="Exception">Thrown if the header is required and not found.</exception>
   public string GetHeader(string key, bool isRequired = true)
   {
     if ( Headers.TryGetValue( key.ToLower(), out var value ) )
@@ -110,5 +99,4 @@ public class BootstrapMiddlewareContext
   {
     return $"{FunctionName}";
   }
-
 }

@@ -3,9 +3,10 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using OLab.Api.Common;
+
 using OLab.Api.Dto;
 using OLab.Azure.Extensions;
+using OLab.Azure.Utils;
 using System;
 using System.Linq;
 using System.Threading;
@@ -21,7 +22,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapNodeScopedObjectsRawGet" )]
-  public async Task<IActionResult> MapNodeScopedObjectsRawGetAsync(
+  public async Task<HttpResponseData> MapNodeScopedObjectsRawGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects/raw" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId)
@@ -57,7 +58,7 @@ public partial class NodesFunction : OLabFunction
   /// <param name="id"></param>
   /// <returns></returns>
   [Function( "MapNodeScopedObjectsGet" )]
-  public async Task<IActionResult> MapNodeScopedObjectsGetAsync(
+  public async Task<HttpResponseData> MapNodeScopedObjectsGetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "nodes/{nodeId}/scopedobjects" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
     uint nodeId)
