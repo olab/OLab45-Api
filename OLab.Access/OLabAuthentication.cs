@@ -1,5 +1,4 @@
 using Dawn;
-using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
 using OLab.Access.Interfaces;
@@ -136,29 +135,29 @@ public class OLabAuthentication : IOLabAuthentication
   /// <param name="allowAnonymous">Flag indicating if anonymous access is allowed when no token is available.</param>
   /// <returns>The extracted bearer token.</returns>
   /// <exception cref="OLabUnauthorizedException">Thrown when unable to extract authorization token and anonymous access is not allowed.</exception>
-  public static string ExtractAccessToken(HttpRequest request, bool allowAnonymous = false)
-  {
-    var token = "";
+  //public static string ExtractAccessToken(HttpRequest request, bool allowAnonymous = false)
+  //{
+  //  var token = "";
 
-    if ( request.Headers.ContainsKey( "Authorization" ) )
-    {
-      token = request.Headers[ "Authorization" ];
-      token = token.Replace( "Bearer ", "" );
-    }
+  //  if ( request.Headers.ContainsKey( "Authorization" ) )
+  //  {
+  //    token = request.Headers[ "Authorization" ];
+  //    token = token.Replace( "Bearer ", "" );
+  //  }
 
-    // handler external app posted token
-    if ( request.Query.ContainsKey( "token" ) )
-      token = request.Query[ "token" ];
+  //  // handler external app posted token
+  //  if ( request.Query.ContainsKey( "token" ) )
+  //    token = request.Query[ "token" ];
 
-    // handler SignalR posted token
-    if ( request.Query.ContainsKey( "access_token" ) )
-      token = request.Query[ "access_token" ];
+  //  // handler SignalR posted token
+  //  if ( request.Query.ContainsKey( "access_token" ) )
+  //    token = request.Query[ "access_token" ];
 
-    if ( string.IsNullOrEmpty( token ) && !allowAnonymous )
-      throw new OLabUnauthorizedException( "Unable to extract authorization token" );
+  //  if ( string.IsNullOrEmpty( token ) && !allowAnonymous )
+  //    throw new OLabUnauthorizedException( "Unable to extract authorization token" );
 
-    return token;
-  }
+  //  return token;
+  //}
 
   /// <summary>
   /// Gets the access token from request headers and binding data.

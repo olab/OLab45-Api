@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi;
+namespace OLabWebAPI.Controllers;
 
 public class OLabController : ControllerBase
 {

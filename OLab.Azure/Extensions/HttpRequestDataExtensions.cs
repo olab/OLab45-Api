@@ -1,15 +1,10 @@
-using Azure;
-using DocumentFormat.OpenXml.Drawing;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NuGet.Protocol;
 
 using OLab.Azure.Extensions;
-using OLab.Azure.Utils;
+using OLab.Common.ApiResult;
 using OLab.Common.Exceptions;
 using OLab.Common.Interfaces;
 using System;
@@ -23,38 +18,6 @@ namespace OLab.Azure.Extensions;
 
 public static class HttpRequestDataExtensions
 {
-  public static HttpContext AsHttpContext(this HttpRequestData req)
-  {
-    var httpContext = new DefaultHttpContext();
-    httpContext.Request.Method = req.Method;
-    httpContext.Request.Path = PathString.FromUriComponent( req.Url );
-    httpContext.Request.Host = HostString.FromUriComponent( req.Url );
-    httpContext.Request.Scheme = req.Url.Scheme;
-    httpContext.Request.Query = new QueryCollection( QueryHelpers.ParseQuery( req.Query.ToString() ) );
-    foreach ( var header in req.Headers )
-      httpContext.Request.Headers[ header.Key ] = header.Value.ToArray();
-    httpContext.Request.Body = req.Body;
-    return httpContext;
-  }
-
-  /// <summary>
-  /// Create an HttpResponseData object from a StatusCodeResult
-  /// </summary>
-  /// <param name="request">HttpRequestData object</param>
-  /// <param name="statusCodeResult"></param>
-  /// <returns>HttpResponseData</returns>
-  public static HttpResponseData CreateResponse(this HttpRequestData request, StatusCodeResult statusCodeResult)
-  {
-    var response = request.CreateResponse( (HttpStatusCode)statusCodeResult.StatusCode );
-
-    response.Headers.Add( "Content-Type", "application/json; charset=utf-8" );
-
-    var json = JsonConvert.SerializeObject( statusCodeResult.ToJson() );
-    response.WriteString( json );
-
-    return response;
-  }
-
   /// <summary>
   /// Create an HttpResponseData object from a StatusCodeResult
   /// </summary>
@@ -111,18 +74,6 @@ public static class HttpRequestDataExtensions
     response.WriteString( json );
 
     return response;
-  }
-
-  public static ContentResult CreateNoContentResponse(
-    this HttpRequest request)
-  {
-    var content = new ContentResult
-    {
-      StatusCode = (int)HttpStatusCode.NoContent,
-      ContentType = "application/json"
-    };
-
-    return content;
   }
 
   public static async Task<T> ParseBodyFromRequestAsync<T>(

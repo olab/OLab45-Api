@@ -1,6 +1,5 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -14,7 +13,6 @@ using OLab.Common.Interfaces;
 using OLab.Common.Utils;
 using OLab.Data.Interface;
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -92,7 +90,6 @@ public class QuestionsFunction : OLabFunction
   /// <param name="id">The ID of the question.</param>
   /// <returns>An IActionResult containing the question data or an error response.</returns>
   [Function( "QuestionGet" )]
-  [HttpGet( "{id}" )]
   public async Task<HttpResponseData> GetAsync(
     [HttpTrigger( AuthorizationLevel.Anonymous, "get", Route = "questions/{id}" )] HttpRequestData request,
     FunctionContext hostContext, CancellationToken cancellationToken,
@@ -172,7 +169,7 @@ public class QuestionsFunction : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<QuestionsFullDto>( GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request

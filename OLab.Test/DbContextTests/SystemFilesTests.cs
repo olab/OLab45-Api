@@ -1,11 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Moq;
 using OLab.Api.Model;
-using OLab.Test;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 
 namespace OLab.Test.DbContextTests;
 
@@ -15,10 +8,10 @@ public class SystemFilesDBTests
   public void GetAll_ReturnsAllRecords_WithSbytePropertiesSetProperly()
   {
     var expecteds = OlabDbContextTest.CreateMany<SystemFiles>( 2 );
-    expecteds[0].Shared = 0;
-    expecteds[0].Private = 0;
-    expecteds[1].Shared = 1;
-    expecteds[1].Private = 1;
+    expecteds[ 0 ].Shared = 0;
+    expecteds[ 0 ].Private = 0;
+    expecteds[ 1 ].Shared = 1;
+    expecteds[ 1 ].Private = 1;
 
     var mockContext = OlabDbContextTest.CreateMockDbContextWithDbSet( expecteds );
     var actuals = mockContext.Object.SystemFiles.ToList();

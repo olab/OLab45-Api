@@ -1,11 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Moq;
 using OLab.Api.Model;
-using OLab.Test;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 
 namespace OLab.Test.DbContextTests;
 
@@ -46,9 +39,9 @@ public class MapsDBTests
         Assert.False( actual.IsShowBar );
 
       if ( expected.Enabled == 1 )
-        Assert.True( actual.IsEnabled);
+        Assert.True( actual.IsEnabled );
       else
-        Assert.False( actual.IsEnabled);
+        Assert.False( actual.IsEnabled );
 
       if ( expected.RevisableAnswers == 1 )
         Assert.True( actual.IsRevisableAnswers );

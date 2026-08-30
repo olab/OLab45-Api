@@ -11,11 +11,12 @@ using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
 using OLab.Data.Interface;
+using OLabWebAPI.Controllers;
 using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi.Player;
+namespace OLabWebAPI.Controllers.player;
 
 [Route("olab/api/v3/response")]
 [ApiController]

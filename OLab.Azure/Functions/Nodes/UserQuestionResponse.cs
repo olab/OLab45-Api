@@ -1,5 +1,4 @@
 using Dawn;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,6 @@ using OLab.Api.Dto;
 using OLab.Api.Endpoints.Player;
 using OLab.Api.Model;
 using OLab.Azure.Extensions;
-using OLab.Azure.Functions;
 using OLab.Azure.Utils;
 using OLab.Common.Interfaces;
 using OLab.Common.Utils;
@@ -67,7 +65,7 @@ public partial class UserQuestionResponse : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsePostDataDto>( GetLogger() );
 
       var session = OLabSession.CreateInstance(
         GetLogger(),

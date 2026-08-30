@@ -24,7 +24,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi.Designer;
+namespace OLabWebAPI.Controllers.designer;
 
 [Route("olab/api/v3/designer/maps")]
 [ApiController]
@@ -362,7 +362,6 @@ public partial class MapsController : OLabController
       var list = new List<Hashtable>();
 
       foreach (var user in dtos)
-      {
         list.Add(new Hashtable
         {
           { "id", user.Id },
@@ -370,7 +369,6 @@ public partial class MapsController : OLabController
           { "username", user.Username },
           { "nickname", user.Nickname },
         });
-      }
 
       return HttpContext.Request.CreateResponse(OLabObjectResult<IList<Hashtable>>.Result(list));
     }

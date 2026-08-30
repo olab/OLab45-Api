@@ -1,11 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Moq;
 using OLab.Api.Model;
-using OLab.Test;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 
 namespace OLab.Test.DbContextTests;
 
@@ -44,9 +37,9 @@ public class MapNodesDBTests
         Assert.False( actual.IsKfp );
 
       if ( expected.End == 1 )
-        Assert.True( actual.IsEnd);
+        Assert.True( actual.IsEnd );
       else
-        Assert.False( actual.IsEnd);
+        Assert.False( actual.IsEnd );
 
       if ( expected.ShowInfo == 1 )
         Assert.True( actual.IsShowInfo );

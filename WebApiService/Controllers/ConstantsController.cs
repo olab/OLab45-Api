@@ -14,7 +14,7 @@ using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi.Player;
+namespace OLabWebAPI.Controllers;
 
 [Route("olab/api/v3/constants")]
 [ApiController]

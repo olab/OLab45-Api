@@ -10,13 +10,15 @@ using OLab.Api.Endpoints;
 using OLab.Api.Model;
 using OLab.Api.Utils;
 using OLab.Common.Interfaces;
+using OLab.Common.Utils;
 using OLab.Data.Interface;
 using OLabWebAPI.Extensions;
+using OLabWebAPI.Utils;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi;
+namespace OLabWebAPI.Controllers;
 
 [Route("olab/api/v3/auth/user")]
 [ApiController]

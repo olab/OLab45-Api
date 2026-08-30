@@ -1,6 +1,5 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -281,7 +280,7 @@ public partial class MapNodesFunction : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<PostNewNodeRequest>( GetLogger() );
 
       var dto = await _designerEndpoint.PostMapNodesAsync( auth, mapId, body );
       return request

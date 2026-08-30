@@ -1,11 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Moq;
 using OLab.Api.Model;
-using OLab.Test;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 
 namespace OLab.Test.DbContextTests;
 
@@ -15,10 +8,10 @@ public class SystemQuestionsDBTests
   public void GetAll_ReturnsAllRecords_WithSbytePropertiesSetProperly()
   {
     var expecteds = OlabDbContextTest.CreateMany<SystemQuestions>( 2 );
-    expecteds[0].ShowAnswer = 0;
-    expecteds[0].ShowSubmit = 0;
-    expecteds[0].ShowSubmit = 0;
-    expecteds[1].ShowSubmit = 1;
+    expecteds[ 0 ].ShowAnswer = 0;
+    expecteds[ 0 ].ShowSubmit = 0;
+    expecteds[ 0 ].ShowSubmit = 0;
+    expecteds[ 1 ].ShowSubmit = 1;
 
     var mockContext = OlabDbContextTest.CreateMockDbContextWithDbSet( expecteds );
     var actuals = mockContext.Object.SystemQuestions.ToList();

@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi;
+namespace OLabWebAPI.Controllers;
 
 [Route("olab/api/v3/auth/map")]
 [ApiController]

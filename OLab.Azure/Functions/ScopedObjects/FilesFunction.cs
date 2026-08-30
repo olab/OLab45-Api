@@ -2,7 +2,6 @@ using Azure;
 using Dawn;
 using FluentValidation;
 using HttpMultipartParser;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -298,7 +297,7 @@ public class FilesFunction : OLabFunction
       Logger.LogInformation( $"FilePutAsync" );
 
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<FilesFullDto>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<FilesFullDto>( GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return OLabFunctionResponses.OLabNoContentResponse( request );

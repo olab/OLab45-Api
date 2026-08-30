@@ -15,7 +15,7 @@ using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi.Designer;
+namespace OLabWebAPI.Controllers.designer;
 
 [Route("olab/api/v3/templates")]
 [ApiController]

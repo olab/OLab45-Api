@@ -1,16 +1,15 @@
 using OLab.Common.ApiResult;
 using System.Collections.Generic;
 
-namespace OLab.Azure.Utils;
+namespace OLabWebAPI.Utils;
 
-public class OLabObjectPagedListResult<D>
+public class OLabObjectListResult<D>
 {
-  public static OLabAPIPagedResponse<D> Result(IList<D> value, int remaining)
+  public static OLabApiResult<IList<D>> Result(IList<D> value)
   {
     var result = new OLabAPIPagedResponse<D>
     {
       Data = value,
-      Remaining = remaining,
       Count = value.Count
     };
 

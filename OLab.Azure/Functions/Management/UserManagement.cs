@@ -1,7 +1,5 @@
 using Dawn;
-using DocumentFormat.OpenXml.Drawing;
 using HttpMultipartParser;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;

@@ -1,10 +1,6 @@
-﻿using Microsoft.Azure.Functions.Worker.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.Azure.Functions.Worker.Http;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OLab.Azure.Utils;
 
@@ -45,4 +41,10 @@ internal static class OLabFunctionResponses
     return request.CreateResponse( HttpStatusCode.NoContent );
   }
 
+  public static HttpResponseData OLabOkStringResponse(HttpRequestData request, string payload)
+  {
+    var response = request.CreateResponse( HttpStatusCode.OK );
+    response.Headers.Add( "Content-Type", "text/plain; charset=utf-8" );
+    return response;
+  }
 }

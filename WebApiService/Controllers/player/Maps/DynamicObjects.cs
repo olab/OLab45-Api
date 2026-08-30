@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using OLab.Api.Common;
 using OLab.Api.Dto;
 using OLab.Api.Model;
+using OLabWebAPI.Controllers;
 using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;

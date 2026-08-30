@@ -1,7 +1,6 @@
 using Data.Contracts;
 using Dawn;
 using Endpoints.player.ReportEndpoint;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;

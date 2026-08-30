@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OLab.Api.Common;
+﻿using OLab.Common.ApiResult;
 using System.Net;
 
 namespace OLab.Azure.Utils;
 
-public class OLabObjectResult<D> : ObjectResult
+public class OLabObjectResult<D>
 {
-  public OLabObjectResult(object value, HttpStatusCode status = HttpStatusCode.OK) : base( value )
+  public OLabObjectResult(object value, HttpStatusCode status = HttpStatusCode.OK) 
   {
   }
 

@@ -1,6 +1,5 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -68,7 +67,7 @@ public class QuestionResponsesFunction : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>( GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, body );
       return request
@@ -103,7 +102,7 @@ public class QuestionResponsesFunction : OLabFunction
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
 
-      var data = await _endpoint.DeleteAsync( auth, id );
+      await _endpoint.DeleteAsync( auth, id );
 
       response = request.CreateResponse();
       return OLabFunctionResponses.OLabNoContentResponse( request );
@@ -138,7 +137,7 @@ public class QuestionResponsesFunction : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<QuestionResponsesDto>( GetLogger() );
 
       await _endpoint.PutAsync( auth, id, body );
       return OLabFunctionResponses.OLabNoContentResponse( request );

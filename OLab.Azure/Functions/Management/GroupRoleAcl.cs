@@ -1,5 +1,4 @@
 ﻿using Dawn;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -155,7 +154,7 @@ public partial class GroupRoleAcls : OLabFunction
 
       // validate token/setup up common properties
       var auth = GetAuthorization( executionContext );
-      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>(GetLogger() );
+      var model = await request.ParseBodyFromRequestAsync<GroupRoleAclDto>( GetLogger() );
 
       var dto = await _endpoint.CreateAsync( auth, model );
 

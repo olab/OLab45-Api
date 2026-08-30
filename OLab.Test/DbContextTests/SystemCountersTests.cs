@@ -1,11 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Moq;
 using OLab.Api.Model;
-using OLab.Test;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 
 namespace OLab.Test.DbContextTests;
 
@@ -15,8 +8,8 @@ public class SystemCountersDBTests
   public void GetAll_ReturnsAllRecords_WithSbytePropertiesSetProperly()
   {
     var expecteds = OlabDbContextTest.CreateMany<SystemCounters>( 2 );
-    expecteds[0].Visible = 0;
-    expecteds[1].Visible = 1;
+    expecteds[ 0 ].Visible = 0;
+    expecteds[ 1 ].Visible = 1;
 
     var mockContext = OlabDbContextTest.CreateMockDbContextWithDbSet( expecteds );
     var actuals = mockContext.Object.SystemCounters.ToList();

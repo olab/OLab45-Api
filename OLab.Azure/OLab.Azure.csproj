@@ -2,21 +2,23 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- REQUIRED: Worker runtime -->
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.1.0" />
 
-    <!-- REQUIRED: Worker SDK (must include OutputItemType="Analyzer") -->
+    <!-- REQUIRED: Worker SDK -->
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.0" OutputItemType="Analyzer" />
 
     <!-- REQUIRED: HTTP trigger support -->
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.2.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.0" />
 
-    <!-- REQUIRED: Application Insights -->
+    <!-- REMOVE THIS LINE -->
+    <!-- <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.0" /> -->
+	<PackageReference Include="Microsoft.Azure.AppConfiguration.Functions.Worker" Version="8.0.0" />
+
+    <!-- Application Insights -->
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
 
@@ -30,8 +32,8 @@
     <PackageReference Include="JsonDiffPatch.Net" Version="2.3.0" />
     <PackageReference Include="JWT" Version="11.0.0" />
     <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Azure.Core.NewtonsoftJson" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.12" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageReference Include="SharpCompress" Version="0.48.0" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.12" />

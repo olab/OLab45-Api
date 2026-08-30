@@ -29,7 +29,7 @@ using OLab.Access;
 using Microsoft.Extensions.Primitives;
 using NuGet.Protocol;
 
-namespace OLabWebAPI.Endpoints.WebApi;
+namespace OLabWebAPI.Controllers;
 
 /// <summary>
 /// 
@@ -77,7 +77,7 @@ public class AuthController : OLabController
 
     var userContext = GetUserContext(HttpContext);
 
-    bool impersonateMode = false;
+    var impersonateMode = false;
     if (userContext != null)
     {
       _authorization.ApplyUserContext(userContext);
@@ -98,7 +98,7 @@ public class AuthController : OLabController
 
     // test if user has access to application based on referrer URL
     StringValues refererValues;
-    string referrer = string.Empty;
+    var referrer = string.Empty;
 
     if (Request.Headers.TryGetValue("Referer", out refererValues))
     {

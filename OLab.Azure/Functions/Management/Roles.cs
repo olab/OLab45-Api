@@ -1,5 +1,4 @@
 ﻿using Dawn;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -129,7 +128,7 @@ public partial class RolesFunction : OLabFunction
       Logger.LogInformation( $"RolePostAsync" );
 
       var auth = GetAuthorization( hostContext );
-      var body = await request.ParseBodyFromRequestAsync<RolesDto>(GetLogger() );
+      var body = await request.ParseBodyFromRequestAsync<RolesDto>( GetLogger() );
 
       var dto = await _endpoint.PostAsync( auth, name, cancel );
       return request

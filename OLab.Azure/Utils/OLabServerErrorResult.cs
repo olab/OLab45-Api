@@ -1,4 +1,4 @@
-﻿using OLab.Azure.Utils;
+﻿using OLab.Common.ApiResult;
 using System;
 using System.Collections.Generic;
 using System.Net;

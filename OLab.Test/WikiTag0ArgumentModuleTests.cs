@@ -2,7 +2,6 @@ using Moq;
 using OLab.Api.Common;
 using OLab.Common.Attributes;
 using OLab.Common.Interfaces;
-using Xunit;
 
 namespace OLab.Test;
 

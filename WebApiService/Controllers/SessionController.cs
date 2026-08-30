@@ -13,7 +13,7 @@ using OLab.Data.Interface;
 using System;
 using System.Linq;
 
-namespace OLabWebAPI.Endpoints.WebApi;
+namespace OLabWebAPI.Controllers;
 
 [Route("olab/api/v3/sessions")]
 [ApiController]

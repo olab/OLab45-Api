@@ -1,3 +1,4 @@
+using OLab.Common.ApiResult;
 using System.Net;
 
 namespace OLab.Azure.Utils;

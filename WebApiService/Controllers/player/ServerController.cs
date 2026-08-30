@@ -13,7 +13,7 @@ using OLabWebAPI.Extensions;
 using System;
 using System.Threading.Tasks;
 
-namespace OLabWebAPI.Endpoints.WebApi.Player;
+namespace OLabWebAPI.Controllers.player;
 
 [Route("olab/api/v3/servers")]
 public partial class ServerController : OLabController
