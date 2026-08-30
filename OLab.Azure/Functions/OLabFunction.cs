@@ -1,6 +1,6 @@
 using Dawn;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
@@ -95,7 +95,6 @@ public class OLabFunction
   /// </summary>
   /// <param name="id">question id</param>
   /// <returns></returns>
-  [NonAction]
   protected async ValueTask<SystemQuestions> GetQuestionAsync(uint id)
   {
     var item = await DbContext.SystemQuestions
