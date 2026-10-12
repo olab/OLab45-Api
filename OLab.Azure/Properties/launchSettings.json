@@ -2,11 +2,11 @@
   "profiles": {
     "HTTPS Debug": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7071 --useHttps --cors * --cert certificate.pfx --password 1234"
+      "commandLineArgs": "--port 7071 --useHttps --cors \"http://localhost:3000\" --cert certificate.pfx --password 1234"
     },
     "HTTP Debug": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7071 --cores *"
+      "commandLineArgs": "--port 7071 --cors \"http://localhost:3000\""
     }
   }
 }

@@ -111,11 +111,11 @@ public class OLabAuthentication : IOLabAuthentication
 
     var tokenParameters = new TokenValidationParameters
     {
-      ValidateIssuer = true,
+      ValidateIssuer = validIssuers != null && validIssuers.Count > 0,
       ValidIssuers = validIssuers,
       ValidateIssuerSigningKey = true,
 
-      ValidateAudience = true,
+      ValidateAudience = !string.IsNullOrEmpty( jwtAudience ),
       ValidAudience = jwtAudience,
 
       // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
